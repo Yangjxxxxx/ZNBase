@@ -1,0 +1,83 @@
+# LogicTest: local local-opt
+
+statement ok
+CREATE TABLE a (id INT PRIMARY KEY)
+
+statement ok
+CREATE TABLE b (id INT PRIMARY KEY)
+
+query TT
+SHOW TABLES FROM test
+----
+a  root
+b  root
+
+statement ok
+INSERT INTO a VALUES (3),(7),(2)
+
+query I rowsort
+SELECT * FROM a
+----
+2
+3
+7
+
+statement ok
+DROP TABLE a
+
+query TT
+SELECT status, running_status FROM [SHOW JOBS] WHERE job_type = 'SCHEMA CHANGE'
+----
+running  waiting for GC TTL
+
+query TT
+SHOW TABLES FROM test
+----
+b  root
+
+statement error pgcode 42P01 relation "a" does not exist
+SELECT * FROM a
+
+statement error pq: \[56 AS a\]: table is being dropped
+SELECT * FROM [56 AS a]
+
+statement error pgcode 42P01 relation "a" does not exist
+DROP TABLE a
+
+statement ok
+DROP TABLE IF EXISTS a
+
+statement ok
+CREATE TABLE a (id INT PRIMARY KEY)
+
+query I
+SELECT * FROM a
+----
+
+#drop table that depends on sequence
+statement ok
+CREATE SEQUENCE public.t1_a_seq START WITH 1 INCREMENT BY 1 CACHE 1;
+
+statement ok
+CREATE TABLE public.t1 (
+a integer primary key NOT NULL DEFAULT nextval('public.t1_a_seq')
+);
+
+statement ok
+CREATE TABLE public.t2 (
+a integer primary key NOT NULL DEFAULT nextval('public.t1_a_seq')
+);
+
+statement ok
+CREATE TABLE public.t3 (
+a integer primary key NOT NULL DEFAULT nextval('public.t1_a_seq')
+);
+
+statement ok
+drop table public.t1 cascade;
+
+statement ok
+drop table public.t2 cascade;
+
+statement ok
+drop table public.t3 cascade;

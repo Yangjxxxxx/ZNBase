@@ -1,0 +1,1216 @@
+#-------------------------------------------table, locate on table----------------------------------------------
+
+statement ok
+create table test (a int primary key, name string) locate in ("TJ")
+
+query TT colnames
+show create table test;
+----
+table_name  create_statement
+test        CREATE TABLE test (
+            a INT NOT NULL,
+            name STRING NULL,
+            CONSTRAINT "primary" PRIMARY KEY (a ASC),
+            FAMILY "primary" (a, name)
+) LOCATE IN ("TJ")
+
+query TT colnames
+show create table test with cache;
+----
+table_name  create_statement
+test        CREATE TABLE test (
+            a INT NOT NULL,
+            name STRING NULL,
+            CONSTRAINT "primary" PRIMARY KEY (a ASC) LOCATE IN ("TJ"),
+            FAMILY "primary" (a, name)
+) LOCATE IN ("TJ")
+
+statement ok
+drop table test;
+
+statement error relation "test" does not exist
+show create table test;
+
+statement error relation "test" does not exist
+show create table test with cache;
+
+#-----------------------------------------table,locate on primary key------------------------------------------
+
+statement ok
+create table test (a int, name string, primary key(a) locate in ("TJ"));
+
+query TT colnames
+show create table test;
+----
+table_name  create_statement
+test        CREATE TABLE test (
+            a INT NOT NULL,
+            name STRING NULL,
+            CONSTRAINT "primary" PRIMARY KEY (a ASC) LOCATE IN ("TJ"),
+            FAMILY "primary" (a, name)
+)
+
+query TT colnames
+show create table test with cache;
+----
+table_name  create_statement
+test        CREATE TABLE test (
+            a INT NOT NULL,
+            name STRING NULL,
+            CONSTRAINT "primary" PRIMARY KEY (a ASC) LOCATE IN ("TJ"),
+            FAMILY "primary" (a, name)
+)
+
+statement ok
+drop table test;
+
+statement error relation "test" does not exist
+show create table test;
+
+statement error relation "test" does not exist
+show create table test with cache;
+
+
+#---------------------------------------table with index, located on table----------------------------------------------
+
+statement ok
+create table test (a int primary key, name string, index a_idx (a)) locate in ("TJ")
+
+query TT colnames
+show create table test;
+----
+table_name  create_statement
+test        CREATE TABLE test (
+            a INT NOT NULL,
+            name STRING NULL,
+            CONSTRAINT "primary" PRIMARY KEY (a ASC),
+            INDEX a_idx (a ASC),
+            FAMILY "primary" (a, name)
+) LOCATE IN ("TJ")
+
+query TT colnames
+show create table test with cache;
+----
+table_name  create_statement
+test        CREATE TABLE test (
+            a INT NOT NULL,
+            name STRING NULL,
+            CONSTRAINT "primary" PRIMARY KEY (a ASC) LOCATE IN ("TJ"),
+            INDEX a_idx (a ASC) LOCATE IN ("TJ"),
+            FAMILY "primary" (a, name)
+) LOCATE IN ("TJ")
+
+statement ok
+drop table test;
+
+statement error relation "test" does not exist
+show create table test;
+
+statement error relation "test" does not exist
+show create table test with cache;
+
+#-------------------------------------table with index, located on primary key---------------------------------------
+
+statement ok
+create table test (a int, name string, index idx1 (name), primary key(a) locate in ("TJ"));
+
+query TT colnames
+show create table test;
+----
+table_name  create_statement
+test        CREATE TABLE test (
+            a INT NOT NULL,
+            name STRING NULL,
+            CONSTRAINT "primary" PRIMARY KEY (a ASC) LOCATE IN ("TJ"),
+            INDEX idx1 (name ASC),
+            FAMILY "primary" (a, name)
+)
+
+query TT colnames
+show create table test with cache;
+----
+table_name  create_statement
+test        CREATE TABLE test (
+            a INT NOT NULL,
+            name STRING NULL,
+            CONSTRAINT "primary" PRIMARY KEY (a ASC) LOCATE IN ("TJ"),
+            INDEX idx1 (name ASC),
+            FAMILY "primary" (a, name)
+)
+
+statement ok
+drop table test;
+
+statement error relation "test" does not exist
+show create table test;
+
+statement error relation "test" does not exist
+show create table test with cache;
+
+
+#---------------------------------------table with index, located on index-------------------------------------------
+
+statement ok
+create table test (a int primary key, name string, index a_idx (a) locate in ("TJ") )
+
+query TT colnames
+show create table test;
+----
+table_name  create_statement
+test        CREATE TABLE test (
+            a INT NOT NULL,
+            name STRING NULL,
+            CONSTRAINT "primary" PRIMARY KEY (a ASC),
+            INDEX a_idx (a ASC) LOCATE IN ("TJ"),
+            FAMILY "primary" (a, name)
+)
+
+query TT colnames
+show create table test with cache;
+----
+table_name  create_statement
+test        CREATE TABLE test (
+            a INT NOT NULL,
+            name STRING NULL,
+            CONSTRAINT "primary" PRIMARY KEY (a ASC),
+            INDEX a_idx (a ASC) LOCATE IN ("TJ"),
+            FAMILY "primary" (a, name)
+)
+
+statement ok
+drop table test;
+
+statement error relation "test" does not exist
+show create table test;
+
+statement error relation "test" does not exist
+show create table test with cache;
+
+#---------------------------------------table with multiple index, located on table------------------------------------------
+
+statement ok
+create table test (a int primary key,
+                   name string,
+                   dept string,
+                   score int,
+                   index idx1 (a),
+                   index idx2 (score,dept)
+) LOCATE IN ("TJ")
+
+query TT colnames
+show create table test;
+----
+table_name  create_statement
+test              CREATE TABLE test (
+                  a INT NOT NULL,
+                  name STRING NULL,
+                  dept STRING NULL,
+                  score INT NULL,
+                  CONSTRAINT "primary" PRIMARY KEY (a ASC),
+                  INDEX idx1 (a ASC),
+                  INDEX idx2 (score ASC, dept ASC),
+                  FAMILY "primary" (a, name, dept, score)
+) LOCATE IN ("TJ")
+
+query TT colnames
+show create table test with cache;
+----
+table_name  create_statement
+test              CREATE TABLE test (
+                  a INT NOT NULL,
+                  name STRING NULL,
+                  dept STRING NULL,
+                  score INT NULL,
+                  CONSTRAINT "primary" PRIMARY KEY (a ASC) LOCATE IN ("TJ"),
+                  INDEX idx1 (a ASC) LOCATE IN ("TJ"),
+                  INDEX idx2 (score ASC, dept ASC) LOCATE IN ("TJ"),
+                  FAMILY "primary" (a, name, dept, score)
+) LOCATE IN ("TJ")
+
+statement ok
+drop table test;
+
+statement error relation "test" does not exist
+show create table test;
+
+statement error relation "test" does not exist
+show create table test with cache;
+
+#-------------------------------------table with multiple index, located on primary key------------------------------------------
+
+statement ok
+create table test (a int ,
+                   name string,
+                   dept string,
+                   score int,
+                   index idx1 (a),
+                   index idx2 (score,dept),
+                   primary key(a) locate in ("TJ")
+)
+
+query TT colnames
+show create table test;
+----
+table_name  create_statement
+test        CREATE TABLE test (
+            a INT NOT NULL,
+            name STRING NULL,
+            dept STRING NULL,
+            score INT NULL,
+            CONSTRAINT "primary" PRIMARY KEY (a ASC) LOCATE IN ("TJ"),
+            INDEX idx1 (a ASC),
+            INDEX idx2 (score ASC, dept ASC),
+            FAMILY "primary" (a, name, dept, score)
+)
+
+query TT colnames
+show create table test;
+----
+table_name  create_statement
+test        CREATE TABLE test (
+            a INT NOT NULL,
+            name STRING NULL,
+            dept STRING NULL,
+            score INT NULL,
+            CONSTRAINT "primary" PRIMARY KEY (a ASC) LOCATE IN ("TJ"),
+            INDEX idx1 (a ASC),
+            INDEX idx2 (score ASC, dept ASC),
+            FAMILY "primary" (a, name, dept, score)
+)
+
+statement ok
+drop table test;
+
+statement error relation "test" does not exist
+show create table test;
+
+statement error relation "test" does not exist
+show create table test with cache;
+
+#---------------------------------------table with multiple index, located on index------------------------------------------
+
+statement ok
+create table test (a int primary key,
+                   name string,
+                   dept string,
+                   score int,
+                   index idx1 (a) locate in ("TJ"),
+                   index idx2 (score,dept) locate in ("CHINA")
+)
+
+query TT colnames
+show create table test;
+----
+table_name  create_statement
+test              CREATE TABLE test (
+                  a INT NOT NULL,
+                  name STRING NULL,
+                  dept STRING NULL,
+                  score INT NULL,
+                  CONSTRAINT "primary" PRIMARY KEY (a ASC),
+                  INDEX idx1 (a ASC) LOCATE IN ("TJ"),
+                  INDEX idx2 (score ASC, dept ASC) LOCATE IN ("CHINA"),
+                  FAMILY "primary" (a, name, dept, score)
+)
+
+query TT colnames
+show create table test with cache;
+----
+table_name  create_statement
+test              CREATE TABLE test (
+                  a INT NOT NULL,
+                  name STRING NULL,
+                  dept STRING NULL,
+                  score INT NULL,
+                  CONSTRAINT "primary" PRIMARY KEY (a ASC),
+                  INDEX idx1 (a ASC) LOCATE IN ("TJ"),
+                  INDEX idx2 (score ASC, dept ASC) LOCATE IN ("CHINA"),
+                  FAMILY "primary" (a, name, dept, score)
+)
+
+statement ok
+drop table test;
+
+statement error relation "test" does not exist
+show create table test;
+
+statement error relation "test" does not exist
+show create table test with cache;
+
+#--------------------------------------table with a index partition, located on table------------------------------------------
+
+statement ok
+create table test (a int primary key,
+                   b int,
+                   name string,
+                   index idx1 (a) partition by list (a) (partition p1 values in(13))
+) locate in ("TJ")
+
+query TT colnames
+show create table test;
+----
+table_name  create_statement
+test              CREATE TABLE test (
+                  a INT NOT NULL,
+                  b INT NULL,
+                  name STRING NULL,
+                  CONSTRAINT "primary" PRIMARY KEY (a ASC),
+                  INDEX idx1 (a ASC) PARTITION BY LIST (a) (
+                    PARTITION p1 VALUES IN ((13))
+                  ),
+                  FAMILY "primary" (a, b, name)
+) LOCATE IN ("TJ")
+
+query TT colnames
+show create table test;
+----
+table_name  create_statement
+test              CREATE TABLE test (
+                  a INT NOT NULL,
+                  b INT NULL,
+                  name STRING NULL,
+                  CONSTRAINT "primary" PRIMARY KEY (a ASC),
+                  INDEX idx1 (a ASC) PARTITION BY LIST (a) (
+                    PARTITION p1 VALUES IN ((13))
+                  ),
+                  FAMILY "primary" (a, b, name)
+) LOCATE IN ("TJ")
+
+statement ok
+drop table test;
+
+statement error relation "test" does not exist
+show create table test;
+
+statement error relation "test" does not exist
+show create table test with cache;
+
+#----------------------------------table with a index partition, located on index------------------------------------------
+
+statement ok
+create table test (a int primary key,
+                   b int,
+                   name string,
+                   index idx1 (a) partition by list (a) (partition p1 values in(13)) locate in ("TJ")
+)
+
+query TT colnames
+show create table test;
+----
+table_name  create_statement
+test              CREATE TABLE test (
+                  a INT NOT NULL,
+                  b INT NULL,
+                  name STRING NULL,
+                  CONSTRAINT "primary" PRIMARY KEY (a ASC),
+                  INDEX idx1 (a ASC) PARTITION BY LIST (a) (
+                    PARTITION p1 VALUES IN ((13))
+                  ) LOCATE IN ("TJ"),
+                  FAMILY "primary" (a, b, name)
+)
+
+query TT colnames
+show create table test;
+----
+table_name  create_statement
+test              CREATE TABLE test (
+                  a INT NOT NULL,
+                  b INT NULL,
+                  name STRING NULL,
+                  CONSTRAINT "primary" PRIMARY KEY (a ASC),
+                  INDEX idx1 (a ASC) PARTITION BY LIST (a) (
+                    PARTITION p1 VALUES IN ((13))
+                  ) LOCATE IN ("TJ"),
+                  FAMILY "primary" (a, b, name)
+)
+
+statement ok
+drop table test;
+
+statement error relation "test" does not exist
+show create table test;
+
+statement error relation "test" does not exist
+show create table test with cache;
+
+#--------------------------------------table with a index partition, located on primary key------------------------------------------
+
+statement ok
+create table test (a int,
+                   b int,
+                   name string,
+                   index idx1 (a) partition by list (a) (partition p1 values in(13)),
+                   primary key(a) locate in ("TJ")
+)
+
+query TT colnames
+show create table test;
+----
+table_name  create_statement
+test              CREATE TABLE test (
+                  a INT NOT NULL,
+                  b INT NULL,
+                  name STRING NULL,
+                  CONSTRAINT "primary" PRIMARY KEY (a ASC) LOCATE IN ("TJ"),
+                  INDEX idx1 (a ASC) PARTITION BY LIST (a) (
+                    PARTITION p1 VALUES IN ((13))
+                  ),
+                  FAMILY "primary" (a, b, name)
+)
+
+query TT colnames
+show create table test;
+----
+table_name  create_statement
+test              CREATE TABLE test (
+                  a INT NOT NULL,
+                  b INT NULL,
+                  name STRING NULL,
+                  CONSTRAINT "primary" PRIMARY KEY (a ASC) LOCATE IN ("TJ"),
+                  INDEX idx1 (a ASC) PARTITION BY LIST (a) (
+                    PARTITION p1 VALUES IN ((13))
+                  ),
+                  FAMILY "primary" (a, b, name)
+)
+
+statement ok
+drop table test;
+
+statement error relation "test" does not exist
+show create table test;
+
+statement error relation "test" does not exist
+show create table test with cache;
+
+#--------------------------------------table with a index partition, located on partition------------------------------------------
+
+statement ok
+create table test (a int primary key,
+                   b int,
+                   name string,
+                   index idx1 (a) partition by list (a) (partition p1 values in(13)  locate in ("TJ"))
+)
+
+query TT colnames
+show create table test;
+----
+table_name  create_statement
+test              CREATE TABLE test (
+                  a INT NOT NULL,
+                  b INT NULL,
+                  name STRING NULL,
+                  CONSTRAINT "primary" PRIMARY KEY (a ASC),
+                  INDEX idx1 (a ASC) PARTITION BY LIST (a) (
+                    PARTITION p1 VALUES IN ((13)) LOCATE IN ("TJ")
+                  ),
+                  FAMILY "primary" (a, b, name)
+)
+
+query TT colnames
+show create table test;
+----
+table_name  create_statement
+test              CREATE TABLE test (
+                  a INT NOT NULL,
+                  b INT NULL,
+                  name STRING NULL,
+                  CONSTRAINT "primary" PRIMARY KEY (a ASC),
+                  INDEX idx1 (a ASC) PARTITION BY LIST (a) (
+                    PARTITION p1 VALUES IN ((13)) LOCATE IN ("TJ")
+                  ),
+                  FAMILY "primary" (a, b, name)
+)
+
+statement ok
+drop table test;
+
+statement error relation "test" does not exist
+show create table test;
+
+statement error relation "test" does not exist
+show create table test with cache;
+
+#--------------------------------table with multiple index partition, located on table------------------------------------------
+
+statement ok
+create table test (a int,
+                   name string,
+                   primary key (a, name),
+                   index idx1 (a, name) partition by list (a, name) (
+                                          partition p1 values in ((13, 'zh')),
+                                          partition p2 values in ((19, 'lz')),
+                                          partition p3 values in ((25, 'cms'))
+                                        )
+) locate in ("TJ")
+
+query TT colnames
+show create table test;
+----
+table_name  create_statement
+test              CREATE TABLE test (
+                  a INT NOT NULL,
+                  name STRING NOT NULL,
+                  CONSTRAINT "primary" PRIMARY KEY (a ASC, name ASC),
+                  INDEX idx1 (a ASC, name ASC) PARTITION BY LIST (a, name) (
+                    PARTITION p1 VALUES IN ((13, 'zh')),
+                    PARTITION p2 VALUES IN ((19, 'lz')),
+                    PARTITION p3 VALUES IN ((25, 'cms'))
+                  ),
+                  FAMILY "primary" (a, name)
+) LOCATE IN ("TJ")
+
+
+query TT colnames
+show create table test with cache;
+----
+table_name  create_statement
+test              CREATE TABLE test (
+                  a INT NOT NULL,
+                  name STRING NOT NULL,
+                  CONSTRAINT "primary" PRIMARY KEY (a ASC, name ASC) LOCATE IN ("TJ"),
+                  INDEX idx1 (a ASC, name ASC) PARTITION BY LIST (a, name) (
+                    PARTITION p1 VALUES IN ((13, 'zh')) LOCATE IN ("TJ"),
+                    PARTITION p2 VALUES IN ((19, 'lz')) LOCATE IN ("TJ"),
+                    PARTITION p3 VALUES IN ((25, 'cms')) LOCATE IN ("TJ")
+                  ) LOCATE IN ("TJ"),
+                  FAMILY "primary" (a, name)
+) LOCATE IN ("TJ")
+
+statement ok
+drop table test;
+
+statement error relation "test" does not exist
+show create table test;
+
+statement error relation "test" does not exist
+show create table test with cache;
+
+#--------------------------table with multiple index partition, located on primary key------------------------------------------
+
+statement ok
+create table test (a int,
+                   name string,
+                   primary key(a, name) locate in ("TJ"),
+                   index idx1 (a, name) partition by list (a, name) (
+                                          partition p1 values in ((13, 'zh')),
+                                          partition p2 values in ((19, 'lz')),
+                                          partition p3 values in ((25, 'cms'))
+                                        )
+)
+
+query TT colnames
+show create table test;
+----
+table_name  create_statement
+test              CREATE TABLE test (
+                  a INT NOT NULL,
+                  name STRING NOT NULL,
+                  CONSTRAINT "primary" PRIMARY KEY (a ASC, name ASC) LOCATE IN ("TJ"),
+                  INDEX idx1 (a ASC, name ASC) PARTITION BY LIST (a, name) (
+                    PARTITION p1 VALUES IN ((13, 'zh')),
+                    PARTITION p2 VALUES IN ((19, 'lz')),
+                    PARTITION p3 VALUES IN ((25, 'cms'))
+                  ),
+                  FAMILY "primary" (a, name)
+)
+
+query TT colnames
+show create table test with cache;
+----
+table_name  create_statement
+test              CREATE TABLE test (
+                  a INT NOT NULL,
+                  name STRING NOT NULL,
+                  CONSTRAINT "primary" PRIMARY KEY (a ASC, name ASC) LOCATE IN ("TJ"),
+                  INDEX idx1 (a ASC, name ASC) PARTITION BY LIST (a, name) (
+                    PARTITION p1 VALUES IN ((13, 'zh')),
+                    PARTITION p2 VALUES IN ((19, 'lz')),
+                    PARTITION p3 VALUES IN ((25, 'cms'))
+                  ),
+                  FAMILY "primary" (a, name)
+)
+
+statement ok
+drop table test;
+
+statement error relation "test" does not exist
+show create table test;
+
+statement error relation "test" does not exist
+show create table test with cache;
+
+#--------------------------table with multiple index partition, located on index------------------------------------------
+
+statement ok
+create table test (a int,
+                   name string,
+                   primary key(a, name),
+                   index idx1 (a, name) partition by list (a, name) (
+                                          partition p1 values in ((13, 'zh')),
+                                          partition p2 values in ((19, 'lz')),
+                                          partition p3 values in ((25, 'cms'))
+                                        ) locate in ("TJ")
+)
+
+query TT colnames
+show create table test;
+----
+table_name  create_statement
+test        CREATE TABLE test (
+            a INT NOT NULL,
+            name STRING NOT NULL,
+            CONSTRAINT "primary" PRIMARY KEY (a ASC, name ASC),
+            INDEX idx1 (a ASC, name ASC) PARTITION BY LIST (a, name) (
+              PARTITION p1 VALUES IN ((13, 'zh')),
+              PARTITION p2 VALUES IN ((19, 'lz')),
+              PARTITION p3 VALUES IN ((25, 'cms'))
+            ) LOCATE IN ("TJ"),
+            FAMILY "primary" (a, name)
+)
+
+query TT colnames
+show create table test with cache;
+----
+table_name  create_statement
+test        CREATE TABLE test (
+            a INT NOT NULL,
+            name STRING NOT NULL,
+            CONSTRAINT "primary" PRIMARY KEY (a ASC, name ASC),
+            INDEX idx1 (a ASC, name ASC) PARTITION BY LIST (a, name) (
+              PARTITION p1 VALUES IN ((13, 'zh')) LOCATE IN ("TJ"),
+              PARTITION p2 VALUES IN ((19, 'lz')) LOCATE IN ("TJ"),
+              PARTITION p3 VALUES IN ((25, 'cms')) LOCATE IN ("TJ")
+            ) LOCATE IN ("TJ"),
+            FAMILY "primary" (a, name)
+)
+
+statement ok
+drop table test;
+
+statement error relation "test" does not exist
+show create table test;
+
+statement error relation "test" does not exist
+show create table test with cache;
+
+#--------------------------table with multiple index partition, located on partition------------------------------------------
+
+statement ok
+create table test (a int,
+                   name string,
+                   primary key (a, name),
+                   index idx1 (a, name) partition by list (a, name) (
+                                          partition p1 values in ((13, 'zh')) locate in ("TJ"),
+                                          partition p2 values in ((19, 'lz')) locate in ("CHINA"),
+                                          partition p3 values in ((25, 'cms')) locate in ("inspur")
+                                        )
+)
+
+query TT colnames
+show create table test;
+----
+table_name  create_statement
+test        CREATE TABLE test (
+            a INT NOT NULL,
+            name STRING NOT NULL,
+            CONSTRAINT "primary" PRIMARY KEY (a ASC, name ASC),
+            INDEX idx1 (a ASC, name ASC) PARTITION BY LIST (a, name) (
+              PARTITION p1 VALUES IN ((13, 'zh')) LOCATE IN ("TJ"),
+              PARTITION p2 VALUES IN ((19, 'lz')) LOCATE IN ("CHINA"),
+              PARTITION p3 VALUES IN ((25, 'cms')) LOCATE IN (inspur)
+            ),
+            FAMILY "primary" (a, name)
+)
+
+query TT colnames
+show create table test with cache;
+----
+table_name  create_statement
+test        CREATE TABLE test (
+            a INT NOT NULL,
+            name STRING NOT NULL,
+            CONSTRAINT "primary" PRIMARY KEY (a ASC, name ASC),
+            INDEX idx1 (a ASC, name ASC) PARTITION BY LIST (a, name) (
+              PARTITION p1 VALUES IN ((13, 'zh')) LOCATE IN ("TJ"),
+              PARTITION p2 VALUES IN ((19, 'lz')) LOCATE IN ("CHINA"),
+              PARTITION p3 VALUES IN ((25, 'cms')) LOCATE IN (inspur)
+            ),
+            FAMILY "primary" (a, name)
+)
+
+statement ok
+drop table test;
+
+statement error relation "test" does not exist
+show create table test;
+
+statement error relation "test" does not exist
+show create table test with cache;
+
+#--------------------------table with one partition, located on table------------------------------------------
+
+statement ok
+create table test (a int,
+                   name string,
+                   primary key(a)
+) partition by list (a) (
+                         partition p1 values in ((13))
+                        ) locate in ("TJ")
+
+query TT colnames
+show create table test
+----
+table_name  create_statement
+test        CREATE TABLE test (
+            a INT NOT NULL,
+            name STRING NULL,
+            CONSTRAINT "primary" PRIMARY KEY (a ASC),
+            FAMILY "primary" (a, name)
+) PARTITION BY LIST (a) (
+   PARTITION p1 VALUES IN ((13))
+) LOCATE IN ("TJ")
+
+query TT colnames
+show create table test with cache
+----
+table_name  create_statement
+test        CREATE TABLE test (
+            a INT NOT NULL,
+            name STRING NULL,
+            CONSTRAINT "primary" PRIMARY KEY (a ASC) LOCATE IN ("TJ"),
+            FAMILY "primary" (a, name)
+) PARTITION BY LIST (a) (
+   PARTITION p1 VALUES IN ((13)) LOCATE IN ("TJ")
+) LOCATE IN ("TJ")
+
+statement ok
+drop table test;
+
+statement error relation "test" does not exist
+show create table test;
+
+statement error relation "test" does not exist
+show create table test with cache;
+
+#--------------------------table with one partition, located on primary key------------------------------------------
+
+statement ok
+create table test (a int,
+                   name string,
+                   primary key(a) locate in ("TJ")
+) partition by list (a) (
+                         partition p1 values in ((13))
+                        )
+
+query TT colnames
+show create table test
+----
+table_name  create_statement
+test        CREATE TABLE test (
+            a INT NOT NULL,
+            name STRING NULL,
+            CONSTRAINT "primary" PRIMARY KEY (a ASC) LOCATE IN ("TJ"),
+            FAMILY "primary" (a, name)
+) PARTITION BY LIST (a) (
+   PARTITION p1 VALUES IN ((13))
+)
+
+query TT colnames
+show create table test with cache
+----
+table_name  create_statement
+test        CREATE TABLE test (
+            a INT NOT NULL,
+            name STRING NULL,
+            CONSTRAINT "primary" PRIMARY KEY (a ASC) LOCATE IN ("TJ"),
+            FAMILY "primary" (a, name)
+) PARTITION BY LIST (a) (
+   PARTITION p1 VALUES IN ((13)) LOCATE IN ("TJ")
+)
+
+statement ok
+drop table test;
+
+statement error relation "test" does not exist
+show create table test;
+
+statement error relation "test" does not exist
+show create table test with cache;
+
+#--------------------------table with one partition, located on partition------------------------------------------
+
+statement ok
+create table test (a int,
+                   name string,
+                   primary key(a)
+) partition by list (a) (
+                         partition p1 values in ((13)) locate in ("TJ")
+                        )
+
+query TT colnames
+show create table test
+----
+table_name  create_statement
+test        CREATE TABLE test (
+            a INT NOT NULL,
+            name STRING NULL,
+            CONSTRAINT "primary" PRIMARY KEY (a ASC),
+            FAMILY "primary" (a, name)
+) PARTITION BY LIST (a) (
+   PARTITION p1 VALUES IN ((13)) LOCATE IN ("TJ")
+)
+
+query TT colnames
+show create table test with cache
+----
+table_name  create_statement
+test        CREATE TABLE test (
+            a INT NOT NULL,
+            name STRING NULL,
+            CONSTRAINT "primary" PRIMARY KEY (a ASC),
+            FAMILY "primary" (a, name)
+) PARTITION BY LIST (a) (
+   PARTITION p1 VALUES IN ((13)) LOCATE IN ("TJ")
+)
+
+statement ok
+drop table test;
+
+statement error relation "test" does not exist
+show create table test;
+
+statement error relation "test" does not exist
+show create table test with cache;
+
+#-----------------------table with one partition which has subpartition, located on table---------------------------
+
+statement ok
+create table test (a int,
+                   name string,
+                   primary key(a, name)
+) partition by list (a) (
+        partition p1 values in ((13)) partition by list(name) (
+                partition p11 values in(('zhangsan')) ,
+                partition p12 values in(('lisi'))
+        )
+) locate in ("CHINA")
+
+query TT colnames
+show create table test;
+----
+table_name  create_statement
+test        CREATE TABLE test (
+            a INT NOT NULL,
+            name STRING NOT NULL,
+            CONSTRAINT "primary" PRIMARY KEY (a ASC, name ASC),
+            FAMILY "primary" (a, name)
+) PARTITION BY LIST (a) (
+   PARTITION p1 VALUES IN ((13)) PARTITION BY LIST (name) (
+     PARTITION p11 VALUES IN (('zhangsan')),
+     PARTITION p12 VALUES IN (('lisi'))
+   )
+) LOCATE IN ("CHINA")
+
+query TT colnames
+show create table test with cache;
+----
+table_name  create_statement
+test        CREATE TABLE test (
+            a INT NOT NULL,
+            name STRING NOT NULL,
+            CONSTRAINT "primary" PRIMARY KEY (a ASC, name ASC) LOCATE IN ("CHINA"),
+            FAMILY "primary" (a, name)
+) PARTITION BY LIST (a) (
+   PARTITION p1 VALUES IN ((13)) PARTITION BY LIST (name) (
+     PARTITION p11 VALUES IN (('zhangsan')) LOCATE IN ("CHINA"),
+     PARTITION p12 VALUES IN (('lisi')) LOCATE IN ("CHINA")
+   ) LOCATE IN ("CHINA")
+) LOCATE IN ("CHINA")
+
+statement ok
+drop table test;
+
+statement error relation "test" does not exist
+show create table test;
+
+statement error relation "test" does not exist
+show create table test with cache;
+
+#-----------------------table with one partition which has subpartition, located on primary key---------------------------
+
+statement ok
+create table test (a int,
+                   name string,
+                   primary key(a, name) locate in ("CHINA")
+) partition by list (a) (
+        partition p1 values in ((13)) partition by list(name) (
+                partition p11 values in(('zhangsan')) ,
+                partition p12 values in(('lisi'))
+        )
+)
+
+query TT colnames
+show create table test;
+----
+table_name  create_statement
+test        CREATE TABLE test (
+            a INT NOT NULL,
+            name STRING NOT NULL,
+            CONSTRAINT "primary" PRIMARY KEY (a ASC, name ASC) LOCATE IN ("CHINA"),
+            FAMILY "primary" (a, name)
+) PARTITION BY LIST (a) (
+   PARTITION p1 VALUES IN ((13)) PARTITION BY LIST (name) (
+     PARTITION p11 VALUES IN (('zhangsan')),
+     PARTITION p12 VALUES IN (('lisi'))
+   )
+)
+
+query TT colnames
+show create table test with cache;
+----
+table_name  create_statement
+test        CREATE TABLE test (
+            a INT NOT NULL,
+            name STRING NOT NULL,
+            CONSTRAINT "primary" PRIMARY KEY (a ASC, name ASC) LOCATE IN ("CHINA"),
+            FAMILY "primary" (a, name)
+) PARTITION BY LIST (a) (
+   PARTITION p1 VALUES IN ((13)) PARTITION BY LIST (name) (
+     PARTITION p11 VALUES IN (('zhangsan')) LOCATE IN ("CHINA"),
+     PARTITION p12 VALUES IN (('lisi')) LOCATE IN ("CHINA")
+   ) LOCATE IN ("CHINA")
+)
+
+statement ok
+drop table test;
+
+statement error relation "test" does not exist
+show create table test;
+
+statement error relation "test" does not exist
+show create table test with cache;
+
+#--------------table with one partition which has subpartition, located on partition and subpartition---------------------------
+
+statement ok
+create table test (a int,
+                   name string,
+                   primary key(a, name)
+) partition by list (a) (
+        partition p1 values in ((13)) partition by list(name) (
+                partition p11 values in(('zhangsan')) locate in ("inspur"),
+                partition p12 values in(('lisi')) locate in ("CHINA")
+        )locate in ("TJ") 
+)
+
+query TT colnames
+show create table test;
+----
+table_name  create_statement
+test        CREATE TABLE test (
+            a INT NOT NULL,
+            name STRING NOT NULL,
+            CONSTRAINT "primary" PRIMARY KEY (a ASC, name ASC),
+            FAMILY "primary" (a, name)
+) PARTITION BY LIST (a) (
+   PARTITION p1 VALUES IN ((13)) PARTITION BY LIST (name) (
+     PARTITION p11 VALUES IN (('zhangsan')) LOCATE IN (inspur),
+     PARTITION p12 VALUES IN (('lisi')) LOCATE IN ("CHINA")
+   ) LOCATE IN ("TJ")
+)
+
+query TT colnames
+show create table test with cache;
+----
+table_name  create_statement
+test        CREATE TABLE test (
+            a INT NOT NULL,
+            name STRING NOT NULL,
+            CONSTRAINT "primary" PRIMARY KEY (a ASC, name ASC),
+            FAMILY "primary" (a, name)
+) PARTITION BY LIST (a) (
+   PARTITION p1 VALUES IN ((13)) PARTITION BY LIST (name) (
+     PARTITION p11 VALUES IN (('zhangsan')) LOCATE IN (inspur),
+     PARTITION p12 VALUES IN (('lisi')) LOCATE IN ("CHINA")
+   ) LOCATE IN ("TJ")
+)
+
+statement ok
+drop table test;
+
+statement error relation "test" does not exist
+show create table test;
+
+statement error relation "test" does not exist
+show create table test with cache;
+
+#------------------table with multiple partitions some of which have subpartition, located on table---------------------------
+
+statement ok
+create table test (a int,
+                   name string,
+                   primary key(a, name)
+) partition by list (a) (
+        partition p1 values in ((13)) partition by list(name) (
+                partition p11 values in(('zhangsan')) ,
+                partition p12 values in(('lisi'))
+        ),
+        partition p2 values in ((14))
+) locate in ("CHINA")
+
+query TT colnames
+show create table test;
+----
+table_name  create_statement
+test        CREATE TABLE test (
+            a INT NOT NULL,
+            name STRING NOT NULL,
+            CONSTRAINT "primary" PRIMARY KEY (a ASC, name ASC),
+            FAMILY "primary" (a, name)
+) PARTITION BY LIST (a) (
+   PARTITION p1 VALUES IN ((13)) PARTITION BY LIST (name) (
+     PARTITION p11 VALUES IN (('zhangsan')),
+     PARTITION p12 VALUES IN (('lisi'))
+   ),
+   PARTITION p2 VALUES IN ((14))
+) LOCATE IN ("CHINA")
+
+query TT colnames
+show create table test with cache;
+----
+table_name  create_statement
+test        CREATE TABLE test (
+            a INT NOT NULL,
+            name STRING NOT NULL,
+            CONSTRAINT "primary" PRIMARY KEY (a ASC, name ASC) LOCATE IN ("CHINA"),
+            FAMILY "primary" (a, name)
+) PARTITION BY LIST (a) (
+   PARTITION p1 VALUES IN ((13)) PARTITION BY LIST (name) (
+     PARTITION p11 VALUES IN (('zhangsan')) LOCATE IN ("CHINA"),
+     PARTITION p12 VALUES IN (('lisi')) LOCATE IN ("CHINA")
+   ) LOCATE IN ("CHINA"),
+   PARTITION p2 VALUES IN ((14)) LOCATE IN ("CHINA")
+) LOCATE IN ("CHINA")
+
+statement ok
+drop table test;
+
+statement error relation "test" does not exist
+show create table test;
+
+statement error relation "test" does not exist
+show create table test with cache;
+
+#----------------table with multiple partitions some of which have subpartition, located on primary key---------------------------
+
+statement ok
+create table test (a int,
+                   name string,
+                   primary key(a, name) locate in ("CHINA")
+) partition by list (a) (
+        partition p1 values in ((13)) partition by list(name) (
+                partition p11 values in(('zhangsan')) ,
+                partition p12 values in(('lisi'))
+        ),
+        partition p2 values in ((14))
+)
+
+query TT colnames
+show create table test;
+----
+table_name  create_statement
+test        CREATE TABLE test (
+            a INT NOT NULL,
+            name STRING NOT NULL,
+            CONSTRAINT "primary" PRIMARY KEY (a ASC, name ASC) LOCATE IN ("CHINA"),
+            FAMILY "primary" (a, name)
+) PARTITION BY LIST (a) (
+   PARTITION p1 VALUES IN ((13)) PARTITION BY LIST (name) (
+     PARTITION p11 VALUES IN (('zhangsan')),
+     PARTITION p12 VALUES IN (('lisi'))
+   ),
+   PARTITION p2 VALUES IN ((14))
+)
+
+query TT colnames
+show create table test with cache;
+----
+table_name  create_statement
+test        CREATE TABLE test (
+            a INT NOT NULL,
+            name STRING NOT NULL,
+            CONSTRAINT "primary" PRIMARY KEY (a ASC, name ASC) LOCATE IN ("CHINA"),
+            FAMILY "primary" (a, name)
+) PARTITION BY LIST (a) (
+   PARTITION p1 VALUES IN ((13)) PARTITION BY LIST (name) (
+     PARTITION p11 VALUES IN (('zhangsan')) LOCATE IN ("CHINA"),
+     PARTITION p12 VALUES IN (('lisi')) LOCATE IN ("CHINA")
+   ) LOCATE IN ("CHINA"),
+   PARTITION p2 VALUES IN ((14)) LOCATE IN ("CHINA")
+)
+
+statement ok
+drop table test;
+
+statement error relation "test" does not exist
+show create table test;
+
+statement error relation "test" does not exist
+show create table test with cache;
+
+#-------table with multiple partitions some of which have subpartition, located on partition and subpartition---------------------------
+
+statement ok
+create table test (a int,
+                   name string,
+                   primary key(a, name)
+) partition by list (a) (
+        partition p1 values in ((13)) partition by list(name) (
+                partition p11 values in(('zhangsan')) locate in ("inspur"),
+                partition p12 values in(('lisi')) locate in ("CHINA")
+        )locate in ("TJ") ,
+        partition p2 values in ((14)) locate in ("TEST")
+)
+
+query TT colnames
+show create table test;
+----
+table_name  create_statement
+test        CREATE TABLE test (
+            a INT NOT NULL,
+            name STRING NOT NULL,
+            CONSTRAINT "primary" PRIMARY KEY (a ASC, name ASC),
+            FAMILY "primary" (a, name)
+) PARTITION BY LIST (a) (
+   PARTITION p1 VALUES IN ((13)) PARTITION BY LIST (name) (
+     PARTITION p11 VALUES IN (('zhangsan')) LOCATE IN (inspur),
+     PARTITION p12 VALUES IN (('lisi')) LOCATE IN ("CHINA")
+   ) LOCATE IN ("TJ"),
+   PARTITION p2 VALUES IN ((14)) LOCATE IN ("TEST")
+)
+
+query TT colnames
+show create table test with cache;
+----
+table_name  create_statement
+test        CREATE TABLE test (
+            a INT NOT NULL,
+            name STRING NOT NULL,
+            CONSTRAINT "primary" PRIMARY KEY (a ASC, name ASC),
+            FAMILY "primary" (a, name)
+) PARTITION BY LIST (a) (
+   PARTITION p1 VALUES IN ((13)) PARTITION BY LIST (name) (
+     PARTITION p11 VALUES IN (('zhangsan')) LOCATE IN (inspur),
+     PARTITION p12 VALUES IN (('lisi')) LOCATE IN ("CHINA")
+   ) LOCATE IN ("TJ"),
+   PARTITION p2 VALUES IN ((14)) LOCATE IN ("TEST")
+)
+
+statement ok
+drop table test;
+
+statement error relation "test" does not exist
+show create table test;
+
+statement error relation "test" does not exist
+show create table test with cache;

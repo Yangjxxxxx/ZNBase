@@ -1,0 +1,3 @@
+create_user_stmt ::=
+	'CREATE' 'USER' name opt_user_options
+	| 'CREATE' 'USER' 'IF' 'NOT' 'EXISTS' name opt_user_options

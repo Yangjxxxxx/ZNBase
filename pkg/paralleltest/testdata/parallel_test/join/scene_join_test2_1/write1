@@ -1,0 +1,11 @@
+statement ok
+BEGIN;
+
+statement ok
+INSERT INTO B VALUES('u', DATE '2019-8-14', 3.3, true);
+
+statement ok
+SELECT pg_sleep(5);
+
+statement ok
+COMMIT;

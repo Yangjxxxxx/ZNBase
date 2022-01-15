@@ -1,0 +1,264 @@
+# LogicTest: local local-opt
+
+statement ok
+CREATE TABLE test (
+         a INT8 NOT NULL,
+         b INT8 NULL,
+         c INT8 NULL,
+         CONSTRAINT "primary" PRIMARY KEY (a ASC, b, c)
+) PARTITION BY RANGE (a, b, c) (
+         PARTITION p1 VALUES FROM (1, 3, 1) TO (1, 3, maxvalue),
+         PARTITION p2 VALUES FROM (1, 3, maxvalue) TO (1, 5, minvalue),
+         PARTITION p3 VALUES FROM (3, 3, 1) TO (maxvalue, maxvalue, maxvalue)
+);
+
+statement ok
+insert into test values(1, 1, 1), (2, 2, 2), (3, 3, 3), (4, 4, 4);
+
+query III
+SELECT * FROM [partition primary default] of test;
+----
+1  1  1
+2  2  2
+
+statement ok
+CREATE TABLE test1 (
+         a INT8 NOT NULL,
+         b INT8 NULL,
+         c INT8 NULL,
+         CONSTRAINT "test1" PRIMARY KEY (a ASC, b, c)
+) PARTITION BY LIST (a) (
+    PARTITION p1 VALUES IN (1),
+    PARTITION p2 VALUES IN (2) PARTITION BY RANGE (b, c) (
+        PARTITION p2_1 VALUES FROM (1, 3) TO (3, 3),
+        PARTITION p2_2 VALUES FROM (minvalue, minvalue) TO (1, 3)
+    ),
+    PARTITION p3 VALUES IN (default) PARTITION BY RANGE (b, c) (
+            PARTITION p3_1 VALUES FROM (1, 3) TO (3, 3),
+            PARTITION p3_2 VALUES FROM (minvalue, minvalue) TO (1, 3)
+    )
+);
+
+statement ok
+INSERT INTO test1 VALUES (1, 1, 1), (2, 2, 2) ,(2, 3, 3), (4, 4, 2), (2, 5, 5);
+
+query III
+SELECT * FROM [partition p2_1] of test1;
+----
+2  2  2
+
+query III
+SELECT * FROM [partition p2 default] of test1;
+----
+2  3  3
+2  5  5
+
+statement ok
+CREATE TABLE test2 (
+         a INT8 NOT NULL,
+         b INT8 NULL,
+         c INT8 NULL,
+         d INT8 NULL,
+         INDEX (a ASC, b, c, d) PARTITION BY LIST (a) (
+            PARTITION p1 VALUES IN (1),
+            PARTITION p2 VALUES IN (2) PARTITION BY RANGE (b, c) (
+                PARTITION p2_1 VALUES FROM (1, 3) TO (3, 3),
+                PARTITION p2_2 VALUES FROM (minvalue, minvalue) TO (1, 3)
+            ),
+            PARTITION p3 VALUES IN (default) PARTITION BY RANGE (b, c, d) (
+                PARTITION p3_1 VALUES FROM (1, minvalue, minvalue) TO (3, 3, 3),
+                PARTITION p3_2 VALUES FROM (minvalue, minvalue, minvalue) TO (1, minvalue, minvalue)
+            )
+         )
+);
+
+statement ok
+INSERT INTO test2 VALUES (1, 1, 1, 1), (2, 2, 2, 2) ,(2, 3, 3, 3), (2, 5, 5, 5),
+(3, -1, NULL, 3), (3, 1, NULL, NULL), (3, NULL, NULL, NULL), (4, 5, 5, 5);
+
+query IIII
+SELECT * FROM [partition p2 default] of test2;
+----
+2  3  3  3
+2  5  5  5
+
+query IIII
+SELECT * FROM [partition p3] of test2;
+----
+3  NULL  NULL  NULL
+3  -1  NULL  3
+3  1  NULL  NULL
+4  5  5  5
+
+query IIII
+SELECT * FROM [partition p3 default] of test2;
+----
+4  5  5  5
+
+query IIII
+SELECT * FROM [partition p3_1] of test2;
+----
+3  1  NULL  NULL
+
+query IIII
+SELECT * FROM [partition p3_2] of test2;
+----
+3  NULL  NULL  NULL
+3  -1  NULL  3
+
+statement error partition p3_2 default does not exist
+SELECT * FROM [partition p3_2 default] of test2;
+
+statement ok
+CREATE TABLE test3 (
+         a INT8 NOT NULL,
+         b INT8 NULL,
+         c INT8 NULL,
+         d INT8 NULL,
+         e INT8 NULL,
+         f INT8 NULL,
+         INDEX (a ASC, b, c, d, e, f)
+PARTITION BY LIST (a, b, c) (
+    PARTITION p1 VALUES IN ((1, 1, 1), (4, 4, 2)),
+    PARTITION p2 VALUES IN ((2, 3, 4), (2, 2, 2)) PARTITION BY RANGE (d, e, f) (
+        PARTITION p2_1 VALUES FROM (1, minvalue, minvalue) TO (3, 3, 3),
+        PARTITION p2_2 VALUES FROM (minvalue, minvalue, minvalue) TO (1, minvalue, minvalue)
+    ),
+    PARTITION p3 VALUES IN ((default, default, default)) PARTITION BY RANGE (d, e, f) (
+        PARTITION p3_1 VALUES FROM (1, minvalue, minvalue) TO (3, 3, 3),
+        PARTITION p3_2 VALUES FROM (minvalue, minvalue, minvalue) TO (1, minvalue, minvalue)
+    )
+  )
+);
+
+statement ok
+INSERT INTO test3 VALUES (1, 1, 1, 1, 1, 1), (2, 2, 2, 1, 1, 1) ,(2, 3, 4, -1, NULL, 3), (4, 4, 2, -1, NULL, 3), (2, 5, 5, -1, NULL, 3),
+(2, 2, 2, NULL, NULL, NULL), (2, 3, 4, NULL, NULL, NULL), (2, 3, 4, 3, 3, 3);
+
+query IIIIII
+SELECT * FROM [partition test3_a_b_c_d_e_f_idx default] of test3;
+----
+2  5  5  -1  NULL  3
+
+query IIIIII
+SELECT * FROM [partition p2 default] of test3;
+----
+2  3  4  3  3  3
+
+query IIIIII
+SELECT * FROM [partition p2_2] of test3;
+----
+2  2  2  NULL  NULL  NULL
+2  3  4  NULL  NULL  NULL
+2  3  4  -1  NULL  3
+
+statement ok
+CREATE TABLE user1 (
+ id INT NOT NULL DEFAULT unique_rowid(),
+ name STRING NULL,
+ email STRING NULL,
+ city STRING NOT NULL,
+ last_login_date DATE NULL,
+ CONSTRAINT "primary" PRIMARY KEY (city ASC, id ASC),
+ FAMILY "primary" (id, name, email, city, last_login_date)
+) PARTITION BY LIST (city) (
+ PARTITION tianjin VALUES IN (('tianjin'), ('beijing')),
+ PARTITION jinan VALUES IN (('jinan'), ('qingdao')),
+ PARTITION shanghai VALUES IN (('shanghai'), ('hangzhou')),
+ PARTITION "default" VALUES IN ((DEFAULT))
+);
+
+query TII
+SELECT partition_name, table_rows, index_id FROM zbdb_internal.partition_views WHERE table_name = 'user1';
+----
+tianjin    0  1
+jinan      0  1
+shanghai   0  1
+"default"  0  1
+
+statement ok
+CREATE TABLE "bit" (
+ a BIT NULL DEFAULT '1',
+ b BIT(3) NULL,
+ c VARBIT NULL,
+ d VARBIT(3) NULL,
+ INDEX id (c, b, a ASC) PARTITION BY LIST (c) (
+  PARTITION id_1 VALUES IN ((DEFAULT)) PARTITION BY LIST (b) (
+    PARTITION id_1_1 VALUES IN ((DEFAULT)) PARTITION BY LIST (a) (
+        PARTITION id_1_1_1 VALUES IN ((DEFAULT))
+    )
+  )
+ ),
+ FAMILY "primary" (a, b, c, d, rowid)
+);
+
+statement ok
+INSERT INTO bit VALUES('1');
+
+query TII colnames
+SELECT partition_name, table_rows, index_id FROM zbdb_internal.partition_views where table_name = 'bit' order by table_rows ASC;
+----
+partition_name  table_rows  index_id
+id_1            1           2
+id_1_1          1           2
+id_1_1_1        1           2
+
+query TTTT
+select * from [partition id_1] of public."bit";
+----
+1  NULL  NULL  NULL
+
+query TTTT
+select * from [partition id_1 default] of public."bit";
+----
+
+
+query TTTT
+select * from [partition id_1_1] of public."bit";
+----
+1  NULL  NULL  NULL
+
+query TTTT
+select * from [partition id_1_1 default] of public."bit";
+----
+
+
+query TTTT
+select * from [partition id_1_1_1] of public."bit";
+----
+1  NULL  NULL  NULL
+
+query TTTT
+select * from public."bit";
+----
+1  NULL  NULL  NULL
+
+query TTTT
+select * from [partition id default] of "bit";
+----
+1  NULL  NULL  NULL
+
+statement ok
+create table te2(
+a INT not null,
+b INT not null,
+INDEX id(a)PARTITION BY LIST(a)(
+PARTITION p1 VALUES IN(1, 3, 5),
+PARTITION p2 VALUES IN(2, 4, 6))
+);
+
+statement ok
+alter table te2 add constraint pk primary key(a);
+
+statement ok
+drop table if exists tt1;
+create table tt1(a INT PRIMARY KEY, b INT);
+create index id on tt1(a);
+ALTER TABLE tt1 DROP CONSTRAINT "primary";
+
+query TTBITTBBTT colnames
+select * from [show indexes from tt1] where index_name='id';
+----
+ table_name  index_name  non_unique  seq_in_index  column_name  direction  storing  implicit  locality  partitioned
+  tt1          id             true          1        a            ASC         false    false    global    NO
+  tt1          id             true          2       rowid         ASC         false    true     global    NO

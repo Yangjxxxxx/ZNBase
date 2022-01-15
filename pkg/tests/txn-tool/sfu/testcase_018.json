@@ -1,0 +1,112 @@
+{
+    "初始化": [
+        {
+            "cmd": "DROP TABLE IF EXISTS t1 CASCADE;",
+            "type": "execute"
+        },
+        {
+            "cmd": "DROP TABLE IF EXISTS t2 CASCADE;",
+            "type": "execute"
+        },
+        {
+            "cmd": "CREATE TABLE t1(a INT primary key, b STRING);",
+            "type": "execute"
+        },
+        {
+            "cmd": "INSERT INTO t1 VALUES(1, 'a'),(2, 'b'),(3, 'c'), (4, 'd'),(5, 'e'),(6, 'f');",
+            "type": "execute"
+        },
+        {
+            "cmd": "CREATE TABLE t2(c1 INT, c2 STRING, index id(c1));",
+            "type": "execute"
+        },
+        {
+            "cmd": "INSERT INTO t2 VALUES(1, 'aa'),(2, 'bb'),(3, 'cc');",
+            "type": "execute"
+        }
+    ],
+    "执行": [
+        {
+            "cmd": "BEGIN;",
+            "conn": "conn1",
+            "type": "execute",
+            "result": {
+                "regular": "BEG.*"
+            }
+        },
+        {
+            "cmd": "SELECT * from t1 f natural join t2 g where f.a>2 and g.c1<3 for update nowait;",
+            "conn": "conn1",
+            "type": "query",
+            "result": {
+                "header": [
+                    "a",
+                    "b",
+                    "c1",
+                    "c2"
+                ],
+                "body": [
+                    [
+                        3,
+                        "c",
+                        1,
+                        "aa"
+                    ],
+                    [
+                        3,
+                        "c",
+                        2,
+                        "bb"
+                    ],
+                    [
+                        4,
+                        "d",
+                        1,
+                        "aa"
+                    ],
+                    [
+                        4,
+                        "d",
+                        2,
+                        "bb"
+                    ],
+                    [
+                        5,
+                        "e",
+                        1,
+                        "aa"
+                    ],
+                    [
+                        5,
+                        "e",
+                        2,
+                        "bb"
+                    ],
+                    [
+                        6,
+                        "f",
+                        1,
+                        "aa"
+                    ],
+                    [
+                        6,
+                        "f",
+                        2,
+                        "bb"
+                    ]
+                ]
+            }
+        },
+        {
+            "cmd": "SELECT * from t1 f natural join t2 g where f.a=1 and g.c1=3 for update nowait;",
+            "conn": "conn2",
+            "type": "query",
+            "block": false,
+            "error": "could not obtain lock on row \\(rowid\\)=.*"
+        },
+        {
+            "cmd": "COMMIT;",
+            "conn": "conn1"
+        }
+    ]
+}

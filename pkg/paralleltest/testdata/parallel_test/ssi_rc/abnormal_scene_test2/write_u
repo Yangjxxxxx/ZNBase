@@ -1,0 +1,9 @@
+statement ok
+BEGIN;
+
+statement ok
+UPDATE T SET k = 2 WHERE k = 1;
+SELECT pg_sleep(2);
+
+statement ok
+ABORT;

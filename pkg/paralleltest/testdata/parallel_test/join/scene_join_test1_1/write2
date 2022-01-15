@@ -1,0 +1,11 @@
+statement ok
+BEGIN;
+
+statement ok
+SELECT pg_sleep(1);
+
+statement ok
+INSERT INTO A VALUES('b', DATE '2019-8-14', 2, false);
+
+statement ok
+COMMIT;

@@ -1,0 +1,22 @@
+statement ok
+BEGIN TRANSACTION ISOLATION LEVEL READ COMMITTED;
+
+query III
+SELECT * FROM T where a<7;
+----
+1  1  1
+2  2  2
+3  3  3
+
+statement ok
+SELECT pg_sleep(3);
+
+query III
+SELECT * FROM T ORDER BY a FOR UPDATE;
+----
+1  1  1
+2  2  2
+3  3  3
+
+statement ok
+COMMIT;

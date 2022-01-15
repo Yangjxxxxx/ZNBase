@@ -1,0 +1,29 @@
+statement ok
+CREATE TABLE A (a CHAR PRIMARY KEY, ab DATE, ac INT, ad BOOL);
+
+statement ok
+INSERT INTO A VALUES('a', DATE '2019-8-1', 5, true);
+
+statement ok
+INSERT INTO A VALUES('c', DATE '2019-8-1', 3, true);
+
+statement ok
+INSERT INTO A VALUES('d', DATE '2019-7-1', 2, false);
+
+statement ok
+INSERT INTO A VALUES('m', DATE '2019-6-1', 1, true);
+
+statement ok
+CREATE TABLE B (a CHAR PRIMARY KEY, bb DATE, bc DECIMAL, bd BOOL);
+
+statement ok
+INSERT INTO B VALUES('a', DATE '2019-7-1', 5.5, true);
+
+statement ok
+INSERT INTO B VALUES('c', DATE '2019-7-1', 3.3, true);
+
+statement ok
+INSERT INTO B VALUES('d', DATE '2019-6-1', 2.2, false);
+
+statement ok
+INSERT INTO B VALUES('n', DATE '2019-5-1', 1.1, true);

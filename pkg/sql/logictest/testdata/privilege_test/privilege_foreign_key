@@ -1,0 +1,468 @@
+# LogicTest: local-insecure
+# ****************************************************************************************
+# Scenario 1
+# basic test cases of granting and revoking referencing privilege
+# ****************************************************************************************
+
+statement ok
+create user usr1;
+create user usr2;
+
+statement ok
+create database db;
+create schema db.sc;
+
+statement ok
+GRANT USAGE ON DATABASE db TO public;
+GRANT USAGE ON DATABASE test TO public;
+
+statement ok
+grant create, usage on schema db.sc to usr1, usr2;
+
+# ----------------------------------------------------------------------------------------
+# user1
+# ----------------------------------------------------------------------------------------
+userInsecure usr1
+
+statement ok
+create table db.sc.person(id int, name string, primary key(id));
+
+statement ok
+create table db.sc.student(id int, name string, grade string, primary key(id));
+
+statement ok
+insert into db.sc.person values (1,'A');
+
+statement ok
+insert into db.sc.student values(2,'B','senior');
+
+# add foreign key with default privileges
+statement ok
+alter table db.sc.student add foreign key(id) references db.sc.person(id);
+
+statement ok
+alter table db.sc.student drop constraint fk_id_ref_person;
+
+# ----------------------------------------------------------------------------------------
+# user2
+# ----------------------------------------------------------------------------------------
+userInsecure usr2
+
+statement ok
+create table db.sc.job(id int, name string, title string, primary key(id,title));
+
+statement ok
+insert into db.sc.job values (1,'A','job1');
+insert into db.sc.job values (1,'A','job2');
+
+# add foreign key without privileges
+statement error user usr2 does not have REFERENCES privilege on relation db.sc.person
+alter table db.sc.job add foreign key(id) references db.sc.person(id);
+
+# ----------------------------------------------------------------------------------------
+# user1
+# ----------------------------------------------------------------------------------------
+userInsecure usr1
+
+statement ok
+grant references on table db.sc.person to usr2;
+
+# ----------------------------------------------------------------------------------------
+# user2
+# ----------------------------------------------------------------------------------------
+userInsecure usr2
+
+statement ok
+alter table db.sc.job add foreign key(id) references db.sc.person(id);
+
+statement ok
+alter table db.sc.job drop constraint fk_id_ref_person;
+
+# recreate foreign key again
+statement ok
+alter table db.sc.job add foreign key(id) references db.sc.person(id);
+
+# ----------------------------------------------------------------------------------------
+# user1
+# ----------------------------------------------------------------------------------------
+userInsecure usr1
+
+# revoke references privilege
+statement ok
+revoke references on table db.sc.person from usr2;
+
+statement ok
+revoke references on table db.sc.person from root;
+
+# # ----------------------------------------------------------------------------------------
+# user2
+# # ----------------------------------------------------------------------------------------
+userInsecure usr2
+
+query TTTTTTTT
+show grants on table db.sc.person for usr2;
+----
+
+statement error user usr2 does not have REFERENCES privilege on relation db.sc.person
+alter table db.sc.job drop constraint fk_id_ref_person;
+
+statement error user usr2 does not have REFERENCES privilege on relation db.sc.person
+alter table db.sc.job add foreign key(id) references db.sc.person(id);
+
+
+
+
+
+# ****************************************************************************************
+# Scenario 2
+# user1 is the owner of table person, the privilege of referencing person is:
+#       user1 -> user2 -> user3 with grant option
+#       user3 -> user4
+# these test cases focus on the change in each user's privilege after user1 revoked the referencing privilege of person
+# ****************************************************************************************
+userInsecure root
+
+statement ok
+create schema db.sc_a;
+create schema db.sc_b;
+
+statement ok
+create user usr3;
+create user usr4;
+
+statement ok
+grant create on schema db.sc_a to usr1,usr2,usr3,usr4;
+grant create on schema db.sc_b to usr1,usr2,usr3,usr4;
+
+statement ok
+grant usage on schema db.sc_a to usr1,usr2,usr3,usr4;
+grant usage on schema db.sc_b to usr1,usr2,usr3,usr4;
+
+query TTTTTTTT
+show grants for usr1;
+----
+test  NULL                NULL                               NULL  root   public  USAGE   NO
+test  information_schema  NULL                               NULL  root   public  USAGE   NO
+test  information_schema  administrable_role_authorizations  NULL  admin  public  SELECT  NO
+test  information_schema  applicable_roles                   NULL  admin  public  SELECT  NO
+test  information_schema  check_constraints                  NULL  admin  public  SELECT  NO
+test  information_schema  column_privileges                  NULL  admin  public  SELECT  NO
+test  information_schema  columns                            NULL  admin  public  SELECT  NO
+test  information_schema  constraint_column_usage            NULL  admin  public  SELECT  NO
+test  information_schema  database_privileges                NULL  admin  public  SELECT  NO
+test  information_schema  enabled_roles                      NULL  admin  public  SELECT  NO
+test  information_schema  functions                          NULL  admin  public  SELECT  NO
+test  information_schema  index_partition                    NULL  admin  public  SELECT  NO
+test  information_schema  key_column_usage                   NULL  admin  public  SELECT  NO
+test  information_schema  parameters                         NULL  admin  public  SELECT  NO
+test  information_schema  referential_constraints            NULL  admin  public  SELECT  NO
+test  information_schema  role_table_grants                  NULL  admin  public  SELECT  NO
+test  information_schema  routines                           NULL  admin  public  SELECT  NO
+test  information_schema  schema_privileges                  NULL  admin  public  SELECT  NO
+test  information_schema  schemata                           NULL  admin  public  SELECT  NO
+test  information_schema  sequences                          NULL  admin  public  SELECT  NO
+test  information_schema  statistics                         NULL  admin  public  SELECT  NO
+test  information_schema  table_constraints                  NULL  admin  public  SELECT  NO
+test  information_schema  table_privileges                   NULL  admin  public  SELECT  NO
+test  information_schema  tables                             NULL  admin  public  SELECT  NO
+test  information_schema  trigger_privileges                 NULL  admin  public  SELECT  NO
+test  information_schema  user_privileges                    NULL  admin  public  SELECT  NO
+test  information_schema  views                              NULL  admin  public  SELECT  NO
+test  pg_catalog          NULL                               NULL  root   public  USAGE   NO
+test  pg_catalog          pg_am                              NULL  admin  public  SELECT  NO
+test  pg_catalog          pg_attrdef                         NULL  admin  public  SELECT  NO
+test  pg_catalog          pg_attribute                       NULL  admin  public  SELECT  NO
+test  pg_catalog          pg_auth_members                    NULL  admin  public  SELECT  NO
+test  pg_catalog          pg_class                           NULL  admin  public  SELECT  NO
+test  pg_catalog          pg_collation                       NULL  admin  public  SELECT  NO
+test  pg_catalog          pg_constraint                      NULL  admin  public  SELECT  NO
+test  pg_catalog          pg_database                        NULL  admin  public  SELECT  NO
+test  pg_catalog          pg_depend                          NULL  admin  public  SELECT  NO
+test  pg_catalog          pg_description                     NULL  admin  public  SELECT  NO
+test  pg_catalog          pg_enum                            NULL  admin  public  SELECT  NO
+test  pg_catalog          pg_extension                       NULL  admin  public  SELECT  NO
+test  pg_catalog          pg_foreign_data_wrapper            NULL  admin  public  SELECT  NO
+test  pg_catalog          pg_foreign_server                  NULL  admin  public  SELECT  NO
+test  pg_catalog          pg_foreign_table                   NULL  admin  public  SELECT  NO
+test  pg_catalog          pg_index                           NULL  admin  public  SELECT  NO
+test  pg_catalog          pg_indexes                         NULL  admin  public  SELECT  NO
+test  pg_catalog          pg_inherits                        NULL  admin  public  SELECT  NO
+test  pg_catalog          pg_language                        NULL  admin  public  SELECT  NO
+test  pg_catalog          pg_namespace                       NULL  admin  public  SELECT  NO
+test  pg_catalog          pg_nodestatus                      NULL  admin  public  SELECT  NO
+test  pg_catalog          pg_operator                        NULL  admin  public  SELECT  NO
+test  pg_catalog          pg_proc                            NULL  admin  public  SELECT  NO
+test  pg_catalog          pg_range                           NULL  admin  public  SELECT  NO
+test  pg_catalog          pg_rewrite                         NULL  admin  public  SELECT  NO
+test  pg_catalog          pg_roles                           NULL  admin  public  SELECT  NO
+test  pg_catalog          pg_seclabel                        NULL  admin  public  SELECT  NO
+test  pg_catalog          pg_sequence                        NULL  admin  public  SELECT  NO
+test  pg_catalog          pg_settings                        NULL  admin  public  SELECT  NO
+test  pg_catalog          pg_shdescription                   NULL  admin  public  SELECT  NO
+test  pg_catalog          pg_shseclabel                      NULL  admin  public  SELECT  NO
+test  pg_catalog          pg_stat_activity                   NULL  admin  public  SELECT  NO
+test  pg_catalog          pg_tables                          NULL  admin  public  SELECT  NO
+test  pg_catalog          pg_tablespace                      NULL  admin  public  SELECT  NO
+test  pg_catalog          pg_trigger                         NULL  admin  public  SELECT  NO
+test  pg_catalog          pg_type                            NULL  admin  public  SELECT  NO
+test  pg_catalog          pg_user                            NULL  admin  public  SELECT  NO
+test  pg_catalog          pg_user_mapping                    NULL  admin  public  SELECT  NO
+test  pg_catalog          pg_views                           NULL  admin  public  SELECT  NO
+test  public              NULL                               NULL  root   public  USAGE   NO
+test  zbdb_internal       NULL                               NULL  root   public  USAGE   NO
+test  zbdb_internal       backward_dependencies              NULL  admin  public  SELECT  NO
+test  zbdb_internal       builtin_functions                  NULL  admin  public  SELECT  NO
+test  zbdb_internal       cluster_queries                    NULL  admin  public  SELECT  NO
+test  zbdb_internal       cluster_sessions                   NULL  admin  public  SELECT  NO
+test  zbdb_internal       cluster_settings                   NULL  admin  public  SELECT  NO
+test  zbdb_internal       create_statements                  NULL  admin  public  SELECT  NO
+test  zbdb_internal       databases                          NULL  admin  public  SELECT  NO
+test  zbdb_internal       feature_usage                      NULL  admin  public  SELECT  NO
+test  zbdb_internal       forward_dependencies               NULL  admin  public  SELECT  NO
+test  zbdb_internal       function_privileges                NULL  admin  public  SELECT  NO
+test  zbdb_internal       gossip_alerts                      NULL  admin  public  SELECT  NO
+test  zbdb_internal       gossip_liveness                    NULL  admin  public  SELECT  NO
+test  zbdb_internal       gossip_network                     NULL  admin  public  SELECT  NO
+test  zbdb_internal       gossip_nodes                       NULL  admin  public  SELECT  NO
+test  zbdb_internal       index_columns                      NULL  admin  public  SELECT  NO
+test  zbdb_internal       jobs                               NULL  admin  public  SELECT  NO
+test  zbdb_internal       kv_node_status                     NULL  admin  public  SELECT  NO
+test  zbdb_internal       kv_store_status                    NULL  admin  public  SELECT  NO
+test  zbdb_internal       leases                             NULL  admin  public  SELECT  NO
+test  zbdb_internal       node_build_info                    NULL  admin  public  SELECT  NO
+test  zbdb_internal       node_metrics                       NULL  admin  public  SELECT  NO
+test  zbdb_internal       node_queries                       NULL  admin  public  SELECT  NO
+test  zbdb_internal       node_runtime_info                  NULL  admin  public  SELECT  NO
+test  zbdb_internal       node_sessions                      NULL  admin  public  SELECT  NO
+test  zbdb_internal       node_statement_statistics          NULL  admin  public  SELECT  NO
+test  zbdb_internal       partition_views                    NULL  admin  public  SELECT  NO
+test  zbdb_internal       partitions                         NULL  admin  public  SELECT  NO
+test  zbdb_internal       predefined_comments                NULL  admin  public  SELECT  NO
+test  zbdb_internal       ranges                             NULL  admin  public  SELECT  NO
+test  zbdb_internal       ranges_no_leases                   NULL  admin  public  SELECT  NO
+test  zbdb_internal       savepoint_status                   NULL  admin  public  SELECT  NO
+test  zbdb_internal       schema_changes                     NULL  admin  public  SELECT  NO
+test  zbdb_internal       session_trace                      NULL  admin  public  SELECT  NO
+test  zbdb_internal       session_variables                  NULL  admin  public  SELECT  NO
+test  zbdb_internal       table_columns                      NULL  admin  public  SELECT  NO
+test  zbdb_internal       table_indexes                      NULL  admin  public  SELECT  NO
+test  zbdb_internal       table_row_statistics               NULL  admin  public  SELECT  NO
+test  zbdb_internal       tables                             NULL  admin  public  SELECT  NO
+test  zbdb_internal       zones                              NULL  admin  public  SELECT  NO
+
+# ----------------------------------------------------------------------------------------
+# user1
+# ----------------------------------------------------------------------------------------
+userInsecure usr1
+
+statement ok
+create table db.sc_a.person(id int, name string, primary key(id));
+create table db.sc_b.person(id int, name string, primary key(id));
+
+statement ok
+grant references on table db.sc_a.person to usr2 with grant option;
+grant references on table db.sc_b.person to usr2 with grant option;
+
+# ----------------------------------------------------------------------------------------
+# user2
+# ----------------------------------------------------------------------------------------
+userInsecure usr2
+
+statement ok
+grant references on table db.sc_a.person to usr3 with grant option;
+grant references on table db.sc_b.person to usr3 with grant option;
+
+# ----------------------------------------------------------------------------------------
+# user3
+# ----------------------------------------------------------------------------------------
+userInsecure usr3
+
+statement ok
+grant references on table db.sc_a.person to usr3;
+grant references on table db.sc_b.person to usr3;
+
+# ----------------------------------------------------------------------------------------
+# user1
+# ----------------------------------------------------------------------------------------
+userInsecure usr1
+
+statement ok
+revoke references on table db.sc_a.person from usr2;
+revoke grant option for references on table db.sc_b.person from usr2;
+
+# ----------------------------------------------------------------------------------------
+# user2
+# ----------------------------------------------------------------------------------------
+userInsecure usr2
+
+query TTTTTTTT
+show grants on table db.sc_a.person for usr2;
+----
+
+query TTTTTTTT
+show grants on table db.sc_b.person for usr2;
+----
+db  sc_b  person  NULL  usr1  usr2  REFERENCES  NO
+
+# ----------------------------------------------------------------------------------------
+# user3
+# ----------------------------------------------------------------------------------------
+userInsecure usr3
+
+query TTTTTTTT
+show grants on table db.sc_a.person for usr3;
+----
+
+query TTTTTTTT
+show grants on table db.sc_b.person for usr3;
+----
+
+# ----------------------------------------------------------------------------------------
+# user4
+# ----------------------------------------------------------------------------------------
+userInsecure usr4
+
+query TTTTTTTT
+show grants on table db.sc_a.person for usr4;
+----
+
+query TTTTTTTT
+show grants on table db.sc_b.person for usr4;
+----
+
+
+
+
+
+# ****************************************************************************************
+# Scenario 3
+# usr5 tries to delete,update,insert element from s2.t which is referenced by s2.t
+# ****************************************************************************************
+userInsecure root
+
+statement ok
+CREATE DATABASE d5;
+CREATE USER usr5;
+USE d5;
+CREATE SCHEMA d5.s1;
+CREATE SCHEMA d5.s2;
+
+statement ok
+GRANT USAGE ON DATABASE d5 TO public
+
+statement ok
+CREATE TABLE d5.s1.t(a int primary key, b int);
+CREATE TABLE d5.s2.t(c1 int primary key, c2 int);
+ALTER TABLE s1.t ADD FOREIGN KEY(a) REFERENCES s2.t(c1) ON UPDATE CASCADE ON DELETE CASCADE;
+
+statement ok
+INSERT INTO s2.t VALUES(1, 2), (2, 3), (3, 4), (4, 5), (5, 6);
+INSERT INTO s1.t VALUES(1, 2), (2, 4), (3, 5);
+
+statement ok
+GRANT USAGE ON SCHEMA s2 TO usr5;
+GRANT ALL ON TABLE s2.t TO usr5;
+
+# ----------------------------------------------------------------------------------------
+# user5
+# ----------------------------------------------------------------------------------------
+userInsecure usr5
+
+statement ok
+USE d5;
+SET SEARCH_PATH = s2;
+
+statement ok
+SHOW GRANTS;
+
+statement ok
+SELECT * FROM t;
+
+statement error user usr5 does not have privileges to access schema d5.s1
+DELETE FROM t WHERE c1 = 3;
+
+statement error user usr5 does not have privileges to access schema d5.s1
+UPDATE t SET c2=1 WHERE c1 = 3;
+
+statement ok
+INSERT INTO s2.t values(6,7);
+
+# ----------------------------------------------------------------------------------------
+# root
+# ----------------------------------------------------------------------------------------
+userInsecure root
+
+statement ok
+GRANT USAGE ON SCHEMA d5.s1 TO usr5;
+
+# ----------------------------------------------------------------------------------------
+# user5
+# ----------------------------------------------------------------------------------------
+userInsecure usr5
+
+statement error user usr5 does not have REFERENCES privilege on relation d5.s1.t
+DELETE FROM t WHERE c1 = 3;
+
+statement error user usr5 does not have REFERENCES privilege on relation d5.s1.t
+UPDATE t SET c2=1 WHERE c1 = 3;
+
+# ----------------------------------------------------------------------------------------
+# root
+# ----------------------------------------------------------------------------------------
+userInsecure root
+
+statement ok
+GRANT REFERENCES ON TABLE d5.s1.t TO usr5;
+GRANT INSERT ON TABLE d5.s1.t TO usr5;
+
+# ----------------------------------------------------------------------------------------
+# user5
+# ----------------------------------------------------------------------------------------
+userInsecure usr5
+
+statement error pq: user usr5 does not have DELETE privilege on relation d5.s1.t
+DELETE FROM t WHERE c1 = 3;
+
+statement error pq: user usr5 does not have UPDATE privilege on relation d5.s1.t
+UPDATE t SET c2=1 WHERE c1 = 3;
+
+# ----------------------------------------------------------------------------------------
+# root
+# ----------------------------------------------------------------------------------------
+userInsecure root
+
+statement ok
+GRANT SELECT ON TABLE d5.s1.t TO usr5;
+
+# ----------------------------------------------------------------------------------------
+# user5
+# ----------------------------------------------------------------------------------------
+userInsecure usr5
+
+statement error pq: user usr5 does not have DELETE privilege on relation d5.s1.t
+DELETE FROM t WHERE c1 = 3;
+
+statement error pq: user usr5 does not have UPDATE privilege on relation d5.s1.t
+UPDATE t SET c2=1 WHERE c1 = 3;
+
+# ----------------------------------------------------------------------------------------
+# root
+# ----------------------------------------------------------------------------------------
+userInsecure root
+
+statement ok
+GRANT DELETE ON TABLE d5.s1.t TO usr5;
+
+statement ok
+GRANT UPDATE ON TABLE d5.s1.t TO usr5;
+
+# ----------------------------------------------------------------------------------------
+# user5
+# ----------------------------------------------------------------------------------------
+userInsecure usr5
+
+statement ok
+DELETE FROM t WHERE c1 = 3;
+
+statement ok
+UPDATE t SET c2=1 WHERE c1 = 3;

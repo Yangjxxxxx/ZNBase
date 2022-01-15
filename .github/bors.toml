@@ -1,0 +1,13 @@
+status = [
+  "GitHub CI (ZNBase)"
+]
+pr_status = [
+  "license/cla"
+]
+block_labels = [
+  "do-not-merge"
+]
+
+[committer]
+name = "craig[bot]"
+email = "bors@znbaselabs.com"

@@ -1,0 +1,11 @@
+statement ok
+BEGIN;
+
+statement ok
+UPDATE B SET bb = DATE '2019-6-1' WHERE bb = DATE '2019-5-1'
+
+statement ok
+SELECT pg_sleep(6);
+
+statement ok
+COMMIT;

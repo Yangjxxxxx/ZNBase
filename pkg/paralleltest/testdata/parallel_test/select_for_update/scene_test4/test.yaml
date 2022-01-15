@@ -1,0 +1,20 @@
+cluster_size: 3
+
+range_split_size: 32768
+
+run:
+  # First run setup
+  - - file: table_init
+
+  # Run txn on all nodes in parallel.
+  - - node: 0
+      file: select_for_update
+
+    - node: 1
+      file: select_for_update2
+
+    - node: 2
+      file: select_for_update3
+
+  # Run final.
+  - - file: final

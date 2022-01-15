@@ -1,0 +1,1749 @@
+# LogicTest: local-opt
+
+# use defaultdb, for test
+statement ok
+use defaultdb
+
+# --- 测试内容一览 --- #
+# -1.  支持类型/不支持类型 测试
+# -2.  DDL
+# -3.  DML
+# -4.  内置函数
+# -5.  关键字
+# -6.  大小写
+# -7.  存储过程重载
+# -8.  schema兼容
+# -9.  rename proceudre
+# -10. drop   procedure
+# -11. 触发器与truncate
+# -12. 分区/locate in
+# -13. 空格测试
+# -14. 对TIMESTAMP/TIME类型的解析
+# -15. drop的类型一致性测试
+# -16. drop schema对存储过程调用的影响测试
+# -17. 语法支持补充
+# -18. schema兼容II
+# -19. 中文命名
+# -20. 约束个数检测
+# -21. drop procedure 和 trigger 执行drop时if exists判断
+# -22. 视图/索引/队列操作语法
+# -23. 创建统计信息
+# -24. case when结构
+# -25. 存储过程内删表没有及时删除表描述符的问题
+# -26. (int, int) 类型函数重载解析错误的问题
+
+# 1. 类型
+# 支持类型测试 -- 需要支持
+statement ok
+CREATE OR REPLACE PROCEDURE pg_typeTest()
+AS $$
+DECLARE
+p1 INT;
+p2 SMALLINT;
+p3 BIGINT;
+p4 INTEGER;
+p5 INT2;
+p6 INT4;
+p7 INT8;
+p8 INT64;
+p15 FLOAT;
+p16 REAL;
+p17 DOUBLE PRECISION;
+p18 FLOAT4;
+p19 FLOAT8;
+p20 DECIMAL;
+p21 DEC;
+p22 NUMERIC;
+p23 BOOL;
+p24 BOOLEAN;
+p25 BIT;
+p26 BIT(3);
+p27 VARBIT;
+p28 VARBIT(3);
+p31 BYTEA;
+p32 STRING;
+p33 CHARACTER;
+p34 CHAR;
+p35 VARCHAR;
+p36 TEXT;
+p37 STRING(5);
+p38 CHARACTER(5);
+p39 CHARACTER VARYING(5);
+p40 CHAR(5);
+p41 CHAR VARYING(5);
+p42 VARCHAR(5);
+p45 DATE;
+p46 TIME;
+p47 TIMESTAMP;
+p48 TIMESTAMPTZ;
+p49 TIMESTAMP WITHOUT TIME ZONE;
+p50 TIMESTAMP WITH TIME ZONE;
+p51 INTERVAL;
+p52 INET;
+p53 UUID;
+p54 JSONB;
+p55 JSON;
+p56 INT ARRAY;
+p57 INT[];
+p58 STRING ARRAY;
+p59 STRING[];
+BEGIN
+    NULL;
+END
+$$ LANGUAGE plpgsql;
+
+statement ok
+call pg_typeTest()
+
+## 类型测试 -- 不支持
+statement ok
+CREATE OR REPLACE PROCEDURE pg_count()
+AS $$
+DECLARE
+p9 SERIAL;
+BEGIN
+    NULL;
+END
+$$ LANGUAGE plpgsql;
+
+statement ok
+CREATE OR REPLACE PROCEDURE pg_count()
+AS $$
+DECLARE
+p10 SMALLSERIAL;
+BEGIN
+    NULL;
+END
+$$ LANGUAGE plpgsql;
+
+statement ok
+CREATE OR REPLACE PROCEDURE pg_count()
+AS $$
+DECLARE
+p11 BIGSERIAL;
+BEGIN
+    NULL;
+END
+$$ LANGUAGE plpgsql;
+
+statement ok
+CREATE OR REPLACE PROCEDURE pg_count()
+AS $$
+DECLARE
+p12 SERIAL2;
+BEGIN
+    NULL;
+END
+$$ LANGUAGE plpgsql;
+
+statement ok
+CREATE OR REPLACE PROCEDURE pg_count()
+AS $$
+DECLARE
+p13 SERIAL4;
+BEGIN
+    NULL;
+END
+$$ LANGUAGE plpgsql;
+
+statement ok
+CREATE OR REPLACE PROCEDURE pg_count()
+AS $$
+DECLARE
+p14 SERIAL8;
+BEGIN
+    NULL;
+END
+$$ LANGUAGE plpgsql;
+
+statement ok
+CREATE OR REPLACE PROCEDURE pg_count()
+AS $$
+DECLARE
+p29 BYTES;
+BEGIN
+    NULL;
+END
+$$ LANGUAGE plpgsql;
+
+statement ok
+CREATE OR REPLACE PROCEDURE pg_count()
+AS $$
+DECLARE
+p30 BLOB;
+BEGIN
+    NULL;
+END
+$$ LANGUAGE plpgsql;
+
+# COLLATE 支持, 但该用例需要报错
+# statement error pq: Error Happen when execute procedure: collation "en" for encoding "UTF8" does not exist
+statement error pq: ZNBase PLSQL ERMSG: collations are not supported by type unknown type
+CREATE OR REPLACE PROCEDURE pg_count()
+AS $$
+DECLARE
+p43 STRING COLLATE en;
+BEGIN
+    NULL;
+END
+$$ LANGUAGE plpgsql;
+
+# statement error pq: Error Happen when execute procedure: collation "en" for encoding "UTF8" does not exist
+statement error pq: ZNBase PLSQL ERMSG: collations are not supported by type unknown type
+CREATE OR REPLACE PROCEDURE pg_count()
+AS $$
+DECLARE
+p44 TEXT COLLATE en;
+BEGIN
+    NULL;
+END
+$$ LANGUAGE plpgsql;
+
+statement ok
+CREATE OR REPLACE PROCEDURE pg_count()
+AS $$
+DECLARE
+p60 CLOB;
+BEGIN
+    NULL;
+END
+$$ LANGUAGE plpgsql;
+
+# 2. DDL
+# database
+statement ok
+CREATE OR REPLACE PROCEDURE test_db() AS $$
+BEGIN
+    create DATABASE proc1;
+END
+$$ LANGUAGE plpgsql;
+
+statement error pq: ZNBase PLSQL ERMSG: XXOOO:CREATE DATABASE cannot be executed from a function
+call test_db()
+
+# schema
+statement ok
+CREATE OR REPLACE PROCEDURE test_sch() AS $$
+BEGIN
+    create schema sch1;
+END
+$$ LANGUAGE plpgsql;
+
+statement ok
+call test_sch()
+
+statement ok
+CREATE OR REPLACE PROCEDURE test_sch() AS $$
+BEGIN
+    drop schema sch1;
+END
+$$ LANGUAGE plpgsql;
+
+statement ok
+call test_sch()
+
+# table
+# 正常情况
+statement ok
+CREATE OR REPLACE PROCEDURE test_tab() AS $$
+BEGIN
+    CREATE TABLE tb1(a int primary key,b varchar);
+    alter table tb1 rename to tbtb1;
+END
+$$ LANGUAGE plpgsql;
+
+statement ok
+call test_tab()
+
+statement ok
+CREATE OR REPLACE PROCEDURE test_tab() AS $$
+BEGIN
+    drop table tbtb1;
+END
+$$ LANGUAGE plpgsql;
+
+statement ok
+call test_tab()
+
+# 报错情况
+statement ok
+CREATE OR REPLACE PROCEDURE test_tab() AS $$
+BEGIN
+    CREATE TABLE tb1(a int primary key,b varchar);
+    CREATE TABLE tb1(a int primary key,b varchar);
+END
+$$ LANGUAGE plpgsql;
+
+statement error pq: ZNBase PLSQL ERMSG: 42P07:relation "tb1" already exists
+call test_tab()
+
+# 数据删除
+statement ok
+drop table if exists tb1
+
+# 3. DML 该类测试工作部分在 procedure_and_trigger 中进行过, 此处跳过
+# 数据准备
+statement ok
+create table dml_test (name string, id int)
+
+statement ok
+insert into dml_test values ('cms', 1);
+
+# truncate
+statement ok
+CREATE OR REPLACE PROCEDURE test_dml() AS $$
+BEGIN
+    truncate dml_test;
+END
+$$ LANGUAGE plpgsql;
+
+statement ok
+call test_dml()
+
+query TI
+select * from dml_test
+----
+
+# insert
+statement ok
+CREATE OR REPLACE PROCEDURE test_dml() AS $$
+BEGIN
+    insert into dml_test values ('cms', 2);
+    insert into dml_test values ('cms', 3);
+END
+$$ LANGUAGE plpgsql;
+
+statement ok
+call test_dml()
+
+query TI
+select * from dml_test
+----
+cms 2
+cms 3
+
+# update
+statement ok
+CREATE OR REPLACE PROCEDURE test_dml() AS $$
+BEGIN
+    update dml_test set name = 'smc' where id = 3;
+END
+$$ LANGUAGE plpgsql;
+
+statement ok
+call test_dml()
+
+query TI
+select * from dml_test
+----
+cms 2
+smc 3
+
+# delete
+statement ok
+CREATE OR REPLACE PROCEDURE test_dml() AS $$
+BEGIN
+    delete from dml_test where name = 'cms';
+END
+$$ LANGUAGE plpgsql;
+
+statement ok
+call test_dml()
+
+query TI
+select * from dml_test
+----
+smc 3
+
+# 数据清理
+statement ok
+drop table dml_test
+
+# 4. 内置函数
+statement ok
+create table test (a int, b int)
+
+statement ok
+CREATE OR REPLACE PROCEDURE test_proc() AS $$
+BEGIN
+    insert into test values(mod(23,3),abs(-100));
+END
+$$ LANGUAGE plpgsql;
+
+statement ok
+call test_proc()
+
+query II
+select a, b from test
+----
+2 100
+
+statement ok
+drop table test
+
+# 5. 关键字测试
+# 数据准备
+## test2 is for 1, 2, 3, 4
+statement ok
+create table test2(a int,b varchar)
+
+statement ok
+insert into test2 values(1,'znbase')
+
+## test1 is for 5, 6, 7
+statement ok
+create table test1(a int)
+
+# LIKE
+statement ok
+CREATE OR REPLACE PROCEDURE test_proc() AS $$
+BEGIN
+    update test2 set a=2  where b like '%base';
+END
+$$ LANGUAGE plpgsql;
+
+statement ok
+call test_proc()
+
+query IT
+select * from test2
+----
+2 znbase
+
+# SIMILAR TO
+statement ok
+CREATE OR REPLACE PROCEDURE test_proc() AS $$
+BEGIN
+    update test2 set a=3  where b SIMILAR TO 'zn%';
+END
+$$ LANGUAGE plpgsql;
+
+statement ok
+call test_proc()
+
+query IT
+select * from test2
+----
+3 znbase
+
+# NULLIF
+statement ok
+CREATE OR REPLACE PROCEDURE test_proc() AS $$
+BEGIN
+    insert into test2 values(NULLIF(1,0),NULLIF('a','a'));
+END
+$$ LANGUAGE plpgsql;
+
+statement ok
+call test_proc()
+
+query IT
+select * from test2
+----
+3       znbase
+1       NULL
+
+# EXISTS / NOT EXISTS
+statement ok
+CREATE OR REPLACE PROCEDURE test_proc() AS $$
+BEGIN
+    update test2 set a=2  where EXISTS(SELECT 1 FROM test2 WHERE b = 'znbase' );
+END
+$$ LANGUAGE plpgsql;
+
+statement ok
+call test_proc()
+
+query IT
+select * from test2
+----
+2       znbase
+2       NULL
+
+# COALESCE
+statement ok
+CREATE OR REPLACE PROCEDURE test_proc() AS $$
+BEGIN
+    insert into test1 values(COALESCE(NULL,1,2));
+END
+$$ LANGUAGE plpgsql;
+
+statement ok
+call test_proc()
+
+query I
+select * from test1
+----
+1
+
+# GREATEST / LEAST
+statement ok
+CREATE OR REPLACE PROCEDURE test_proc() AS $$
+BEGIN
+    insert into test1 values(greatest(1,2,3,4,5));
+    insert into test1 values(least(1,2,3,4,5));
+END
+$$ LANGUAGE plpgsql;
+
+statement ok
+call test_proc()
+
+query I
+select a from test1
+----
+1
+5
+1
+
+# IN
+statement ok
+CREATE OR REPLACE PROCEDURE test_proc() AS $$
+BEGIN
+    update test1 set a=2 where a IN (1,2,3);
+END
+$$ LANGUAGE plpgsql;
+
+statement ok
+call test_proc()
+
+query I
+select a from test1
+----
+2
+5
+2
+
+# NOT IN
+statement ok
+CREATE OR REPLACE PROCEDURE test_proc() AS $$
+BEGIN
+    update test1 set a=4 where a NOT IN (1,2,3);
+END
+$$ LANGUAGE plpgsql;
+
+statement ok
+call test_proc()
+
+query I
+select a from test1
+----
+2
+4
+2
+
+# SOME / ALL / ANY
+statement ok
+insert into test1 values (1), (3), (10)
+
+statement ok
+CREATE OR REPLACE PROCEDURE test_proc() AS $$
+BEGIN
+    update test1 set a=666 where a>any(select a from test1);
+    update test1 set a=777 where a>some(select a from test1);
+    update test1 set a=888 where a>all(select a from test1);
+END
+$$ LANGUAGE plpgsql;
+
+statement ok
+call test_proc()
+
+query I
+select a from test1
+----
+777
+777
+777
+1
+777
+777
+
+# 数据清理
+statement ok
+drop table test1
+
+statement ok
+drop table test2
+
+# 6. 大小写敏感测试
+# 数据准备
+statement ok
+create table test (name string)
+
+# u no
+statement ok
+CREATE OR REPLACE PROCEDURE test_proc() AS $$
+BEGIN
+INSERT INTO test VALUES ('tEsT');
+INSERT INTO test VALUES ('TEST');
+INSERT INTO test VALUES ('test');
+END
+$$ LANGUAGE plpgsql;
+
+statement ok
+call test_proc()
+
+query T
+select name from test
+----
+tEsT
+TEST
+test
+
+# 数据清理
+statement ok
+drop table test
+
+# 7. 重载测试
+# 数据准备
+statement ok
+create table test (a int)
+
+statement ok
+CREATE TABLE t(a INT, b STRING);
+
+statement ok
+CREATE OR REPLACE PROCEDURE proc1("ref" INT) AS $$
+BEGIN
+INSERT INTO t VALUES (1, 'INT');
+END
+$$ LANGUAGE plpgsql;
+
+statement ok
+CREATE OR REPLACE PROCEDURE proc1("ref" DECIMAL) AS $$
+BEGIN
+INSERT INTO t VALUES (2, 'DECIMAL');
+END
+$$ LANGUAGE plpgsql;
+
+statement ok
+create or replace procedure test_proc1(a string) as $$
+begin
+insert into test values (10);
+end $$ language plpgsql;
+
+statement ok
+create or replace procedure test_proc1(a float) as $$
+begin
+insert into test values (20);
+end $$ language plpgsql;
+
+# u no
+# 1
+statement ok
+call proc1(1::int)
+
+statement ok
+call proc1(1::decimal)
+
+query IT
+select * from t
+----
+1   INT
+2   DECIMAL
+
+# 2
+statement ok
+call test_proc1(0.5)
+
+query I
+select a from test
+----
+20
+
+statement ok
+call test_proc1('0.5')
+
+query I
+select a from test
+----
+20
+10
+
+statement error pq: ambiguous call: test_proc1\(unknown\), candidates are:\ntest_proc1\(float\) -> \ntest_proc1\(string\) ->
+call test_proc1(null)
+
+# 数据清理
+statement ok
+drop table test
+
+statement ok
+drop table t
+
+# 8. shema兼容测试
+# 数据准备(database, schema)
+statement ok
+create database db1
+
+statement ok
+create database db2
+
+statement ok
+create schema sch
+
+statement ok
+create schema db1.sch
+
+#for 1
+statement ok
+create table test (a string)
+
+#for 2
+statement ok
+create table test2 (a string)
+
+statement ok
+create table db1.sch.test2 (a string)
+
+statement ok
+create table sch.test2 (a string)
+
+# 存储过程名
+    # 不同schema可以建同名存储过程, 当什么都不写时call当前路径下的存储过程
+statement ok
+create or replace procedure db1.public.pro() as $$
+begin
+insert into test values ('db1.public.pro');
+end $$ language plpgsql;
+
+statement ok
+create or replace procedure db1.sch.pro() as $$
+begin
+insert into test values ('db1.sch.pro');
+end $$ language plpgsql;
+
+statement ok
+create or replace procedure db2.public.pro() as $$
+begin
+insert into test values ('db2.public.pro');
+end $$ language plpgsql;
+
+statement ok
+create or replace procedure defaultdb.public.pro() as $$
+begin
+insert into test values ('defaultdb.public.pro');
+end $$ language plpgsql;
+
+statement ok
+call db1.sch.pro()
+
+statement ok
+call db2.public.pro()
+
+statement ok
+call db1.public.pro()
+
+statement ok
+call public.pro()
+
+statement ok
+call pro()
+
+query T
+select a from test
+----
+db1.sch.pro
+db2.public.pro
+db1.public.pro
+defaultdb.public.pro
+defaultdb.public.pro
+
+# 存储过程内容
+    # 存储过程应该能识别begin end 中的db和schema
+    # 当什么都没写时, 根据当前的db和searchPath
+statement ok
+create or replace procedure pro2() as $$
+begin
+insert into test2 values ('first');
+insert into db1.sch.test2 values ('second');
+insert into sch.test2 values ('third');
+end $$ language plpgsql;
+
+statement ok
+create or replace procedure pro2_ero() as $$
+begin
+insert into db2.qaq.test2 values ('fourth');
+end $$ language plpgsql;
+
+statement ok
+call pro2()
+
+# 该句话报错信息修改
+statement error pq: ZNBase PLSQL ERMSG: 42P01:relation "db2.qaq.test2" does not exist
+call pro2_ero()
+
+query T
+select * from defaultdb.public.test2
+----
+first
+
+query T
+select * from db1.sch.test2
+----
+second
+
+query T
+select * from defaultdb.sch.test2
+----
+third
+
+# database ? TODO(CMS): it must write something important, but I forgot
+# 数据清理 & 现场还原
+statement ok
+drop table test
+
+statement ok
+drop table test2
+
+# 9. rename procedure测试
+# 数据准备
+statement ok
+create table test (a int)
+
+statement ok
+create or replace procedure defaultdb.public.oldname() as $$
+begin
+insert into defaultdb.public.test values (1);
+end $$ language plpgsql;
+
+statement ok
+create or replace procedure defaultdb.public.oldname(b int) as $$
+begin
+insert into defaultdb.public.test values (2);
+end $$ language plpgsql;
+
+statement ok
+create or replace procedure defaultdb.sch.oldname() as $$
+begin
+insert into defaultdb.public.test values (3);
+end $$ language plpgsql;
+
+statement ok
+create or replace procedure db1.public.oldname() as $$
+begin
+insert into defaultdb.public.test values (4);
+end $$ language plpgsql;
+
+# 指定rename某个schema下的存储过程
+statement ok
+alter procedure defaultdb.sch.oldname() rename to newname
+
+statement ok
+call defaultdb.sch.newname()
+
+query I
+select * from test
+----
+3
+
+# 不指定
+statement ok
+alter procedure oldname() rename to newname
+
+statement ok
+call newname()
+
+query I
+select * from test
+----
+3
+1
+
+# 通过rename改变procedure所属的schema
+statement ok
+use db1
+
+statement ok
+alter procedure public.oldname() rename to db1.sch.newname2
+
+statement ok
+alter procedure db1.sch.newname2() rename to sch.newname
+
+statement ok
+use defaultdb
+
+statement ok
+call db1.sch.newname()
+
+query I
+select * from test
+----
+3
+1
+4
+
+# 报错测试
+statement error pq: cannot create "ppulic.newname" because the target database or schema does not exist\nHINT: verify that the current database and search_path are valid and/or the target database exists
+alter procedure ppulic.newname() rename to newwname
+
+statement error pq: No function/procedure matches the given name and argument types.
+alter procedure public.newwname() rename to newwwname
+
+# 数据清理
+statement ok
+drop table test
+
+# 10. drop procedure测试
+# 数据准备
+statement ok
+create or replace procedure defaultdb.public.drpro() as $$
+begin
+null;
+end $$ language plpgsql;
+
+statement ok
+create or replace procedure defaultdb.public.drpro(a int) as $$
+begin
+null;
+end $$ language plpgsql;
+
+statement ok
+create or replace procedure db1.sch.drpro() as $$
+begin
+null;
+end $$ language plpgsql;
+
+statement ok
+create or replace procedure defaultdb.public.dr1(a decimal) as $$
+begin
+null;
+end $$ language plpgsql;
+
+statement ok
+create or replace procedure defaultdb.public.dr2(a string) as $$
+begin
+null;
+end $$ language plpgsql;
+
+statement ok
+create or replace procedure defaultdb.public.dr2(a integer, b bytea) as $$
+begin
+null;
+end $$ language plpgsql;
+
+# 指定drop某个schema下的存储过程
+statement ok
+drop procedure db1.sch.drpro()
+
+statement ok
+drop procedure public.drpro()
+
+# 不指定
+statement ok
+drop procedure drpro(int)
+
+# drop某些包含原本不兼容类型的参数的存储过程
+statement ok
+drop procedure dr2(string)
+
+statement ok
+drop procedure defaultdb.public.dr1(decimal)
+
+statement ok
+drop procedure dr2(integer, bytea)
+
+# 报错测试
+statement error pq: procedure a\(INT\) does not exist
+drop procedure a(int)
+
+statement error pq: cannot create "ppublic.a" because the target database or schema does not exist\nHINT: verify that the current database and search_path are valid and/or the target database exists
+drop procedure ppublic.a()
+
+statement error pq: cannot create "db1.sch2.a" because the target database or schema does not exist\nHINT: verify that the current database and search_path are valid and/or the target database exists
+drop procedure db1.sch2.a()
+
+# 11. 触发器 和 TRUNCATE
+statement ok
+CREATE TABLE t13(a INT, b STRING)
+
+# statement ok
+# CREATE TRIGGER tg1 AFTER TRUNCATE ON t13
+# FOR EACH STATEMENT
+# begin $$
+# INSERT INTO t13 VALUES(1, 'proc1');
+# $$ end;
+#
+# statement ok
+# TRUNCATE t13
+#
+# query IT
+# select * from t13
+# ----
+# 1 proc1
+
+# TODO(cms)：2020-06-03 以下用例的情况似乎存在bug, 偶尔无法通过 942-956
+statement ok
+CREATE TABLE t16(a INT)
+
+statement ok
+insert into t16 values(1)
+
+# TODO(cms): 修改成同一事务后该用例无法通过,原因是znbase的事务存在缺陷
+# 报错信息： Error Happen when execute procedure: schema change statement cannot follow a statement that has written in the same transaction: transaction anchor key already set
+#statement ok
+#CREATE TRIGGER tg1 AFTER UPDATE ON t16 FOR EACH ROW begin $$ truncate t16;$$ end;
+#
+#statement ok
+#update t16 set a=3 where a=1;
+#
+#query I
+#select * from t16
+#----
+#
+
+statement ok
+CREATE TABLE t17(a INT)
+
+statement ok
+insert into t17 values(1),(2)
+
+# statement ok
+# CREATE TRIGGER tg1 AFTER UPDATE ON t17 FOR EACH ROW begin $$ update t17 set a=3 where a=1; $$ end;
+#
+# statement ok
+# update t17 set a=3 where a=2;
+#
+# query I
+# select * from t17
+# ----
+# 3
+# 3
+#
+# statement ok
+# CREATE TABLE t18(a INT)
+#
+# statement ok
+# CREATE TRIGGER tg1 BEFORE INSERT ON t18 FOR EACH ROW begin $$ truncate t18;$$ end;
+#
+# statement ok
+# insert into t18 values(1)
+#
+# query I
+# select * from t18
+# ----
+# 1
+#
+# statement ok
+# CREATE TABLE t19(a INT,b VARCHAR)
+#
+# statement ok
+# insert into t19 values(1,'test')
+#
+# statement ok
+# CREATE TRIGGER tg1 BEFORE INSERT ON t19 FOR EACH STATEMENT begin $$ delete from t19 where a=1;$$ end;
+#
+# statement ok
+# insert into t19 values(2,'test')
+#
+# query IT
+# select * from t19
+# ----
+# 2 test
+#
+# statement
+# CREATE TABLE t21(a INT,b VARCHAR)
+#
+# statement ok
+# CREATE TRIGGER tg1 AFTER TRUNCATE ON t21 FOR EACH STATEMENT begin $$ insert into t21 values(2,'add by trigger'); $$ end;
+#
+# statement ok
+# TRUNCATE t21
+#
+# query IT
+# select * from t21
+# ----
+# 2 add by trigger
+#
+# statement ok
+# CREATE TABLE t211(a INT,b VARCHAR)
+#
+# statement ok
+# CREATE TRIGGER tg1 AFTER TRUNCATE ON t211 FOR EACH STATEMENT begin $$ truncate t211;$$ end;
+#
+# statement ok
+# TRUNCATE t211
+
+#数据清理
+#NONE
+
+# TODO(cms): 由于znbase同一事务执行dml后不能执行ddl的缺陷,该测试用例暂时注释,无法通过
+## 12. 创建存储过程时  带 分区和locate in
+#statement ok
+#create schema test;
+#
+#statement ok
+#CREATE TABLE test.test1(a INT,b VARCHAR);
+#
+#statement ok
+#CREATE TRIGGER tg1 AFTER INSERT ON test.test1 FOR EACH ROW
+#begin $$
+#    CREATE TABLE t1 (c1 INT PRIMARY KEY, c2 INT) PARTITION BY LIST(c1) (
+#            PARTITION p1 VALUES IN (1, 2, 3),
+#            PARTITION p2 VALUES IN (4, 5, 6)
+#    );
+#$$ end;
+#
+#statement ok
+#insert into test.test1 values(2,'test')
+#
+#statement ok
+#INSERT INTO t1 VALUES (1, 2)
+#
+#query II
+#SELECT * FROM [PARTITION p1] OF t1
+#----
+#1  2
+
+# 数据清理
+#statement ok
+#drop table test.test1;
+#
+#statement ok
+#drop schema test;
+
+# 13. 存储过程 大小写和空格测试
+# 数据准备
+statement ok
+create table test ( a string)
+
+statement ok
+create or replace procedure proFor13(string) as $$
+begin
+insert into test values ($1);
+end
+$$ language plpgsql;
+
+# u no
+statement ok
+call proFor13(' string ')
+
+statement ok
+call proFor13('StRing')
+
+statement ok
+call proFor13(' in in   in')
+
+query T
+select * from test
+----
+ string
+StRing
+ in in   in
+
+# 数据清理
+statement ok
+drop table test
+
+statement ok
+drop procedure proFor13(string)
+
+# 14. 对TIMESTAMP类型的解析
+# 数据准备
+statement ok
+create schema t
+
+statement ok
+CREATE TABLE t.test1(a INT,b VARCHAR,c timestamp default now())
+
+statement ok
+insert into t.test1 values(1,'test');
+
+statement ok
+insert into t.test1 values(2,'test');
+
+statement ok
+create or replace procedure proc() as $$
+begin
+update t.test1 set b='update' where a=1;
+end $$ language plpgsql
+
+# u no
+statement ok
+call proc()
+
+
+query IT
+select a,b from t.test1
+----
+1 update
+2 test
+
+# 数据清理
+statement ok
+drop table t.test1
+
+statement ok
+drop schema t
+
+# 15. 类型drop一致性检查
+# 数据准备
+statement ok
+create or replace procedure proc1(a string) as $$
+begin
+null;
+end $$ language plpgsql
+
+statement ok
+create or replace procedure proc2(a string[]) as $$
+begin
+null;
+end $$ language plpgsql
+
+statement ok
+create or replace procedure proc3(b string(4)[]) as $$
+begin
+null;
+end $$ language plpgsql
+
+# u no
+statement ok
+drop procedure proc1(text)
+
+statement ok
+drop procedure proc2(text[])
+
+statement ok
+drop procedure proc3(string(6)[])
+
+# 16. drop schema 问题
+# 数据准备
+statement ok
+create schema testdrop
+
+statement ok
+create or replace procedure testdrop.pro() as $$
+begin
+null;
+end $$ language plpgsql
+
+# u no
+
+# 数据清理
+statement ok
+set sql_safe_updates = false
+
+statement ok
+drop schema testdrop
+
+#TODO : seems like this case will pass with randomness, sometimes it will success with no error
+#statement error pq: No function/procedure matches the given name and argument types.
+#call testdrop.pro()
+
+# 数据清理
+statement ok
+set sql_safe_updates = true
+
+# 17. 存储过程内语法的支持测试
+statement ok
+CREATE OR REPLACE PROCEDURE proc() AS $$
+BEGIN
+CREATE SCHEMA db.sch;
+CREATE TABLE db.sch.t(a int primary key,b varchar);
+CREATE TABLE db.sch.t(a int primary key,b varchar);
+ALTER TABLE db.sch.t RENAME TO db.sch.tt;
+INSERT INTO db.sch.tt VALUES(1, 'aa'), (2, 'bb');
+SELECT * FROM db.sch.tt;
+CREATE VIEW db.sch.v as select a from db.sch.tt;
+ALTER VIEW db.sch.v RENAME TO db.sch.vv;
+CREATE SEQUENCE seq;
+ALTER SEQUENCE seq RENAME TO db.sch.seq;
+CREATE USER u;
+GRANT ALL ON db.sch.tt TO u;
+DROP VIEW db.sch.vv;
+DROP TABLE db.sch.tt;
+DROP SEQUENCE seq;
+DROP SCHEMA db.sch;
+DROP DATABASE db;
+DROP USER u;
+END
+$$ LANGUAGE plpgsql;
+
+# 18. 仅修改arg name的报错测试
+# 数据准备
+statement ok
+create or replace procedure anamet(a int) as $$
+begin
+null;
+end $$ language plpgsql
+
+# U NO
+statement error pq: can not change the name of input parameter "a"
+create or replace procedure anamet(newa int) as $$
+begin
+null;
+end $$ language plpgsql
+
+# 数据清理
+# statement ok
+# drop procedure anamet(int)
+#
+# statement ok
+# create table t28(a int primary key,b int)
+#
+# statement ok
+# CREATE TRIGGER tg1 AFTER DELETE ON t28 FOR EACH ROW begin $$ insert into test28 values(1); $$ end;
+#
+# statement ok
+# create table test28 (a int)
+#
+# statement ok
+# insert into t28 values(1,100)
+#
+# statement ok
+# delete from t28 where a=1;
+#
+# query I
+# select * from test28
+# ----
+# 1
+#
+# statement ok
+# drop table t28,test28
+
+# 18. 存储过程内schema兼容测试
+# 数据准备
+statement ok
+create database db3
+
+statement ok
+create schema db3.sch1
+
+statement ok
+create table db3.sch1.test (a int, b int)
+
+statement ok
+create or replace procedure db3.sch1.proc1() as $$
+begin
+insert into db3.sch1.test values (4, 5);
+end $$ language plpgsql
+
+# 测试
+statement ok
+call db3.sch1.proc1()
+
+query II
+select * from db3.sch1.test
+----
+4   5
+
+# 数据清理#
+statement ok
+drop table db3.sch1.test
+
+statement ok
+set sql_safe_updates = false
+
+statement ok
+drop schema db3.sch1
+
+statement ok
+set sql_safe_updates = true
+
+statement ok
+drop database db3
+
+# 19. 中文命名
+## 数据准备
+statement ok
+create database 数据库
+
+statement ok
+create schema 数据库.模式
+
+statement ok
+create user u
+
+query TT
+show databases
+----
+db1        root
+db2        root
+defaultdb  root
+postgres   root
+system     node
+test       root
+数据库        root
+
+statement ok
+CREATE OR REPLACE PROCEDURE 数据库.模式.proc() AS $$
+    BEGIN
+        create table 数据库.模式.表 (字段 INT);
+    END
+$$ LANGUAGE plpgsql;
+
+# 测试
+statement ok
+call 数据库.模式.proc()
+
+#query ITI
+#select * from system.namespace where name = '表'
+#----
+#230  表  233
+
+statement ok
+drop procedure 数据库.模式.proc()
+
+statement ok
+CREATE OR REPLACE PROCEDURE 存储过程() AS $$
+    BEGIN
+        create table 测试表(第一列 int);
+    END
+$$ LANGUAGE plpgsql;
+
+statement ok
+CALL 存储过程()
+
+#query T
+#show tables
+#----
+#t1
+#t13
+#t16
+#t17
+#t18
+#t19
+#t21
+#t211
+#测试表
+
+statement ok
+drop procedure 存储过程()
+
+statement ok
+CREATE OR REPLACE PROCEDURE 存储过程() AS $$
+    BEGIN
+        GRANT all ON 数据库.模式.表 TO u;
+    END
+$$ LANGUAGE plpgsql;
+
+statement ok
+CALL 存储过程()
+
+# 20. 约束个数检测
+# 数据准备
+statement ok
+create table t( a INT, b INT, c INT, CONSTRAINT pk PRIMARY KEY(a), CONSTRAINT ck CHECK (b > 0) ENABLE)
+
+statement ok
+CREATE OR REPLACE PROCEDURE proc() AS $$
+BEGIN
+insert into t values (1, 2, 3);
+END
+$$ LANGUAGE plpgsql;
+
+# 测试
+statement ok
+call proc()
+
+statement error pq: ZNBase PLSQL ERMSG: 23505:相同的键值 a=1 违反了主键约束 "pk"
+call proc()
+
+# 数据清理
+statement ok
+drop table t
+
+# 21. drop procedure 和 trigger 执行drop时if exists判断
+statement error pq: procedure p1234\(\) does not exist
+drop procedure p1234()
+
+statement ok
+drop procedure if exists p1234()
+
+# 准备数据
+# statement ok
+# create table test(a int)
+#
+# statement error pq: trigger's name not exists
+# drop trigger tri123 on test
+#
+# statement ok
+# drop trigger if exists tri123 on test
+#
+# # 数据清理
+# statement ok
+# drop table test
+
+# 22. 视图/索引/队列操作语法
+    # 视图
+# 数据准备
+statement ok
+create table tview1(a int)
+
+statement ok
+CREATE OR REPLACE PROCEDURE test_proc() as $$
+BEGIN
+    create view v1 as select a from tview1;
+    alter view v1 rename to v1v1;
+    drop view v1v1;
+END
+$$ language plpgsql;
+
+# UNO
+statement ok
+call test_proc()
+
+    #索引
+# 数据准备
+statement ok
+create table tb1(a int,b int)
+
+statement ok
+CREATE OR REPLACE PROCEDURE test_proc() as $$
+BEGIN
+    create index index1 on tb1(a);
+    ALTER INDEX index1 RENAME TO index_rename;
+    drop index index_rename;
+END
+$$ language plpgsql;
+
+# UNO
+# TODO(cms): 目前该用例的表现与znbase单独起一个事务的表现相同,后续可能需要随着znbase事务的变动修改相应的预期结果
+# TODO(cms): 需要先解决#25的问题,该用例会遍历当前的tableDesc
+#statement error pq: Error Happen when execute procedure: index "index_rename" in the middle of being added, try again later
+#call test_proc()
+
+    #队列
+# 数据准备
+statement ok
+CREATE OR REPLACE PROCEDURE test_proc() as $$
+BEGIN
+    CREATE SEQUENCE sequence_seq START -1 INCREMENT -2;
+    ALTER SEQUENCE sequence_seq INCREMENT 2;
+    DROP SEQUENCE sequence_seq;
+END
+$$ language plpgsql;
+
+# UNO
+statement ok
+call test_proc()
+
+# 23. 创建统计信息
+# 准备信息
+statement ok
+create table test (a int, b int)
+
+statement ok
+insert into test values (1, 2)
+
+statement ok
+CREATE OR REPLACE PROCEDURE test_proc() as $$
+BEGIN
+    CREATE STATISTICS kvalues ON a FROM test;
+END
+$$ language plpgsql;
+
+#UNO
+statement ok
+call test_proc()
+
+query I
+SELECT count(*) FROM [SHOW JOBS] WHERE job_type LIKE '%CREATE STATS%'
+----
+1
+
+# 数据清理
+statement ok
+drop table test
+
+# 24. case when结构
+    # 1
+# 数据准备
+statement ok
+create table test (a int, b int)
+
+statement ok
+CREATE OR REPLACE PROCEDURE test_proc() as $$
+DECLARE
+x int;
+BEGIN
+x=1;
+CASE x
+    WHEN 1, 2 THEN
+        insert into test values(1);
+    ELSE
+        insert into test values(2);
+END CASE;
+END
+$$ language plpgsql;
+
+# 测试
+statement ok
+call test_proc()
+
+query II
+select a, b from test
+----
+1 NULL
+
+# 数据清理
+statement ok
+drop table test
+
+    # 2
+# 数据准备
+statement ok
+create table test (a string)
+
+statement ok
+CREATE OR REPLACE PROCEDURE test_proc() as $$
+DECLARE
+x int;
+msg varchar;
+BEGIN
+x=1;
+CASE
+    WHEN x BETWEEN 0 AND 10 THEN
+        msg := 'value is between zero and ten';
+    WHEN x BETWEEN 11 AND 20 THEN
+        msg := 'value is between eleven and twenty';
+END CASE;
+insert into test values(msg);
+END
+$$ language plpgsql;
+
+# 测试
+statement ok
+call test_proc()
+
+query T
+select a from test
+----
+value is between zero and ten
+
+#数据清理
+statement ok
+drop table test
+
+# 25. CREATE TABLE语法整合
+# 数据准备
+statement ok
+create schema proc
+
+statement ok
+create or replace procedure proc() as $$
+begin
+create table proc.customers (id int primary key);
+CREATE TABLE proc.tb1(a int primary key,b varchar);
+CREATE TABLE proc.tb2(a int,b varchar,primary key(a));
+CREATE TABLE proc.tb3(a int,b varchar,primary key(a,b));
+CREATE TABLE proc.tb4(a int primary key,b varchar,c int check(c>10));
+CREATE TABLE proc.tb5(a int default 100,b varchar);
+CREATE TABLE proc.tb6(a int default 100,b varchar);
+CREATE TABLE proc.tb7(a int not null,b varchar);
+CREATE TABLE proc.tb8(a int unique,b varchar);
+CREATE TABLE proc.tb9(a int primary key,b varchar,CONSTRAINT c1 CHECK (a > 0 AND a BETWEEN 100 AND 200));
+CREATE TABLE proc.tb10(id INT PRIMARY KEY,b INT NOT NULL REFERENCES proc.customers (id) ON DELETE CASCADE);
+CREATE TABLE proc.tb11(id INT PRIMARY KEY, name varchar, INDEX id(id));
+CREATE TABLE proc.tb12(id INT PRIMARY KEY,name varchar,FAMILY "primary" (id, name));
+end
+$$ language plpgsql;
+
+# UNO
+statement ok
+call proc()
+
+# 数据清理
+statement ok
+set sql_safe_updates = false;
+
+statement ok
+drop schema proc
+
+statement ok
+set sql_safe_updates = true;
+
+## 25. 存储过程内删表没有及时删除表描述符的问题
+## 准备
+#statement ok
+#create or replace procedure proc1() as $$
+#begin
+#create table cms_a (a int);
+#end $$ language plpgsql;
+#
+#statement ok
+#create or replace procedure proc2() as $$
+#begin
+#drop table cms_a;
+#end $$ language plpgsql;
+#
+## 测试
+#statement ok
+#call proc1()
+#
+#statement ok
+#call proc2()
+#
+#statement ok
+#call proc3()
+#
+## 清理
+
+# -26. (int, int) 类型函数重载解析错误的问题
+statement ok
+drop table if exists test1
+
+statement ok
+create table test1(id int, a int)
+
+statement ok
+CREATE OR REPLACE procedure fun_2 (IN x int8, IN y int8) AS
+$$
+DECLARE
+    re int8;
+BEGIN
+    re=x+y;
+    insert into test1(id,a) values (1,re);
+END
+$$ LANGUAGE PLPGSQL;
+
+statement ok
+call fun_2(6, 4)
+
+query II
+select * from test1
+----
+1 10
+
+statement error pq: No function/procedure matches the given name and argument types.
+call fun_2(1.1, 1.2)
+
+# 数据清理
+statement ok
+drop table if exists test1
+
+statement ok
+drop procedure fun_2(int, int)
+
+# 27. case中bool表达式解析 jira-5596, 5597
+statement ok
+DROP TABLE IF EXISTS test;
+DROP PROCEDURE IF EXISTS case_test1(c int);
+CREATE TABLE test (a INT,b NUMERIC);
+INSERT INTO test values(1,1),(1,2),(1,3),(1,4),(1,5);
+
+statement ok
+CREATE OR REPLACE PROCEDURE case_test1(c int) AS $$
+DECLARE
+BEGIN
+    CASE
+        WHEN 1 THEN
+            INSERT INTO test VALUES (0,0);
+        ELSE
+            INSERT INTO test VALUES (1,1);
+    END CASE;
+END
+$$ LANGUAGE PLPGSQL;
+
+statement ok
+call case_test1(null);
+call case_test1(0);
+
+query IR
+SELECT * from test
+----
+1  1
+1  2
+1  3
+1  4
+1  5
+0  0
+0  0

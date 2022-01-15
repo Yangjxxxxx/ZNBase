@@ -1,0 +1,11 @@
+statement ok
+SELECT pg_sleep(2);
+
+statement ok
+BEGIN TRANSACTION ISOLATION LEVEL READ COMMITTED;
+
+statement ok
+DELETE FROM t WHERE a>4;
+
+statement ok
+COMMIT;

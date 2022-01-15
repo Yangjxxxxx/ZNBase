@@ -1,0 +1,8 @@
+statement ok
+CREATE TABLE reptest(a int,b int,c int);
+
+statement ok
+insert into reptest select generate_series(1,100),generate_series(1,100),generate_series(1,100);
+
+statement ok
+alter table reptest replication enable;

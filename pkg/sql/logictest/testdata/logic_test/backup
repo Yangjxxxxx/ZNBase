@@ -1,0 +1,7 @@
+# LogicTest: local local-opt fakedist fakedist-opt fakedist-metadata
+
+query error unknown statement type
+DUMP DATABASE foo TO SST '/bar' INCREMENTAL FROM '/baz'
+
+query error pq: syntax error at or near "restore"
+RESTORE DATABASE foo FROM '/bar'

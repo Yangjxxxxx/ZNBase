@@ -1,0 +1,9 @@
+statement ok
+CREATE TABLE t(key INT PRIMARY KEY , value CHAR)
+
+statement ok
+INSERT INTO t VALUES(0 , 'A')
+
+statement ok
+INSERT INTO t VALUES(1 , 'B')
+

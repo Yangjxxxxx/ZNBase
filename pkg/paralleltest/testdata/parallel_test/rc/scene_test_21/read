@@ -1,0 +1,5 @@
+statement ok
+BEGIN TRANSACTION ISOLATION LEVEL READ COMMITTED;
+
+statement ok
+COMMIT;

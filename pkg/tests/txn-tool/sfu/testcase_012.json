@@ -1,0 +1,166 @@
+{
+    "初始化": [
+        {
+            "cmd": "DROP TABLE IF EXISTS t",
+            "type": "execute"
+        },
+        {
+            "cmd": "CREATE TABLE t(a INT, b INT, c INT, d INT, primary key(a, b, c));",
+            "type": "execute"
+        },
+        {
+            "cmd": "INSERT INTO t VALUES(1, 1, 1, 1),(2, 2, 2, 2),(3, 3, 3, 3);",
+            "type": "execute"
+        }
+    ],
+    "执行": [
+        {
+            "cmd": "BEGIN;",
+            "conn": "conn1",
+            "type": "execute",
+            "result": {
+                "regular": "BEG.*"
+            }
+        },
+        {
+            "cmd": "SELECT * FROM t where (a, b, c)=(1, 1, 1) for update;",
+            "conn": "conn1",
+            "type": "query",
+            "result": {
+                "header": [
+                    "a",
+                    "b",
+                    "c",
+                    "d"
+                ],
+                "body": [
+                    [
+                        1,
+                        1,
+                        1,
+                        1
+                    ]
+                ]
+            }
+        },
+        {
+            "cmd": "SELECT * FROM t WHERE (a, b, c)=(3, 3, 3) FOR UPDATE NOWAIT;",
+            "conn": "conn2",
+            "type": "query",
+            "result": {
+                "header": [
+                    "a",
+                    "b",
+                    "c",
+                    "d"
+                ],
+                "body": [
+                    [
+                        3,
+                        3,
+                        3,
+                        3
+                    ]
+                ]
+            }
+        },
+        {
+            "cmd": "COMMIT;",
+            "conn": "conn1"
+        },
+        {
+            "cmd": "BEGIN;",
+            "conn": "conn1",
+            "type": "execute",
+            "result": {
+                "regular": "BEG.*"
+            }
+        },
+        {
+            "cmd": "SELECT * FROM t where (c, a)=(1, 1) for update;",
+            "conn": "conn1",
+            "type": "query",
+            "result": {
+                "header": [
+                    "a",
+                    "b",
+                    "c",
+                    "d"
+                ],
+                "body": [
+                    [
+                        1,
+                        1,
+                        1,
+                        1
+                    ]
+                ]
+            }
+        },
+        {
+            "cmd": "SELECT * FROM t WHERE (a, b, c)=(3, 3, 3) FOR UPDATE NOWAIT;",
+            "conn": "conn2",
+            "type": "query",
+            "result": {
+                "header": [
+                    "a",
+                    "b",
+                    "c",
+                    "d"
+                ],
+                "body": [
+                    [
+                        3,
+                        3,
+                        3,
+                        3
+                    ]
+                ]
+            }
+        },
+        {
+            "cmd": "COMMIT;",
+            "conn": "conn1"
+        },
+        {
+            "cmd": "BEGIN;",
+            "conn": "conn1",
+            "type": "execute",
+            "result": {
+                "regular": "BEG.*"
+            }
+        },
+        {
+            "cmd": "SELECT * FROM t where (c, b)=(1, 1) for update;",
+            "conn": "conn1",
+            "type": "query",
+            "result": {
+                "header": [
+                    "a",
+                    "b",
+                    "c",
+                    "d"
+                ],
+                "body": [
+                    [
+                        1,
+                        1,
+                        1,
+                        1
+                    ]
+                ]
+            }
+        },
+        {
+            "cmd": "SELECT * FROM t WHERE (a, b, c)=(3, 3, 3) FOR UPDATE NOWAIT;",
+            "conn": "conn2",
+            "type": "query",
+            "block": false,
+            "error": "could not obtain lock on row \\(a,b,c\\)=\\(3,3,3\\) in t@primary"
+        },
+        {
+            "cmd": "COMMIT;",
+            "conn": "conn1"
+        }
+    ]
+}

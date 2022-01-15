@@ -1,0 +1,28 @@
+statement ok
+BEGIN;
+
+statement ok
+SET TRANSACTION ISOLATION LEVEL READ COMMITTED;
+
+query II
+SELECT * FROM T;
+----
+1  1
+2  2
+3  3
+
+statement ok
+SELECT pg_sleep(2);
+
+statement count 1
+UPDATE t SET b=5 WHERE a>2;
+
+query II
+SELECT * FROM t;
+----
+1  1
+2  2
+3  5
+
+statement ok
+COMMIT;

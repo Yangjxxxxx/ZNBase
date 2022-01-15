@@ -1,0 +1,7 @@
+create_table_stmt ::=
+	'CREATE' opt_temp 'TABLE' table_name '(' table_definition ')' opt_inherits 'INTERLEAVE' 'IN' 'PARENT' table_name '(' name_list ')' opt_partition_by opt_locate_in
+	| 'CREATE' opt_temp 'TABLE' table_name '(' table_definition ')' opt_inherits  opt_partition_by opt_locate_in
+	| 'CREATE' opt_temp 'TABLE' 'IF' 'NOT' 'EXISTS' table_name '(' table_definition ')' opt_inherits 'INTERLEAVE' 'IN' 'PARENT' table_name '(' name_list ')' opt_partition_by opt_locate_in
+	| 'CREATE' opt_temp 'TABLE' 'IF' 'NOT' 'EXISTS' table_name '(' table_definition ')' opt_inherits  opt_partition_by opt_locate_in
+	| 'CREATE' opt_temp 'TABLE' 'IF' 'NOT' 'EXISTS' table_name 'LIKE' table_name
+	| 'CREATE' opt_temp 'TABLE' table_name 'LIKE' table_name

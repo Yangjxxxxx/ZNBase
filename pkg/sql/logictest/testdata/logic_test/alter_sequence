@@ -1,0 +1,239 @@
+# LogicTest: local local-opt local-parallel-stmts fakedist fakedist-opt fakedist-metadata
+
+# see also file `sequences`
+
+statement ok
+CREATE SEQUENCE foo
+
+query I
+SELECT nextval('foo')
+----
+1
+
+query I
+SELECT nextval('foo')
+----
+2
+
+statement ok
+ALTER SEQUENCE foo INCREMENT BY 5
+
+query I
+SELECT nextval('foo')
+----
+7
+
+# alter sequence case1
+statement ok
+CREATE SEQUENCE seq_testx INCREMENT BY 1 MINVALUE 1 MAXVALUE 12
+
+statement ok
+ALTER SEQUENCE seq_testx INCREMENT BY 3 MINVALUE 1 MAXVALUE 8 START WITH 4
+
+query I
+SELECT nextval('seq_testx')
+----
+1
+
+statement ok
+DROP SEQUENCE seq_testx
+
+# alter sequence case2
+statement ok
+CREATE SEQUENCE seq_testx INCREMENT BY 1 MINVALUE 1 MAXVALUE 12
+
+statement ok
+ALTER SEQUENCE seq_testx INCREMENT BY 3 MINVALUE 1 MAXVALUE 8
+
+query I
+SELECT nextval('seq_testx')
+----
+1
+
+statement ok
+DROP SEQUENCE seq_testx
+
+# alter sequence case3
+statement ok
+CREATE SEQUENCE seq_testx INCREMENT  BY 1 MINVALUE 1 MAXVALUE 100 START WITH 5
+
+statement ok
+ALTER SEQUENCE seq_testx INCREMENT  BY 3 MINVALUE 1 MAXVALUE 100
+
+query I
+SELECT nextval('seq_testx')
+----
+5
+
+statement ok
+DROP SEQUENCE seq_testx
+
+# alter sequence case4
+statement ok
+CREATE SEQUENCE seq_testx INCREMENT  BY -3   MINVALUE -100 MAXVALUE -1 START WITH -5
+
+statement ok
+ALTER SEQUENCE seq_testx INCREMENT  BY -2   MINVALUE -100 MAXVALUE -1
+
+query I
+SELECT nextval('seq_testx')
+----
+-5
+
+statement ok
+DROP SEQUENCE seq_testx
+
+# alter sequence case5
+statement ok
+CREATE SEQUENCE seq_testx INCREMENT  BY 1   MINVALUE 1 MAXVALUE 12 START WITH 2
+
+query I
+SELECT nextval('seq_testx')
+----
+2
+
+statement ok
+ALTER SEQUENCE seq_testx INCREMENT  BY 3   MINVALUE 1 MAXVALUE 8 START WITH 4
+
+query I
+SELECT nextval('seq_testx')
+----
+5
+
+query I
+SELECT nextval('seq_testx')
+----
+8
+
+statement error pq: nextval\(\): reached maximum value of sequence "seq_testx" \(8\)
+SELECT nextval('seq_testx')
+
+statement ok
+DROP SEQUENCE seq_testx
+
+# alter sequence case6
+
+#create sequence and alter sequence. (sequence has not been changed)
+statement ok
+CREATE SEQUENCE seq_testx INCREMENT BY 1 MINVALUE 1 MAXVALUE 100
+
+statement error pq: START value \(1\) cannot be greater than MAXVALUE \(-5\)
+ALTER SEQUENCE seq_testx INCREMENT BY -1 MINVALUE -10 MAXVALUE -5
+
+statement ok
+DROP SEQUENCE seq_testx
+
+# alter sequence case7
+statement ok
+CREATE SEQUENCE seq_testx INCREMENT BY 10 MINVALUE 1 MAXVALUE 100
+
+statement ok
+SELECT nextval ('seq_testx')
+
+statement ok
+SELECT nextval ('seq_testx')
+
+statement error pq: START value \(11\) cannot be greater than MAXVALUE \(5\)
+ALTER SEQUENCE seq_testx INCREMENT BY 1 MINVALUE 1 MAXVALUE 5
+
+statement ok
+DROP SEQUENCE seq_testx
+
+# alter sequence case8
+statement ok
+create sequence seq_testx minvalue 1 maxvalue 100 increment 2 start 3;
+
+statement error pq: START value \(0\) cannot be less than MINVALUE \(1\)
+alter sequence seq_testx start with 0;
+
+statement ok
+DROP SEQUENCE seq_testx
+
+statement ok
+drop table if exists test1sqt;
+
+statement ok
+drop sequence if exists test1sq;
+
+statement ok
+drop sequence if exists foo;
+
+statement ok
+create sequence test1sq;
+
+statement ok
+select nextval('test1sq');
+
+statement ok
+create table test1sqt(a int,b int);
+
+query TT
+show tables;
+----
+test1sqt  root
+
+query TTT
+show sequences;
+----
+public  test1sq  root
+
+statement ok
+ALTER SEQUENCE test1sq OWNED BY test1sqt.b;
+
+statement ok
+drop table test1sqt;
+
+query TT
+show tables;
+----
+
+query TTT
+show sequences;
+----
+
+
+statement ok
+drop table if exists test1sqt;
+
+statement ok
+drop sequence if exists test1sq;
+
+statement ok
+drop sequence if exists foo;
+
+statement ok
+create sequence test1sq;
+
+statement ok
+select nextval('test1sq');
+
+statement ok
+create table test1sqt(a int,b int);
+
+query TT
+show tables;
+----
+test1sqt  root
+
+query TTT
+show sequences;
+----
+public  test1sq  root
+
+statement ok
+ALTER SEQUENCE test1sq OWNED BY test1sqt.b;
+
+statement ok
+ALTER SEQUENCE test1sq OWNED BY NONE;
+
+statement ok
+drop table test1sqt;
+
+query TT
+show tables;
+----
+
+query TTT
+show sequences;
+----
+public  test1sq  root

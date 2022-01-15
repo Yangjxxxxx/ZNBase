@@ -1,0 +1,124 @@
+# LogicTest: local local-opt local-parallel-stmts fakedist fakedist-opt fakedist-metadata
+
+statement ok
+GRANT USAGE ON DATABASE test TO testuser
+
+statement ok
+CREATE TABLE t (
+  a INT PRIMARY KEY,
+  b INT,
+  FAMILY (a),
+  FAMILY (b)
+)
+
+statement ok
+INSERT INTO t VALUES (1,1)
+
+user root
+
+statement ok
+CREATE INDEX foo ON t (b)
+
+statement error duplicate index name: \"foo\"
+CREATE INDEX foo ON t (a)
+
+statement error index \"bar\" contains unknown column \"c\"
+CREATE INDEX bar ON t (c)
+
+statement error index \"bar\" contains duplicate column \"b\"
+CREATE INDEX bar ON t (b, b);
+
+query TTBITTBBTT colnames
+SHOW INDEXES FROM t
+----
+table_name  index_name  non_unique  seq_in_index  column_name  direction  storing  implicit locality  partitioned
+t           primary     false       1             a            ASC        false    false    global    NO
+t           foo         true        1             b            ASC        false    false    global    NO
+t           foo         true        2             a            ASC        false    true     global    NO
+
+statement ok
+INSERT INTO t VALUES (2,1)
+
+statement error pgcode 23505 违反了唯一性约束 "bar"
+CREATE UNIQUE INDEX bar ON t (b)
+
+query TTBITTBBTT colnames
+SHOW INDEXES FROM t
+----
+table_name  index_name  non_unique  seq_in_index  column_name  direction  storing  implicit locality  partitioned
+t           primary     false       1             a            ASC        false    false    global    NO
+t           foo         true        1             b            ASC        false    false    global    NO
+t           foo         true        2             a            ASC        false    true     global    NO
+
+# test for DESC index
+
+statement ok
+DROP TABLE t
+
+statement ok
+CREATE TABLE t (
+  a INT PRIMARY KEY,
+  b INT,
+  c INT
+)
+
+statement ok
+INSERT INTO t VALUES (1,1,1), (2,2,2)
+
+statement ok
+CREATE INDEX b_desc ON t (b DESC)
+
+statement ok
+CREATE INDEX b_asc ON t (b ASC, c DESC)
+
+query TTBITTBBTT colnames
+SHOW INDEXES FROM t
+----
+table_name  index_name  non_unique  seq_in_index  column_name  direction  storing  implicit locality  partitioned
+t           primary     false       1             a            ASC        false    false    global    NO
+t           b_desc      true        1             b            DESC       false    false    global    NO
+t           b_desc      true        2             a            ASC        false    true     global    NO
+t           b_asc       true        1             b            ASC        false    false    global    NO
+t           b_asc       true        2             c            DESC       false    false    global    NO
+t           b_asc       true        3             a            ASC        false    true     global    NO
+
+statement error pgcode 42P01 relation "foo" does not exist
+CREATE INDEX fail ON foo (b DESC)
+
+statement ok
+CREATE VIEW v AS SELECT a,b FROM t
+
+statement error pgcode 42809 "v" is not a table or materialized view
+CREATE INDEX failview ON v (b DESC)
+
+statement ok
+CREATE TABLE privs (a INT PRIMARY KEY, b INT)
+
+user testuser
+
+statement error user testuser does not have REFERENCES privilege on relation test.public.privs
+CREATE INDEX foo ON privs (b)
+
+user root
+
+query TTBITTBBTT colnames
+SHOW INDEXES FROM privs
+----
+table_name  index_name  non_unique  seq_in_index  column_name  direction  storing  implicit locality  partitioned
+privs       primary     false       1             a            ASC        false    false    global    NO
+
+statement ok
+GRANT REFERENCES ON privs TO testuser
+
+user testuser
+
+statement ok
+CREATE INDEX foo ON privs (b)
+
+query TTBITTBBTT colnames
+SHOW INDEXES FROM privs
+----
+table_name  index_name  non_unique  seq_in_index  column_name  direction  storing  implicit locality  partitioned
+privs       primary     false       1             a            ASC        false    false    global    NO
+privs       foo         true        1             b            ASC        false    false    global    NO
+privs       foo         true        2             a            ASC        false    true     global    NO

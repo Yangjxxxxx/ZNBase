@@ -1,0 +1,26 @@
+statement ok
+CREATE TABLE T (a INT primary key,b INT);
+
+statement ok
+insert into T values(1,2);
+
+statement ok
+insert into T values(8,4);
+
+statement ok
+insert into T values(3,6);
+
+statement ok
+insert into T values(6,4);
+
+statement ok
+insert into T values(5,3);
+
+statement ok
+insert into T values(9,5);
+
+statement ok
+insert into T values(7,2);
+
+statement ok
+insert into T values(14,4);

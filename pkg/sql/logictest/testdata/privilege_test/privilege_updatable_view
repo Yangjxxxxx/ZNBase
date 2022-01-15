@@ -1,0 +1,1038 @@
+# LogicTest: local-insecure
+#Privilege check for updatable view
+
+#Select privilege check
+#Test 1: Select on table privilege check
+#1-1: Invoker with all privilege
+userInsecure root
+
+statement ok
+CREATE USER u1;
+CREATE TABLE t (id INT, name STRING, age INT);
+INSERT INTO t VALUES (1, 'A', 10), (2, 'B', 20);
+GRANT USAGE ON DATABASE test TO u1;
+GRANT SELECT ON TABLE t TO u1;
+
+userInsecure u1
+
+query TT
+SHOW TABLES;
+----
+t           root
+
+query ITI
+SELECT * FROM t;
+----
+1   A   10
+2   B   20
+
+query ITI
+SELECT * FROM t WHERE id=1;
+----
+1   A   10
+
+userInsecure root
+
+statement ok
+REVOKE SELECT ON TABLE t FROM u1;
+
+#1-2: Invoker with column privilege
+userInsecure root
+
+statement ok
+GRANT SELECT(name) ON TABLE t TO u1;
+
+userInsecure u1
+
+query TT
+SHOW TABLES;
+----
+t           root
+
+statement error pq: user u1 does not have SELECT privilege on relation test.public.t
+SELECT * FROM t;
+
+query T
+SELECT name FROM t;
+----
+A
+B
+
+userInsecure root
+
+statement ok
+REVOKE SELECT(name) ON TABLE t FROM u1;
+
+#1-3: No privilege on table for Invoker
+userInsecure u1
+
+query TT
+SHOW TABLES;
+----
+t  root
+
+#Test 2: Select on view, table privilege check
+#2-1: Definer create view successfully with no privilege on table, but cannot SELECT from view
+userInsecure root
+
+statement ok
+GRANT CREATE ON SCHEMA public TO u1;
+
+userInsecure u1
+
+statement ok
+CREATE VIEW v1 AS SELECT * FROM t;
+
+statement error pq: user u1 does not have SELECT privilege on relation test.public.t
+SELECT * FROM t;
+
+statement error pq: user u1 does not have SELECT privilege on relation test.public.t
+SELECT * FROM v1;
+
+#2-2: Grant Invoker privilege on view, no privilege for Definer on table
+userInsecure root
+
+statement ok
+CREATE USER u2;
+
+userInsecure u1
+
+statement ok
+GRANT SELECT ON VIEW v1 TO u2;
+
+statement error pq: user u1 does not have SELECT privilege on relation test.public.t
+SELECT * FROM v1;
+
+#2-3: Grant Definer privilege on table, no privilege for Invoker on view
+userInsecure root
+
+statement ok
+GRANT SELECT ON TABLE t TO u1;
+GRANT USAGE ON DATABASE test TO u2;
+
+userInsecure u1
+
+statement ok
+REVOKE SELECT ON VIEW v1 FROM u2;
+
+query ITI
+SELECT * FROM t;
+----
+1 A 10
+2 B 20
+
+query ITI
+SELECT * FROM v1;
+----
+1 A 10
+2 B 20
+
+userInsecure u2
+
+statement error pq: user u2 does not have SELECT privilege on relation test.public.v1
+SELECT * FROM v1;
+
+#2-3: Grant Invoker column privilege on view, grant Definer privilege on table
+userInsecure u1
+
+statement ok
+GRANT SELECT(id, name) ON VIEW v1 TO u2;
+
+userInsecure u2
+
+statement error pq: user u2 does not have SELECT privilege on relation test.public.v1
+SELECT * FROM v1;
+
+statement ok
+SELECT id, name FROM v1;
+
+#2-4: Grant different column privilege for Invoker (to view) and Definer (to table)
+userInsecure root
+
+statement ok
+REVOKE SELECT ON TABLE t FROM u1;
+GRANT SELECT(age) ON TABLE t TO u1;
+
+userInsecure u1
+
+statement ok
+REVOKE SELECT ON VIEW v1 FROM u2;
+
+query I
+SELECT age FROM t;
+----
+10
+20
+
+statement error pq: user u1 does not have SELECT privilege on relation test.public.t
+SELECT * FROM v1;
+
+statement ok
+GRANT SELECT (name) ON VIEW v1 TO u2;
+
+userInsecure u2
+
+statement error pq: user u1 does not have SELECT privilege on relation test.public.t
+SELECT NAME FROM v1;
+
+
+#2-5: When create a view based on two tables, grant privilege for Invoker on view, no privilege for Definer on one of the table
+userInsecure root
+
+statement ok
+REVOKE SELECT (age) ON TABLE t FROM u1;
+
+userInsecure u1
+
+statement ok
+REVOKE SELECT (name) ON VIEW v1 FROM u2;
+DROP VIEW v1;
+
+userInsecure root
+
+statement ok
+CREATE TABLE t2 (id INT, name STRING, addr STRING);
+INSERT INTO t2 VALUES (1, 'X', 'BeiJing');
+
+userInsecure u1
+
+statement ok
+CREATE VIEW v1 AS SELECT t.id, t.name, t2.addr FROM t, t2;
+
+userInsecure root
+
+statement ok
+GRANT SELECT ON TABLE t TO u1;
+
+userInsecure u1
+
+query ITI
+SELECT * FROM t;
+----
+1 A 10
+2 B 20
+
+statement ok
+GRANT SELECT ON VIEW v1 TO u2;
+
+userInsecure u2
+
+query TT
+SHOW TABLES
+----
+t   root
+t2  root
+v1 u1
+
+statement error pq: user u1 does not have SELECT privilege on relation test.public.t2
+SELECT * FROM v1;
+
+#2-6: When create a view based on two tables, grant privilege for Invoker on view, grant privilege on both table for Definer
+userInsecure root
+
+statement ok
+GRANT SELECT ON TABLE t2 TO u1;
+
+userInsecure u1
+
+query ITT
+SELECT * FROM t2;
+----
+1 X BeiJing
+
+query ITT
+SELECT * FROM v1;
+----
+1 A BeiJing
+2 B BeiJing
+
+userInsecure u2
+
+query ITT
+SELECT * FROM v1;
+----
+1 A BeiJing
+2 B BeiJing
+
+#Test 3: Select privilege check on view which based on other views
+#Note: view (v3) create based on views (v1, v2), view (v1) create based on tables (t, t2), view (v2) create based on table (t3)
+#3-1: Grant u1 column privilege, where those columns are not corresponding to the correct columns on view. Grant u2 the correct privilege on v1, v2.
+userInsecure u1
+
+statement ok
+REVOKE SELECT ON VIEW v1 FROM u2;
+
+userInsecure root
+
+statement ok
+REVOKE SELECT ON TABLE t, t2 FROM u1;
+CREATE TABLE t3 (id INT, name STRING, sex STRING);
+INSERT INTO t3 VALUES (1, 'Chris', 'male'), (2, 'Amanda', 'female');
+GRANT CREATE ON SCHEMA public TO u2;
+
+userInsecure u1
+
+statement ok
+CREATE VIEW v2 AS SELECT sex FROM t3;
+
+userInsecure u2
+
+statement ok
+CREATE VIEW v3 AS SELECT v1.name, v1.addr, v2.sex FROM v1, v2;
+
+userInsecure root
+
+statement ok
+GRANT SELECT (age) ON TABLE t TO u1;
+GRANT SELECT (name) ON TABLE t2 TO u1;
+GRANT SELECT (name) ON TABLE t3 TO u1;
+
+userInsecure u1
+
+statement ok
+GRANT SELECT ON VIEW v1 TO u2;
+GRANT SELECT (sex) ON VIEW v2 TO U2;
+
+statement error pq: user u1 does not have SELECT privilege on relation test.public.t
+SELECT * FROM v1;
+
+statement error pq: user u1 does not have SELECT privilege on relation test.public.t3
+SELECT * FROM v2;
+
+userInsecure u2
+
+statement error pq: user u1 does not have SELECT privilege on relation test.public.t
+SELECT * FROM v3;
+
+#3-2: Remain privilege on #3-1, grant u1 SELECT privilege on table t.
+userInsecure root
+
+statement ok
+GRANT SELECT ON TABLE t TO u1;
+
+userInsecure u1
+
+statement error pq: user u1 does not have SELECT privilege on relation test.public.t2
+SELECT * FROM v1;
+
+userInsecure u2
+
+statement error pq: user u1 does not have SELECT privilege on relation test.public.t2
+SELECT * FROM v3;
+
+#3-3: Only grant SELECT on v3 to u2.
+userInsecure root
+
+statement ok
+REVOKE SELECT ON t, t2, t3 FROM u1;
+
+userInsecure u2
+
+statement error pq: user u1 does not have SELECT privilege on relation test.public.t
+SELECT * FROM v3;
+
+#3-4: Grant all correct SELECT privilege, but wrong column privilege on v3.
+userInsecure root
+
+statement ok
+GRANT SELECT ON TABLE t TO u1;
+GRANT SELECT ON TABLE t2 TO u1;
+GRANT SELECT ON TABLE t3 TO U1;
+
+userInsecure u1
+
+statement ok
+REVOKE SELECT ON VIEW v1 FROM u2;
+REVOKE SELECT ON VIEW v2 FROM u2;
+GRANT SELECT (id) ON VIEW v1 TO u2;
+
+userInsecure u2
+
+statement error pq: user u2 does not have SELECT privilege on relation test.public.v1
+SELECT * FROM v3;
+
+#3-5: Remain #3-4 privilege, grant u2 SELECT privilege on view v1, but view v2
+userInsecure u1
+
+statement ok
+GRANT SELECT ON VIEW v1 TO u2;
+
+userInsecure u2
+
+statement error pq: user u2 does not have SELECT privilege on relation test.public.v2
+SELECT * FROM v3;
+
+#Logic test with Invoker
+#3-6: Grant Invoker SELECT privilege on view v3, but no other privilege
+userInsecure root
+
+statement ok
+CREATE USER u3;
+GRANT USAGE ON DATABASE test TO u3;
+REVOKE SELECT ON t, t2 FROM u1;
+REVOKE SELECT ON t3 FROM u1;
+
+userInsecure u1
+
+statement ok
+REVOKE SELECT ON VIEW v1 FROM u2;
+REVOKE SELECT ON VIEW v2 FROM u2;
+
+userInsecure u2
+
+statement ok
+GRANT SELECT ON VIEW v3 TO u3;
+
+userInsecure u3
+
+statement error pq: user u1 does not have SELECT privilege on relation test.public.t
+SELECT * FROM v3;
+
+#3-7: Grant all correct privilege, but wrong column privilege on v3 for u3
+userInsecure root
+
+statement ok
+GRANT SELECT ON t, t2, t3 TO u1;
+
+userInsecure u1
+
+statement ok
+GRANT SELECT ON VIEW v1, v2 TO u2;
+
+userInsecure u2
+
+statement ok
+REVOKE SELECT ON VIEW v3 FROM u3;
+GRANT SELECT (addr) ON VIEW v3 TO u3;
+
+userInsecure u3
+
+statement error pq: user u3 does not have SELECT privilege on relation test.public.v3
+SELECT * FROM v3;
+
+query T
+SELECT addr FROM v3;
+----
+BeiJing
+BeiJing
+BeiJing
+BeiJing
+
+#3-8: Grant all correct privilege
+userInsecure u2
+
+statement ok
+GRANT SELECT ON VIEW v3 TO u3;
+
+userInsecure u3
+
+query TTT
+SELECT * FROM v3;
+----
+A BeiJing male
+A BeiJing female
+B BeiJing male
+B BeiJing female
+
+
+
+
+#Update privilege check
+#Test 1: Select on table privilege check
+
+userInsecure root
+
+statement ok
+DROP VIEW v3, v2, v1;
+DROP TABLE t, t2, t3;
+REVOKE ALL ON DATABASE test FROM u1;
+REVOKE ALL ON DATABASE test FROM u2;
+REVOKE ALL ON DATABASE test FROM u3;
+REVOKE ALL ON SCHEMA public FROM u1;
+REVOKE ALL ON SCHEMA public FROM u2;
+REVOKE ALL ON SCHEMA public FROM u3;
+DROP USER u1, u2, u3;
+
+#Update privilege check
+
+#Test 1: Normal UPDATE...WHERE...
+userInsecure root
+
+statement ok
+CREATE USER u1;
+CREATE TABLE t0 (l1 int, l2 int, l3 int);
+INSERT INTO t0 VALUES (1, 1, 1), (2, 2, 2);
+GRANT USAGE ON DATABASE test TO public;
+GRANT CREATE ON SCHEMA public TO public;
+
+userInsecure u1
+
+statement ok
+CREATE VIEW v1 AS SELECT l1, l2 FROM t0;
+SET sql_safe_updates = false
+
+statement error pq: user u1 does not have UPDATE privilege on relation test.public.t0
+UPDATE v1 SET l1=3;
+
+statement error pq: user u1 does not have UPDATE privilege on relation test.public.t0
+UPDATE v1 SET l1=3 WHERE l2=1;
+
+userInsecure root
+
+statement ok
+GRANT UPDATE (l1) ON TABLE t0 TO u1;
+
+userInsecure u1
+
+statement error pq: user u1 does not have SELECT privilege on relation test.public.t0
+UPDATE v1 SET l1=3 WHERE l2=1;
+
+userInsecure root
+
+statement ok
+GRANT SELECT (l2) ON TABLE t0 TO u1;
+
+userInsecure u1
+
+statement error user u1 does not have SELECT privilege on relation test.public.t0
+UPDATE v1 SET l1=3 WHERE l2=1;
+
+userInsecure root
+
+statement ok
+GRANT SELECT(l1) ON TABLE t0 TO u1;
+
+userInsecure u1
+
+statement ok
+UPDATE v1 SET l1=3 WHERE l2=1;
+UPDATE v1 SET l1=2;
+
+userInsecure root
+
+statement ok
+CREATE USER u2;
+
+userInsecure u1
+
+statement ok
+GRANT UPDATE (l1) ON VIEW v1 TO u2;
+
+userInsecure u2
+
+statement ok
+SET sql_safe_updates = false;
+UPDATE v1 SET l1 = 5;
+
+statement error pq: user u2 does not have SELECT privilege on relation test.public.v1
+UPDATE v1 SET l1 = 3 WHERE l2=1;
+
+userInsecure u1
+
+statement ok
+GRANT SELECT (l2) ON VIEW v1 TO u2;
+
+userInsecure u2
+
+statement ok
+UPDATE v1 SET l1 = 3 WHERE l2=1;
+
+
+#Test 2: UPDATE...FROM...WHERE...
+userInsecure u1
+
+statement ok
+UPDATE v1 SET l1=4 FROM t0 WHERE t0.l2=1;
+
+statement error pq: user u1 does not have SELECT privilege on relation test.public.t0
+UPDATE v1 SET l1=3 FROM t0 WHERE t0.l3=2;
+
+userInsecure root
+
+statement ok
+GRANT SELECT (l3) ON TABLE t0 TO u1;
+
+userInsecure u1
+
+statement ok
+UPDATE v1 SET l1=3 FROM t0 WHERE t0.l3=2;
+
+userInsecure u2
+
+statement error pq: user u2 does not have SELECT privilege on relation test.public.t0
+update v1 set l1=5 from t0 where t0.l3=2;
+
+userInsecure root
+
+statement ok
+GRANT SELECT(l3) ON TABLE t0 TO u2;
+
+userInsecure u2
+
+statement ok
+update v1 set l1=5 from t0 where t0.l3=2;
+
+
+#Test 3: UPDATE... with path: database.schema.table
+userInsecure u1
+
+statement ok
+update test.public.v1 set l1=5 where l2 = 2;
+REVOKE SELECT ON VIEW v1 FROM u2;
+
+userInsecure u2
+
+statement error pq: user u2 does not have SELECT privilege on relation test.public.v1
+update test.public.v1 set l1=5 where l2 = 2;
+
+userInsecure u1
+
+statement ok
+GRANT SELECT (l2) ON VIEW v1 TO u2;
+
+userInsecure u2
+
+statement ok
+update test.public.v1 set l1=5 where l2 = 2;
+
+#Test 4: UPDATE with complicate SQL
+userInsecure root
+
+statement ok
+CREATE TABLE t01 (a INT, b INT, c INT, d INT, e INT);
+INSERT INTO t01 VALUES (1, 1, 1, 1, 1), (2, 4, 6, 8, 10), (3, 3, 3, 3, 3);
+GRANT UPDATE (a, b) ON TABLE t01 TO u1;
+
+userInsecure u1
+
+statement ok
+CREATE VIEW v11 AS SELECT a, b, c, d FROM t01;
+
+statement error pq: user u1 does not have SELECT privilege on relation test.public.t01
+UPDATE v11 SET (a, b) = (10, 10) WHERE (a, b, c, d) = (2, 4, 6, 8);
+
+userInsecure root
+
+statement ok
+GRANT SELECT (a, b) ON TABLE t01 TO u1;
+
+userInsecure u1
+
+statement error pq: user u1 does not have SELECT privilege on relation test.public.t01
+UPDATE v11 SET (a, b) = (10, 10) WHERE (a, b, c, d) = (2, 4, 6, 8);
+
+userInsecure root
+
+statement ok
+GRANT SELECT (c, d) ON TABLE t01 TO u1;
+
+userInsecure u1
+
+statement ok
+UPDATE v11 SET (a, b) = (10, 10) WHERE (a, b, c, d) = (2, 4, 6, 8);
+
+# Test 5: CREATE view with where statement, UPDATE view with where statement
+userInsecure root
+
+statement ok
+REVOKE SELECT ON TABLE t01 FROM u1;
+REVOKE UPDATE ON TABLE t01 FROM u1;
+
+userInsecure u1
+
+statement ok
+CREATE VIEW v12 AS SELECT a, b, c, d FROM t01 AS t WHERE t.d = 8;
+
+statement error pq: user u1 does not have UPDATE privilege on relation test.public.t01
+UPDATE v12 SET a = 2 from t01 AS tx WHERE tx.c = 6;
+
+userInsecure root
+
+statement ok
+GRANT UPDATE (a) ON TABLE t01 TO u1;
+
+userInsecure u1
+
+statement error user u1 does not have SELECT privilege on relation test.public.t01
+UPDATE v12 SET a = 2 from t01 AS tx WHERE tx.c = 6;
+
+userInsecure root
+
+statement ok
+GRANT SELECT (a,b) ON TABLE t01 TO U1;
+
+userInsecure u1
+
+statement error pq: user u1 does not have SELECT privilege on relation test.public.t01
+UPDATE v12 SET a = 2 from t01 AS tx WHERE tx.c = 6;
+
+userInsecure root
+
+statement ok
+GRANT SELECT (c, d) ON TABLE t01 TO u1;
+
+
+userInsecure u1
+
+statement ok
+UPDATE v12 SET a = 2 from t01 AS tx WHERE tx.c = 6;
+GRANT UPDATE (a) ON VIEW v12 TO u2;
+
+userInsecure u2
+
+statement ok
+UPDATE v12 SET a=3;
+
+statement error pq: user u2 does not have SELECT privilege on relation test.public.t01
+UPDATE v12 SET a = 5 from t01 AS tx WHERE tx.c = 6;
+
+userInsecure root
+
+statement ok
+GRANT SELECT (c) ON TABLE t01 TO u2;
+
+userInsecure u2
+
+statement ok
+UPDATE v12 SET a = 5 from t01 AS tx WHERE tx.c = 6;
+
+
+#Test 6: Update with returning
+userInsecure u1
+
+query I
+UPDATE v12 SET a=3 FROM t01 AS txx WHERE txx.c=6 RETURNING a;
+----
+3
+
+userInsecure u2
+
+statement error pq: user u2 does not have SELECT privilege on relation test.public.v12
+UPDATE v12 SET a=5 FROM t01 AS txx WHERE txx.c=6 RETURNING a;
+
+userInsecure u1
+
+statement ok
+GRANT SELECT (a) ON VIEW v12 TO u2;
+
+userInsecure u2
+
+query I
+UPDATE v12 SET a=5 FROM t01 AS txx WHERE txx.c=6 RETURNING a;
+----
+5
+
+#Test 7: Upsert test
+userInsecure u1
+
+statement error pq: feature unsupported
+UPSERT INTO v12 VALUES (3, 3, 4, 5);
+
+#Test 8: Returning * test
+userInsecure u1
+
+statement error pq: feature unsupported *
+UPDATE v12 SET a=10 FROM t01 AS txx WHERE txx.c=6 RETURNING *;
+
+
+#Clean for UPDATE TEST
+userInsecure root
+
+statement ok
+DROP VIEW v1, v11, v12;
+DROP TABLE t0, t01;
+
+
+#Delete privilege check
+
+#Test 1: DELETE...FROM...
+
+userInsecure root
+
+statement ok
+CREATE TABLE t0 (a INT, b INT, c INT, d INT);
+INSERT INTO t0 VALUES (1, 2, 3, 4), (5, 6, 7, 8);
+
+userInsecure u1
+
+statement ok
+CREATE VIEW v1 AS SELECT a, b, c FROM t0;
+
+statement error pq: user u1 does not have DELETE privilege on relation test.public.t0
+DELETE FROM v1 WHERE c=3;
+
+userInsecure root
+
+statement ok
+GRANT DELETE ON TABLE t0 TO u1;
+
+userInsecure u1
+
+statement error pq: user u1 does not have SELECT privilege on relation test.public.t0
+DELETE FROM v1 WHERE c=3;
+
+userInsecure root
+
+statement ok
+GRANT SELECT (c) ON TABLE t0 TO u1;
+
+userInsecure u1
+
+statement error pq: user u1 does not have SELECT privilege on relation test.public.t0
+DELETE FROM v1 WHERE c=3;
+
+userInsecure root
+
+statement ok
+GRANT SELECT (a, b) ON TABLE t0 TO u1;
+
+userInsecure u1
+
+statement ok
+DELETE FROM v1 WHERE c=3;
+GRANT DELETE ON VIEW v1 TO U2;
+
+userInsecure u2
+
+statement error pq: user u2 does not have SELECT privilege on relation test.public.v1
+DELETE FROM v1 WHERE c=7;
+
+statement ok
+SET sql_safe_updates = false;
+
+statement ok
+DELETE FROM v1;
+
+userInsecure u1
+
+statement ok
+GRANT SELECT (c) ON VIEW v1 TO u2;
+
+userInsecure u2
+
+statement ok
+DELETE FROM v1 WHERE c=7;
+
+#Test 2: Foreign key DELETE test
+userInsecure root
+
+statement ok
+CREATE TABLE tuser (id INT PRIMARY KEY, name STRING);
+INSERT INTO tuser VALUES (1, 'A'), (2, 'B'), (3, 'C');
+CREATE TABLE vehicle (id INT NOT NULL, vehicle STRING, ownerid INT REFERENCES tuser(id) ON DELETE CASCADE);
+INSERT INTO vehicle VALUES (1, 'car', 1), (2, 'bus', 1), (3, 'bicycle', 2), (4, 'airplane', 2), (5, 'train', 3);
+
+userInsecure u1
+
+statement ok
+CREATE VIEW vv AS SELECT * FROM tuser;
+GRANT DELETE ON VIEW vv TO u2;
+
+userInsecure u2
+
+statement error pq: user u2 does not have SELECT privilege on relation test.public.vv
+DELETE FROM vv WHERE name = 'C';
+
+userInsecure u1
+
+statement ok
+GRANT SELECT (name) ON VIEW vv TO u2;
+
+userInsecure u2
+
+statement error pq: user u1 does not have DELETE privilege on relation test.public.tuser
+DELETE FROM vv WHERE name = 'C';
+
+userInsecure root
+
+statement ok
+GRANT DELETE ON TABLE tuser TO u1;
+
+userInsecure u2
+
+statement error pq: user u1 does not have SELECT privilege on relation test.public.tuser
+DELETE FROM vv WHERE name = 'C';
+
+userInsecure root
+
+statement ok
+GRANT SELECT(id, name) ON TABLE tuser TO u1;
+
+userInsecure u2
+
+statement error pq: user u1 does not have REFERENCES privilege on relation test.public.vehicle
+DELETE FROM vv WHERE name = 'C';
+
+userInsecure root
+
+statement ok
+GRANT REFERENCES ON TABLE vehicle TO u1;
+
+userInsecure u2
+
+statement error pq: user u1 does not have DELETE privilege on relation test.public.vehicle
+DELETE FROM vv WHERE name = 'C';
+
+userInsecure root
+
+statement ok
+GRANT DELETE ON TABLE vehicle TO u1;
+
+userInsecure u2
+
+statement ok
+DELETE FROM vv WHERE name = 'C';
+
+
+#Insert privilege check
+
+#Test 1: INSERT INTO DATABASE.SCHEMA.VIEW
+userInsecure root
+
+statement ok
+REVOKE DELETE ON TABLE t0 FROM u1;
+REVOKE SELECT ON TABLE t0 FROM u1;
+
+userInsecure u1
+
+statement ok
+REVOKE DELETE ON VIEW v1 FROM u2;
+REVOKE SELECT ON VIEW v1 FROM u2;
+
+statement error pq: user u1 does not have INSERT privilege on relation test.public.t0
+INSERT INTO test.public.v1 VALUES (1, 3, 5);
+
+userInsecure root
+
+statement ok
+GRANT INSERT ON t0 TO u1;
+
+userInsecure u1
+
+statement ok
+INSERT INTO test.public.v1 VALUES (1, 3, 5);
+
+userInsecure u2
+
+statement error pq: user u2 does not have INSERT privilege on relation test.public.v1
+INSERT INTO test.public.v1 VALUES (2, 4, 6);
+
+userInsecure u1
+
+statement ok
+GRANT INSERT ON VIEW v1 TO u2;
+
+userInsecure u2
+
+statement ok
+INSERT INTO test.public.v1 VALUES (2, 4, 6);
+
+
+#Test 2: INSERT INTO VIEW
+userInsecure u1
+
+statement ok
+INSERT INTO v1 VALUES (10, 20, 30);
+
+userInsecure u2
+
+statement ok
+INSERT INTO v1 VALUES (11,12,13);
+
+
+#Returning test
+userInsecure root
+
+statement ok
+CREATE TABLE tr(a INT PRIMARY KEY, b VARCHAR DEFAULT 'def');
+INSERT INTO tr VALUES(1, 'a'), (2, 'b'), (3, 'c');
+CREATE VIEW vr AS SELECT a c1, b c2 FROM tr;
+CREATE USER ur;
+GRANT all(c1) ON VIEW vr TO ur;
+GRANT USAGE ON DATABASE test TO ur;
+GRANT CREATE ON SCHEMA public TO ur;
+
+userInsecure ur
+
+query I
+INSERT INTO vr(c1) VALUES(4) RETURNING c1;
+----
+4
+
+userInsecure root
+
+statement ok
+DROP VIEW vr;
+DROP TABLE tr;
+REVOKE USAGE ON DATABASE test FROM ur;
+REVOKE CREATE ON SCHEMA public FROM ur;
+DROP USER ur;
+
+
+#sub query privilege check
+
+userInsecure root
+
+statement ok
+drop table t0,tuser,vehicle cascade;
+
+query TT
+SHOW tables;
+----
+
+statement ok
+create table t(a int, b int, c int);
+insert into t values(1,2,3),(2,3,4),(3,4,5);
+grant all on t to u1;
+
+userInsecure u1
+
+statement ok
+create view v(c1,c2) as select a,b from t where c=3;
+grant all on view v to u2;
+
+userInsecure u2
+
+statement error pq: user u2 does not have SELECT privilege on relation test.public.t
+INSERT INTO v SELECT * FROM t;
+
+statement error pq: user u2 does not have SELECT privilege on relation test.public.t
+UPDATE v SET c1=21 where c2 in (select a from t where b=2);
+
+statement error pq: user u2 does not have SELECT privilege on relation test.public.t
+DELETE FROM v WHERE c2 in (SELECT a FROM t);
+
+statement ok
+UPDATE v SET c1=21 where c2 in (select c1 from v where c2=2);
+
+userInsecure root
+
+statement ok
+CREATE TABLE t1(id INT, a INT ARRAY, b STRING[]);
+
+statement ok
+INSERT INTO t1 VALUES (1, ARRAY[10,20,30], ARRAY['sky', 'road', 'car']);
+
+statement ok
+CREATE VIEW v1 AS SELECT id, a c1, b c2 FROM t1;
+
+statement ok
+GRANT ALL(c1, c2) ON VIEW v1 TO u1;
+GRANT DELETE ON VIEW v1 TO u1;
+
+userInsecure u1
+
+statement ok
+INSERT INTO v1(c1, c2) VALUES (ARRAY[11,21,31], ARRAY['rose', 'bike', 'house']);
+
+statement ok
+UPDATE v1 SET c1 = array_append(c1, 41) WHERE c1[3] = 31;
+
+statement ok
+UPDATE v1 SET c2 = array_append(c2, 'test') WHERE c1[4] = 41;
+
+statement ok
+UPDATE v1 SET c2 = c2 || 'test' WHERE c1[4] = 41;
+
+statement ok
+DELETE FROM v1 WHERE c1[4] = 41;

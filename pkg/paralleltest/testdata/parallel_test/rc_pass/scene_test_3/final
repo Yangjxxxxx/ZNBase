@@ -1,0 +1,10 @@
+statement ok
+BEGIN;
+
+query TI
+SELECT * FROM T;
+----
+A  1
+B  1
+C  1
+D  1

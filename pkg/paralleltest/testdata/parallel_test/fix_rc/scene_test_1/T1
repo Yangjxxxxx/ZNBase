@@ -1,0 +1,30 @@
+statement ok
+BEGIN TRANSACTION ISOLATION LEVEL READ COMMITTED;
+
+query II
+SELECT * FROM T;
+----
+1 1
+2 2
+3 3
+4 4
+5 5
+
+statement ok
+SELECT pg_sleep(2);
+
+statement ok
+DELETE FROM T WHERE a IN (2,4);
+
+statement ok
+SELECT pg_sleep(2);
+
+statement ok
+COMMIT;
+
+
+
+
+
+
+

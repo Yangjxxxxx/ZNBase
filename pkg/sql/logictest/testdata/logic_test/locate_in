@@ -1,0 +1,13 @@
+# LogicTest: local local-opt fakedist fakedist-opt fakedist-metadata
+
+statement ok
+CREATE TABLE a (id INT PRIMARY KEY)
+
+
+# geo-partition feature add by gzq
+
+statement error creating or manipulating partitions requires a ICL binary
+ALTER TABLE a LOCATE IN (TEST)
+
+statement error creating or manipulating partitions requires a ICL binary
+ALTER INDEX a@primary LOCATE IN (TEST)

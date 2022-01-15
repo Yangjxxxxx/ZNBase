@@ -1,0 +1,227 @@
+syntax = "proto2";
+package znbase.roachpb;
+option go_package = "roachpb";
+option java_package = "znbase.roachpb";
+option java_multiple_files = true;
+
+import "gogoproto/gogo.proto";
+// 复制自sqlbase/structured.proto模型中的ColumnType.SemanticType
+message ColumnMeta {
+    enum Type {
+        BOOL = 0;
+        INT = 1; // INT(width)
+        FLOAT = 2; // FLOAT(precision)
+        DECIMAL = 3; // DECIMAL(precision, width /* scale */)
+        DATE = 4;
+        TIMESTAMP = 5;
+        INTERVAL = 6;
+        STRING = 7; // STRING(width)
+        BYTES = 8;
+        TIMESTAMPTZ = 9;
+        COLLATEDSTRING = 10; // Collated STRING, CHAR, and VARCHAR
+        // Collated string key columns are encoded partly as a key and partly as a
+        // value. The key part is the collation key, so that different strings that
+        // collate equal cannot both be used as keys. The value part is the usual
+        // UTF-8 encoding of the string. This creates several special cases in the
+        // encode/decode logic.
+
+        NAME = 11;
+        OID = 12;
+
+        // NULL is not supported as a table column type, however it can be
+        // transferred through distsql streams.
+        NULL_T = 13; // C中NULL是关键字
+
+        UUID = 14;
+        ARRAY = 15;
+        INET = 16;
+        TIME = 17;
+        JSONB = 18;
+        TIMETZ = 19; // Reserved for TIMETZ if/when fully implemented. See #26097.
+        TUPLE = 20;
+        BIT = 21;
+        INT2VECTOR = 200;
+        OIDVECTOR = 201;
+    }
+}
+// 对应Spark.sql.sources包下的Filter
+enum FilterType {
+    AlwaysTrue = 0;
+    AlwaysFalse = 1;
+    IsNotNull = 2;
+    IsNull = 3;
+    Equal = 4;
+    // similar to [[EqualTo]]. However, this differs from [[EqualTo]]
+    // * in that it returns `true` (rather than NULL) if both inputs are NULL .
+    EqualNullSafe = 5;
+    Greater = 6;
+    GreaterOrEqual = 7;
+    Less = 8;
+    LessOrEqual = 9;
+    In = 10;
+    StringContains = 11;
+    StringEnds = 12;
+    StringStarts = 13;
+    // 逻辑过滤
+    Not = 14;
+    Or = 15;
+    And = 16;
+    Expression = 20; // 字符串表达式形式的条件，如：c1 > c2
+}
+
+message BaseFilter {
+    option (gogoproto.equal) = true;
+    // 列ID
+    required string attribute = 2 [(gogoproto.nullable) = false];
+    optional string value = 3;
+    // 大部分filter只需要一个value，repeated values数组可用来处理特殊filter, 比如：IN filter
+    // note: 当使用values，就不要使用value
+    repeated string values = 4 [(gogoproto.nullable) = true];
+    reserved 1;
+}
+
+// LogicalFilter可能会存在嵌套的
+// 如： Or(GreaterThan(l_quantity,1500.0),And(EqualTo(l_quantity,0.0),EqualTo(l_status,F)))
+message LogicalFilter {
+    option (gogoproto.equal) = true;
+    required FilterUnion left = 2 [(gogoproto.nullable) = false];
+    optional FilterUnion right = 3;
+    reserved 1;
+}
+
+message FilterUnion {
+    option (gogoproto.equal) = true;
+    required FilterType type = 1 [(gogoproto.nullable) = false];
+    oneof value {
+        BaseFilter base = 2;
+        LogicalFilter logical = 3;
+        // 字符串表达式形式的过滤条件，
+        // 如(abs((l_quantity + cast(l_partkey as double))) > cast((20 + l_linenumber) as double))
+        // 需要调用方根据不同底层存储引擎进行转换
+        string expression = 4;
+    }
+}
+
+// 命名AggregatorPush，与znbase.sql.distsqlrun的AggregatorSpec区分
+message AggregatorPush {
+    option (gogoproto.equal) = true;
+    // These mirror the aggregate functions supported by sql/parser. See
+    // sql/parser/aggregate_builtins.go.
+    enum Func {
+        ANY_NOT_NULL = 0;
+        AVG = 1;
+        BOOL_AND = 2;
+        BOOL_OR = 3;
+        CONCAT_AGG = 4;
+        COUNT = 5;
+        MAX = 7;
+        MIN = 8;
+        STDDEV = 9;
+        SUM = 10;
+        SUM_INT = 11;
+        VARIANCE = 12;
+        XOR_AGG = 13;
+        COUNT_ROWS = 14;
+        SQRDIFF = 15;
+        FINAL_VARIANCE = 16;
+        FINAL_STDDEV = 17;
+        ARRAY_AGG = 18;
+        JSON_AGG = 19;
+        // JSONB_AGG is an alias for JSON_AGG, they do the same thing.
+        JSONB_AGG = 20;
+        STRING_AGG = 21;
+        MEDIAN = 22;
+        GROUP_CONCAT = 23;
+        LISTAGG = 24;
+        COUNT_PD = 25;
+    }
+
+    enum Type {
+        // This setting exists just for backwards compatibility; it's equivalent to
+        // SCALAR when there are no grouping columns, and to NON_SCALAR when there
+        // are grouping columns.
+        AUTO = 0;
+        // A scalar aggregation has no grouping columns and always returns one
+        // result row.
+        SCALAR = 1;
+        // A non-scalar aggregation returns no rows if there are no input rows; it
+        // may or may not have grouping columns.
+        NON_SCALAR = 2;
+    }
+
+    message Aggregation {
+        option (gogoproto.equal) = true;
+        optional Func func = 1 [(gogoproto.nullable) = false];
+
+        // Aggregation functions with distinct = true functions like you would
+        // expect '<FUNC> DISTINCT' to operate, the default behavior would be
+        // the '<FUNC> ALL' operation.
+        optional bool distinct = 2 [(gogoproto.nullable) = false];
+
+        // The column index specifies the argument(s) to the aggregator function.
+        //
+        // Most aggregations take one argument
+        // COUNT_ROWS takes no arguments.
+        // FINAL_STDDEV and FINAL_VARIANCE take three arguments (SQRDIFF, SUM,
+        // COUNT).
+        repeated uint32 col_idx = 5;
+
+        // If set, this column index specifies a boolean argument; rows for which
+        // this value is not true don't contribute to this aggregation. This enables
+        // the filter clause, e.g.:
+        //   SELECT SUM(x) FILTER (WHERE y > 1), SUM(x) FILTER (WHERE y < 1) FROM t
+        optional uint32 filter_col_idx = 4;
+
+        // Arguments are const expressions passed to aggregation functions.
+        repeated string arguments = 6;
+
+        reserved 3;
+
+        // true ： 下推的render_expr是有函数名的表达式， false：无函数名
+        required bool push_down_to_store = 7;
+
+        required ColumnMeta.Type result_type = 8; //聚合计算结果值的数据类型：ColumnType_SemanticType
+        // 列值再计算的表达式，如：sum((c_acctbal + 10.0))中的 : c_acctbal + 10.0
+        optional string render_expr = 9;
+    }
+
+    optional Type type = 5 [(gogoproto.nullable) = false];
+
+    // The group key is a subset of the columns in the input stream schema on the
+    // basis of which we define our groups.
+    repeated uint32 group_cols = 2 [packed = true];
+
+    repeated Aggregation aggregations = 3 [(gogoproto.nullable) = false];
+
+    // A subset of the GROUP BY columns which are ordered in the input.
+    repeated uint32 ordered_group_cols = 4 [packed = true];
+}
+
+//计算下推条件表达式
+message PushDownExpr {
+    option (gogoproto.equal) = true;
+    // 数据表的schema信息
+    repeated int32 col_ids = 1; //
+    repeated ColumnMeta.Type col_types = 2; // 对应ColumnType_SemanticType
+    repeated int32 primary_cols = 3; // 数据表主键列
+    repeated int32 primary_cols_direct = 4; // 数据表主键列的顺序 ASC、DESC   ASC 0：小到大顺序.. DESC 1：逆序
+    repeated int32 secondary_cols = 5; // 二级索引列
+
+    // 排序列
+    repeated int32 orderby_cols = 6 [packed = true];
+    // 排序列的方向，0：小到大顺序， 1：逆序
+    repeated int32 order_directions = 7 [packed = true];
+
+    //本次查询需要的列
+    repeated int32 required_cols = 8;
+
+    // 多个过滤条件之间AND关系，每个条件内可以有or
+    // 如SQL语句:select * from person p1,person2 p2
+    //                IsNotNull(name)
+    // 注：下推到znbase时，名称将替换为@ID
+    //repeated string filters = 8 ;
+    repeated FilterUnion filters = 9;
+
+    optional AggregatorPush aggregator = 10;
+
+}

@@ -1,0 +1,369 @@
+# LogicTest: local
+
+statement ok
+CREATE DATABASE d1;
+
+statement error schema "zbdb_internal" can not be dropped which collides with builtin schema
+DROP SCHEMA d1.zbdb_internal;
+
+statement error schema "information_schema" can not be dropped which collides with builtin schema
+DROP SCHEMA d1.information_schema;
+
+statement error schema "pg_catalog" can not be dropped which collides with builtin schema
+DROP SCHEMA d1.pg_catalog;
+
+statement ok
+set database = d1;
+
+query T
+SHOW SEARCH_PATH;
+----
+public
+
+statement ok
+SET SEARCH_PATH TO nonexist
+
+query T
+SHOW SEARCH_PATH;
+----
+nonexist
+
+statement error current search_path does not match any valid schema
+SHOW TABLES;
+
+statement ok
+CREATE SCHEMA nonexist;
+
+query TT
+SHOW SCHEMAS;
+----
+information_schema  root
+nonexist            root
+pg_catalog          root
+public              root
+zbdb_internal       root
+
+query TT
+show tables
+----
+
+statement ok
+CREATE TABLE t(a char primary key,b int);
+
+statement ok
+INSERT INTO t values('a', 233);
+
+query TT
+show tables
+----
+t  root
+
+statement ok
+set database = defaultdb;
+
+statement ok
+DROP SCHEMA d1.nonexist;
+
+statement ok
+set database = d1;
+SET SEARCH_PATH TO nonexist;
+
+query T
+SHOW SEARCH_PATH;
+----
+nonexist
+
+statement error current search_path does not match any valid schema
+SHOW TABLES;
+
+query ITI
+SELECT * FROM system.namespace;
+----
+0   d1                  56
+0   defaultdb           50
+0   postgres            52
+0   system              1
+0   test                54
+1   authentication      26
+1   comments            24
+1   descriptor          3
+1   eventlog            12
+1   flashback           29
+1   function_namespace  8
+1   hints               31
+1   jobs                15
+1   lease               11
+1   location            7
+1   locations           21
+1   namespace           2
+1   rangelog            13
+1   role_members        23
+1   scheduled_jobs      28
+1   settings            6
+1   snapshots           25
+1   table_statistics    20
+1   triggers            30
+1   ui                  14
+1   user_options        27
+1   users               4
+1   web_sessions        19
+1   zones               5
+50  public              51
+52  public              53
+54  public              55
+56  public              57
+
+statement ok
+SET SEARCH_PATH TO public;
+
+statement ok
+CREATE SCHEMA myschema;
+
+statement ok
+CREATE SCHEMA tempschema;
+
+statement ok
+CREATE TABLE publictable(a char primary key, b int);
+
+statement ok
+CREATE TABLE myschema.mytable(a char primary key, b int);
+
+statement ok
+CREATE TABLE tempschema.temptable(a char primary key, b int);
+
+statement error schema "myschema" is not empty and RESTRICT was specified
+DROP SCHEMA myschema RESTRICT;
+
+statement error schema "nonexistschema" does not exist in database "d1"
+DROP SCHEMA nonexistschema;
+
+statement ok
+DROP SCHEMA IF EXISTS nonexistschema;
+
+statement ok
+DROP SCHEMA myschema;
+
+statement ok
+CREATE SCHEMA myschema;
+
+statement ok
+CREATE TABLE myschema.mytable(a char primary key, b int);
+
+statement ok
+DROP SCHEMA tempschema CASCADE;
+
+statement ok
+DROP SCHEMA myschema CASCADE;
+
+query TT
+SHOW SCHEMAS;
+----
+information_schema  root
+pg_catalog          root
+public              root
+zbdb_internal       root
+
+query ITI
+SELECT * FROM system.namespace;
+----
+0   d1                  56
+0   defaultdb           50
+0   postgres            52
+0   system              1
+0   test                54
+1   authentication      26
+1   comments            24
+1   descriptor          3
+1   eventlog            12
+1   flashback           29
+1   function_namespace  8
+1   hints               31
+1   jobs                15
+1   lease               11
+1   location            7
+1   locations           21
+1   namespace           2
+1   rangelog            13
+1   role_members        23
+1   scheduled_jobs      28
+1   settings            6
+1   snapshots           25
+1   table_statistics    20
+1   triggers            30
+1   ui                  14
+1   user_options        27
+1   users               4
+1   web_sessions        19
+1   zones               5
+50  public              51
+52  public              53
+54  public              55
+56  public              57
+57  publictable         62
+
+statement ok
+DROP SCHEMA public;
+
+query TT
+SHOW SCHEMAS;
+----
+information_schema  root
+pg_catalog          root
+zbdb_internal       root
+
+statement ok
+CREATE SCHEMA a;
+
+query TT
+SHOW SCHEMAS;
+----
+a                   root
+information_schema  root
+pg_catalog          root
+zbdb_internal       root
+
+statement ok
+ALTER SCHEMA a RENAME TO public;
+
+query TT
+SHOW SCHEMAS;
+----
+information_schema  root
+pg_catalog          root
+public              root
+zbdb_internal       root
+
+statement ok
+DROP SCHEMA public;
+
+query T
+SHOW SEARCH_PATH;
+----
+public
+
+statement error cannot create "t" because the target database or schema does not exist
+CREATE TABLE t(a char primary key,b int);
+
+statement ok
+CREATE SCHEMA public;
+
+statement ok
+CREATE TABLE t(a char primary key, b int);
+
+query TT
+SHOW TABLES;
+----
+t  root
+
+query TI
+select * from t;
+----
+
+
+#subtest
+statement ok
+create database dd1;
+
+statement ok
+create schema dd1.ss1;
+
+statement ok
+create schema dd1.ss2;
+
+statement ok
+create table dd1.ss1.t1(a int);
+
+statement ok
+create table dd1.ss2.t2(b int);
+
+statement ok
+insert into dd1.ss1.t1 values(1111);
+
+statement ok
+insert into dd1.ss2.t2 values(2222);
+
+statement ok
+set database=dd1;
+
+query TT
+show schemas;
+----
+information_schema  root
+pg_catalog          root
+public              root
+ss1                 root
+ss2                 root
+zbdb_internal       root
+
+statement ok
+set search_path = ss1;
+
+query TT
+SHOW TABLES;
+----
+t1  root
+
+statement ok
+set search_path = ss2;
+
+query TT
+SHOW TABLES;
+----
+t2  root
+
+statement ok
+set database=defaultdb;
+
+statement ok
+drop schema dd1.ss1, dd1.ss2;
+
+statement ok
+set database=dd1;
+
+query TT
+show schemas;
+----
+information_schema  root
+pg_catalog          root
+public              root
+zbdb_internal       root
+
+query ITI
+SELECT * FROM system.namespace;
+----
+0   d1                  56
+0   dd1                 70
+0   defaultdb           50
+0   postgres            52
+0   system              1
+0   test                54
+1   authentication      26
+1   comments            24
+1   descriptor          3
+1   eventlog            12
+1   flashback           29
+1   function_namespace  8
+1   hints               31
+1   jobs                15
+1   lease               11
+1   location            7
+1   locations           21
+1   namespace           2
+1   rangelog            13
+1   role_members        23
+1   scheduled_jobs      28
+1   settings            6
+1   snapshots           25
+1   table_statistics    20
+1   triggers            30
+1   ui                  14
+1   user_options        27
+1   users               4
+1   web_sessions        19
+1   zones               5
+50  public              51
+52  public              53
+54  public              55
+56  public              68
+68  t                   69
+70  public              71

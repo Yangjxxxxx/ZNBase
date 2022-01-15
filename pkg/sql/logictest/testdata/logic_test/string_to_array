@@ -1,0 +1,473 @@
+# LogicTest:default
+
+query B
+select '' = any('{}')
+----
+false
+
+statement error pq: array must be enclosed in \{ and \}
+select '' = any('')
+
+statement error pq: array must be enclosed in \{ and \}
+select 'a' = any('');
+
+query B
+select 'b' = any('{}')
+----
+false
+
+query B
+select 'c' = any('{c}')
+----
+true
+
+query B
+select 'd' = any('{d, e}')
+----
+true
+
+query B
+select 'e' = any('{d, e}')
+----
+true
+
+query B
+select 'f' = any('{d, f, g}')
+----
+true
+
+query B
+select '2020' = any('{2020}')
+----
+true
+
+query B
+select '2020.09' = any('{2020.09, 2020.10}')
+----
+true
+
+query B
+select '2020.10' = any('{2020.09, 2020.10, 2020.11}')
+----
+true
+
+statement error pq: array must be enclosed in \{ and \}
+select '2020' = any('{2020')
+
+statement error pq: array must be enclosed in \{ and \}
+select '2020' = any('2020}')
+
+statement error pq: array must be enclosed in \{ and \}
+select '2020' = any('{2020]')
+
+statement error pq: array must be enclosed in \{ and \}
+select '2020' = any('[2020}')
+
+statement error pq: array must be enclosed in \{ and \}
+select '2020' = any('[2020]')
+
+statement error pq: array must be enclosed in \{ and \}
+select '2020' = any('[2020')
+
+statement error pq: array must be enclosed in \{ and \}
+select '2020' = any('2020]')
+
+statement error pq: array must be enclosed in \{ and \}
+select '2020' = any('2020')
+
+statement error pq: array must be enclosed in \{ and \}
+select '' = any('[]')
+
+statement error pq: array must be enclosed in \{ and \}
+select '' = any('')
+
+query T
+SELECT to_char('2020-08-24 16:18:20','YYYY') WHERE 10 = any('{20, 30, 10}')
+----
+2020
+
+query T
+SELECT to_char('2020-08-24 16:18:20','YYYY') WHERE 1 = any('{20, 1, 10}')
+----
+2020
+
+query T
+SELECT to_char('2020-08-24 16:18:20','YYYY') WHERE 1 = any('{1, 30, 10}')
+----
+2020
+
+query T
+SELECT to_char('2020-08-24 16:18:20','YYYY') WHERE 1 = any('{20, 1, 10}')
+----
+2020
+
+query T
+SELECT to_char('2020-08-24 16:18:20','YYYY') WHERE 1 = any('{1, 30, 10}')
+----
+2020
+
+statement error pq: array must be enclosed in \{ and \}
+SELECT to_char('2020-08-24 16:18:20','YYYY') WHERE 10 = any('')
+
+query T
+SELECT to_char('2020-08-24 16:18:20','YYYY') WHERE 1 = any('{}')
+----
+
+
+query T
+SELECT to_char('2020-08-24 16:18:20','YYYY') WHERE 0 = any('{}')
+----
+
+
+statement error pq: array must be enclosed in \{ and \}
+SELECT to_char('2020-08-24 16:18:20','YYYY') WHERE 0 = any('')
+
+statement error pq: array must be enclosed in \{ and \}
+SELECT to_char('2020-08-24 16:18:20','YYYY') WHERE 1 = any('1,2,3,4}')
+
+statement error pq: array must be enclosed in \{ and \}
+SELECT to_char('2020-08-24 16:18:20','YYYY') WHERE 1 = any('{1,2,3,4')
+
+statement error pq: array must be enclosed in \{ and \}
+SELECT to_char('2020-08-24 16:18:20','YYYY') WHERE 1 = any('1,2,3,4')
+
+statement error pq: array must be enclosed in \{ and \}
+SELECT to_char('2020-08-24 16:18:20','YYYY') WHERE 1 = any('[]')
+
+statement error pq: array must be enclosed in \{ and \}
+SELECT to_char('2020-08-24 16:18:20','YYYY') WHERE 1 = any('[1, 2, 3')
+
+statement error pq: array must be enclosed in \{ and \}
+SELECT to_char('2020-08-24 16:18:20','YYYY') WHERE 1 = any('1,2,3,4]')
+
+statement error pq: array must be enclosed in \{ and \}
+SELECT to_char('2020-08-24 16:18:20','YYYY') WHERE 1 = any('[1,2,3,4]')
+
+statement error pq: array must be enclosed in \{ and \}
+SELECT to_char('2020-08-24 16:18:20','YYYY') WHERE 1 = any('[1,2,3,4}')
+
+statement error pq: array must be enclosed in \{ and \}
+SELECT to_char('2020-08-24 16:18:20','YYYY') WHERE 1 = any('{1,2,3,4]')
+
+query B
+select 2020 = any('{2020.0}')
+----
+true
+
+query B
+select 2020 = any('{2020.1}')
+----
+false
+
+statement error pq: can't convert abc to int
+select 0 = any('{abc}')
+
+query B
+select 0 = any('{0}')
+----
+true
+
+query B
+select 0 = any('{0.0}')
+----
+true
+
+statement error pq: array must be enclosed in \{ and \}
+select 0 = any('')
+
+statement error pq: array must be enclosed in \{ and \}
+SELECT 1 = any('1,2,3,4}')
+
+statement error pq: array must be enclosed in \{ and \}
+SELECT 1 = any('{1,2,3,4')
+
+statement error pq: array must be enclosed in \{ and \}
+SELECT 1 = any('1,2,3,4')
+
+statement error pq: array must be enclosed in \{ and \}
+SELECT 1 = any('[]')
+
+statement error pq: array must be enclosed in \{ and \}
+SELECT 1 = any('[1, 2, 3')
+
+statement error pq: array must be enclosed in \{ and \}
+SELECT 1 = any('1,2,3,4]')
+
+statement error pq: array must be enclosed in \{ and \}
+SELECT 1 = any('[1,2,3,4]')
+
+statement error pq: array must be enclosed in \{ and \}
+SELECT 1 = any('[1,2,3,4}')
+
+statement error pq: array must be enclosed in \{ and \}
+SELECT 1 = any('{1,2,3,4]')
+
+query B
+select 2020.0 = any('{2020}')
+----
+true
+
+query B
+select 2020.1 = any('{2020.1}')
+----
+true
+
+statement error can't convert abc to float
+select 0.0 = any('{abc}')
+
+query B
+select 0.0 = any('{0}')
+----
+true
+
+query B
+select 0.0 = any('{0.0}')
+----
+true
+
+statement error pq: array must be enclosed in \{ and \}
+select 0.0 = any('')
+
+query B
+select '' = some('{}')
+----
+false
+
+statement error pq: array must be enclosed in \{ and \}
+select '' = some('')
+
+statement error pq: array must be enclosed in \{ and \}
+select 'a' = some('');
+
+query B
+select 'b' = some('{}')
+----
+false
+
+query B
+select 'c' = some('{c}')
+----
+true
+
+query B
+select 'd' = some('{d, e}')
+----
+true
+
+query B
+select 'e' = some('{d, e}')
+----
+true
+
+query B
+select 'f' = some('{d, f, g}')
+----
+true
+
+query B
+select '2020' = some('{2020}')
+----
+true
+
+query B
+select '2020.09' = some('{2020.09, 2020.10}')
+----
+true
+
+query B
+select '2020.10' = some('{2020.09, 2020.10, 2020.11}')
+----
+true
+
+statement error pq: array must be enclosed in \{ and \}
+select '2020' = some('{2020')
+
+statement error pq: array must be enclosed in \{ and \}
+select '2020' = some('2020}')
+
+statement error pq: array must be enclosed in \{ and \}
+select '2020' = some('{2020]')
+
+statement error pq: array must be enclosed in \{ and \}
+select '2020' = some('[2020}')
+
+statement error pq: array must be enclosed in \{ and \}
+select '2020' = some('[2020]')
+
+statement error pq: array must be enclosed in \{ and \}
+select '2020' = some('[2020')
+
+statement error pq: array must be enclosed in \{ and \}
+select '2020' = some('2020]')
+
+statement error pq: array must be enclosed in \{ and \}
+select '2020' = some('2020')
+
+statement error pq: array must be enclosed in \{ and \}
+select '' = some('[]')
+
+statement error pq: array must be enclosed in \{ and \}
+select '' = some('')
+
+query T
+SELECT to_char('2020-08-24 16:18:20','YYYY') WHERE 10 = some('{20, 30, 10}')
+----
+2020
+
+query T
+SELECT to_char('2020-08-24 16:18:20','YYYY') WHERE 1 = some('{20, 1, 10}')
+----
+2020
+
+query T
+SELECT to_char('2020-08-24 16:18:20','YYYY') WHERE 1 = some('{1, 30, 10}')
+----
+2020
+
+query T
+SELECT to_char('2020-08-24 16:18:20','YYYY') WHERE 1 = some('{20, 1, 10}')
+----
+2020
+
+query T
+SELECT to_char('2020-08-24 16:18:20','YYYY') WHERE 1 = some('{1, 30, 10}')
+----
+2020
+
+statement error pq: array must be enclosed in \{ and \}
+SELECT to_char('2020-08-24 16:18:20','YYYY') WHERE 10 = some('')
+
+query T
+SELECT to_char('2020-08-24 16:18:20','YYYY') WHERE 1 = some('{}')
+----
+
+
+query T
+SELECT to_char('2020-08-24 16:18:20','YYYY') WHERE 0 = some('{}')
+----
+
+
+statement error pq: array must be enclosed in \{ and \}
+SELECT to_char('2020-08-24 16:18:20','YYYY') WHERE 0 = some('')
+
+statement error pq: array must be enclosed in \{ and \}
+SELECT to_char('2020-08-24 16:18:20','YYYY') WHERE 1 = some('1,2,3,4}')
+
+statement error pq: array must be enclosed in \{ and \}
+SELECT to_char('2020-08-24 16:18:20','YYYY') WHERE 1 = some('{1,2,3,4')
+
+statement error pq: array must be enclosed in \{ and \}
+SELECT to_char('2020-08-24 16:18:20','YYYY') WHERE 1 = some('1,2,3,4')
+
+statement error pq: array must be enclosed in \{ and \}
+SELECT to_char('2020-08-24 16:18:20','YYYY') WHERE 1 = some('[]')
+
+statement error pq: array must be enclosed in \{ and \}
+SELECT to_char('2020-08-24 16:18:20','YYYY') WHERE 1 = some('[1, 2, 3')
+
+statement error pq: array must be enclosed in \{ and \}
+SELECT to_char('2020-08-24 16:18:20','YYYY') WHERE 1 = some('1,2,3,4]')
+
+statement error pq: array must be enclosed in \{ and \}
+SELECT to_char('2020-08-24 16:18:20','YYYY') WHERE 1 = some('[1,2,3,4]')
+
+statement error pq: array must be enclosed in \{ and \}
+SELECT to_char('2020-08-24 16:18:20','YYYY') WHERE 1 = some('[1,2,3,4}')
+
+statement error pq: array must be enclosed in \{ and \}
+SELECT to_char('2020-08-24 16:18:20','YYYY') WHERE 1 = some('{1,2,3,4]')
+
+query B
+select 2020 = some('{2020.0}')
+----
+true
+
+query B
+select 2020 = some('{2020.1}')
+----
+false
+
+statement error can't convert abc to int
+select 0 = some('{abc}')
+
+query B
+select 0 = some('{0}')
+----
+true
+
+query B
+select 0 = some('{0.0}')
+----
+true
+
+statement error pq: array must be enclosed in \{ and \}
+select 0 = some('')
+
+statement error pq: array must be enclosed in \{ and \}
+SELECT 1 = some('1,2,3,4}')
+
+statement error pq: array must be enclosed in \{ and \}
+SELECT 1 = some('{1,2,3,4')
+
+statement error pq: array must be enclosed in \{ and \}
+SELECT 1 = some('1,2,3,4')
+
+statement error pq: array must be enclosed in \{ and \}
+SELECT 1 = some('[]')
+
+statement error pq: array must be enclosed in \{ and \}
+SELECT 1 = some('[1, 2, 3')
+
+statement error pq: array must be enclosed in \{ and \}
+SELECT 1 = some('1,2,3,4]')
+
+statement error pq: array must be enclosed in \{ and \}
+SELECT 1 = some('[1,2,3,4]')
+
+statement error pq: array must be enclosed in \{ and \}
+SELECT 1 = some('[1,2,3,4}')
+
+statement error pq: array must be enclosed in \{ and \}
+SELECT 1 = some('{1,2,3,4]')
+
+query B
+select 2020.0 = some('{2020}')
+----
+true
+
+query B
+select 2020.1 = some('{2020.1}')
+----
+true
+
+statement error can't convert abc to float
+select 0.0 = some('{abc}')
+
+query B
+select 0.0 = some('{0}')
+----
+true
+
+query B
+select 0.0 = some('{0.0}')
+----
+true
+
+statement error pq: array must be enclosed in \{ and \}
+select 0.0 = some('')
+
+statement error pq: invalid array:\{,\}
+select null = any('{,}')
+
+query T
+SELECT null = any('{1,2,3}')
+----
+NULL
+
+query T
+SELECT null = any('{null,2,3}')
+----
+NULL
+
+statement error pq: array must be enclosed in \{ and \}
+SELECT null = any('')

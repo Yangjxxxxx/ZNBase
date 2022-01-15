@@ -1,0 +1,9 @@
+statement ok
+BEGIN;
+
+statement ok
+UPDATE T SET a = 'x' WHERE a = 'H';
+SELECT pg_sleep(3);
+
+statement ok
+COMMIT;

@@ -1,0 +1,12 @@
+statement ok
+SELECT pg_sleep(1);
+
+statement ok
+BEGIN;
+SET TRANSACTION ISOLATION LEVEL READ COMMITTED;
+
+statement ok
+DELETE FROM T WHERE b = '2';
+
+statement ok
+ROLLBACK;

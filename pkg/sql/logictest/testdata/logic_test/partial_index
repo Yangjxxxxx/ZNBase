@@ -1,0 +1,313 @@
+# LogicTest: local-opt
+
+#### Partial Indexes
+
+# TODO(mgartner): remove this once partial indexes are fully supported.
+statement ok
+CREATE TABLE t1 (a INT, INDEX (a) WHERE a = 0)
+
+statement ok
+CREATE TABLE t2 (a INT, INDEX (a) WHERE false)
+
+# Allow immutable functions.
+statement ok
+CREATE TABLE t3 (a INT, INDEX (a) WHERE abs(1) > 2)
+
+# Don't allow non-immutable operators.
+# TODO(mgartner): The error code for this should be 42P17, not 0A000.
+statement error pq: now\(\): impure functions are not allowed in index predicate
+CREATE TABLE error (t TIMESTAMPTZ, INDEX (t) WHERE t < now())
+
+# statement error pgcode 0A000 timestamptz::string: context-dependent operators are not allowed in index predicate
+# CREATE TABLE error (t TIMESTAMPTZ, INDEX (t) WHERE t::string = 'foo')
+
+# statement error pgcode 0A000 =: context-dependent operators are not allowed in index predicate
+# CREATE TABLE error (t TIMESTAMPTZ, i TIMESTAMP, INDEX (t) WHERE i = t)
+
+statement error pgcode 0A000 pq: random\(\): impure functions are not allowed in index predicate
+CREATE TABLE error (t FLOAT, INDEX (t) WHERE t < random())
+
+# Don't allow variable subexpressions.
+statement error pgcode 42601 variable sub-expressions are not allowed in index predicate
+CREATE TABLE error (a INT, INDEX (a) WHERE count(*) = 1)
+
+# Don't allow subqueries.
+statement error pgcode 42601 variable sub-expressions are not allowed in index predicate
+CREATE TABLE error (a INT, INDEX (a) WHERE (SELECT true))
+
+# Don't allow aggregate functions.
+statement error pgcode 42803 aggregate functions are not allowed in index predicate
+CREATE TABLE error (a INT, INDEX (a) WHERE sum(a) > 1)
+
+# Don't allow window functions.
+statement error pgcode 42P20 window functions are not allowed in index predicate
+CREATE TABLE error (a INT, INDEX (a) WHERE row_number() OVER () > 1)
+
+# Don't allow set-returning functions.
+statement error pgcode 0A000 generator functions are not allowed in index predicate
+CREATE TABLE error (a INT, INDEX (a) WHERE generate_series(1, 1))
+
+# Fail on bad types.
+statement error pq: unsupported binary operator: <bool> - <bool>
+CREATE TABLE error (a INT, INDEX (a) WHERE false - true)
+
+# Don't allow references to other tables.
+statement error no data source matches prefix: t1
+CREATE TABLE error (a INT, INDEX (a) WHERE t1.a > 0)
+
+# Don't allow references to unknown tables.
+statement error no data source matches prefix: unknown
+CREATE TABLE error (a INT, INDEX (a) WHERE unknown.a > 0)
+
+# Don't allow reference to unknown databases.
+statement error no data source matches prefix: unknown.error
+CREATE TABLE error (a INT, INDEX (a) WHERE unknown.error.a > 9)
+
+# Validate CREATE TABLE ... UNIQUE INDEX predicate.
+
+statement ok
+CREATE TABLE t4 (a INT, UNIQUE INDEX (a) WHERE a = 0)
+
+statement error expected index predicate expression to have type bool, but '1' has type int
+CREATE TABLE error (a INT, UNIQUE INDEX (a) WHERE 1)
+
+# Validate CREATE INDEX predicate.
+
+statement ok
+CREATE TABLE t5 (a INT)
+
+statement ok
+CREATE INDEX t5i ON t5 (a) WHERE a = 0
+
+# Don't allow invalid predicates.
+statement error expected index predicate expression to have type bool, but '1' has type int
+CREATE INDEX error ON t5 (a) WHERE 1
+
+# Don't allow references to other tables in predicates.
+statement error no data source matches prefix: t4
+CREATE INDEX error ON t5 (a) WHERE t4.a = 1
+
+# Dequalify table references.
+
+statement ok
+CREATE TABLE t6 (
+    a INT,
+    INDEX (a) WHERE a > 0,
+    INDEX (a) WHERE t6.a > 1,
+    INDEX (a DESC) WHERE test.t6.a > 2,
+    UNIQUE INDEX (a) WHERE a > 3,
+    UNIQUE INDEX (a) WHERE t6.a > 4,
+    UNIQUE INDEX (a DESC) WHERE test.t6.a > 5
+)
+
+statement error pq: no data source matches prefix: test.t6
+CREATE INDEX t6i1 ON t6 (a) WHERE a > 6;
+CREATE INDEX t6i2 ON t6 (a) WHERE t6.a > 7;
+CREATE INDEX t6i3 ON t6 (a DESC) WHERE test.t6.a > 8;
+
+query TT
+SHOW CREATE TABLE t6
+----
+t6  CREATE TABLE t6 (
+    a INT NULL,
+    INDEX t6_a_idx (a ASC) WHERE a > 0,
+    INDEX t6_a_idx1 (a ASC) WHERE a > 1,
+    INDEX t6_a_idx2 (a DESC) WHERE a > 2,
+    UNIQUE INDEX t6_a_key (a ASC) WHERE a > 3,
+    UNIQUE INDEX t6_a_key1 (a ASC) WHERE a > 4,
+    UNIQUE INDEX t6_a_key2 (a DESC) WHERE a > 5,
+    INDEX t6i1 (a ASC) WHERE a > 6,
+    INDEX t6i2 (a ASC) WHERE a > 7,
+    FAMILY "primary" (a, rowid)
+)
+
+# Renaming a column updates the index predicates.
+
+statement ok
+ALTER TABLE t6 RENAME COLUMN a TO b
+
+query TT
+SHOW CREATE TABLE t6
+----
+t6  CREATE TABLE t6 (
+    b INT NULL,
+    INDEX t6_a_idx (b ASC) WHERE b > 0,
+    INDEX t6_a_idx1 (b ASC) WHERE b > 1,
+    INDEX t6_a_idx2 (b DESC) WHERE b > 2,
+    UNIQUE INDEX t6_a_key (b ASC) WHERE b > 3,
+    UNIQUE INDEX t6_a_key1 (b ASC) WHERE b > 4,
+    UNIQUE INDEX t6_a_key2 (b DESC) WHERE b > 5,
+    INDEX t6i1 (b ASC) WHERE b > 6,
+    INDEX t6i2 (b ASC) WHERE b > 7,
+    FAMILY "primary" (b, rowid)
+)
+
+# Renaming a table keeps the index predicates intact.
+
+statement ok
+ALTER TABLE t6 RENAME TO t7
+
+query TT
+SHOW CREATE TABLE t7
+----
+t7  CREATE TABLE t7 (
+    b INT NULL,
+    INDEX t6_a_idx (b ASC) WHERE b > 0,
+    INDEX t6_a_idx1 (b ASC) WHERE b > 1,
+    INDEX t6_a_idx2 (b DESC) WHERE b > 2,
+    UNIQUE INDEX t6_a_key (b ASC) WHERE b > 3,
+    UNIQUE INDEX t6_a_key1 (b ASC) WHERE b > 4,
+    UNIQUE INDEX t6_a_key2 (b DESC) WHERE b > 5,
+    INDEX t6i1 (b ASC) WHERE b > 6,
+    INDEX t6i2 (b ASC) WHERE b > 7,
+    FAMILY "primary" (b, rowid)
+)
+
+# CREATE TABLE LIKE ... INCLUDING INDEXES copies partial index predicate
+# expressions to the new table.
+
+statement ok
+CREATE TABLE t9 (a INT, b INT, INDEX (a) WHERE b > 1)
+
+# Update a non-indexed column referenced by the predicate.
+
+statement ok
+CREATE TABLE a (
+    a INT,
+    b INT,
+    c INT,
+    INDEX idx_c_b_gt_1 (c) WHERE b > 1,
+    FAMILY (a),
+    FAMILY (b),
+    FAMILY (c)
+)
+
+statement ok
+INSERT INTO a VALUES (1, 1, 1)
+
+statement ok
+UPDATE a SET b = b + 1 WHERE a = 1
+
+query III rowsort
+SELECT * FROM a@idx_c_b_gt_1 WHERE b > 1
+----
+1  2  1
+
+# Return error if evaluating the predicate errs and do not insert or update the
+# row.
+
+
+statement ok
+CREATE TABLE b (a INT, b INT, INDEX (a) WHERE 1 / b = 1)
+
+statement error division by zero
+INSERT INTO b VALUES (1, 0)
+
+query I rowsort
+SELECT count(1) FROM b
+----
+0
+
+statement ok
+INSERT INTO b VALUES (1, 1)
+
+statement error division by zero
+UPDATE b SET b = 0 WHERE a = 1
+
+query II rowsort
+SELECT * FROM b
+----
+1  1
+
+# Update two rows where one is in a partial index and one is not.
+
+statement ok
+CREATE TABLE c (
+    k INT PRIMARY KEY,
+    i INT,
+    INDEX i_0_100_idx (i) WHERE i > 0 AND i < 100
+)
+
+statement ok
+INSERT INTO c VALUES (3, 30), (300, 3000)
+
+statement ok
+UPDATE c SET i = i + 1
+
+query II rowsort
+SELECT * FROM c@i_0_100_idx WHERE i > 0 AND i < 100
+----
+3  31
+
+# Partial index entries are kept consistent throughout multiple mutations.
+
+statement ok
+CREATE TABLE d (
+    k INT PRIMARY KEY,
+    i INT,
+    f FLOAT,
+    s STRING,
+    b BOOL,
+    INDEX i_0_100_idx (i) WHERE i > 0 and i < 100,
+    INDEX f_b_s_foo_idx (f) WHERE b AND s = 'foo'
+)
+
+# Inserting values populates partial indexes.
+
+statement ok
+INSERT INTO d VALUES
+    (1, 1, 1.0, 'foo', true),
+    (2, 2, 2.0, 'foo', false),
+    (3, 3, 3.0, 'bar', true),
+    (100, 100, 100.0, 'foo', true),
+    (200, 200, 200.0, 'foo', false),
+    (300, 300, 300.0, 'bar', true)
+
+query IIRTB rowsort
+SELECT * FROM d@i_0_100_idx WHERE i > 0 AND i < 100
+----
+1  1  1  foo  true
+2  2  2  foo  false
+3  3  3  bar  true
+
+query IIRTB rowsort
+SELECT * FROM d@f_b_s_foo_idx WHERE b AND s = 'foo'
+----
+1    1    1    foo  true
+100  100  100  foo  true
+
+# Updating rows both in an out of partial index without changing partial index
+# eligibility.
+
+statement ok
+UPDATE d SET i = i + 10
+
+query IIRTB rowsort
+SELECT * FROM d@i_0_100_idx WHERE i > 0 AND i < 100
+----
+1  11  1  foo  true
+2  12  2  foo  false
+3  13  3  bar  true
+
+# Updating rows both in an out of partial index updates partial index entries
+# and changing eligibility.
+
+statement ok
+UPDATE d SET s = 'foo'
+
+query IIRTB rowsort
+SELECT * FROM d@f_b_s_foo_idx WHERE b AND s = 'foo'
+----
+1    11   1    foo  true
+3    13   3    foo  true
+100  110  100  foo  true
+300  310  300  foo  true
+
+statement ok
+CREATE TABLE t666 (a INT)
+
+statement ok
+CREATE INDEX t5i ON t666 (a) WHERE a = 0
+
+statement error pgcode 42601 pq: index "t5i" is a partial index that does not contain all the rows needed to execute this query
+SELECT * FROM t666@t5i where a > 1

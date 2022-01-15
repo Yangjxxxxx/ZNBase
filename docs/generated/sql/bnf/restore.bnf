@@ -1,0 +1,58 @@
+load_stmt ::=
+	'LOAD' load_format '(' string_or_placeholder ')' 'WITH' kv_option_list
+	| 'LOAD' load_format '(' string_or_placeholder ')' 
+	| 'LOAD' load_format '(' string_or_placeholder ')' 
+	| 'LOAD' 'TABLE' table_name 'FROM' load_format '(' string_or_placeholder ')' 'WITH' kv_option_list
+	| 'LOAD' 'TABLE' table_name 'FROM' load_format '(' string_or_placeholder ')' 
+	| 'LOAD' 'TABLE' table_name 'FROM' load_format '(' string_or_placeholder ')' 
+	| 'LOAD' 'TABLE' table_name 'CREATE' 'USING' string_or_placeholder load_format 'DATA' '(' full_backup_location ( | incremental_backup_location ( ',' incremental_backup_location )*) ')' col_conversion_list 'WITH' kv_option_list
+	| 'LOAD' 'TABLE' table_name 'CREATE' 'USING' string_or_placeholder load_format 'DATA' '(' full_backup_location ( | incremental_backup_location ( ',' incremental_backup_location )*) ')' col_conversion_list 
+	| 'LOAD' 'TABLE' table_name 'CREATE' 'USING' string_or_placeholder load_format 'DATA' '(' full_backup_location ( | incremental_backup_location ( ',' incremental_backup_location )*) ')' col_conversion_list 
+	| 'LOAD' 'DATABASE' database_name 'CREATE' 'USING' string_or_placeholder load_format 'DATA' '(' full_backup_location ( | incremental_backup_location ( ',' incremental_backup_location )*) ')' 'WITH' kv_option_list
+	| 'LOAD' 'DATABASE' database_name 'CREATE' 'USING' string_or_placeholder load_format 'DATA' '(' full_backup_location ( | incremental_backup_location ( ',' incremental_backup_location )*) ')' 
+	| 'LOAD' 'DATABASE' database_name 'CREATE' 'USING' string_or_placeholder load_format 'DATA' '(' full_backup_location ( | incremental_backup_location ( ',' incremental_backup_location )*) ')' 
+	| 'LOAD' 'SCHEMA' schema_name 'CREATE' 'USING' string_or_placeholder load_format 'DATA' '(' full_backup_location ( | incremental_backup_location ( ',' incremental_backup_location )*) ')' 'WITH' kv_option_list
+	| 'LOAD' 'SCHEMA' schema_name 'CREATE' 'USING' string_or_placeholder load_format 'DATA' '(' full_backup_location ( | incremental_backup_location ( ',' incremental_backup_location )*) ')' 
+	| 'LOAD' 'SCHEMA' schema_name 'CREATE' 'USING' string_or_placeholder load_format 'DATA' '(' full_backup_location ( | incremental_backup_location ( ',' incremental_backup_location )*) ')' 
+	| 'LOAD' 'TABLE' table_name '(' table_elem_list ')' opt_partition_by opt_locate_in load_format 'DATA' '(' full_backup_location ( | incremental_backup_location ( ',' incremental_backup_location )*) ')' col_conversion_list 'WITH' kv_option_list
+	| 'LOAD' 'TABLE' table_name '(' table_elem_list ')' opt_partition_by opt_locate_in load_format 'DATA' '(' full_backup_location ( | incremental_backup_location ( ',' incremental_backup_location )*) ')' col_conversion_list 
+	| 'LOAD' 'TABLE' table_name '(' table_elem_list ')' opt_partition_by opt_locate_in load_format 'DATA' '(' full_backup_location ( | incremental_backup_location ( ',' incremental_backup_location )*) ')' col_conversion_list 
+	| 'LOAD' 'INTO' 'CLUSTER' 'SETTING' load_format 'DATA' '(' full_backup_location ( | incremental_backup_location ( ',' incremental_backup_location )*) ')' 'WITH' kv_option_list
+	| 'LOAD' 'INTO' 'CLUSTER' 'SETTING' load_format 'DATA' '(' full_backup_location ( | incremental_backup_location ( ',' incremental_backup_location )*) ')' 
+	| 'LOAD' 'INTO' 'CLUSTER' 'SETTING' load_format 'DATA' '(' full_backup_location ( | incremental_backup_location ( ',' incremental_backup_location )*) ')' 
+	| 'LOAD' 'INTO' table_name '(' insert_column_list ')' load_format 'DATA' '(' full_backup_location ( | incremental_backup_location ( ',' incremental_backup_location )*) ')' col_conversion_list 'WITH' kv_option_list
+	| 'LOAD' 'INTO' table_name '(' insert_column_list ')' load_format 'DATA' '(' full_backup_location ( | incremental_backup_location ( ',' incremental_backup_location )*) ')' col_conversion_list 
+	| 'LOAD' 'INTO' table_name '(' insert_column_list ')' load_format 'DATA' '(' full_backup_location ( | incremental_backup_location ( ',' incremental_backup_location )*) ')' col_conversion_list 
+	| 'LOAD' 'INTO' table_name load_format 'DATA' '(' full_backup_location ( | incremental_backup_location ( ',' incremental_backup_location )*) ')' col_conversion_list 'WITH' kv_option_list
+	| 'LOAD' 'INTO' table_name load_format 'DATA' '(' full_backup_location ( | incremental_backup_location ( ',' incremental_backup_location )*) ')' col_conversion_list 
+	| 'LOAD' 'INTO' table_name load_format 'DATA' '(' full_backup_location ( | incremental_backup_location ( ',' incremental_backup_location )*) ')' col_conversion_list 
+	| 'LOAD' 'TABLE' table_name 'FROM' full_backup_location ( | incremental_backup_location ( ',' incremental_backup_location )*) 'WITH' kv_option_list
+	| 'LOAD' 'TABLE' table_name 'FROM' full_backup_location ( | incremental_backup_location ( ',' incremental_backup_location )*) 
+	| 'LOAD' 'TABLE' table_name 'FROM' full_backup_location ( | incremental_backup_location ( ',' incremental_backup_location )*) 
+	| 'LOAD' 'VIEW' view_name 'FROM' full_backup_location ( | incremental_backup_location ( ',' incremental_backup_location )*) 'WITH' kv_option_list
+	| 'LOAD' 'VIEW' view_name 'FROM' full_backup_location ( | incremental_backup_location ( ',' incremental_backup_location )*) 
+	| 'LOAD' 'VIEW' view_name 'FROM' full_backup_location ( | incremental_backup_location ( ',' incremental_backup_location )*) 
+	| 'LOAD' 'SEQUENCE' sequence_name 'FROM' full_backup_location ( | incremental_backup_location ( ',' incremental_backup_location )*) 'WITH' kv_option_list
+	| 'LOAD' 'SEQUENCE' sequence_name 'FROM' full_backup_location ( | incremental_backup_location ( ',' incremental_backup_location )*) 
+	| 'LOAD' 'SEQUENCE' sequence_name 'FROM' full_backup_location ( | incremental_backup_location ( ',' incremental_backup_location )*) 
+	| 'LOAD' 'SCHEMA' schema_name 'FROM' full_backup_location ( | incremental_backup_location ( ',' incremental_backup_location )*) 'WITH' kv_option_list
+	| 'LOAD' 'SCHEMA' schema_name 'FROM' full_backup_location ( | incremental_backup_location ( ',' incremental_backup_location )*) 
+	| 'LOAD' 'SCHEMA' schema_name 'FROM' full_backup_location ( | incremental_backup_location ( ',' incremental_backup_location )*) 
+	| 'LOAD' 'DATABASE' database_name 'FROM' full_backup_location ( | incremental_backup_location ( ',' incremental_backup_location )*) 'WITH' kv_option_list
+	| 'LOAD' 'DATABASE' database_name 'FROM' full_backup_location ( | incremental_backup_location ( ',' incremental_backup_location )*) 
+	| 'LOAD' 'DATABASE' database_name 'FROM' full_backup_location ( | incremental_backup_location ( ',' incremental_backup_location )*) 
+	| 'LOAD' 'TABLE' table_name 'FROM' full_backup_location ( | incremental_backup_location ( ',' incremental_backup_location )*) 'AS' 'OF' 'SYSTEM' 'TIME' timestamp 'WITH' kv_option_list
+	| 'LOAD' 'TABLE' table_name 'FROM' full_backup_location ( | incremental_backup_location ( ',' incremental_backup_location )*) 'AS' 'OF' 'SYSTEM' 'TIME' timestamp 
+	| 'LOAD' 'TABLE' table_name 'FROM' full_backup_location ( | incremental_backup_location ( ',' incremental_backup_location )*) 'AS' 'OF' 'SYSTEM' 'TIME' timestamp 
+	| 'LOAD' 'SCHEMA' schema_name 'FROM' full_backup_location ( | incremental_backup_location ( ',' incremental_backup_location )*) 'AS' 'OF' 'SYSTEM' 'TIME' timestamp 'WITH' kv_option_list
+	| 'LOAD' 'SCHEMA' schema_name 'FROM' full_backup_location ( | incremental_backup_location ( ',' incremental_backup_location )*) 'AS' 'OF' 'SYSTEM' 'TIME' timestamp 
+	| 'LOAD' 'SCHEMA' schema_name 'FROM' full_backup_location ( | incremental_backup_location ( ',' incremental_backup_location )*) 'AS' 'OF' 'SYSTEM' 'TIME' timestamp 
+	| 'LOAD' 'DATABASE' database_name 'FROM' full_backup_location ( | incremental_backup_location ( ',' incremental_backup_location )*) 'AS' 'OF' 'SYSTEM' 'TIME' timestamp 'WITH' kv_option_list
+	| 'LOAD' 'DATABASE' database_name 'FROM' full_backup_location ( | incremental_backup_location ( ',' incremental_backup_location )*) 'AS' 'OF' 'SYSTEM' 'TIME' timestamp 
+	| 'LOAD' 'DATABASE' database_name 'FROM' full_backup_location ( | incremental_backup_location ( ',' incremental_backup_location )*) 'AS' 'OF' 'SYSTEM' 'TIME' timestamp 
+	| 'LOAD' 'CLUSTER' full_backup_location ( | incremental_backup_location ( ',' incremental_backup_location )*) 'WITH' kv_option_list
+	| 'LOAD' 'CLUSTER' full_backup_location ( | incremental_backup_location ( ',' incremental_backup_location )*) 
+	| 'LOAD' 'CLUSTER' full_backup_location ( | incremental_backup_location ( ',' incremental_backup_location )*) 
+	| 'LOAD' 'CLUSTER' full_backup_location ( | incremental_backup_location ( ',' incremental_backup_location )*) 'AS' 'OF' 'SYSTEM' 'TIME' timestamp 'WITH' kv_option_list
+	| 'LOAD' 'CLUSTER' full_backup_location ( | incremental_backup_location ( ',' incremental_backup_location )*) 'AS' 'OF' 'SYSTEM' 'TIME' timestamp 
+	| 'LOAD' 'CLUSTER' full_backup_location ( | incremental_backup_location ( ',' incremental_backup_location )*) 'AS' 'OF' 'SYSTEM' 'TIME' timestamp 

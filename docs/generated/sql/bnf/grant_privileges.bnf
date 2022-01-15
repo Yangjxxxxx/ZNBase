@@ -1,0 +1,7 @@
+grant_stmt ::=
+	'GRANT' ( 'ALL' | 'ALL' '(' insert_column_list ')' | ( ( ( name | 'CREATE' | 'GRANT' | 'SELECT' | 'REFERENCES' ) ) ( ( ',' ( name | 'CREATE' | 'GRANT' | 'SELECT' | 'REFERENCES' ) ) )* ) ) 'ON' ( ( 'TABLE' | ) table_pattern ( ( ',' table_pattern ) )* | 'DATABASE' database_name ( ( ',' database_name ) )* ) 'TO' ( ( user_name ) ( ( ',' user_name ) )* )
+	| 'GRANT' ( 'ALL' | 'ALL' '(' insert_column_list ')' | ( ( ( name | 'CREATE' | 'GRANT' | 'SELECT' | 'REFERENCES' ) ) ( ( ',' ( name | 'CREATE' | 'GRANT' | 'SELECT' | 'REFERENCES' ) ) )* ) ) 'ON' ( ( 'TABLE' | ) table_pattern ( ( ',' table_pattern ) )* | 'DATABASE' database_name ( ( ',' database_name ) )* ) 'TO' ( ( user_name ) ( ( ',' user_name ) )* ) 'WITH' 'GRANT' 'OPTION'
+	| 'GRANT' privilege_cols 'ON' ( ( 'TABLE' | ) table_pattern ( ( ',' table_pattern ) )* | 'DATABASE' database_name ( ( ',' database_name ) )* ) 'TO' ( ( user_name ) ( ( ',' user_name ) )* )
+	| 'GRANT' privilege_cols 'ON' ( ( 'TABLE' | ) table_pattern ( ( ',' table_pattern ) )* | 'DATABASE' database_name ( ( ',' database_name ) )* ) 'TO' ( ( user_name ) ( ( ',' user_name ) )* ) 'WITH' 'GRANT' 'OPTION'
+	| 'GRANT' ( ( ( name | 'CREATE' | 'GRANT' | 'SELECT' | 'REFERENCES' ) ) ( ( ',' ( name | 'CREATE' | 'GRANT' | 'SELECT' | 'REFERENCES' ) ) )* ) 'TO' ( ( user_name ) ( ( ',' user_name ) )* )
+	| 'GRANT' ( ( ( name | 'CREATE' | 'GRANT' | 'SELECT' | 'REFERENCES' ) ) ( ( ',' ( name | 'CREATE' | 'GRANT' | 'SELECT' | 'REFERENCES' ) ) )* ) 'TO' ( ( user_name ) ( ( ',' user_name ) )* ) 

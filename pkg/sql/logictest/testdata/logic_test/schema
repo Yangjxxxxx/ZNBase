@@ -1,0 +1,298 @@
+# LogicTest: local
+
+statement ok
+CREATE SCHEMA t1;
+
+statement ok
+CREATE SCHEMA IF NOT EXISTS t2;
+
+statement error schema "t1" in database "test" already exists
+CREATE SCHEMA t1;
+
+query TT
+SHOW SCHEMAS;
+----
+information_schema  root
+pg_catalog          root
+public              root
+t1                  root
+t2                  root
+zbdb_internal       root
+
+query T
+SHOW search_path;
+----
+public
+
+statement ok
+SET search_path to t1;
+
+query T
+SHOW search_path;
+----
+t1
+
+statement error schema "public" in database "test" already exists
+CREATE SCHEMA public;
+
+statement ok
+DROP SCHEMA t1;
+
+query TT
+SHOW SCHEMAS;
+----
+information_schema  root
+pg_catalog          root
+public              root
+t2                  root
+zbdb_internal       root
+
+statement ok
+DROP SCHEMA IF EXISTS t1;
+
+statement ok
+CREATE TABLE t2.test(t int);
+
+statement ok
+DROP SCHEMA t2;
+
+statement error schema "t2" does not exist in database "test"
+DROP SCHEMA t2 CASCADE;
+
+query T
+SHOW SEARCH_PATH;
+----
+t1
+
+statement ok
+SET SEARCH_PATH TO public;
+
+statement ok
+CREATE TABLE t (a char primary key,b int);
+
+statement ok
+INSERT INTO t VALUES('a', 1);
+
+statement ok
+INSERT INTO t VALUES('b', 2);
+
+query TI
+SELECT * FROM t;
+----
+a  1
+b  2
+
+statement ok
+CREATE SCHEMA tableschema;
+
+statement ok
+SET SEARCH_PATH TO tableschema;
+
+statement ok
+CREATE TABLE t (a char primary key,b int);
+
+query TT
+show tables;
+----
+t  root
+
+query TI
+SELECT * FROM t;
+----
+
+
+statement ok
+INSERT INTO t VALUES('a', 1);
+
+query TI
+SELECT * FROM t;
+----
+a  1
+
+statement error 相同的键值 a='a' 违反了主键约束 "primary"
+INSERT INTO t VALUES('a', 2);
+
+query TI
+SELECT * FROM public.t;
+----
+a  1
+b  2
+
+statement error pq: 相同的键值 a='a' 违反了主键约束 "primary"
+INSERT INTO t VALUES('a', 2);
+
+statement ok
+INSERT INTO t VALUES('b', 2);
+
+statement error 相同的键值 a='b' 违反了主键约束 "primary"
+INSERT INTO public.t VALUES('b', 2);
+
+statement ok
+INSERT INTO t VALUES('c', 2);
+
+statement ok
+UPDATE t SET b=3 where b=2;
+
+query TI
+SELECT * FROM t;
+----
+a  1
+b  3
+c  3
+
+statement ok
+UPDATE t SET a='d' where a='b';
+
+query TI
+SELECT * FROM t;
+----
+a  1
+c  3
+d  3
+
+statement ok
+DELETE FROM t WHERE b=1;
+
+query TI
+SELECT * FROM t;
+----
+c  3
+d  3
+
+statement ok
+UPDATE public.t SET a='d' where a='b';
+
+statement ok
+CREATE SCHEMA newschema;
+
+statement ok
+SET SEARCH_PATH TO newschema;
+
+statement ok
+CREATE TABLE t(a char primary key,b int);
+
+query TI
+SELECT * FROM tableschema.t;
+----
+c  3
+d  3
+
+statement ok
+DROP TABLE tableschema.t CASCADE;
+
+query ITI
+SELECT * FROM system.namespace;
+----
+0   defaultdb           50
+0   postgres            52
+0   system              1
+0   test                54
+1   authentication      26
+1   comments            24
+1   descriptor          3
+1   eventlog            12
+1   flashback           29
+1   function_namespace  8
+1   hints               31
+1   jobs                15
+1   lease               11
+1   location            7
+1   locations           21
+1   namespace           2
+1   rangelog            13
+1   role_members        23
+1   scheduled_jobs      28
+1   settings            6
+1   snapshots           25
+1   table_statistics    20
+1   triggers            30
+1   ui                  14
+1   user_options        27
+1   users               4
+1   web_sessions        19
+1   zones               5
+50  public              51
+52  public              53
+54  newschema           62
+54  public              55
+54  tableschema         60
+55  t                   59
+62  t                   63
+
+statement error relation "publictable" does not exist
+DROP TABLE publictable;
+
+statement ok
+DROP TABLE public.t;
+
+statement ok
+DROP TABLE t;
+
+statement ok
+SET SEARCH_PATH TO public;
+
+statement ok
+CREATE TABLE a(a char primary key, b int);
+
+statement ok
+INSERT INTO a VALUES('a',1);
+
+statement ok
+INSERT INTO a VALUES('b',2);
+
+statement ok
+CREATE SCHEMA tschema;
+
+statement ok
+SET SEARCH_PATH TO tschema;
+
+statement ok
+CREATE TABLE t(a char primary key, b int);
+
+query TT
+SHOW TABLES
+----
+t  root
+
+statement ok
+INSERT INTO t VALUES('a',3);
+
+statement ok
+INSERT INTO t VALUES('c',3);
+
+statement ok
+CREATE SCHEMA myschema;
+
+statement ok
+SET SEARCH_PATH TO myschema;
+
+statement ok
+CREATE TABLE b(a char primary key, b int);
+
+statement ok
+CREATE TABLE a(a char primary key, b int);
+
+statement ok
+INSERT INTO b VALUES('a',1);
+
+statement ok
+INSERT INTO b VALUES('c',3);
+
+query TITI
+SELECT * FROM b FULL JOIN a ON a.a=b.a;
+----
+a  1  NULL  NULL
+c  3  NULL  NULL
+
+query TITI
+SELECT * FROM b FULL JOIN tschema.t as u ON b.a=u.a;
+----
+a  1  a  3
+c  3  c  3
+
+query TITI
+SELECT * FROM b FULL JOIN public.a as c ON b.a=c.a;
+----
+a     1     a     1
+NULL  NULL  b     2
+c     3     NULL  NULL

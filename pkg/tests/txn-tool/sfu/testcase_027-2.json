@@ -1,0 +1,107 @@
+{
+    "初始化": [
+        {
+            "cmd": "DROP TABLE IF EXISTS t;",
+            "type": "execute"
+        },
+        {
+            "cmd": "CREATE TABLE t(a INT primary key, b INT);",
+            "type": "execute"
+        },
+        {
+            "cmd": "INSERT INTO t VALUES(1, 11), (2, 22),(3, 33),(4, 44),(5, 55);",
+            "type": "execute"
+        }
+    ],
+    "执行": [
+        {
+            "cmd": "SET cluster setting sql.defaults.implicit_select_for_update.enabled=TRUE;",
+            "conn": "conn1",
+            "type": "execute"
+        },
+        {
+            "cmd": "BEGIN;",
+            "conn": "conn1",
+            "type": "execute"
+        },
+        {
+            "cmd": "BEGIN;",
+            "conn": "conn2",
+            "type": "execute"
+        },
+        {
+            "cmd": "SELECT * FROM t WHERE a=4 for update;",
+            "conn": "conn1",
+            "type": "query",
+            "result": {
+                "header": [
+                    "a",
+                    "b"
+                ],
+                "body": [
+                    [
+                        4,
+                        44
+                    ]
+                ]
+            }
+        },
+        {
+            "cmd": "UPDATE t SET b=77 WHERE b=66;",
+            "conn": "conn2",
+            "type": "execute",
+            "block": true,
+            "result": {
+                "regular": "UPDATE 2"
+            }
+        },
+        {
+            "cmd": "BEGIN;",
+            "conn": "conn3",
+            "type": "execute"
+        },
+        {
+            "cmd": "UPDATE t SET b=66 where a=4;",
+            "conn": "conn1",
+            "type": "execute"
+        },
+        {
+            "cmd": "SELECT * FROM t WHERE a=5 for update;",
+            "conn": "conn3",
+            "type": "query",
+            "result": {
+                "header": [
+                    "a",
+                    "b"
+                ],
+                "body": [
+                    [
+                        5,
+                        55
+                    ]
+                ]
+            }
+        },
+        {
+            "cmd": "COMMIT;",
+            "conn": "conn1"
+        },
+        {
+            "cmd": "UPDATE t SET b=66 where a=5;",
+            "conn": "conn3",
+            "type": "execute"
+        },
+        {
+            "cmd": "COMMIT;",
+            "conn": "conn3"
+        },
+        {
+            "cmd": "COMMIT;",
+            "conn": "conn2"
+        },
+        {
+            "cmd": "RESET cluster setting sql.defaults.implicit_select_for_update.enabled;",
+            "conn": "conn1"
+        }
+    ]
+}

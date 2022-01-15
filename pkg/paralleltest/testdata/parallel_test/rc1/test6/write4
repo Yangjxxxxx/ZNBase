@@ -1,0 +1,11 @@
+statement ok
+SELECT pg_sleep(5);
+
+statement ok
+BEGIN TRANSACTION ISOLATION LEVEL READ COMMITTED;
+
+statement ok
+UPDATE t SET a = 5 WHERE a = 2;
+
+statement ok;
+COMMIT;

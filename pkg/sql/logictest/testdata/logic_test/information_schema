@@ -1,0 +1,2494 @@
+# LogicTest: local local-opt
+
+# Verify information_schema database handles mutation statements correctly.
+
+statement ok
+GRANT USAGE ON DATABASE test TO public
+
+query error database "information_schema" does not exist
+ALTER DATABASE information_schema RENAME TO not_information_schema
+
+statement error schema cannot be modified: "information_schema"
+CREATE TABLE information_schema.t (x INT)
+
+query error database "information_schema" does not exist
+DROP DATABASE information_schema
+
+query TT
+SHOW TABLES FROM information_schema
+----
+administrable_role_authorizations  NULL
+applicable_roles                   NULL
+check_constraints                  NULL
+column_privileges                  NULL
+columns                            NULL
+constraint_column_usage            NULL
+database_privileges                NULL
+enabled_roles                      NULL
+functions                          NULL
+index_partition                    NULL
+key_column_usage                   NULL
+parameters                         NULL
+referential_constraints            NULL
+role_table_grants                  NULL
+routines                           NULL
+schema_privileges                  NULL
+schemata                           NULL
+sequences                          NULL
+statistics                         NULL
+table_constraints                  NULL
+table_privileges                   NULL
+tables                             NULL
+trigger_privileges                 NULL
+user_privileges                    NULL
+views                              NULL
+
+# Verify that the name is not special for databases.
+
+statement ok
+CREATE DATABASE other_db
+
+statement ok
+ALTER DATABASE other_db RENAME TO information_schema
+
+statement error database "information_schema" already exists
+CREATE DATABASE information_schema
+
+statement ok
+DROP DATABASE information_schema CASCADE
+
+
+# Verify information_schema tables handle mutation statements correctly.
+
+statement error pq: cannot create table in virtual schema: "information_schema"
+ALTER TABLE information_schema.tables RENAME TO information_schema.bad
+
+statement error schema cannot be modified: "information_schema"
+ALTER TABLE information_schema.tables RENAME COLUMN x TO y
+
+statement error schema cannot be modified: "information_schema"
+ALTER TABLE information_schema.tables ADD COLUMN x DECIMAL
+
+statement error schema cannot be modified: "information_schema"
+ALTER TABLE information_schema.tables DROP COLUMN x
+
+statement error schema cannot be modified: "information_schema"
+ALTER TABLE information_schema.tables ADD CONSTRAINT foo UNIQUE (b)
+
+statement error schema cannot be modified: "information_schema"
+ALTER TABLE information_schema.tables DROP CONSTRAINT bar
+
+statement error schema cannot be modified: "information_schema"
+ALTER TABLE information_schema.tables ALTER COLUMN x SET DEFAULT 'foo'
+
+statement error schema cannot be modified: "information_schema"
+ALTER TABLE information_schema.tables ALTER x DROP NOT NULL
+
+statement error user root does not have REFERENCES privilege on relation tables
+CREATE INDEX i on information_schema.tables (x)
+
+statement error user root does not have DROP privilege on relation tables
+DROP TABLE information_schema.tables
+
+statement error user root does not have REFERENCES privilege on relation tables
+DROP INDEX information_schema.tables@i
+
+statement error pq: invalid privilege type CREATE for table
+GRANT CREATE ON VIEW information_schema.tables TO root
+
+statement error pq: invalid privilege type CREATE for table
+REVOKE CREATE ON VIEW information_schema.tables FROM root
+
+
+# Verify information_schema tables handles read-only property correctly.
+
+query error user root does not have DELETE privilege on relation tables
+DELETE FROM information_schema.tables
+
+query error user root does not have INSERT privilege on relation tables
+INSERT INTO information_schema.tables VALUES ('abc')
+
+statement error user root does not have UPDATE privilege on relation tables
+UPDATE information_schema.tables SET a = 'abc'
+
+statement error user root does not have DROP privilege on relation tables
+TRUNCATE TABLE information_schema.tables
+
+
+# Verify information_schema handles reflection correctly.
+
+query TT
+SHOW DATABASES
+----
+defaultdb  root
+postgres   root
+system     node
+test       root
+
+query TT
+SHOW TABLES FROM test.information_schema
+----
+administrable_role_authorizations  NULL
+applicable_roles                   NULL
+check_constraints                  NULL
+column_privileges                  NULL
+columns                            NULL
+constraint_column_usage            NULL
+database_privileges                NULL
+enabled_roles                      NULL
+functions                          NULL
+index_partition                    NULL
+key_column_usage                   NULL
+parameters                         NULL
+referential_constraints            NULL
+role_table_grants                  NULL
+routines                           NULL
+schema_privileges                  NULL
+schemata                           NULL
+sequences                          NULL
+statistics                         NULL
+table_constraints                  NULL
+table_privileges                   NULL
+tables                             NULL
+trigger_privileges                 NULL
+user_privileges                    NULL
+views                              NULL
+
+query TT colnames
+SHOW CREATE TABLE information_schema.tables
+----
+table_name                 create_statement
+information_schema.tables  CREATE TABLE tables (
+                           table_catalog STRING NOT NULL,
+                           table_schema STRING NOT NULL,
+                           table_name STRING NOT NULL,
+                           table_type STRING NOT NULL,
+                           is_insertable_into STRING NOT NULL,
+                           version INT NULL
+)
+
+query TTBTTTB colnames
+SHOW COLUMNS FROM information_schema.tables
+----
+column_name         data_type  is_nullable  column_default  generation_expression  indices  is_hidden
+table_catalog       STRING     false        NULL            ·                      {}       false
+table_schema        STRING     false        NULL            ·                      {}       false
+table_name          STRING     false        NULL            ·                      {}       false
+table_type          STRING     false        NULL            ·                      {}       false
+is_insertable_into  STRING     false        NULL            ·                      {}       false
+version             INT        true         NULL            ·                      {}       false
+
+query TTBITTBBTT colnames
+SHOW INDEXES FROM information_schema.tables
+----
+table_name  index_name  non_unique  seq_in_index  column_name  direction  storing  implicit locality  partitioned
+
+query TTTTB colnames
+SHOW CONSTRAINTS FROM information_schema.tables
+----
+table_name  constraint_name  constraint_type  details  validated
+
+query TTTTTTTT colnames
+SHOW GRANTS ON VIEW information_schema.tables
+----
+database_name  schema_name         view_name  column_name         grantor  grantee  privilege_type  grantable
+test           information_schema  tables     NULL         admin    public   SELECT          NO
+
+
+# Verify selecting from information_schema.
+
+## information_schema.schemata
+
+query TTTT colnames
+SELECT * FROM information_schema.schemata
+----
+catalog_name  schema_name         default_character_set_name  sql_path
+test          information_schema  NULL                        NULL
+test          pg_catalog          NULL                        NULL
+test          public              NULL                        NULL
+test          zbdb_internal       NULL                        NULL
+
+query TTTT colnames
+SELECT * FROM INFormaTION_SCHEMa.schemata
+----
+catalog_name  schema_name         default_character_set_name  sql_path
+test          information_schema  NULL                        NULL
+test          pg_catalog          NULL                        NULL
+test          public              NULL                        NULL
+test          zbdb_internal       NULL                        NULL
+
+## information_schema.tables
+
+# Check the default contents of information_schema.tables (incl. the
+# special system tables)
+query TT rowsort
+select table_schema, table_name FROM information_schema.tables
+----
+information_schema  administrable_role_authorizations
+information_schema  applicable_roles
+information_schema  check_constraints
+information_schema  column_privileges
+information_schema  columns
+information_schema  constraint_column_usage
+information_schema  database_privileges
+information_schema  enabled_roles
+information_schema  functions
+information_schema  index_partition
+information_schema  key_column_usage
+information_schema  parameters
+information_schema  referential_constraints
+information_schema  role_table_grants
+information_schema  routines
+information_schema  schema_privileges
+information_schema  schemata
+information_schema  sequences
+information_schema  statistics
+information_schema  table_constraints
+information_schema  table_privileges
+information_schema  tables
+information_schema  trigger_privileges
+information_schema  user_privileges
+information_schema  views
+pg_catalog          pg_am
+pg_catalog          pg_attrdef
+pg_catalog          pg_attribute
+pg_catalog          pg_auth_members
+pg_catalog          pg_class
+pg_catalog          pg_collation
+pg_catalog          pg_constraint
+pg_catalog          pg_database
+pg_catalog          pg_depend
+pg_catalog          pg_description
+pg_catalog          pg_enum
+pg_catalog          pg_extension
+pg_catalog          pg_foreign_data_wrapper
+pg_catalog          pg_foreign_server
+pg_catalog          pg_foreign_table
+pg_catalog          pg_index
+pg_catalog          pg_indexes
+pg_catalog          pg_inherits
+pg_catalog          pg_language
+pg_catalog          pg_namespace
+pg_catalog          pg_nodestatus
+pg_catalog          pg_operator
+pg_catalog          pg_proc
+pg_catalog          pg_range
+pg_catalog          pg_rewrite
+pg_catalog          pg_roles
+pg_catalog          pg_seclabel
+pg_catalog          pg_sequence
+pg_catalog          pg_settings
+pg_catalog          pg_shdescription
+pg_catalog          pg_shseclabel
+pg_catalog          pg_stat_activity
+pg_catalog          pg_tables
+pg_catalog          pg_tablespace
+pg_catalog          pg_trigger
+pg_catalog          pg_type
+pg_catalog          pg_user
+pg_catalog          pg_user_mapping
+pg_catalog          pg_views
+zbdb_internal       backward_dependencies
+zbdb_internal       builtin_functions
+zbdb_internal       cluster_queries
+zbdb_internal       cluster_sessions
+zbdb_internal       cluster_settings
+zbdb_internal       create_statements
+zbdb_internal       databases
+zbdb_internal       feature_usage
+zbdb_internal       forward_dependencies
+zbdb_internal       function_privileges
+zbdb_internal       gossip_alerts
+zbdb_internal       gossip_liveness
+zbdb_internal       gossip_network
+zbdb_internal       gossip_nodes
+zbdb_internal       index_columns
+zbdb_internal       jobs
+zbdb_internal       kv_node_status
+zbdb_internal       kv_store_status
+zbdb_internal       leases
+zbdb_internal       node_build_info
+zbdb_internal       node_metrics
+zbdb_internal       node_queries
+zbdb_internal       node_runtime_info
+zbdb_internal       node_sessions
+zbdb_internal       node_statement_statistics
+zbdb_internal       partition_views
+zbdb_internal       partitions
+zbdb_internal       predefined_comments
+zbdb_internal       ranges
+zbdb_internal       ranges_no_leases
+zbdb_internal       savepoint_status
+zbdb_internal       schema_changes
+zbdb_internal       session_trace
+zbdb_internal       session_variables
+zbdb_internal       table_columns
+zbdb_internal       table_indexes
+zbdb_internal       table_row_statistics
+zbdb_internal       tables
+zbdb_internal       zones
+
+statement ok
+CREATE DATABASE other_db
+
+statement ok
+CREATE TABLE other_db.xyz (i INT)
+
+statement ok
+CREATE SEQUENCE other_db.seq
+
+statement ok
+CREATE VIEW other_db.abc AS SELECT i from other_db.xyz
+
+statement ok
+GRANT USAGE ON DATABASE other_db TO testuser;
+GRANT UPDATE ON other_db.xyz TO testuser;
+
+user testuser
+
+# Check the output with the current database set to 'test' (the
+# defaults in tests). This will make the tables in other_db invisible to
+# a non-root user.
+query T
+SELECT table_name FROM information_schema.tables WHERE table_catalog = 'other_db'
+----
+
+# Check that the other_db tables become visible when a prefix is specified
+query T
+SELECT table_name FROM other_db.information_schema.tables WHERE table_catalog = 'other_db' AND table_schema = 'public' ORDER BY table_name
+----
+abc
+xyz
+
+# Check that one can see all tables with the empty prefix.
+query T rowsort
+SELECT table_name FROM "".information_schema.tables WHERE table_catalog = 'other_db'
+----
+backward_dependencies
+builtin_functions
+cluster_queries
+cluster_sessions
+cluster_settings
+create_statements
+databases
+feature_usage
+forward_dependencies
+gossip_alerts
+gossip_liveness
+gossip_network
+gossip_nodes
+index_columns
+jobs
+kv_node_status
+kv_store_status
+leases
+node_build_info
+node_metrics
+node_queries
+node_runtime_info
+node_sessions
+node_statement_statistics
+partition_views
+partitions
+predefined_comments
+ranges
+ranges_no_leases
+savepoint_status
+schema_changes
+session_trace
+session_variables
+table_columns
+table_indexes
+table_row_statistics
+tables
+zones
+administrable_role_authorizations
+applicable_roles
+check_constraints
+column_privileges
+columns
+constraint_column_usage
+database_privileges
+enabled_roles
+function_privileges
+functions
+index_partition
+key_column_usage
+parameters
+referential_constraints
+role_table_grants
+routines
+schema_privileges
+schemata
+sequences
+statistics
+table_constraints
+table_privileges
+tables
+trigger_privileges
+user_privileges
+views
+pg_am
+pg_attrdef
+pg_attribute
+pg_auth_members
+pg_class
+pg_collation
+pg_constraint
+pg_database
+pg_depend
+pg_description
+pg_enum
+pg_extension
+pg_foreign_data_wrapper
+pg_foreign_server
+pg_foreign_table
+pg_index
+pg_indexes
+pg_inherits
+pg_language
+pg_namespace
+pg_nodestatus
+pg_operator
+pg_proc
+pg_range
+pg_rewrite
+pg_roles
+pg_seclabel
+pg_sequence
+pg_settings
+pg_shdescription
+pg_shseclabel
+pg_stat_activity
+pg_tables
+pg_tablespace
+pg_trigger
+pg_type
+pg_user
+pg_user_mapping
+pg_views
+abc
+xyz
+
+# Check that the other_db tables become visible to non-root when the current database is changed.
+query T
+SET DATABASE = other_db; SELECT table_name FROM information_schema.tables WHERE table_catalog = 'other_db' AND table_schema = 'public' ORDER BY table_name
+----
+abc
+xyz
+
+user root
+
+# Check that root sees everything when there is no current database
+query T rowsort
+SET DATABASE = ''; SELECT table_name FROM information_schema.tables WHERE table_catalog = 'other_db' AND table_schema = 'public'
+----
+abc
+xyz
+
+# Check that root doesn't see other things when there is a current database
+query T
+SET DATABASE = test; SELECT table_name FROM information_schema.tables WHERE table_schema = 'other_db'
+----
+
+# Check that filtering works.
+query T
+SELECT table_name FROM other_db.information_schema.tables WHERE table_name > 't'  ORDER BY 1 DESC
+----
+zones
+xyz
+views
+user_privileges
+trigger_privileges
+tables
+tables
+table_row_statistics
+table_privileges
+table_indexes
+table_constraints
+table_columns
+
+# Check that the metadata is reported properly.
+query TTTTTI colnames
+SELECT * FROM system.information_schema.tables order by table_catalog,table_schema,table_name
+----
+table_catalog  table_schema        table_name                         table_type   is_insertable_into  version
+system         information_schema  administrable_role_authorizations  SYSTEM VIEW  NO                  1
+system         information_schema  applicable_roles                   SYSTEM VIEW  NO                  1
+system         information_schema  check_constraints                  SYSTEM VIEW  NO                  1
+system         information_schema  column_privileges                  SYSTEM VIEW  NO                  1
+system         information_schema  columns                            SYSTEM VIEW  NO                  1
+system         information_schema  constraint_column_usage            SYSTEM VIEW  NO                  1
+system         information_schema  database_privileges                SYSTEM VIEW  NO                  1
+system         information_schema  enabled_roles                      SYSTEM VIEW  NO                  1
+system         information_schema  functions                          SYSTEM VIEW  NO                  1
+system         information_schema  index_partition                    SYSTEM VIEW  NO                  1
+system         information_schema  key_column_usage                   SYSTEM VIEW  NO                  1
+system         information_schema  parameters                         SYSTEM VIEW  NO                  1
+system         information_schema  referential_constraints            SYSTEM VIEW  NO                  1
+system         information_schema  role_table_grants                  SYSTEM VIEW  NO                  1
+system         information_schema  routines                           SYSTEM VIEW  NO                  1
+system         information_schema  schema_privileges                  SYSTEM VIEW  NO                  1
+system         information_schema  schemata                           SYSTEM VIEW  NO                  1
+system         information_schema  sequences                          SYSTEM VIEW  NO                  1
+system         information_schema  statistics                         SYSTEM VIEW  NO                  1
+system         information_schema  table_constraints                  SYSTEM VIEW  NO                  1
+system         information_schema  table_privileges                   SYSTEM VIEW  NO                  1
+system         information_schema  tables                             SYSTEM VIEW  NO                  1
+system         information_schema  trigger_privileges                 SYSTEM VIEW  NO                  1
+system         information_schema  user_privileges                    SYSTEM VIEW  NO                  1
+system         information_schema  views                              SYSTEM VIEW  NO                  1
+system         pg_catalog          pg_am                              SYSTEM VIEW  NO                  1
+system         pg_catalog          pg_attrdef                         SYSTEM VIEW  NO                  1
+system         pg_catalog          pg_attribute                       SYSTEM VIEW  NO                  1
+system         pg_catalog          pg_auth_members                    SYSTEM VIEW  NO                  1
+system         pg_catalog          pg_class                           SYSTEM VIEW  NO                  1
+system         pg_catalog          pg_collation                       SYSTEM VIEW  NO                  1
+system         pg_catalog          pg_constraint                      SYSTEM VIEW  NO                  1
+system         pg_catalog          pg_database                        SYSTEM VIEW  NO                  1
+system         pg_catalog          pg_depend                          SYSTEM VIEW  NO                  1
+system         pg_catalog          pg_description                     SYSTEM VIEW  NO                  1
+system         pg_catalog          pg_enum                            SYSTEM VIEW  NO                  1
+system         pg_catalog          pg_extension                       SYSTEM VIEW  NO                  1
+system         pg_catalog          pg_foreign_data_wrapper            SYSTEM VIEW  NO                  1
+system         pg_catalog          pg_foreign_server                  SYSTEM VIEW  NO                  1
+system         pg_catalog          pg_foreign_table                   SYSTEM VIEW  NO                  1
+system         pg_catalog          pg_index                           SYSTEM VIEW  NO                  1
+system         pg_catalog          pg_indexes                         SYSTEM VIEW  NO                  1
+system         pg_catalog          pg_inherits                        SYSTEM VIEW  NO                  1
+system         pg_catalog          pg_language                        SYSTEM VIEW  NO                  1
+system         pg_catalog          pg_namespace                       SYSTEM VIEW  NO                  1
+system         pg_catalog          pg_nodestatus                      SYSTEM VIEW  NO                  1
+system         pg_catalog          pg_operator                        SYSTEM VIEW  NO                  1
+system         pg_catalog          pg_proc                            SYSTEM VIEW  NO                  1
+system         pg_catalog          pg_range                           SYSTEM VIEW  NO                  1
+system         pg_catalog          pg_rewrite                         SYSTEM VIEW  NO                  1
+system         pg_catalog          pg_roles                           SYSTEM VIEW  NO                  1
+system         pg_catalog          pg_seclabel                        SYSTEM VIEW  NO                  1
+system         pg_catalog          pg_sequence                        SYSTEM VIEW  NO                  1
+system         pg_catalog          pg_settings                        SYSTEM VIEW  NO                  1
+system         pg_catalog          pg_shdescription                   SYSTEM VIEW  NO                  1
+system         pg_catalog          pg_shseclabel                      SYSTEM VIEW  NO                  1
+system         pg_catalog          pg_stat_activity                   SYSTEM VIEW  NO                  1
+system         pg_catalog          pg_tables                          SYSTEM VIEW  NO                  1
+system         pg_catalog          pg_tablespace                      SYSTEM VIEW  NO                  1
+system         pg_catalog          pg_trigger                         SYSTEM VIEW  NO                  1
+system         pg_catalog          pg_type                            SYSTEM VIEW  NO                  1
+system         pg_catalog          pg_user                            SYSTEM VIEW  NO                  1
+system         pg_catalog          pg_user_mapping                    SYSTEM VIEW  NO                  1
+system         pg_catalog          pg_views                           SYSTEM VIEW  NO                  1
+system         public              authentication                     BASE TABLE   YES                 1
+system         public              comments                           BASE TABLE   YES                 1
+system         public              descriptor                         BASE TABLE   YES                 1
+system         public              eventlog                           BASE TABLE   YES                 1
+system         public              flashback                          BASE TABLE   YES                 1
+system         public              function_namespace                 BASE TABLE   YES                 1
+system         public              hints                              BASE TABLE   YES                 1
+system         public              jobs                               BASE TABLE   YES                 1
+system         public              lease                              BASE TABLE   YES                 1
+system         public              location                           BASE TABLE   YES                 1
+system         public              locations                          BASE TABLE   YES                 1
+system         public              namespace                          BASE TABLE   YES                 1
+system         public              rangelog                           BASE TABLE   YES                 1
+system         public              role_members                       BASE TABLE   YES                 1
+system         public              scheduled_jobs                     BASE TABLE   YES                 1
+system         public              settings                           BASE TABLE   YES                 1
+system         public              snapshots                          BASE TABLE   YES                 1
+system         public              table_statistics                   BASE TABLE   YES                 1
+system         public              triggers                           BASE TABLE   YES                 1
+system         public              ui                                 BASE TABLE   YES                 1
+system         public              user_options                       BASE TABLE   YES                 1
+system         public              users                              BASE TABLE   YES                 1
+system         public              web_sessions                       BASE TABLE   YES                 1
+system         public              zones                              BASE TABLE   YES                 1
+system         zbdb_internal       backward_dependencies              SYSTEM VIEW  NO                  1
+system         zbdb_internal       builtin_functions                  SYSTEM VIEW  NO                  1
+system         zbdb_internal       cluster_queries                    SYSTEM VIEW  NO                  1
+system         zbdb_internal       cluster_sessions                   SYSTEM VIEW  NO                  1
+system         zbdb_internal       cluster_settings                   SYSTEM VIEW  NO                  1
+system         zbdb_internal       create_statements                  SYSTEM VIEW  NO                  1
+system         zbdb_internal       databases                          SYSTEM VIEW  NO                  1
+system         zbdb_internal       feature_usage                      SYSTEM VIEW  NO                  1
+system         zbdb_internal       forward_dependencies               SYSTEM VIEW  NO                  1
+system         zbdb_internal       function_privileges                SYSTEM VIEW  NO                  1
+system         zbdb_internal       gossip_alerts                      SYSTEM VIEW  NO                  1
+system         zbdb_internal       gossip_liveness                    SYSTEM VIEW  NO                  1
+system         zbdb_internal       gossip_network                     SYSTEM VIEW  NO                  1
+system         zbdb_internal       gossip_nodes                       SYSTEM VIEW  NO                  1
+system         zbdb_internal       index_columns                      SYSTEM VIEW  NO                  1
+system         zbdb_internal       jobs                               SYSTEM VIEW  NO                  1
+system         zbdb_internal       kv_node_status                     SYSTEM VIEW  NO                  1
+system         zbdb_internal       kv_store_status                    SYSTEM VIEW  NO                  1
+system         zbdb_internal       leases                             SYSTEM VIEW  NO                  1
+system         zbdb_internal       node_build_info                    SYSTEM VIEW  NO                  1
+system         zbdb_internal       node_metrics                       SYSTEM VIEW  NO                  1
+system         zbdb_internal       node_queries                       SYSTEM VIEW  NO                  1
+system         zbdb_internal       node_runtime_info                  SYSTEM VIEW  NO                  1
+system         zbdb_internal       node_sessions                      SYSTEM VIEW  NO                  1
+system         zbdb_internal       node_statement_statistics          SYSTEM VIEW  NO                  1
+system         zbdb_internal       partition_views                    SYSTEM VIEW  NO                  1
+system         zbdb_internal       partitions                         SYSTEM VIEW  NO                  1
+system         zbdb_internal       predefined_comments                SYSTEM VIEW  NO                  1
+system         zbdb_internal       ranges                             SYSTEM VIEW  NO                  1
+system         zbdb_internal       ranges_no_leases                   SYSTEM VIEW  NO                  1
+system         zbdb_internal       savepoint_status                   SYSTEM VIEW  NO                  1
+system         zbdb_internal       schema_changes                     SYSTEM VIEW  NO                  1
+system         zbdb_internal       session_trace                      SYSTEM VIEW  NO                  1
+system         zbdb_internal       session_variables                  SYSTEM VIEW  NO                  1
+system         zbdb_internal       table_columns                      SYSTEM VIEW  NO                  1
+system         zbdb_internal       table_indexes                      SYSTEM VIEW  NO                  1
+system         zbdb_internal       table_row_statistics               SYSTEM VIEW  NO                  1
+system         zbdb_internal       tables                             SYSTEM VIEW  NO                  1
+system         zbdb_internal       zones                              SYSTEM VIEW  NO                  1
+
+statement ok
+ALTER TABLE other_db.xyz ADD COLUMN j INT
+
+query TTI colnames
+SELECT TABLE_CATALOG, TABLE_NAME, VERSION FROM "".information_schema.tables WHERE version > 1 AND TABLE_SCHEMA = 'public' ORDER BY 1,2
+----
+TABLE_CATALOG  TABLE_NAME  VERSION
+other_db       xyz         6
+
+user testuser
+
+# Check that another user cannot see other_db.adbc any more because they
+# don't have privileges on it.
+query TTTTTI colnames
+SELECT * FROM other_db.information_schema.tables WHERE table_catalog = 'other_db' AND table_schema = 'public' ORDER BY table_name
+----
+table_catalog  table_schema  table_name  table_type  is_insertable_into  version
+other_db       public        abc         VIEW        NO                  1
+other_db       public        xyz         BASE TABLE  YES                 6
+
+
+user root
+
+statement ok
+GRANT SELECT ON VIEW other_db.abc TO testuser
+
+user testuser
+
+# Check the user can see the tables now that they have privilege.
+query TTTTTI colnames
+SELECT * FROM other_db.information_schema.tables WHERE table_catalog = 'other_db' AND table_schema = 'public' ORDER BY 1, 3
+----
+table_catalog  table_schema  table_name  table_type  is_insertable_into  version
+other_db       public        abc         VIEW        NO                  2
+other_db       public        xyz         BASE TABLE  YES                 6
+
+user root
+
+statement ok
+DROP DATABASE other_db CASCADE
+
+statement ok
+SET DATABASE = test
+
+## information_schema.table_constraints
+## information_schema.constraint_column_usage
+
+query TTTTTTTTT colnames
+SELECT *
+FROM system.information_schema.table_constraints
+ORDER BY TABLE_NAME, CONSTRAINT_TYPE, CONSTRAINT_NAME
+----
+constraint_catalog  constraint_schema  constraint_name  table_catalog  table_schema  table_name          constraint_type  is_deferrable  initially_deferred
+system              public             primary          system         public        authentication      PRIMARY KEY      NO             NO
+system              public             primary          system         public        comments            PRIMARY KEY      NO             NO
+system              public             primary          system         public        descriptor          PRIMARY KEY      NO             NO
+system              public             primary          system         public        eventlog            PRIMARY KEY      NO             NO
+system              public             primary          system         public        flashback           PRIMARY KEY      NO             NO
+system              public             primary          system         public        function_namespace  PRIMARY KEY      NO             NO
+system              public             primary          system         public        hints               PRIMARY KEY      NO             NO
+system              public             primary          system         public        jobs                PRIMARY KEY      NO             NO
+system              public             primary          system         public        lease               PRIMARY KEY      NO             NO
+system              public             primary          system         public        location            PRIMARY KEY      NO             NO
+system              public             primary          system         public        locations           PRIMARY KEY      NO             NO
+system              public             primary          system         public        namespace           PRIMARY KEY      NO             NO
+system              public             primary          system         public        rangelog            PRIMARY KEY      NO             NO
+system              public             primary          system         public        role_members        PRIMARY KEY      NO             NO
+system              public             primary          system         public        scheduled_jobs      PRIMARY KEY      NO             NO
+system              public             primary          system         public        settings            PRIMARY KEY      NO             NO
+system              public             primary          system         public        snapshots           PRIMARY KEY      NO             NO
+system              public             primary          system         public        table_statistics    PRIMARY KEY      NO             NO
+system              public             primary          system         public        triggers            PRIMARY KEY      NO             NO
+system              public             primary          system         public        ui                  PRIMARY KEY      NO             NO
+system              public             primary          system         public        user_options        PRIMARY KEY      NO             NO
+system              public             primary          system         public        users               PRIMARY KEY      NO             NO
+system              public             primary          system         public        web_sessions        PRIMARY KEY      NO             NO
+system              public             primary          system         public        zones               PRIMARY KEY      NO             NO
+
+query TTTT colnames
+SELECT *
+FROM system.information_schema.check_constraints
+ORDER BY CONSTRAINT_CATALOG, CONSTRAINT_NAME
+----
+constraint_catalog  constraint_schema  constraint_name          check_clause
+system              public             630200280_11_1_not_null  descID IS NOT NULL
+system              public             630200280_11_2_not_null  version IS NOT NULL
+system              public             630200280_11_3_not_null  nodeID IS NOT NULL
+system              public             630200280_11_4_not_null  expiration IS NOT NULL
+system              public             630200280_12_1_not_null  timestamp IS NOT NULL
+system              public             630200280_12_2_not_null  eventType IS NOT NULL
+system              public             630200280_12_3_not_null  targetID IS NOT NULL
+system              public             630200280_12_4_not_null  reportingID IS NOT NULL
+system              public             630200280_12_6_not_null  uniqueID IS NOT NULL
+system              public             630200280_13_1_not_null  timestamp IS NOT NULL
+system              public             630200280_13_2_not_null  rangeID IS NOT NULL
+system              public             630200280_13_3_not_null  storeID IS NOT NULL
+system              public             630200280_13_4_not_null  eventType IS NOT NULL
+system              public             630200280_13_7_not_null  uniqueID IS NOT NULL
+system              public             630200280_14_1_not_null  key IS NOT NULL
+system              public             630200280_14_3_not_null  lastUpdated IS NOT NULL
+system              public             630200280_15_1_not_null  id IS NOT NULL
+system              public             630200280_15_2_not_null  status IS NOT NULL
+system              public             630200280_15_3_not_null  created IS NOT NULL
+system              public             630200280_15_4_not_null  payload IS NOT NULL
+system              public             630200280_19_1_not_null  id IS NOT NULL
+system              public             630200280_19_2_not_null  hashedSecret IS NOT NULL
+system              public             630200280_19_3_not_null  username IS NOT NULL
+system              public             630200280_19_4_not_null  createdAt IS NOT NULL
+system              public             630200280_19_5_not_null  expiresAt IS NOT NULL
+system              public             630200280_19_7_not_null  lastUsedAt IS NOT NULL
+system              public             630200280_20_1_not_null  tableID IS NOT NULL
+system              public             630200280_20_2_not_null  statisticID IS NOT NULL
+system              public             630200280_20_4_not_null  columnIDs IS NOT NULL
+system              public             630200280_20_5_not_null  createdAt IS NOT NULL
+system              public             630200280_20_6_not_null  rowCount IS NOT NULL
+system              public             630200280_20_7_not_null  distinctCount IS NOT NULL
+system              public             630200280_20_8_not_null  nullCount IS NOT NULL
+system              public             630200280_21_1_not_null  localityKey IS NOT NULL
+system              public             630200280_21_2_not_null  localityValue IS NOT NULL
+system              public             630200280_21_3_not_null  latitude IS NOT NULL
+system              public             630200280_21_4_not_null  longitude IS NOT NULL
+system              public             630200280_23_1_not_null  role IS NOT NULL
+system              public             630200280_23_2_not_null  member IS NOT NULL
+system              public             630200280_23_3_not_null  isAdmin IS NOT NULL
+system              public             630200280_24_1_not_null  type IS NOT NULL
+system              public             630200280_24_2_not_null  object_id IS NOT NULL
+system              public             630200280_24_3_not_null  sub_id IS NOT NULL
+system              public             630200280_24_4_not_null  comment IS NOT NULL
+system              public             630200280_25_1_not_null  id IS NOT NULL
+system              public             630200280_25_2_not_null  name IS NOT NULL
+system              public             630200280_25_3_not_null  type IS NOT NULL
+system              public             630200280_25_4_not_null  object_id IS NOT NULL
+system              public             630200280_25_7_not_null  asof IS NOT NULL
+system              public             630200280_26_1_not_null  username IS NOT NULL
+system              public             630200280_26_2_not_null  failureCount IS NOT NULL
+system              public             630200280_26_4_not_null  maxTryCount IS NOT NULL
+system              public             630200280_26_5_not_null  enable IS NOT NULL
+system              public             630200280_27_1_not_null  username IS NOT NULL
+system              public             630200280_27_2_not_null  option IS NOT NULL
+system              public             630200280_28_1_not_null  schedule_id IS NOT NULL
+system              public             630200280_28_2_not_null  schedule_name IS NOT NULL
+system              public             630200280_28_3_not_null  created IS NOT NULL
+system              public             630200280_28_8_not_null  executor_type IS NOT NULL
+system              public             630200280_28_9_not_null  execution_args IS NOT NULL
+system              public             630200280_29_1_not_null  type IS NOT NULL
+system              public             630200280_29_2_not_null  object_id IS NOT NULL
+system              public             630200280_29_3_not_null  object_name IS NOT NULL
+system              public             630200280_29_4_not_null  ct_time IS NOT NULL
+system              public             630200280_29_5_not_null  drop_time IS NOT NULL
+system              public             630200280_29_6_not_null  ttl_days IS NOT NULL
+system              public             630200280_29_7_not_null  visible IS NOT NULL
+system              public             630200280_29_8_not_null  parent_id IS NOT NULL
+system              public             630200280_29_9_not_null  db_id IS NOT NULL
+system              public             630200280_2_1_not_null   parentID IS NOT NULL
+system              public             630200280_2_2_not_null   name IS NOT NULL
+system              public             630200280_30_1_not_null  relid IS NOT NULL
+system              public             630200280_30_2_not_null  name IS NOT NULL
+system              public             630200280_30_4_not_null  type IS NOT NULL
+system              public             630200280_30_5_not_null  enable IS NOT NULL
+system              public             630200280_30_6_not_null  isconstraint IS NOT NULL
+system              public             630200280_31_1_not_null  origin_sql IS NOT NULL
+system              public             630200280_31_2_not_null  bind_sql IS NOT NULL
+system              public             630200280_31_3_not_null  default_db IS NOT NULL
+system              public             630200280_31_4_not_null  status IS NOT NULL
+system              public             630200280_31_5_not_null  create_time IS NOT NULL
+system              public             630200280_31_6_not_null  update_time IS NOT NULL
+system              public             630200280_3_1_not_null   id IS NOT NULL
+system              public             630200280_4_1_not_null   username IS NOT NULL
+system              public             630200280_4_3_not_null   isRole IS NOT NULL
+system              public             630200280_4_4_not_null   usersearchpath IS NOT NULL
+system              public             630200280_5_1_not_null   id IS NOT NULL
+system              public             630200280_6_1_not_null   name IS NOT NULL
+system              public             630200280_6_2_not_null   value IS NOT NULL
+system              public             630200280_6_3_not_null   lastUpdated IS NOT NULL
+system              public             630200280_7_1_not_null   id IS NOT NULL
+system              public             630200280_8_1_not_null   parentID IS NOT NULL
+system              public             630200280_8_2_not_null   funcName IS NOT NULL
+system              public             630200280_8_3_not_null   name IS NOT NULL
+
+query TTTTTTT colnames
+SELECT *
+FROM system.information_schema.constraint_column_usage
+ORDER BY TABLE_NAME, COLUMN_NAME, CONSTRAINT_NAME
+----
+table_catalog  table_schema  table_name          column_name    constraint_catalog  constraint_schema  constraint_name
+system         public        authentication      username       system              public             primary
+system         public        comments            object_id      system              public             primary
+system         public        comments            sub_id         system              public             primary
+system         public        comments            type           system              public             primary
+system         public        descriptor          id             system              public             primary
+system         public        eventlog            timestamp      system              public             primary
+system         public        eventlog            uniqueID       system              public             primary
+system         public        flashback           object_id      system              public             primary
+system         public        flashback           type           system              public             primary
+system         public        function_namespace  funcName       system              public             primary
+system         public        function_namespace  name           system              public             primary
+system         public        function_namespace  parentID       system              public             primary
+system         public        hints               bind_sql       system              public             primary
+system         public        hints               origin_sql     system              public             primary
+system         public        jobs                id             system              public             primary
+system         public        lease               descID         system              public             primary
+system         public        lease               expiration     system              public             primary
+system         public        lease               nodeID         system              public             primary
+system         public        lease               version        system              public             primary
+system         public        location            id             system              public             primary
+system         public        locations           localityKey    system              public             primary
+system         public        locations           localityValue  system              public             primary
+system         public        namespace           name           system              public             primary
+system         public        namespace           parentID       system              public             primary
+system         public        rangelog            timestamp      system              public             primary
+system         public        rangelog            uniqueID       system              public             primary
+system         public        role_members        member         system              public             primary
+system         public        role_members        role           system              public             primary
+system         public        scheduled_jobs      schedule_id    system              public             primary
+system         public        settings            name           system              public             primary
+system         public        snapshots           id             system              public             primary
+system         public        table_statistics    statisticID    system              public             primary
+system         public        table_statistics    tableID        system              public             primary
+system         public        triggers            name           system              public             primary
+system         public        triggers            relid          system              public             primary
+system         public        ui                  key            system              public             primary
+system         public        user_options        option         system              public             primary
+system         public        user_options        username       system              public             primary
+system         public        users               username       system              public             primary
+system         public        web_sessions        id             system              public             primary
+system         public        zones               id             system              public             primary
+
+statement ok
+CREATE DATABASE constraint_db
+
+statement ok
+CREATE TABLE constraint_db.t1 (
+  p FLOAT PRIMARY KEY,
+  a INT UNIQUE CHECK (a > 4),
+  CONSTRAINT c2 CHECK (a < 99)
+)
+
+statement ok
+CREATE TABLE constraint_db.t2 (
+    t1_ID INT,
+    CONSTRAINT fk FOREIGN KEY (t1_ID) REFERENCES constraint_db.t1(a),
+    INDEX (t1_ID)
+)
+
+statement ok
+SET DATABASE = constraint_db
+
+query TTTTTTTTT colnames
+SELECT *
+FROM information_schema.table_constraints
+ORDER BY TABLE_NAME, CONSTRAINT_TYPE, CONSTRAINT_NAME
+----
+constraint_catalog  constraint_schema  constraint_name  table_catalog  table_schema  table_name  constraint_type  is_deferrable  initially_deferred
+constraint_db       public             c2               constraint_db  public        t1          CHECK            NO             NO
+constraint_db       public             t1_check_a       constraint_db  public        t1          CHECK            NO             NO
+constraint_db       public             primary          constraint_db  public        t1          PRIMARY KEY      NO             NO
+constraint_db       public             t1_a_key         constraint_db  public        t1          UNIQUE           NO             NO
+constraint_db       public             fk               constraint_db  public        t2          FOREIGN KEY      NO             NO
+
+query TTTT colnames
+SELECT *
+FROM information_schema.check_constraints
+ORDER BY CONSTRAINT_CATALOG, CONSTRAINT_NAME
+----
+constraint_catalog  constraint_schema  constraint_name          check_clause
+constraint_db       public             3764849194_65_1_not_null  p IS NOT NULL
+constraint_db       public             c2                       ((a < 99))
+constraint_db       public             t1_check_a               ((a > 4))
+
+query TTTTTTT colnames
+SELECT *
+FROM information_schema.constraint_column_usage
+WHERE constraint_catalog = 'constraint_db'
+ORDER BY TABLE_NAME, COLUMN_NAME, CONSTRAINT_NAME
+----
+table_catalog  table_schema  table_name  column_name  constraint_catalog  constraint_schema  constraint_name
+constraint_db  public        t1          a            constraint_db       public             c2
+constraint_db  public        t1          a            constraint_db       public             fk
+constraint_db  public        t1          a            constraint_db       public             t1_a_key
+constraint_db  public        t1          a            constraint_db       public             t1_check_a
+constraint_db  public        t1          p            constraint_db       public             primary
+
+# Query issued by jOOQ in PostgresDatabase.loadCheckConstraints.
+query TTTT colnames
+SELECT tc.table_schema, tc.table_name, cc.constraint_name, cc.check_clause
+FROM information_schema.table_constraints AS tc
+JOIN information_schema.check_constraints AS cc
+USING (constraint_catalog, constraint_schema, constraint_name)
+WHERE tc.table_schema in ('public')
+ORDER BY tc.table_schema, tc.table_name, cc.constraint_name
+----
+table_schema  table_name  constraint_name  check_clause
+public        t1          c2               ((a < 99))
+public        t1          t1_check_a          ((a > 4))
+
+statement ok
+DROP DATABASE constraint_db CASCADE
+
+## information_schema.columns
+
+query TTTTI colnames
+SELECT table_catalog, table_schema, table_name, column_name, ordinal_position
+FROM system.information_schema.columns
+WHERE table_schema != 'information_schema' AND table_schema != 'pg_catalog' AND table_schema != 'zbdb_internal'
+ORDER BY 3,4
+----
+table_catalog  table_schema  table_name          column_name         ordinal_position
+system         public        authentication      enable              5
+system         public        authentication      failureCount        2
+system         public        authentication      lockTime            3
+system         public        authentication      maxTryCount         4
+system         public        authentication      username            1
+system         public        comments            comment             4
+system         public        comments            object_id           2
+system         public        comments            sub_id              3
+system         public        comments            type                1
+system         public        descriptor          descriptor          2
+system         public        descriptor          id                  1
+system         public        eventlog            eventType           2
+system         public        eventlog            info                5
+system         public        eventlog            reportingID         4
+system         public        eventlog            targetID            3
+system         public        eventlog            timestamp           1
+system         public        eventlog            uniqueID            6
+system         public        flashback           ct_time             4
+system         public        flashback           db_id               9
+system         public        flashback           drop_time           5
+system         public        flashback           object_id           2
+system         public        flashback           object_name         3
+system         public        flashback           parent_id           8
+system         public        flashback           ttl_days            6
+system         public        flashback           type                1
+system         public        flashback           visible             7
+system         public        function_namespace  funcName            2
+system         public        function_namespace  id                  4
+system         public        function_namespace  name                3
+system         public        function_namespace  parentID            1
+system         public        hints               bind_sql            2
+system         public        hints               create_time         5
+system         public        hints               default_db          3
+system         public        hints               origin_sql          1
+system         public        hints               source              7
+system         public        hints               status              4
+system         public        hints               update_time         6
+system         public        jobs                created             3
+system         public        jobs                created_by_id       7
+system         public        jobs                created_by_type     6
+system         public        jobs                id                  1
+system         public        jobs                payload             4
+system         public        jobs                progress            5
+system         public        jobs                status              2
+system         public        lease               descID              1
+system         public        lease               expiration          4
+system         public        lease               nodeID              3
+system         public        lease               version             2
+system         public        location            id                  1
+system         public        location            locationbuf         2
+system         public        locations           latitude            3
+system         public        locations           localityKey         1
+system         public        locations           localityValue       2
+system         public        locations           longitude           4
+system         public        namespace           id                  3
+system         public        namespace           name                2
+system         public        namespace           parentID            1
+system         public        rangelog            eventType           4
+system         public        rangelog            info                6
+system         public        rangelog            otherRangeID        5
+system         public        rangelog            rangeID             2
+system         public        rangelog            storeID             3
+system         public        rangelog            timestamp           1
+system         public        rangelog            uniqueID            7
+system         public        role_members        isAdmin             3
+system         public        role_members        member              2
+system         public        role_members        role                1
+system         public        scheduled_jobs      created             3
+system         public        scheduled_jobs      default_database    11
+system         public        scheduled_jobs      default_searchpath  12
+system         public        scheduled_jobs      execution_args      9
+system         public        scheduled_jobs      executor_type       8
+system         public        scheduled_jobs      next_run            5
+system         public        scheduled_jobs      owner               4
+system         public        scheduled_jobs      schedule_changes    10
+system         public        scheduled_jobs      schedule_details    7
+system         public        scheduled_jobs      schedule_expr       6
+system         public        scheduled_jobs      schedule_id         1
+system         public        scheduled_jobs      schedule_name       2
+system         public        settings            lastUpdated         3
+system         public        settings            name                1
+system         public        settings            value               2
+system         public        settings            valueType           4
+system         public        snapshots           asof                7
+system         public        snapshots           description         8
+system         public        snapshots           id                  1
+system         public        snapshots           name                2
+system         public        snapshots           object_id           4
+system         public        snapshots           parent_id           6
+system         public        snapshots           sub_id              5
+system         public        snapshots           type                3
+system         public        table_statistics    columnIDs           4
+system         public        table_statistics    createdAt           5
+system         public        table_statistics    distinctCount       7
+system         public        table_statistics    histogram           9
+system         public        table_statistics    name                3
+system         public        table_statistics    nullCount           8
+system         public        table_statistics    rowCount            6
+system         public        table_statistics    statisticID         2
+system         public        table_statistics    tableID             1
+system         public        triggers            args                12
+system         public        triggers            constrname          7
+system         public        triggers            constrrelid         8
+system         public        triggers            deferrable          9
+system         public        triggers            enable              5
+system         public        triggers            funcid              3
+system         public        triggers            hintFunc            14
+system         public        triggers            initdeferred        10
+system         public        triggers            isconstraint        6
+system         public        triggers            name                2
+system         public        triggers            nargs               11
+system         public        triggers            relid               1
+system         public        triggers            type                4
+system         public        triggers            whenexpr            13
+system         public        ui                  key                 1
+system         public        ui                  lastUpdated         3
+system         public        ui                  value               2
+system         public        user_options        option              2
+system         public        user_options        username            1
+system         public        user_options        value               3
+system         public        users               dbsearchpath        5
+system         public        users               hashedPassword      2
+system         public        users               isRole              3
+system         public        users               username            1
+system         public        users               usersearchpath      4
+system         public        web_sessions        auditInfo           8
+system         public        web_sessions        createdAt           4
+system         public        web_sessions        expiresAt           5
+system         public        web_sessions        hashedSecret        2
+system         public        web_sessions        id                  1
+system         public        web_sessions        lastUsedAt          7
+system         public        web_sessions        revokedAt           6
+system         public        web_sessions        username            3
+system         public        zones               config              2
+system         public        zones               id                  1
+
+statement ok
+SET DATABASE = test
+
+statement ok
+CREATE TABLE with_defaults (a INT DEFAULT 9, b STRING DEFAULT 'default', c INT, d STRING)
+
+query TTT colnames
+SELECT table_name, column_name, column_default
+FROM information_schema.columns
+WHERE table_schema = 'public' AND table_name = 'with_defaults'
+----
+table_name     column_name  column_default
+with_defaults  a            9
+with_defaults  b            'default'
+with_defaults  c            NULL
+with_defaults  d            NULL
+with_defaults  rowid        unique_rowid()
+
+statement ok
+DROP TABLE with_defaults
+
+statement ok
+CREATE TABLE nullability (a INT NOT NULL, b STRING NOT NULL, c INT, d STRING)
+
+query TTT colnames
+SELECT table_name, column_name, is_nullable
+FROM information_schema.columns
+WHERE table_schema = 'public' AND table_name = 'nullability'
+----
+table_name   column_name  is_nullable
+nullability  a            NO
+nullability  b            NO
+nullability  c            YES
+nullability  d            YES
+nullability  rowid        NO
+
+statement ok
+DROP TABLE nullability
+
+statement ok
+CREATE TABLE data_types (
+  a   INT,
+  a2  INT2,
+  a4  INT4,
+  a8  INT8,
+  b   FLOAT,
+  br  REAL,
+  c   DECIMAL,
+  cp  DECIMAL(3,2),
+  d   STRING,
+  dc  CHAR,
+  dc2 CHAR(2),
+  dv  VARCHAR,
+  dv2 VARCHAR(2),
+  dq  "char",
+  e   BYTES,
+  f   TIMESTAMP,
+  g   TIMESTAMPTZ
+  )
+
+query TTTT colnames
+SELECT table_name, column_name, data_type, znbase_sql_type
+FROM information_schema.columns
+WHERE table_schema = 'public' AND table_name = 'data_types'
+----
+table_name  column_name  data_type     znbase_sql_type
+data_types  a            INT           INT
+data_types  a2           INT2          INT2
+data_types  a4           INT4          INT4
+data_types  a8           INT8          INT8
+data_types  b            FLOAT         FLOAT
+data_types  br           REAL          REAL
+data_types  c            DECIMAL       DECIMAL
+data_types  cp           DECIMAL(3,2)  DECIMAL(3,2)
+data_types  d            STRING        STRING
+data_types  dc           CHAR          CHAR
+data_types  dc2          CHAR(2)       CHAR(2)
+data_types  dv           VARCHAR       VARCHAR
+data_types  dv2          VARCHAR(2)    VARCHAR(2)
+data_types  dq           CHAR          CHAR
+data_types  e            BYTES         BYTES
+data_types  f            TIMESTAMP     TIMESTAMP
+data_types  g            TIMESTAMPTZ   TIMESTAMPTZ
+data_types  rowid        INT           INT
+
+statement ok
+DROP TABLE data_types
+
+statement ok
+CREATE TABLE char_len (
+  a INT, b INT2, c INT4,
+  d STRING, e STRING(12),
+  dc CHAR, ec CHAR(12),
+  dv VARCHAR, ev VARCHAR(12),
+  dq "char",
+  f FLOAT,
+  g BIT, h BIT(12),
+  i VARBIT, j VARBIT(12))
+
+query TTII colnames
+SELECT table_name, column_name, character_maximum_length, character_octet_length
+FROM information_schema.columns
+WHERE table_schema = 'public' AND table_name = 'char_len'
+----
+table_name  column_name  character_maximum_length  character_octet_length
+char_len    a            NULL                      NULL
+char_len    b            NULL                      NULL
+char_len    c            NULL                      NULL
+char_len    d            NULL                      NULL
+char_len    e            12                        48
+char_len    dc           1                         4
+char_len    ec           12                        48
+char_len    dv           NULL                      NULL
+char_len    ev           12                        48
+char_len    dq           NULL                      NULL
+char_len    f            NULL                      NULL
+char_len    g            1                         NULL
+char_len    h            12                        NULL
+char_len    i            NULL                      NULL
+char_len    j            12                        NULL
+char_len    rowid        NULL                      NULL
+
+statement ok
+DROP TABLE char_len
+
+statement ok
+CREATE TABLE num_prec (a INT, b FLOAT, c FLOAT(23), d DECIMAL, e DECIMAL(12), f DECIMAL(12, 6), g BOOLEAN)
+
+query TTIIII colnames
+SELECT table_name, column_name, numeric_precision, numeric_precision_radix, numeric_scale, datetime_precision
+FROM information_schema.columns
+WHERE table_schema = 'public' AND table_name = 'num_prec'
+----
+table_name  column_name  numeric_precision  numeric_precision_radix  numeric_scale  datetime_precision
+num_prec    a            64                 2                        0              NULL
+num_prec    b            53                 2                        NULL           NULL
+num_prec    c            24                 2                        NULL           NULL
+num_prec    d            NULL               10                       NULL           NULL
+num_prec    e            12                 10                       0              NULL
+num_prec    f            12                 10                       6              NULL
+num_prec    g            NULL               NULL                     NULL           NULL
+num_prec    rowid        64                 2                        0              NULL
+
+statement ok
+DROP TABLE num_prec
+
+## information_schema.key_column_usage
+## information_schema.referential_constraints
+
+statement ok
+CREATE DATABASE constraint_column
+
+statement ok
+CREATE TABLE constraint_column.t1 (
+  p FLOAT PRIMARY KEY,
+  a INT UNIQUE,
+  b INT,
+  c INT CHECK(c > 0),
+  UNIQUE INDEX index_key(b, c)
+)
+
+statement ok
+CREATE TABLE constraint_column.t2 (
+    t1_ID INT PRIMARY KEY,
+    CONSTRAINT fk FOREIGN KEY (t1_ID) REFERENCES constraint_column.t1(a) ON DELETE RESTRICT
+)
+
+statement ok
+CREATE TABLE constraint_column.t3 (
+    a INT,
+    b INT,
+    CONSTRAINT fk2 FOREIGN KEY (a, b) REFERENCES constraint_column.t1(b, c) ON UPDATE CASCADE,
+    INDEX (a, b)
+)
+
+statement ok
+SET DATABASE = constraint_column
+
+query TTTTTTTII colnames
+SELECT * FROM information_schema.key_column_usage WHERE constraint_schema = 'public' ORDER BY TABLE_NAME, CONSTRAINT_NAME, ORDINAL_POSITION
+----
+constraint_catalog  constraint_schema  constraint_name  table_catalog      table_schema  table_name  column_name  ordinal_position  position_in_unique_constraint
+constraint_column   public             index_key        constraint_column  public        t1          b            1                 NULL
+constraint_column   public             index_key        constraint_column  public        t1          c            2                 NULL
+constraint_column   public             primary          constraint_column  public        t1          p            1                 NULL
+constraint_column   public             t1_a_key         constraint_column  public        t1          a            1                 NULL
+constraint_column   public             fk               constraint_column  public        t2          t1_id        1                 1
+constraint_column   public             primary          constraint_column  public        t2          t1_id        1                 NULL
+constraint_column   public             fk2              constraint_column  public        t3          a            1                 1
+constraint_column   public             fk2              constraint_column  public        t3          b            2                 2
+
+query TTTTTTTTTTT colnames
+SELECT * FROM information_schema.referential_constraints WHERE constraint_schema = 'public' ORDER BY TABLE_NAME, CONSTRAINT_NAME
+----
+constraint_catalog  constraint_schema  constraint_name  unique_constraint_catalog  unique_constraint_schema  unique_constraint_name  match_option  update_rule  delete_rule  table_name  referenced_table_name
+constraint_column   public             fk               constraint_column          public                    t1_a_key                NONE          NO ACTION    RESTRICT     t2          t1
+constraint_column   public             fk2              constraint_column          public                    index_key               NONE          CASCADE      NO ACTION    t3          t1
+
+statement ok
+DROP DATABASE constraint_column CASCADE
+
+## information_schema.schema_privileges
+
+statement ok
+CREATE DATABASE other_db; SET DATABASE = other_db
+
+statement ok
+GRANT USAGE ON DATABASE other_db TO public
+
+query TTTTTT colnames
+SELECT * FROM information_schema.schema_privileges
+----
+grantor  grantee  table_catalog  table_schema        privilege_type  is_grantable
+admin    admin    other_db       information_schema  CREATE          YES
+admin    admin    other_db       information_schema  DROP            YES
+admin    admin    other_db       information_schema  USAGE           YES
+root     public   other_db       information_schema  USAGE           NO
+admin    root     other_db       information_schema  CREATE          YES
+admin    root     other_db       information_schema  DROP            YES
+admin    root     other_db       information_schema  USAGE           YES
+admin    admin    other_db       pg_catalog          CREATE          YES
+admin    admin    other_db       pg_catalog          DROP            YES
+admin    admin    other_db       pg_catalog          USAGE           YES
+root     public   other_db       pg_catalog          USAGE           NO
+admin    root     other_db       pg_catalog          CREATE          YES
+admin    root     other_db       pg_catalog          DROP            YES
+admin    root     other_db       pg_catalog          USAGE           YES
+admin    admin    other_db       public              CREATE          YES
+admin    admin    other_db       public              DROP            YES
+admin    admin    other_db       public              USAGE           YES
+root     public   other_db       public              USAGE           NO
+admin    root     other_db       public              CREATE          YES
+admin    root     other_db       public              DROP            YES
+admin    root     other_db       public              USAGE           YES
+admin    admin    other_db       zbdb_internal       CREATE          YES
+admin    admin    other_db       zbdb_internal       DROP            YES
+admin    admin    other_db       zbdb_internal       USAGE           YES
+root     public   other_db       zbdb_internal       USAGE           NO
+admin    root     other_db       zbdb_internal       CREATE          YES
+admin    root     other_db       zbdb_internal       DROP            YES
+admin    root     other_db       zbdb_internal       USAGE           YES
+
+statement ok
+GRANT USAGE ON DATABASE other_db TO testuser
+
+query TTTTTT colnames
+SELECT * FROM information_schema.schema_privileges
+----
+grantor  grantee   table_catalog  table_schema        privilege_type  is_grantable
+admin    admin     other_db       information_schema  CREATE          YES
+admin    admin     other_db       information_schema  DROP            YES
+admin    admin     other_db       information_schema  USAGE           YES
+root     public    other_db       information_schema  USAGE           NO
+admin    root      other_db       information_schema  CREATE          YES
+admin    root      other_db       information_schema  DROP            YES
+admin    root      other_db       information_schema  USAGE           YES
+root     testuser  other_db       information_schema  USAGE           NO
+admin    admin     other_db       pg_catalog          CREATE          YES
+admin    admin     other_db       pg_catalog          DROP            YES
+admin    admin     other_db       pg_catalog          USAGE           YES
+root     public    other_db       pg_catalog          USAGE           NO
+admin    root      other_db       pg_catalog          CREATE          YES
+admin    root      other_db       pg_catalog          DROP            YES
+admin    root      other_db       pg_catalog          USAGE           YES
+root     testuser  other_db       pg_catalog          USAGE           NO
+admin    admin     other_db       public              CREATE          YES
+admin    admin     other_db       public              DROP            YES
+admin    admin     other_db       public              USAGE           YES
+root     public    other_db       public              USAGE           NO
+admin    root      other_db       public              CREATE          YES
+admin    root      other_db       public              DROP            YES
+admin    root      other_db       public              USAGE           YES
+admin    admin     other_db       zbdb_internal       CREATE          YES
+admin    admin     other_db       zbdb_internal       DROP            YES
+admin    admin     other_db       zbdb_internal       USAGE           YES
+root     public    other_db       zbdb_internal       USAGE           NO
+admin    root      other_db       zbdb_internal       CREATE          YES
+admin    root      other_db       zbdb_internal       DROP            YES
+admin    root      other_db       zbdb_internal       USAGE           YES
+root     testuser  other_db       zbdb_internal       USAGE           NO
+
+## information_schema.table_privileges and information_schema.role_table_grants
+
+# root can see everything
+query TTTTTTTTT colnames rowsort
+SELECT * FROM system.information_schema.table_privileges ORDER BY table_schema, table_name, table_schema, grantee, privilege_type
+----
+grantor  grantee  table_catalog  table_schema        table_name                         table_type   privilege_type  is_grantable  with_hierarchy
+admin    public   system         information_schema  administrable_role_authorizations  SYSTEM VIEW  SELECT          NO            YES
+admin    public   system         information_schema  applicable_roles                   SYSTEM VIEW  SELECT          NO            YES
+admin    public   system         information_schema  check_constraints                  SYSTEM VIEW  SELECT          NO            YES
+admin    public   system         information_schema  column_privileges                  SYSTEM VIEW  SELECT          NO            YES
+admin    public   system         information_schema  columns                            SYSTEM VIEW  SELECT          NO            YES
+admin    public   system         information_schema  constraint_column_usage            SYSTEM VIEW  SELECT          NO            YES
+admin    public   system         information_schema  database_privileges                SYSTEM VIEW  SELECT          NO            YES
+admin    public   system         information_schema  enabled_roles                      SYSTEM VIEW  SELECT          NO            YES
+admin    public   system         information_schema  functions                          SYSTEM VIEW  SELECT          NO            YES
+admin    public   system         information_schema  index_partition                    SYSTEM VIEW  SELECT          NO            YES
+admin    public   system         information_schema  key_column_usage                   SYSTEM VIEW  SELECT          NO            YES
+admin    public   system         information_schema  parameters                         SYSTEM VIEW  SELECT          NO            YES
+admin    public   system         information_schema  referential_constraints            SYSTEM VIEW  SELECT          NO            YES
+admin    public   system         information_schema  role_table_grants                  SYSTEM VIEW  SELECT          NO            YES
+admin    public   system         information_schema  routines                           SYSTEM VIEW  SELECT          NO            YES
+admin    public   system         information_schema  schema_privileges                  SYSTEM VIEW  SELECT          NO            YES
+admin    public   system         information_schema  schemata                           SYSTEM VIEW  SELECT          NO            YES
+admin    public   system         information_schema  sequences                          SYSTEM VIEW  SELECT          NO            YES
+admin    public   system         information_schema  statistics                         SYSTEM VIEW  SELECT          NO            YES
+admin    public   system         information_schema  table_constraints                  SYSTEM VIEW  SELECT          NO            YES
+admin    public   system         information_schema  table_privileges                   SYSTEM VIEW  SELECT          NO            YES
+admin    public   system         information_schema  tables                             SYSTEM VIEW  SELECT          NO            YES
+admin    public   system         information_schema  trigger_privileges                 SYSTEM VIEW  SELECT          NO            YES
+admin    public   system         information_schema  user_privileges                    SYSTEM VIEW  SELECT          NO            YES
+admin    public   system         information_schema  views                              SYSTEM VIEW  SELECT          NO            YES
+admin    public   system         pg_catalog          pg_am                              SYSTEM VIEW  SELECT          NO            YES
+admin    public   system         pg_catalog          pg_attrdef                         SYSTEM VIEW  SELECT          NO            YES
+admin    public   system         pg_catalog          pg_attribute                       SYSTEM VIEW  SELECT          NO            YES
+admin    public   system         pg_catalog          pg_auth_members                    SYSTEM VIEW  SELECT          NO            YES
+admin    public   system         pg_catalog          pg_class                           SYSTEM VIEW  SELECT          NO            YES
+admin    public   system         pg_catalog          pg_collation                       SYSTEM VIEW  SELECT          NO            YES
+admin    public   system         pg_catalog          pg_constraint                      SYSTEM VIEW  SELECT          NO            YES
+admin    public   system         pg_catalog          pg_database                        SYSTEM VIEW  SELECT          NO            YES
+admin    public   system         pg_catalog          pg_depend                          SYSTEM VIEW  SELECT          NO            YES
+admin    public   system         pg_catalog          pg_description                     SYSTEM VIEW  SELECT          NO            YES
+admin    public   system         pg_catalog          pg_enum                            SYSTEM VIEW  SELECT          NO            YES
+admin    public   system         pg_catalog          pg_extension                       SYSTEM VIEW  SELECT          NO            YES
+admin    public   system         pg_catalog          pg_foreign_data_wrapper            SYSTEM VIEW  SELECT          NO            YES
+admin    public   system         pg_catalog          pg_foreign_server                  SYSTEM VIEW  SELECT          NO            YES
+admin    public   system         pg_catalog          pg_foreign_table                   SYSTEM VIEW  SELECT          NO            YES
+admin    public   system         pg_catalog          pg_index                           SYSTEM VIEW  SELECT          NO            YES
+admin    public   system         pg_catalog          pg_indexes                         SYSTEM VIEW  SELECT          NO            YES
+admin    public   system         pg_catalog          pg_inherits                        SYSTEM VIEW  SELECT          NO            YES
+admin    public   system         pg_catalog          pg_language                        SYSTEM VIEW  SELECT          NO            YES
+admin    public   system         pg_catalog          pg_namespace                       SYSTEM VIEW  SELECT          NO            YES
+admin    public   system         pg_catalog          pg_nodestatus                      SYSTEM VIEW  SELECT          NO            YES
+admin    public   system         pg_catalog          pg_operator                        SYSTEM VIEW  SELECT          NO            YES
+admin    public   system         pg_catalog          pg_proc                            SYSTEM VIEW  SELECT          NO            YES
+admin    public   system         pg_catalog          pg_range                           SYSTEM VIEW  SELECT          NO            YES
+admin    public   system         pg_catalog          pg_rewrite                         SYSTEM VIEW  SELECT          NO            YES
+admin    public   system         pg_catalog          pg_roles                           SYSTEM VIEW  SELECT          NO            YES
+admin    public   system         pg_catalog          pg_seclabel                        SYSTEM VIEW  SELECT          NO            YES
+admin    public   system         pg_catalog          pg_sequence                        SYSTEM VIEW  SELECT          NO            YES
+admin    public   system         pg_catalog          pg_settings                        SYSTEM VIEW  SELECT          NO            YES
+admin    public   system         pg_catalog          pg_shdescription                   SYSTEM VIEW  SELECT          NO            YES
+admin    public   system         pg_catalog          pg_shseclabel                      SYSTEM VIEW  SELECT          NO            YES
+admin    public   system         pg_catalog          pg_stat_activity                   SYSTEM VIEW  SELECT          NO            YES
+admin    public   system         pg_catalog          pg_tables                          SYSTEM VIEW  SELECT          NO            YES
+admin    public   system         pg_catalog          pg_tablespace                      SYSTEM VIEW  SELECT          NO            YES
+admin    public   system         pg_catalog          pg_trigger                         SYSTEM VIEW  SELECT          NO            YES
+admin    public   system         pg_catalog          pg_type                            SYSTEM VIEW  SELECT          NO            YES
+admin    public   system         pg_catalog          pg_user                            SYSTEM VIEW  SELECT          NO            YES
+admin    public   system         pg_catalog          pg_user_mapping                    SYSTEM VIEW  SELECT          NO            YES
+admin    public   system         pg_catalog          pg_views                           SYSTEM VIEW  SELECT          NO            YES
+admin    admin    system         public              authentication                     BASE TABLE   DELETE          YES           NO
+admin    admin    system         public              authentication                     BASE TABLE   INSERT          YES           NO
+admin    admin    system         public              authentication                     BASE TABLE   SELECT          YES           YES
+admin    admin    system         public              authentication                     BASE TABLE   UPDATE          YES           NO
+admin    root     system         public              authentication                     BASE TABLE   DELETE          YES           NO
+admin    root     system         public              authentication                     BASE TABLE   INSERT          YES           NO
+admin    root     system         public              authentication                     BASE TABLE   SELECT          YES           YES
+admin    root     system         public              authentication                     BASE TABLE   UPDATE          YES           NO
+admin    admin    system         public              comments                           BASE TABLE   DELETE          YES           NO
+admin    admin    system         public              comments                           BASE TABLE   INSERT          YES           NO
+admin    admin    system         public              comments                           BASE TABLE   SELECT          YES           YES
+admin    admin    system         public              comments                           BASE TABLE   UPDATE          YES           NO
+admin    public   system         public              comments                           BASE TABLE   DELETE          YES           NO
+admin    public   system         public              comments                           BASE TABLE   INSERT          YES           NO
+admin    public   system         public              comments                           BASE TABLE   SELECT          YES           YES
+admin    public   system         public              comments                           BASE TABLE   UPDATE          YES           NO
+admin    root     system         public              comments                           BASE TABLE   DELETE          YES           NO
+admin    root     system         public              comments                           BASE TABLE   INSERT          YES           NO
+admin    root     system         public              comments                           BASE TABLE   SELECT          YES           YES
+admin    root     system         public              comments                           BASE TABLE   UPDATE          YES           NO
+admin    admin    system         public              descriptor                         BASE TABLE   SELECT          YES           YES
+admin    root     system         public              descriptor                         BASE TABLE   SELECT          YES           YES
+admin    admin    system         public              eventlog                           BASE TABLE   DELETE          YES           NO
+admin    admin    system         public              eventlog                           BASE TABLE   INSERT          YES           NO
+admin    admin    system         public              eventlog                           BASE TABLE   SELECT          YES           YES
+admin    admin    system         public              eventlog                           BASE TABLE   UPDATE          YES           NO
+admin    root     system         public              eventlog                           BASE TABLE   DELETE          YES           NO
+admin    root     system         public              eventlog                           BASE TABLE   INSERT          YES           NO
+admin    root     system         public              eventlog                           BASE TABLE   SELECT          YES           YES
+admin    root     system         public              eventlog                           BASE TABLE   UPDATE          YES           NO
+admin    admin    system         public              flashback                          BASE TABLE   DELETE          YES           NO
+admin    admin    system         public              flashback                          BASE TABLE   INSERT          YES           NO
+admin    admin    system         public              flashback                          BASE TABLE   SELECT          YES           YES
+admin    admin    system         public              flashback                          BASE TABLE   UPDATE          YES           NO
+admin    public   system         public              flashback                          BASE TABLE   DELETE          YES           NO
+admin    public   system         public              flashback                          BASE TABLE   INSERT          YES           NO
+admin    public   system         public              flashback                          BASE TABLE   SELECT          YES           YES
+admin    public   system         public              flashback                          BASE TABLE   UPDATE          YES           NO
+admin    root     system         public              flashback                          BASE TABLE   DELETE          YES           NO
+admin    root     system         public              flashback                          BASE TABLE   INSERT          YES           NO
+admin    root     system         public              flashback                          BASE TABLE   SELECT          YES           YES
+admin    root     system         public              flashback                          BASE TABLE   UPDATE          YES           NO
+admin    admin    system         public              function_namespace                 BASE TABLE   SELECT          YES           YES
+admin    root     system         public              function_namespace                 BASE TABLE   SELECT          YES           YES
+admin    admin    system         public              hints                              BASE TABLE   DELETE          YES           NO
+admin    admin    system         public              hints                              BASE TABLE   INSERT          YES           NO
+admin    admin    system         public              hints                              BASE TABLE   SELECT          YES           YES
+admin    admin    system         public              hints                              BASE TABLE   UPDATE          YES           NO
+admin    root     system         public              hints                              BASE TABLE   DELETE          YES           NO
+admin    root     system         public              hints                              BASE TABLE   INSERT          YES           NO
+admin    root     system         public              hints                              BASE TABLE   SELECT          YES           YES
+admin    root     system         public              hints                              BASE TABLE   UPDATE          YES           NO
+admin    admin    system         public              jobs                               BASE TABLE   DELETE          YES           NO
+admin    admin    system         public              jobs                               BASE TABLE   INSERT          YES           NO
+admin    admin    system         public              jobs                               BASE TABLE   SELECT          YES           YES
+admin    admin    system         public              jobs                               BASE TABLE   UPDATE          YES           NO
+admin    root     system         public              jobs                               BASE TABLE   DELETE          YES           NO
+admin    root     system         public              jobs                               BASE TABLE   INSERT          YES           NO
+admin    root     system         public              jobs                               BASE TABLE   SELECT          YES           YES
+admin    root     system         public              jobs                               BASE TABLE   UPDATE          YES           NO
+admin    admin    system         public              lease                              BASE TABLE   DELETE          YES           NO
+admin    admin    system         public              lease                              BASE TABLE   INSERT          YES           NO
+admin    admin    system         public              lease                              BASE TABLE   SELECT          YES           YES
+admin    admin    system         public              lease                              BASE TABLE   UPDATE          YES           NO
+admin    root     system         public              lease                              BASE TABLE   DELETE          YES           NO
+admin    root     system         public              lease                              BASE TABLE   INSERT          YES           NO
+admin    root     system         public              lease                              BASE TABLE   SELECT          YES           YES
+admin    root     system         public              lease                              BASE TABLE   UPDATE          YES           NO
+admin    admin    system         public              location                           BASE TABLE   DELETE          YES           NO
+admin    admin    system         public              location                           BASE TABLE   INSERT          YES           NO
+admin    admin    system         public              location                           BASE TABLE   SELECT          YES           YES
+admin    admin    system         public              location                           BASE TABLE   UPDATE          YES           NO
+admin    root     system         public              location                           BASE TABLE   DELETE          YES           NO
+admin    root     system         public              location                           BASE TABLE   INSERT          YES           NO
+admin    root     system         public              location                           BASE TABLE   SELECT          YES           YES
+admin    root     system         public              location                           BASE TABLE   UPDATE          YES           NO
+admin    admin    system         public              locations                          BASE TABLE   DELETE          YES           NO
+admin    admin    system         public              locations                          BASE TABLE   INSERT          YES           NO
+admin    admin    system         public              locations                          BASE TABLE   SELECT          YES           YES
+admin    admin    system         public              locations                          BASE TABLE   UPDATE          YES           NO
+admin    root     system         public              locations                          BASE TABLE   DELETE          YES           NO
+admin    root     system         public              locations                          BASE TABLE   INSERT          YES           NO
+admin    root     system         public              locations                          BASE TABLE   SELECT          YES           YES
+admin    root     system         public              locations                          BASE TABLE   UPDATE          YES           NO
+admin    admin    system         public              namespace                          BASE TABLE   SELECT          YES           YES
+admin    root     system         public              namespace                          BASE TABLE   SELECT          YES           YES
+admin    admin    system         public              rangelog                           BASE TABLE   DELETE          YES           NO
+admin    admin    system         public              rangelog                           BASE TABLE   INSERT          YES           NO
+admin    admin    system         public              rangelog                           BASE TABLE   SELECT          YES           YES
+admin    admin    system         public              rangelog                           BASE TABLE   UPDATE          YES           NO
+admin    root     system         public              rangelog                           BASE TABLE   DELETE          YES           NO
+admin    root     system         public              rangelog                           BASE TABLE   INSERT          YES           NO
+admin    root     system         public              rangelog                           BASE TABLE   SELECT          YES           YES
+admin    root     system         public              rangelog                           BASE TABLE   UPDATE          YES           NO
+admin    admin    system         public              role_members                       BASE TABLE   DELETE          YES           NO
+admin    admin    system         public              role_members                       BASE TABLE   INSERT          YES           NO
+admin    admin    system         public              role_members                       BASE TABLE   SELECT          YES           YES
+admin    admin    system         public              role_members                       BASE TABLE   UPDATE          YES           NO
+admin    root     system         public              role_members                       BASE TABLE   DELETE          YES           NO
+admin    root     system         public              role_members                       BASE TABLE   INSERT          YES           NO
+admin    root     system         public              role_members                       BASE TABLE   SELECT          YES           YES
+admin    root     system         public              role_members                       BASE TABLE   UPDATE          YES           NO
+admin    admin    system         public              scheduled_jobs                     BASE TABLE   DELETE          YES           NO
+admin    admin    system         public              scheduled_jobs                     BASE TABLE   INSERT          YES           NO
+admin    admin    system         public              scheduled_jobs                     BASE TABLE   SELECT          YES           YES
+admin    admin    system         public              scheduled_jobs                     BASE TABLE   UPDATE          YES           NO
+admin    root     system         public              scheduled_jobs                     BASE TABLE   DELETE          YES           NO
+admin    root     system         public              scheduled_jobs                     BASE TABLE   INSERT          YES           NO
+admin    root     system         public              scheduled_jobs                     BASE TABLE   SELECT          YES           YES
+admin    root     system         public              scheduled_jobs                     BASE TABLE   UPDATE          YES           NO
+admin    admin    system         public              settings                           BASE TABLE   DELETE          YES           NO
+admin    admin    system         public              settings                           BASE TABLE   INSERT          YES           NO
+admin    admin    system         public              settings                           BASE TABLE   SELECT          YES           YES
+admin    admin    system         public              settings                           BASE TABLE   UPDATE          YES           NO
+admin    root     system         public              settings                           BASE TABLE   DELETE          YES           NO
+admin    root     system         public              settings                           BASE TABLE   INSERT          YES           NO
+admin    root     system         public              settings                           BASE TABLE   SELECT          YES           YES
+admin    root     system         public              settings                           BASE TABLE   UPDATE          YES           NO
+admin    admin    system         public              snapshots                          BASE TABLE   DELETE          YES           NO
+admin    admin    system         public              snapshots                          BASE TABLE   INSERT          YES           NO
+admin    admin    system         public              snapshots                          BASE TABLE   SELECT          YES           YES
+admin    admin    system         public              snapshots                          BASE TABLE   UPDATE          YES           NO
+admin    public   system         public              snapshots                          BASE TABLE   DELETE          YES           NO
+admin    public   system         public              snapshots                          BASE TABLE   INSERT          YES           NO
+admin    public   system         public              snapshots                          BASE TABLE   SELECT          YES           YES
+admin    public   system         public              snapshots                          BASE TABLE   UPDATE          YES           NO
+admin    root     system         public              snapshots                          BASE TABLE   DELETE          YES           NO
+admin    root     system         public              snapshots                          BASE TABLE   INSERT          YES           NO
+admin    root     system         public              snapshots                          BASE TABLE   SELECT          YES           YES
+admin    root     system         public              snapshots                          BASE TABLE   UPDATE          YES           NO
+admin    admin    system         public              table_statistics                   BASE TABLE   DELETE          YES           NO
+admin    admin    system         public              table_statistics                   BASE TABLE   INSERT          YES           NO
+admin    admin    system         public              table_statistics                   BASE TABLE   SELECT          YES           YES
+admin    admin    system         public              table_statistics                   BASE TABLE   UPDATE          YES           NO
+admin    root     system         public              table_statistics                   BASE TABLE   DELETE          YES           NO
+admin    root     system         public              table_statistics                   BASE TABLE   INSERT          YES           NO
+admin    root     system         public              table_statistics                   BASE TABLE   SELECT          YES           YES
+admin    root     system         public              table_statistics                   BASE TABLE   UPDATE          YES           NO
+admin    admin    system         public              triggers                           BASE TABLE   DELETE          YES           NO
+admin    admin    system         public              triggers                           BASE TABLE   INSERT          YES           NO
+admin    admin    system         public              triggers                           BASE TABLE   SELECT          YES           YES
+admin    admin    system         public              triggers                           BASE TABLE   UPDATE          YES           NO
+admin    root     system         public              triggers                           BASE TABLE   DELETE          YES           NO
+admin    root     system         public              triggers                           BASE TABLE   INSERT          YES           NO
+admin    root     system         public              triggers                           BASE TABLE   SELECT          YES           YES
+admin    root     system         public              triggers                           BASE TABLE   UPDATE          YES           NO
+admin    admin    system         public              ui                                 BASE TABLE   DELETE          YES           NO
+admin    admin    system         public              ui                                 BASE TABLE   INSERT          YES           NO
+admin    admin    system         public              ui                                 BASE TABLE   SELECT          YES           YES
+admin    admin    system         public              ui                                 BASE TABLE   UPDATE          YES           NO
+admin    root     system         public              ui                                 BASE TABLE   DELETE          YES           NO
+admin    root     system         public              ui                                 BASE TABLE   INSERT          YES           NO
+admin    root     system         public              ui                                 BASE TABLE   SELECT          YES           YES
+admin    root     system         public              ui                                 BASE TABLE   UPDATE          YES           NO
+admin    admin    system         public              user_options                       BASE TABLE   DELETE          YES           NO
+admin    admin    system         public              user_options                       BASE TABLE   INSERT          YES           NO
+admin    admin    system         public              user_options                       BASE TABLE   SELECT          YES           YES
+admin    admin    system         public              user_options                       BASE TABLE   UPDATE          YES           NO
+admin    root     system         public              user_options                       BASE TABLE   DELETE          YES           NO
+admin    root     system         public              user_options                       BASE TABLE   INSERT          YES           NO
+admin    root     system         public              user_options                       BASE TABLE   SELECT          YES           YES
+admin    root     system         public              user_options                       BASE TABLE   UPDATE          YES           NO
+admin    admin    system         public              users                              BASE TABLE   DELETE          YES           NO
+admin    admin    system         public              users                              BASE TABLE   INSERT          YES           NO
+admin    admin    system         public              users                              BASE TABLE   SELECT          YES           YES
+admin    admin    system         public              users                              BASE TABLE   UPDATE          YES           NO
+admin    root     system         public              users                              BASE TABLE   DELETE          YES           NO
+admin    root     system         public              users                              BASE TABLE   INSERT          YES           NO
+admin    root     system         public              users                              BASE TABLE   SELECT          YES           YES
+admin    root     system         public              users                              BASE TABLE   UPDATE          YES           NO
+admin    admin    system         public              web_sessions                       BASE TABLE   DELETE          YES           NO
+admin    admin    system         public              web_sessions                       BASE TABLE   INSERT          YES           NO
+admin    admin    system         public              web_sessions                       BASE TABLE   SELECT          YES           YES
+admin    admin    system         public              web_sessions                       BASE TABLE   UPDATE          YES           NO
+admin    root     system         public              web_sessions                       BASE TABLE   DELETE          YES           NO
+admin    root     system         public              web_sessions                       BASE TABLE   INSERT          YES           NO
+admin    root     system         public              web_sessions                       BASE TABLE   SELECT          YES           YES
+admin    root     system         public              web_sessions                       BASE TABLE   UPDATE          YES           NO
+admin    admin    system         public              zones                              BASE TABLE   DELETE          YES           NO
+admin    admin    system         public              zones                              BASE TABLE   INSERT          YES           NO
+admin    admin    system         public              zones                              BASE TABLE   SELECT          YES           YES
+admin    admin    system         public              zones                              BASE TABLE   UPDATE          YES           NO
+admin    root     system         public              zones                              BASE TABLE   DELETE          YES           NO
+admin    root     system         public              zones                              BASE TABLE   INSERT          YES           NO
+admin    root     system         public              zones                              BASE TABLE   SELECT          YES           YES
+admin    root     system         public              zones                              BASE TABLE   UPDATE          YES           NO
+admin    public   system         zbdb_internal       backward_dependencies              SYSTEM VIEW  SELECT          NO            YES
+admin    public   system         zbdb_internal       builtin_functions                  SYSTEM VIEW  SELECT          NO            YES
+admin    public   system         zbdb_internal       cluster_queries                    SYSTEM VIEW  SELECT          NO            YES
+admin    public   system         zbdb_internal       cluster_sessions                   SYSTEM VIEW  SELECT          NO            YES
+admin    public   system         zbdb_internal       cluster_settings                   SYSTEM VIEW  SELECT          NO            YES
+admin    public   system         zbdb_internal       create_statements                  SYSTEM VIEW  SELECT          NO            YES
+admin    public   system         zbdb_internal       databases                          SYSTEM VIEW  SELECT          NO            YES
+admin    public   system         zbdb_internal       feature_usage                      SYSTEM VIEW  SELECT          NO            YES
+admin    public   system         zbdb_internal       forward_dependencies               SYSTEM VIEW  SELECT          NO            YES
+admin    public   system         zbdb_internal       function_privileges                SYSTEM VIEW  SELECT          NO            YES
+admin    public   system         zbdb_internal       gossip_alerts                      SYSTEM VIEW  SELECT          NO            YES
+admin    public   system         zbdb_internal       gossip_liveness                    SYSTEM VIEW  SELECT          NO            YES
+admin    public   system         zbdb_internal       gossip_network                     SYSTEM VIEW  SELECT          NO            YES
+admin    public   system         zbdb_internal       gossip_nodes                       SYSTEM VIEW  SELECT          NO            YES
+admin    public   system         zbdb_internal       index_columns                      SYSTEM VIEW  SELECT          NO            YES
+admin    public   system         zbdb_internal       jobs                               SYSTEM VIEW  SELECT          NO            YES
+admin    public   system         zbdb_internal       kv_node_status                     SYSTEM VIEW  SELECT          NO            YES
+admin    public   system         zbdb_internal       kv_store_status                    SYSTEM VIEW  SELECT          NO            YES
+admin    public   system         zbdb_internal       leases                             SYSTEM VIEW  SELECT          NO            YES
+admin    public   system         zbdb_internal       node_build_info                    SYSTEM VIEW  SELECT          NO            YES
+admin    public   system         zbdb_internal       node_metrics                       SYSTEM VIEW  SELECT          NO            YES
+admin    public   system         zbdb_internal       node_queries                       SYSTEM VIEW  SELECT          NO            YES
+admin    public   system         zbdb_internal       node_runtime_info                  SYSTEM VIEW  SELECT          NO            YES
+admin    public   system         zbdb_internal       node_sessions                      SYSTEM VIEW  SELECT          NO            YES
+admin    public   system         zbdb_internal       node_statement_statistics          SYSTEM VIEW  SELECT          NO            YES
+admin    public   system         zbdb_internal       partition_views                    SYSTEM VIEW  SELECT          NO            YES
+admin    public   system         zbdb_internal       partitions                         SYSTEM VIEW  SELECT          NO            YES
+admin    public   system         zbdb_internal       predefined_comments                SYSTEM VIEW  SELECT          NO            YES
+admin    public   system         zbdb_internal       ranges                             SYSTEM VIEW  SELECT          NO            YES
+admin    public   system         zbdb_internal       ranges_no_leases                   SYSTEM VIEW  SELECT          NO            YES
+admin    public   system         zbdb_internal       savepoint_status                   SYSTEM VIEW  SELECT          NO            YES
+admin    public   system         zbdb_internal       schema_changes                     SYSTEM VIEW  SELECT          NO            YES
+admin    public   system         zbdb_internal       session_trace                      SYSTEM VIEW  SELECT          NO            YES
+admin    public   system         zbdb_internal       session_variables                  SYSTEM VIEW  SELECT          NO            YES
+admin    public   system         zbdb_internal       table_columns                      SYSTEM VIEW  SELECT          NO            YES
+admin    public   system         zbdb_internal       table_indexes                      SYSTEM VIEW  SELECT          NO            YES
+admin    public   system         zbdb_internal       table_row_statistics               SYSTEM VIEW  SELECT          NO            YES
+admin    public   system         zbdb_internal       tables                             SYSTEM VIEW  SELECT          NO            YES
+admin    public   system         zbdb_internal       zones                              SYSTEM VIEW  SELECT          NO            YES
+
+query TTTTTTTTT colnames
+SELECT * FROM system.information_schema.role_table_grants order by grantee,table_catalog,table_schema,table_name,privilege_type,is_grantable,with_hierarchy
+----
+grantor  grantee  table_catalog  table_schema        table_name                         table_type   privilege_type  is_grantable  with_hierarchy
+admin    admin    system         public              authentication                     BASE TABLE   DELETE          YES           NO
+admin    admin    system         public              authentication                     BASE TABLE   INSERT          YES           NO
+admin    admin    system         public              authentication                     BASE TABLE   SELECT          YES           YES
+admin    admin    system         public              authentication                     BASE TABLE   UPDATE          YES           NO
+admin    admin    system         public              comments                           BASE TABLE   DELETE          YES           NO
+admin    admin    system         public              comments                           BASE TABLE   INSERT          YES           NO
+admin    admin    system         public              comments                           BASE TABLE   SELECT          YES           YES
+admin    admin    system         public              comments                           BASE TABLE   UPDATE          YES           NO
+admin    admin    system         public              descriptor                         BASE TABLE   SELECT          YES           YES
+admin    admin    system         public              eventlog                           BASE TABLE   DELETE          YES           NO
+admin    admin    system         public              eventlog                           BASE TABLE   INSERT          YES           NO
+admin    admin    system         public              eventlog                           BASE TABLE   SELECT          YES           YES
+admin    admin    system         public              eventlog                           BASE TABLE   UPDATE          YES           NO
+admin    admin    system         public              flashback                          BASE TABLE   DELETE          YES           NO
+admin    admin    system         public              flashback                          BASE TABLE   INSERT          YES           NO
+admin    admin    system         public              flashback                          BASE TABLE   SELECT          YES           YES
+admin    admin    system         public              flashback                          BASE TABLE   UPDATE          YES           NO
+admin    admin    system         public              function_namespace                 BASE TABLE   SELECT          YES           YES
+admin    admin    system         public              hints                              BASE TABLE   DELETE          YES           NO
+admin    admin    system         public              hints                              BASE TABLE   INSERT          YES           NO
+admin    admin    system         public              hints                              BASE TABLE   SELECT          YES           YES
+admin    admin    system         public              hints                              BASE TABLE   UPDATE          YES           NO
+admin    admin    system         public              jobs                               BASE TABLE   DELETE          YES           NO
+admin    admin    system         public              jobs                               BASE TABLE   INSERT          YES           NO
+admin    admin    system         public              jobs                               BASE TABLE   SELECT          YES           YES
+admin    admin    system         public              jobs                               BASE TABLE   UPDATE          YES           NO
+admin    admin    system         public              lease                              BASE TABLE   DELETE          YES           NO
+admin    admin    system         public              lease                              BASE TABLE   INSERT          YES           NO
+admin    admin    system         public              lease                              BASE TABLE   SELECT          YES           YES
+admin    admin    system         public              lease                              BASE TABLE   UPDATE          YES           NO
+admin    admin    system         public              location                           BASE TABLE   DELETE          YES           NO
+admin    admin    system         public              location                           BASE TABLE   INSERT          YES           NO
+admin    admin    system         public              location                           BASE TABLE   SELECT          YES           YES
+admin    admin    system         public              location                           BASE TABLE   UPDATE          YES           NO
+admin    admin    system         public              locations                          BASE TABLE   DELETE          YES           NO
+admin    admin    system         public              locations                          BASE TABLE   INSERT          YES           NO
+admin    admin    system         public              locations                          BASE TABLE   SELECT          YES           YES
+admin    admin    system         public              locations                          BASE TABLE   UPDATE          YES           NO
+admin    admin    system         public              namespace                          BASE TABLE   SELECT          YES           YES
+admin    admin    system         public              rangelog                           BASE TABLE   DELETE          YES           NO
+admin    admin    system         public              rangelog                           BASE TABLE   INSERT          YES           NO
+admin    admin    system         public              rangelog                           BASE TABLE   SELECT          YES           YES
+admin    admin    system         public              rangelog                           BASE TABLE   UPDATE          YES           NO
+admin    admin    system         public              role_members                       BASE TABLE   DELETE          YES           NO
+admin    admin    system         public              role_members                       BASE TABLE   INSERT          YES           NO
+admin    admin    system         public              role_members                       BASE TABLE   SELECT          YES           YES
+admin    admin    system         public              role_members                       BASE TABLE   UPDATE          YES           NO
+admin    admin    system         public              scheduled_jobs                     BASE TABLE   DELETE          YES           NO
+admin    admin    system         public              scheduled_jobs                     BASE TABLE   INSERT          YES           NO
+admin    admin    system         public              scheduled_jobs                     BASE TABLE   SELECT          YES           YES
+admin    admin    system         public              scheduled_jobs                     BASE TABLE   UPDATE          YES           NO
+admin    admin    system         public              settings                           BASE TABLE   DELETE          YES           NO
+admin    admin    system         public              settings                           BASE TABLE   INSERT          YES           NO
+admin    admin    system         public              settings                           BASE TABLE   SELECT          YES           YES
+admin    admin    system         public              settings                           BASE TABLE   UPDATE          YES           NO
+admin    admin    system         public              snapshots                          BASE TABLE   DELETE          YES           NO
+admin    admin    system         public              snapshots                          BASE TABLE   INSERT          YES           NO
+admin    admin    system         public              snapshots                          BASE TABLE   SELECT          YES           YES
+admin    admin    system         public              snapshots                          BASE TABLE   UPDATE          YES           NO
+admin    admin    system         public              table_statistics                   BASE TABLE   DELETE          YES           NO
+admin    admin    system         public              table_statistics                   BASE TABLE   INSERT          YES           NO
+admin    admin    system         public              table_statistics                   BASE TABLE   SELECT          YES           YES
+admin    admin    system         public              table_statistics                   BASE TABLE   UPDATE          YES           NO
+admin    admin    system         public              triggers                           BASE TABLE   DELETE          YES           NO
+admin    admin    system         public              triggers                           BASE TABLE   INSERT          YES           NO
+admin    admin    system         public              triggers                           BASE TABLE   SELECT          YES           YES
+admin    admin    system         public              triggers                           BASE TABLE   UPDATE          YES           NO
+admin    admin    system         public              ui                                 BASE TABLE   DELETE          YES           NO
+admin    admin    system         public              ui                                 BASE TABLE   INSERT          YES           NO
+admin    admin    system         public              ui                                 BASE TABLE   SELECT          YES           YES
+admin    admin    system         public              ui                                 BASE TABLE   UPDATE          YES           NO
+admin    admin    system         public              user_options                       BASE TABLE   DELETE          YES           NO
+admin    admin    system         public              user_options                       BASE TABLE   INSERT          YES           NO
+admin    admin    system         public              user_options                       BASE TABLE   SELECT          YES           YES
+admin    admin    system         public              user_options                       BASE TABLE   UPDATE          YES           NO
+admin    admin    system         public              users                              BASE TABLE   DELETE          YES           NO
+admin    admin    system         public              users                              BASE TABLE   INSERT          YES           NO
+admin    admin    system         public              users                              BASE TABLE   SELECT          YES           YES
+admin    admin    system         public              users                              BASE TABLE   UPDATE          YES           NO
+admin    admin    system         public              web_sessions                       BASE TABLE   DELETE          YES           NO
+admin    admin    system         public              web_sessions                       BASE TABLE   INSERT          YES           NO
+admin    admin    system         public              web_sessions                       BASE TABLE   SELECT          YES           YES
+admin    admin    system         public              web_sessions                       BASE TABLE   UPDATE          YES           NO
+admin    admin    system         public              zones                              BASE TABLE   DELETE          YES           NO
+admin    admin    system         public              zones                              BASE TABLE   INSERT          YES           NO
+admin    admin    system         public              zones                              BASE TABLE   SELECT          YES           YES
+admin    admin    system         public              zones                              BASE TABLE   UPDATE          YES           NO
+admin    public   system         information_schema  administrable_role_authorizations  SYSTEM VIEW  SELECT          NO            YES
+admin    public   system         information_schema  applicable_roles                   SYSTEM VIEW  SELECT          NO            YES
+admin    public   system         information_schema  check_constraints                  SYSTEM VIEW  SELECT          NO            YES
+admin    public   system         information_schema  column_privileges                  SYSTEM VIEW  SELECT          NO            YES
+admin    public   system         information_schema  columns                            SYSTEM VIEW  SELECT          NO            YES
+admin    public   system         information_schema  constraint_column_usage            SYSTEM VIEW  SELECT          NO            YES
+admin    public   system         information_schema  database_privileges                SYSTEM VIEW  SELECT          NO            YES
+admin    public   system         information_schema  enabled_roles                      SYSTEM VIEW  SELECT          NO            YES
+admin    public   system         information_schema  functions                          SYSTEM VIEW  SELECT          NO            YES
+admin    public   system         information_schema  index_partition                    SYSTEM VIEW  SELECT          NO            YES
+admin    public   system         information_schema  key_column_usage                   SYSTEM VIEW  SELECT          NO            YES
+admin    public   system         information_schema  parameters                         SYSTEM VIEW  SELECT          NO            YES
+admin    public   system         information_schema  referential_constraints            SYSTEM VIEW  SELECT          NO            YES
+admin    public   system         information_schema  role_table_grants                  SYSTEM VIEW  SELECT          NO            YES
+admin    public   system         information_schema  routines                           SYSTEM VIEW  SELECT          NO            YES
+admin    public   system         information_schema  schema_privileges                  SYSTEM VIEW  SELECT          NO            YES
+admin    public   system         information_schema  schemata                           SYSTEM VIEW  SELECT          NO            YES
+admin    public   system         information_schema  sequences                          SYSTEM VIEW  SELECT          NO            YES
+admin    public   system         information_schema  statistics                         SYSTEM VIEW  SELECT          NO            YES
+admin    public   system         information_schema  table_constraints                  SYSTEM VIEW  SELECT          NO            YES
+admin    public   system         information_schema  table_privileges                   SYSTEM VIEW  SELECT          NO            YES
+admin    public   system         information_schema  tables                             SYSTEM VIEW  SELECT          NO            YES
+admin    public   system         information_schema  trigger_privileges                 SYSTEM VIEW  SELECT          NO            YES
+admin    public   system         information_schema  user_privileges                    SYSTEM VIEW  SELECT          NO            YES
+admin    public   system         information_schema  views                              SYSTEM VIEW  SELECT          NO            YES
+admin    public   system         pg_catalog          pg_am                              SYSTEM VIEW  SELECT          NO            YES
+admin    public   system         pg_catalog          pg_attrdef                         SYSTEM VIEW  SELECT          NO            YES
+admin    public   system         pg_catalog          pg_attribute                       SYSTEM VIEW  SELECT          NO            YES
+admin    public   system         pg_catalog          pg_auth_members                    SYSTEM VIEW  SELECT          NO            YES
+admin    public   system         pg_catalog          pg_class                           SYSTEM VIEW  SELECT          NO            YES
+admin    public   system         pg_catalog          pg_collation                       SYSTEM VIEW  SELECT          NO            YES
+admin    public   system         pg_catalog          pg_constraint                      SYSTEM VIEW  SELECT          NO            YES
+admin    public   system         pg_catalog          pg_database                        SYSTEM VIEW  SELECT          NO            YES
+admin    public   system         pg_catalog          pg_depend                          SYSTEM VIEW  SELECT          NO            YES
+admin    public   system         pg_catalog          pg_description                     SYSTEM VIEW  SELECT          NO            YES
+admin    public   system         pg_catalog          pg_enum                            SYSTEM VIEW  SELECT          NO            YES
+admin    public   system         pg_catalog          pg_extension                       SYSTEM VIEW  SELECT          NO            YES
+admin    public   system         pg_catalog          pg_foreign_data_wrapper            SYSTEM VIEW  SELECT          NO            YES
+admin    public   system         pg_catalog          pg_foreign_server                  SYSTEM VIEW  SELECT          NO            YES
+admin    public   system         pg_catalog          pg_foreign_table                   SYSTEM VIEW  SELECT          NO            YES
+admin    public   system         pg_catalog          pg_index                           SYSTEM VIEW  SELECT          NO            YES
+admin    public   system         pg_catalog          pg_indexes                         SYSTEM VIEW  SELECT          NO            YES
+admin    public   system         pg_catalog          pg_inherits                        SYSTEM VIEW  SELECT          NO            YES
+admin    public   system         pg_catalog          pg_language                        SYSTEM VIEW  SELECT          NO            YES
+admin    public   system         pg_catalog          pg_namespace                       SYSTEM VIEW  SELECT          NO            YES
+admin    public   system         pg_catalog          pg_nodestatus                      SYSTEM VIEW  SELECT          NO            YES
+admin    public   system         pg_catalog          pg_operator                        SYSTEM VIEW  SELECT          NO            YES
+admin    public   system         pg_catalog          pg_proc                            SYSTEM VIEW  SELECT          NO            YES
+admin    public   system         pg_catalog          pg_range                           SYSTEM VIEW  SELECT          NO            YES
+admin    public   system         pg_catalog          pg_rewrite                         SYSTEM VIEW  SELECT          NO            YES
+admin    public   system         pg_catalog          pg_roles                           SYSTEM VIEW  SELECT          NO            YES
+admin    public   system         pg_catalog          pg_seclabel                        SYSTEM VIEW  SELECT          NO            YES
+admin    public   system         pg_catalog          pg_sequence                        SYSTEM VIEW  SELECT          NO            YES
+admin    public   system         pg_catalog          pg_settings                        SYSTEM VIEW  SELECT          NO            YES
+admin    public   system         pg_catalog          pg_shdescription                   SYSTEM VIEW  SELECT          NO            YES
+admin    public   system         pg_catalog          pg_shseclabel                      SYSTEM VIEW  SELECT          NO            YES
+admin    public   system         pg_catalog          pg_stat_activity                   SYSTEM VIEW  SELECT          NO            YES
+admin    public   system         pg_catalog          pg_tables                          SYSTEM VIEW  SELECT          NO            YES
+admin    public   system         pg_catalog          pg_tablespace                      SYSTEM VIEW  SELECT          NO            YES
+admin    public   system         pg_catalog          pg_trigger                         SYSTEM VIEW  SELECT          NO            YES
+admin    public   system         pg_catalog          pg_type                            SYSTEM VIEW  SELECT          NO            YES
+admin    public   system         pg_catalog          pg_user                            SYSTEM VIEW  SELECT          NO            YES
+admin    public   system         pg_catalog          pg_user_mapping                    SYSTEM VIEW  SELECT          NO            YES
+admin    public   system         pg_catalog          pg_views                           SYSTEM VIEW  SELECT          NO            YES
+admin    public   system         public              comments                           BASE TABLE   DELETE          YES           NO
+admin    public   system         public              comments                           BASE TABLE   INSERT          YES           NO
+admin    public   system         public              comments                           BASE TABLE   SELECT          YES           YES
+admin    public   system         public              comments                           BASE TABLE   UPDATE          YES           NO
+admin    public   system         public              flashback                          BASE TABLE   DELETE          YES           NO
+admin    public   system         public              flashback                          BASE TABLE   INSERT          YES           NO
+admin    public   system         public              flashback                          BASE TABLE   SELECT          YES           YES
+admin    public   system         public              flashback                          BASE TABLE   UPDATE          YES           NO
+admin    public   system         public              snapshots                          BASE TABLE   DELETE          YES           NO
+admin    public   system         public              snapshots                          BASE TABLE   INSERT          YES           NO
+admin    public   system         public              snapshots                          BASE TABLE   SELECT          YES           YES
+admin    public   system         public              snapshots                          BASE TABLE   UPDATE          YES           NO
+admin    public   system         zbdb_internal       backward_dependencies              SYSTEM VIEW  SELECT          NO            YES
+admin    public   system         zbdb_internal       builtin_functions                  SYSTEM VIEW  SELECT          NO            YES
+admin    public   system         zbdb_internal       cluster_queries                    SYSTEM VIEW  SELECT          NO            YES
+admin    public   system         zbdb_internal       cluster_sessions                   SYSTEM VIEW  SELECT          NO            YES
+admin    public   system         zbdb_internal       cluster_settings                   SYSTEM VIEW  SELECT          NO            YES
+admin    public   system         zbdb_internal       create_statements                  SYSTEM VIEW  SELECT          NO            YES
+admin    public   system         zbdb_internal       databases                          SYSTEM VIEW  SELECT          NO            YES
+admin    public   system         zbdb_internal       feature_usage                      SYSTEM VIEW  SELECT          NO            YES
+admin    public   system         zbdb_internal       forward_dependencies               SYSTEM VIEW  SELECT          NO            YES
+admin    public   system         zbdb_internal       function_privileges                SYSTEM VIEW  SELECT          NO            YES
+admin    public   system         zbdb_internal       gossip_alerts                      SYSTEM VIEW  SELECT          NO            YES
+admin    public   system         zbdb_internal       gossip_liveness                    SYSTEM VIEW  SELECT          NO            YES
+admin    public   system         zbdb_internal       gossip_network                     SYSTEM VIEW  SELECT          NO            YES
+admin    public   system         zbdb_internal       gossip_nodes                       SYSTEM VIEW  SELECT          NO            YES
+admin    public   system         zbdb_internal       index_columns                      SYSTEM VIEW  SELECT          NO            YES
+admin    public   system         zbdb_internal       jobs                               SYSTEM VIEW  SELECT          NO            YES
+admin    public   system         zbdb_internal       kv_node_status                     SYSTEM VIEW  SELECT          NO            YES
+admin    public   system         zbdb_internal       kv_store_status                    SYSTEM VIEW  SELECT          NO            YES
+admin    public   system         zbdb_internal       leases                             SYSTEM VIEW  SELECT          NO            YES
+admin    public   system         zbdb_internal       node_build_info                    SYSTEM VIEW  SELECT          NO            YES
+admin    public   system         zbdb_internal       node_metrics                       SYSTEM VIEW  SELECT          NO            YES
+admin    public   system         zbdb_internal       node_queries                       SYSTEM VIEW  SELECT          NO            YES
+admin    public   system         zbdb_internal       node_runtime_info                  SYSTEM VIEW  SELECT          NO            YES
+admin    public   system         zbdb_internal       node_sessions                      SYSTEM VIEW  SELECT          NO            YES
+admin    public   system         zbdb_internal       node_statement_statistics          SYSTEM VIEW  SELECT          NO            YES
+admin    public   system         zbdb_internal       partition_views                    SYSTEM VIEW  SELECT          NO            YES
+admin    public   system         zbdb_internal       partitions                         SYSTEM VIEW  SELECT          NO            YES
+admin    public   system         zbdb_internal       predefined_comments                SYSTEM VIEW  SELECT          NO            YES
+admin    public   system         zbdb_internal       ranges                             SYSTEM VIEW  SELECT          NO            YES
+admin    public   system         zbdb_internal       ranges_no_leases                   SYSTEM VIEW  SELECT          NO            YES
+admin    public   system         zbdb_internal       savepoint_status                   SYSTEM VIEW  SELECT          NO            YES
+admin    public   system         zbdb_internal       schema_changes                     SYSTEM VIEW  SELECT          NO            YES
+admin    public   system         zbdb_internal       session_trace                      SYSTEM VIEW  SELECT          NO            YES
+admin    public   system         zbdb_internal       session_variables                  SYSTEM VIEW  SELECT          NO            YES
+admin    public   system         zbdb_internal       table_columns                      SYSTEM VIEW  SELECT          NO            YES
+admin    public   system         zbdb_internal       table_indexes                      SYSTEM VIEW  SELECT          NO            YES
+admin    public   system         zbdb_internal       table_row_statistics               SYSTEM VIEW  SELECT          NO            YES
+admin    public   system         zbdb_internal       tables                             SYSTEM VIEW  SELECT          NO            YES
+admin    public   system         zbdb_internal       zones                              SYSTEM VIEW  SELECT          NO            YES
+admin    root     system         public              authentication                     BASE TABLE   DELETE          YES           NO
+admin    root     system         public              authentication                     BASE TABLE   INSERT          YES           NO
+admin    root     system         public              authentication                     BASE TABLE   SELECT          YES           YES
+admin    root     system         public              authentication                     BASE TABLE   UPDATE          YES           NO
+admin    root     system         public              comments                           BASE TABLE   DELETE          YES           NO
+admin    root     system         public              comments                           BASE TABLE   INSERT          YES           NO
+admin    root     system         public              comments                           BASE TABLE   SELECT          YES           YES
+admin    root     system         public              comments                           BASE TABLE   UPDATE          YES           NO
+admin    root     system         public              descriptor                         BASE TABLE   SELECT          YES           YES
+admin    root     system         public              eventlog                           BASE TABLE   DELETE          YES           NO
+admin    root     system         public              eventlog                           BASE TABLE   INSERT          YES           NO
+admin    root     system         public              eventlog                           BASE TABLE   SELECT          YES           YES
+admin    root     system         public              eventlog                           BASE TABLE   UPDATE          YES           NO
+admin    root     system         public              flashback                          BASE TABLE   DELETE          YES           NO
+admin    root     system         public              flashback                          BASE TABLE   INSERT          YES           NO
+admin    root     system         public              flashback                          BASE TABLE   SELECT          YES           YES
+admin    root     system         public              flashback                          BASE TABLE   UPDATE          YES           NO
+admin    root     system         public              function_namespace                 BASE TABLE   SELECT          YES           YES
+admin    root     system         public              hints                              BASE TABLE   DELETE          YES           NO
+admin    root     system         public              hints                              BASE TABLE   INSERT          YES           NO
+admin    root     system         public              hints                              BASE TABLE   SELECT          YES           YES
+admin    root     system         public              hints                              BASE TABLE   UPDATE          YES           NO
+admin    root     system         public              jobs                               BASE TABLE   DELETE          YES           NO
+admin    root     system         public              jobs                               BASE TABLE   INSERT          YES           NO
+admin    root     system         public              jobs                               BASE TABLE   SELECT          YES           YES
+admin    root     system         public              jobs                               BASE TABLE   UPDATE          YES           NO
+admin    root     system         public              lease                              BASE TABLE   DELETE          YES           NO
+admin    root     system         public              lease                              BASE TABLE   INSERT          YES           NO
+admin    root     system         public              lease                              BASE TABLE   SELECT          YES           YES
+admin    root     system         public              lease                              BASE TABLE   UPDATE          YES           NO
+admin    root     system         public              location                           BASE TABLE   DELETE          YES           NO
+admin    root     system         public              location                           BASE TABLE   INSERT          YES           NO
+admin    root     system         public              location                           BASE TABLE   SELECT          YES           YES
+admin    root     system         public              location                           BASE TABLE   UPDATE          YES           NO
+admin    root     system         public              locations                          BASE TABLE   DELETE          YES           NO
+admin    root     system         public              locations                          BASE TABLE   INSERT          YES           NO
+admin    root     system         public              locations                          BASE TABLE   SELECT          YES           YES
+admin    root     system         public              locations                          BASE TABLE   UPDATE          YES           NO
+admin    root     system         public              namespace                          BASE TABLE   SELECT          YES           YES
+admin    root     system         public              rangelog                           BASE TABLE   DELETE          YES           NO
+admin    root     system         public              rangelog                           BASE TABLE   INSERT          YES           NO
+admin    root     system         public              rangelog                           BASE TABLE   SELECT          YES           YES
+admin    root     system         public              rangelog                           BASE TABLE   UPDATE          YES           NO
+admin    root     system         public              role_members                       BASE TABLE   DELETE          YES           NO
+admin    root     system         public              role_members                       BASE TABLE   INSERT          YES           NO
+admin    root     system         public              role_members                       BASE TABLE   SELECT          YES           YES
+admin    root     system         public              role_members                       BASE TABLE   UPDATE          YES           NO
+admin    root     system         public              scheduled_jobs                     BASE TABLE   DELETE          YES           NO
+admin    root     system         public              scheduled_jobs                     BASE TABLE   INSERT          YES           NO
+admin    root     system         public              scheduled_jobs                     BASE TABLE   SELECT          YES           YES
+admin    root     system         public              scheduled_jobs                     BASE TABLE   UPDATE          YES           NO
+admin    root     system         public              settings                           BASE TABLE   DELETE          YES           NO
+admin    root     system         public              settings                           BASE TABLE   INSERT          YES           NO
+admin    root     system         public              settings                           BASE TABLE   SELECT          YES           YES
+admin    root     system         public              settings                           BASE TABLE   UPDATE          YES           NO
+admin    root     system         public              snapshots                          BASE TABLE   DELETE          YES           NO
+admin    root     system         public              snapshots                          BASE TABLE   INSERT          YES           NO
+admin    root     system         public              snapshots                          BASE TABLE   SELECT          YES           YES
+admin    root     system         public              snapshots                          BASE TABLE   UPDATE          YES           NO
+admin    root     system         public              table_statistics                   BASE TABLE   DELETE          YES           NO
+admin    root     system         public              table_statistics                   BASE TABLE   INSERT          YES           NO
+admin    root     system         public              table_statistics                   BASE TABLE   SELECT          YES           YES
+admin    root     system         public              table_statistics                   BASE TABLE   UPDATE          YES           NO
+admin    root     system         public              triggers                           BASE TABLE   DELETE          YES           NO
+admin    root     system         public              triggers                           BASE TABLE   INSERT          YES           NO
+admin    root     system         public              triggers                           BASE TABLE   SELECT          YES           YES
+admin    root     system         public              triggers                           BASE TABLE   UPDATE          YES           NO
+admin    root     system         public              ui                                 BASE TABLE   DELETE          YES           NO
+admin    root     system         public              ui                                 BASE TABLE   INSERT          YES           NO
+admin    root     system         public              ui                                 BASE TABLE   SELECT          YES           YES
+admin    root     system         public              ui                                 BASE TABLE   UPDATE          YES           NO
+admin    root     system         public              user_options                       BASE TABLE   DELETE          YES           NO
+admin    root     system         public              user_options                       BASE TABLE   INSERT          YES           NO
+admin    root     system         public              user_options                       BASE TABLE   SELECT          YES           YES
+admin    root     system         public              user_options                       BASE TABLE   UPDATE          YES           NO
+admin    root     system         public              users                              BASE TABLE   DELETE          YES           NO
+admin    root     system         public              users                              BASE TABLE   INSERT          YES           NO
+admin    root     system         public              users                              BASE TABLE   SELECT          YES           YES
+admin    root     system         public              users                              BASE TABLE   UPDATE          YES           NO
+admin    root     system         public              web_sessions                       BASE TABLE   DELETE          YES           NO
+admin    root     system         public              web_sessions                       BASE TABLE   INSERT          YES           NO
+admin    root     system         public              web_sessions                       BASE TABLE   SELECT          YES           YES
+admin    root     system         public              web_sessions                       BASE TABLE   UPDATE          YES           NO
+admin    root     system         public              zones                              BASE TABLE   DELETE          YES           NO
+admin    root     system         public              zones                              BASE TABLE   INSERT          YES           NO
+admin    root     system         public              zones                              BASE TABLE   SELECT          YES           YES
+admin    root     system         public              zones                              BASE TABLE   UPDATE          YES           NO
+
+statement ok
+CREATE TABLE other_db.xyz (i INT)
+
+statement ok
+CREATE VIEW other_db.abc AS SELECT i from other_db.xyz
+
+query TTTTTTTTT colnames
+SELECT * FROM other_db.information_schema.table_privileges WHERE TABLE_SCHEMA = 'public' ORDER BY grantee,table_name,privilege_type,with_hierarchy
+----
+grantor  grantee  table_catalog  table_schema  table_name  table_type  privilege_type  is_grantable  with_hierarchy
+admin    admin    other_db       public        abc         VIEW        DELETE          YES           NO
+admin    admin    other_db       public        abc         VIEW        DROP            YES           NO
+admin    admin    other_db       public        abc         VIEW        INSERT          YES           NO
+admin    admin    other_db       public        abc         VIEW        REFERENCES      YES           NO
+admin    admin    other_db       public        abc         VIEW        SELECT          YES           YES
+admin    admin    other_db       public        abc         VIEW        TRIGGER         YES           NO
+admin    admin    other_db       public        abc         VIEW        UPDATE          YES           NO
+admin    admin    other_db       public        xyz         BASE TABLE  DELETE          YES           NO
+admin    admin    other_db       public        xyz         BASE TABLE  DROP            YES           NO
+admin    admin    other_db       public        xyz         BASE TABLE  INSERT          YES           NO
+admin    admin    other_db       public        xyz         BASE TABLE  REFERENCES      YES           NO
+admin    admin    other_db       public        xyz         BASE TABLE  SELECT          YES           YES
+admin    admin    other_db       public        xyz         BASE TABLE  TRIGGER         YES           NO
+admin    admin    other_db       public        xyz         BASE TABLE  UPDATE          YES           NO
+admin    root     other_db       public        abc         VIEW        DELETE          YES           NO
+admin    root     other_db       public        abc         VIEW        DROP            YES           NO
+admin    root     other_db       public        abc         VIEW        INSERT          YES           NO
+admin    root     other_db       public        abc         VIEW        REFERENCES      YES           NO
+admin    root     other_db       public        abc         VIEW        SELECT          YES           YES
+admin    root     other_db       public        abc         VIEW        TRIGGER         YES           NO
+admin    root     other_db       public        abc         VIEW        UPDATE          YES           NO
+admin    root     other_db       public        xyz         BASE TABLE  DELETE          YES           NO
+admin    root     other_db       public        xyz         BASE TABLE  DROP            YES           NO
+admin    root     other_db       public        xyz         BASE TABLE  INSERT          YES           NO
+admin    root     other_db       public        xyz         BASE TABLE  REFERENCES      YES           NO
+admin    root     other_db       public        xyz         BASE TABLE  SELECT          YES           YES
+admin    root     other_db       public        xyz         BASE TABLE  TRIGGER         YES           NO
+admin    root     other_db       public        xyz         BASE TABLE  UPDATE          YES           NO
+
+query TTTTTTTTT colnames
+SELECT * FROM other_db.information_schema.role_table_grants WHERE TABLE_SCHEMA = 'public' ORDER BY grantee,table_name,privilege_type,with_hierarchy
+----
+grantor  grantee  table_catalog  table_schema  table_name  table_type  privilege_type  is_grantable  with_hierarchy
+admin    admin    other_db       public        abc         VIEW        DELETE          YES           NO
+admin    admin    other_db       public        abc         VIEW        DROP            YES           NO
+admin    admin    other_db       public        abc         VIEW        INSERT          YES           NO
+admin    admin    other_db       public        abc         VIEW        REFERENCES      YES           NO
+admin    admin    other_db       public        abc         VIEW        SELECT          YES           YES
+admin    admin    other_db       public        abc         VIEW        TRIGGER         YES           NO
+admin    admin    other_db       public        abc         VIEW        UPDATE          YES           NO
+admin    admin    other_db       public        xyz         BASE TABLE  DELETE          YES           NO
+admin    admin    other_db       public        xyz         BASE TABLE  DROP            YES           NO
+admin    admin    other_db       public        xyz         BASE TABLE  INSERT          YES           NO
+admin    admin    other_db       public        xyz         BASE TABLE  REFERENCES      YES           NO
+admin    admin    other_db       public        xyz         BASE TABLE  SELECT          YES           YES
+admin    admin    other_db       public        xyz         BASE TABLE  TRIGGER         YES           NO
+admin    admin    other_db       public        xyz         BASE TABLE  UPDATE          YES           NO
+admin    root     other_db       public        abc         VIEW        DELETE          YES           NO
+admin    root     other_db       public        abc         VIEW        DROP            YES           NO
+admin    root     other_db       public        abc         VIEW        INSERT          YES           NO
+admin    root     other_db       public        abc         VIEW        REFERENCES      YES           NO
+admin    root     other_db       public        abc         VIEW        SELECT          YES           YES
+admin    root     other_db       public        abc         VIEW        TRIGGER         YES           NO
+admin    root     other_db       public        abc         VIEW        UPDATE          YES           NO
+admin    root     other_db       public        xyz         BASE TABLE  DELETE          YES           NO
+admin    root     other_db       public        xyz         BASE TABLE  DROP            YES           NO
+admin    root     other_db       public        xyz         BASE TABLE  INSERT          YES           NO
+admin    root     other_db       public        xyz         BASE TABLE  REFERENCES      YES           NO
+admin    root     other_db       public        xyz         BASE TABLE  SELECT          YES           YES
+admin    root     other_db       public        xyz         BASE TABLE  TRIGGER         YES           NO
+admin    root     other_db       public        xyz         BASE TABLE  UPDATE          YES           NO
+
+statement ok
+GRANT UPDATE ON other_db.xyz TO testuser
+
+query TTTTTTTTT colnames
+SELECT * FROM other_db.information_schema.table_privileges WHERE TABLE_SCHEMA = 'public' ORDER BY grantee,table_name,privilege_type,with_hierarchy
+----
+grantor  grantee   table_catalog  table_schema  table_name  table_type  privilege_type  is_grantable  with_hierarchy
+admin    admin     other_db       public        abc         VIEW        DELETE          YES           NO
+admin    admin     other_db       public        abc         VIEW        DROP            YES           NO
+admin    admin     other_db       public        abc         VIEW        INSERT          YES           NO
+admin    admin     other_db       public        abc         VIEW        REFERENCES      YES           NO
+admin    admin     other_db       public        abc         VIEW        SELECT          YES           YES
+admin    admin     other_db       public        abc         VIEW        TRIGGER         YES           NO
+admin    admin     other_db       public        abc         VIEW        UPDATE          YES           NO
+admin    admin     other_db       public        xyz         BASE TABLE  DELETE          YES           NO
+admin    admin     other_db       public        xyz         BASE TABLE  DROP            YES           NO
+admin    admin     other_db       public        xyz         BASE TABLE  INSERT          YES           NO
+admin    admin     other_db       public        xyz         BASE TABLE  REFERENCES      YES           NO
+admin    admin     other_db       public        xyz         BASE TABLE  SELECT          YES           YES
+admin    admin     other_db       public        xyz         BASE TABLE  TRIGGER         YES           NO
+admin    admin     other_db       public        xyz         BASE TABLE  UPDATE          YES           NO
+admin    root      other_db       public        abc         VIEW        DELETE          YES           NO
+admin    root      other_db       public        abc         VIEW        DROP            YES           NO
+admin    root      other_db       public        abc         VIEW        INSERT          YES           NO
+admin    root      other_db       public        abc         VIEW        REFERENCES      YES           NO
+admin    root      other_db       public        abc         VIEW        SELECT          YES           YES
+admin    root      other_db       public        abc         VIEW        TRIGGER         YES           NO
+admin    root      other_db       public        abc         VIEW        UPDATE          YES           NO
+admin    root      other_db       public        xyz         BASE TABLE  DELETE          YES           NO
+admin    root      other_db       public        xyz         BASE TABLE  DROP            YES           NO
+admin    root      other_db       public        xyz         BASE TABLE  INSERT          YES           NO
+admin    root      other_db       public        xyz         BASE TABLE  REFERENCES      YES           NO
+admin    root      other_db       public        xyz         BASE TABLE  SELECT          YES           YES
+admin    root      other_db       public        xyz         BASE TABLE  TRIGGER         YES           NO
+admin    root      other_db       public        xyz         BASE TABLE  UPDATE          YES           NO
+root     testuser  other_db       public        xyz         BASE TABLE  UPDATE          NO            NO
+
+query TTTTTTTTT colnames
+SELECT * FROM other_db.information_schema.role_table_grants WHERE TABLE_SCHEMA = 'public' ORDER BY grantee,table_name,privilege_type,with_hierarchy
+----
+grantor  grantee   table_catalog  table_schema  table_name  table_type  privilege_type  is_grantable  with_hierarchy
+admin    admin     other_db       public        abc         VIEW        DELETE          YES           NO
+admin    admin     other_db       public        abc         VIEW        DROP            YES           NO
+admin    admin     other_db       public        abc         VIEW        INSERT          YES           NO
+admin    admin     other_db       public        abc         VIEW        REFERENCES      YES           NO
+admin    admin     other_db       public        abc         VIEW        SELECT          YES           YES
+admin    admin     other_db       public        abc         VIEW        TRIGGER         YES           NO
+admin    admin     other_db       public        abc         VIEW        UPDATE          YES           NO
+admin    admin     other_db       public        xyz         BASE TABLE  DELETE          YES           NO
+admin    admin     other_db       public        xyz         BASE TABLE  DROP            YES           NO
+admin    admin     other_db       public        xyz         BASE TABLE  INSERT          YES           NO
+admin    admin     other_db       public        xyz         BASE TABLE  REFERENCES      YES           NO
+admin    admin     other_db       public        xyz         BASE TABLE  SELECT          YES           YES
+admin    admin     other_db       public        xyz         BASE TABLE  TRIGGER         YES           NO
+admin    admin     other_db       public        xyz         BASE TABLE  UPDATE          YES           NO
+admin    root      other_db       public        abc         VIEW        DELETE          YES           NO
+admin    root      other_db       public        abc         VIEW        DROP            YES           NO
+admin    root      other_db       public        abc         VIEW        INSERT          YES           NO
+admin    root      other_db       public        abc         VIEW        REFERENCES      YES           NO
+admin    root      other_db       public        abc         VIEW        SELECT          YES           YES
+admin    root      other_db       public        abc         VIEW        TRIGGER         YES           NO
+admin    root      other_db       public        abc         VIEW        UPDATE          YES           NO
+admin    root      other_db       public        xyz         BASE TABLE  DELETE          YES           NO
+admin    root      other_db       public        xyz         BASE TABLE  DROP            YES           NO
+admin    root      other_db       public        xyz         BASE TABLE  INSERT          YES           NO
+admin    root      other_db       public        xyz         BASE TABLE  REFERENCES      YES           NO
+admin    root      other_db       public        xyz         BASE TABLE  SELECT          YES           YES
+admin    root      other_db       public        xyz         BASE TABLE  TRIGGER         YES           NO
+admin    root      other_db       public        xyz         BASE TABLE  UPDATE          YES           NO
+root     testuser  other_db       public        xyz         BASE TABLE  UPDATE          NO            NO
+
+# testuser can read permissions as well
+user testuser
+
+statement ok
+SET DATABASE = other_db
+
+query TTTTTTTTT colnames
+SELECT * FROM information_schema.table_privileges WHERE TABLE_SCHEMA = 'public' ORDER BY grantee,table_name,with_hierarchy
+----
+grantor  grantee   table_catalog  table_schema  table_name  table_type  privilege_type  is_grantable  with_hierarchy
+root     testuser  other_db       public        xyz         BASE TABLE  UPDATE          NO            NO
+
+query TTTTTTTTT colnames
+SELECT * FROM information_schema.role_table_grants WHERE TABLE_SCHEMA = 'public' ORDER BY table_name,privilege_type,grantee
+----
+grantor  grantee   table_catalog  table_schema  table_name  table_type  privilege_type  is_grantable  with_hierarchy
+root     testuser  other_db       public        xyz         BASE TABLE  UPDATE          NO            NO
+
+statement ok
+SET DATABASE = test
+
+user root
+
+## information_schema.statistics
+
+statement ok
+CREATE TABLE other_db.teststatics(id INT PRIMARY KEY, c INT, d INT, e STRING, INDEX idx_c(c), UNIQUE INDEX idx_cd(c,d))
+
+query TTTTTTITIITTTTT colnames
+SELECT table_catalog,table_schema,table_name,non_unique,index_schema,index_name,seq_in_index,column_name,"COLLATION",cardinality,direction,storing,implicit,locality,partitioned FROM other_db.information_schema.statistics WHERE table_schema='public' AND table_name='teststatics' ORDER BY INDEX_SCHEMA,INDEX_NAME,SEQ_IN_INDEX
+----
+table_catalog  table_schema  table_name   non_unique  index_schema  index_name  seq_in_index  column_name  COLLATION  cardinality  direction  storing  implicit locality  partitioned
+other_db       public        teststatics  YES         public        idx_c       1             c            NULL       NULL         ASC        NO       NO       global    NO
+other_db       public        teststatics  YES         public        idx_c       2             id           NULL       NULL         ASC        NO       YES      global    NO
+other_db       public        teststatics  NO          public        idx_cd      1             c            NULL       NULL         ASC        NO       NO       global    NO
+other_db       public        teststatics  NO          public        idx_cd      2             d            NULL       NULL         ASC        NO       NO       global    NO
+other_db       public        teststatics  NO          public        idx_cd      3             id           NULL       NULL         ASC        NO       YES      global    NO
+other_db       public        teststatics  NO          public        primary     1             id           NULL       NULL         ASC        NO       NO       global    NO
+
+# Verify information_schema.views
+statement ok
+CREATE VIEW other_db.v_xyz AS SELECT i FROM other_db.xyz
+
+query TTTTT colnames
+SELECT TABLE_CATALOG, TABLE_SCHEMA, TABLE_NAME, VIEW_DEFINITION, CHECK_OPTION
+FROM other_db.information_schema.views
+WHERE TABLE_NAME='v_xyz'
+----
+TABLE_CATALOG  TABLE_SCHEMA  TABLE_NAME  VIEW_DEFINITION                    CHECK_OPTION
+other_db       public        v_xyz       SELECT i FROM other_db.public.xyz  NULL
+
+query TTTTT colnames
+SELECT IS_UPDATABLE, IS_INSERTABLE_INTO, IS_TRIGGER_UPDATABLE, IS_TRIGGER_DELETABLE, IS_TRIGGER_INSERTABLE_INTO
+FROM other_db.information_schema.views
+WHERE TABLE_NAME='v_xyz'
+----
+IS_UPDATABLE  IS_INSERTABLE_INTO  IS_TRIGGER_UPDATABLE  IS_TRIGGER_DELETABLE  IS_TRIGGER_INSERTABLE_INTO
+NO            NO                  NO                    NO                    NO
+
+statement ok
+SET DATABASE = 'test'
+
+statement ok
+DROP DATABASE other_db CASCADE
+
+#Verify  information_schema.user_privileges
+
+query TTTTT colnames,rowsort
+SELECT * FROM information_schema.user_privileges ORDER BY grantee,privilege_type
+----
+grantor  grantee  table_catalog  privilege_type  is_grantable
+admin    admin    test           CREATE          YES
+admin    admin    test           DROP            YES
+admin    admin    test           USAGE           YES
+root     public   test           USAGE           NO
+admin    root     test           CREATE          YES
+admin    root     test           DROP            YES
+admin    root     test           USAGE           YES
+
+# information_schema.sequences
+
+statement ok
+SET DATABASE = test
+
+query TTTTIIITTTTT
+SELECT * FROM information_schema.sequences
+----
+
+statement ok
+CREATE SEQUENCE test_seq
+
+statement ok
+CREATE SEQUENCE test_seq_2 INCREMENT -1 MINVALUE 5 MAXVALUE 1000 START WITH 15
+
+
+query TTTTIIITTTTT colnames
+SELECT * FROM information_schema.sequences ORDER BY sequence_name
+----
+sequence_catalog  sequence_schema  sequence_name  data_type  numeric_precision  numeric_precision_radix  numeric_scale  start_value  minimum_value  maximum_value        increment  cycle_option
+test              public           test_seq       bigint     64                 2                        0              1            1              9223372036854775807  1          NO
+test              public           test_seq_2     bigint     64                 2                        0              15           5              1000                 -1         NO
+
+statement ok
+CREATE DATABASE other_db
+
+statement ok
+SET DATABASE = other_db
+
+# Sequences in one database can't be seen from another database.
+
+query TTTTIIITTTTT
+SELECT * FROM information_schema.sequences
+----
+
+statement ok
+SET DATABASE = test
+
+statement ok
+DROP DATABASE other_db CASCADE
+
+# test information_schema.column_privileges
+query TTBTTTB colnames
+SHOW COLUMNS FROM information_schema.column_privileges
+----
+column_name     data_type  is_nullable  column_default  generation_expression  indices  is_hidden
+grantor         STRING     true         NULL            ·                      {}       false
+grantee         STRING     false        NULL            ·                      {}       false
+table_catalog   STRING     false        NULL            ·                      {}       false
+table_schema    STRING     false        NULL            ·                      {}       false
+table_name      STRING     false        NULL            ·                      {}       false
+column_name     STRING     false        NULL            ·                      {}       false
+privilege_type  STRING     false        NULL            ·                      {}       false
+is_grantable    STRING     true         NULL            ·                      {}       false
+
+
+# test information_schema.routines
+query TTBTTTB colnames
+SHOW COLUMNS FROM information_schema.routines
+----
+column_name                          data_type    is_nullable  column_default  generation_expression  indices  is_hidden
+specific_catalog                     STRING       true         NULL            ·                      {}       false
+specific_schema                      STRING       true         NULL            ·                      {}       false
+specific_name                        STRING       true         NULL            ·                      {}       false
+routine_catalog                      STRING       true         NULL            ·                      {}       false
+routine_schema                       STRING       true         NULL            ·                      {}       false
+routine_name                         STRING       true         NULL            ·                      {}       false
+routine_type                         STRING       true         NULL            ·                      {}       false
+module_catalog                       STRING       true         NULL            ·                      {}       false
+module_schema                        STRING       true         NULL            ·                      {}       false
+module_name                          STRING       true         NULL            ·                      {}       false
+udt_catalog                          STRING       true         NULL            ·                      {}       false
+udt_schema                           STRING       true         NULL            ·                      {}       false
+udt_name                             STRING       true         NULL            ·                      {}       false
+data_type                            STRING       true         NULL            ·                      {}       false
+character_maximum_length             INT          true         NULL            ·                      {}       false
+character_octet_length               INT          true         NULL            ·                      {}       false
+character_set_catalog                STRING       true         NULL            ·                      {}       false
+character_set_schema                 STRING       true         NULL            ·                      {}       false
+character_set_name                   STRING       true         NULL            ·                      {}       false
+collation_catalog                    STRING       true         NULL            ·                      {}       false
+collation_schema                     STRING       true         NULL            ·                      {}       false
+collation_name                       STRING       true         NULL            ·                      {}       false
+numeric_precision                    INT          true         NULL            ·                      {}       false
+numeric_precision_radix              INT          true         NULL            ·                      {}       false
+numeric_scale                        INT          true         NULL            ·                      {}       false
+datetime_precision                   INT          true         NULL            ·                      {}       false
+interval_type                        STRING       true         NULL            ·                      {}       false
+interval_precision                   STRING       true         NULL            ·                      {}       false
+type_udt_catalog                     STRING       true         NULL            ·                      {}       false
+type_udt_schema                      STRING       true         NULL            ·                      {}       false
+type_udt_name                        STRING       true         NULL            ·                      {}       false
+scope_catalog                        STRING       true         NULL            ·                      {}       false
+scope_name                           STRING       true         NULL            ·                      {}       false
+maximum_cardinality                  INT          true         NULL            ·                      {}       false
+dtd_identifier                       STRING       true         NULL            ·                      {}       false
+routine_body                         STRING       true         NULL            ·                      {}       false
+routine_definition                   STRING       true         NULL            ·                      {}       false
+external_name                        STRING       true         NULL            ·                      {}       false
+external_language                    STRING       true         NULL            ·                      {}       false
+parameter_style                      STRING       true         NULL            ·                      {}       false
+is_deterministic                     STRING       true         NULL            ·                      {}       false
+sql_data_access                      STRING       true         NULL            ·                      {}       false
+is_null_call                         STRING       true         NULL            ·                      {}       false
+sql_path                             STRING       true         NULL            ·                      {}       false
+schema_level_routine                 STRING       true         NULL            ·                      {}       false
+max_dynamic_result_sets              INT          true         NULL            ·                      {}       false
+is_user_defined_cast                 STRING       true         NULL            ·                      {}       false
+is_implicitly_invocable              STRING       true         NULL            ·                      {}       false
+security_type                        STRING       true         NULL            ·                      {}       false
+to_sql_specific_catalog              STRING       true         NULL            ·                      {}       false
+to_sql_specific_schema               STRING       true         NULL            ·                      {}       false
+to_sql_specific_name                 STRING       true         NULL            ·                      {}       false
+as_locator                           STRING       true         NULL            ·                      {}       false
+created                              TIMESTAMPTZ  true         NULL            ·                      {}       false
+last_altered                         TIMESTAMPTZ  true         NULL            ·                      {}       false
+new_savepoint_level                  STRING       true         NULL            ·                      {}       false
+is_udt_dependent                     STRING       true         NULL            ·                      {}       false
+result_cast_from_data_type           STRING       true         NULL            ·                      {}       false
+result_cast_as_locator               STRING       true         NULL            ·                      {}       false
+result_cast_char_max_length          INT          true         NULL            ·                      {}       false
+result_cast_char_octet_length        STRING       true         NULL            ·                      {}       false
+result_cast_char_set_catalog         STRING       true         NULL            ·                      {}       false
+result_cast_char_set_schema          STRING       true         NULL            ·                      {}       false
+result_cast_char_set_name            STRING       true         NULL            ·                      {}       false
+result_cast_collation_catalog        STRING       true         NULL            ·                      {}       false
+result_cast_collation_schema         STRING       true         NULL            ·                      {}       false
+result_cast_collation_name           STRING       true         NULL            ·                      {}       false
+result_cast_numeric_precision        INT          true         NULL            ·                      {}       false
+result_cast_numeric_precision_radix  INT          true         NULL            ·                      {}       false
+result_cast_numeric_scale            INT          true         NULL            ·                      {}       false
+result_cast_datetime_precision       STRING       true         NULL            ·                      {}       false
+result_cast_interval_type            STRING       true         NULL            ·                      {}       false
+result_cast_interval_precision       INT          true         NULL            ·                      {}       false
+result_cast_type_udt_catalog         STRING       true         NULL            ·                      {}       false
+result_cast_type_udt_schema          STRING       true         NULL            ·                      {}       false
+result_cast_type_udt_name            STRING       true         NULL            ·                      {}       false
+result_cast_scope_catalog            STRING       true         NULL            ·                      {}       false
+result_cast_scope_schema             STRING       true         NULL            ·                      {}       false
+result_cast_scope_name               STRING       true         NULL            ·                      {}       false
+result_cast_maximum_cardinality      INT          true         NULL            ·                      {}       false
+result_cast_dtd_identifier           STRING       true         NULL            ·                      {}       false
+
+query TTTTTTTTTTTTTTIITTTTTTIIIITTTTTTTITTTTTTTTTTTITTTTTTTTTTTTTITTTTTTTIIITTITTTTTTIT colnames
+SELECT * FROM information_schema.routines
+----
+specific_catalog  specific_schema  specific_name  routine_catalog  routine_schema  routine_name  routine_type  module_catalog  module_schema  module_name  udt_catalog  udt_schema  udt_name  data_type  character_maximum_length  character_octet_length  character_set_catalog  character_set_schema  character_set_name  collation_catalog  collation_schema  collation_name  numeric_precision  numeric_precision_radix  numeric_scale  datetime_precision  interval_type  interval_precision  type_udt_catalog  type_udt_schema  type_udt_name  scope_catalog  scope_name  maximum_cardinality  dtd_identifier  routine_body  routine_definition  external_name  external_language  parameter_style  is_deterministic  sql_data_access  is_null_call  sql_path  schema_level_routine  max_dynamic_result_sets  is_user_defined_cast  is_implicitly_invocable  security_type  to_sql_specific_catalog  to_sql_specific_schema  to_sql_specific_name  as_locator  created  last_altered  new_savepoint_level  is_udt_dependent  result_cast_from_data_type  result_cast_as_locator  result_cast_char_max_length  result_cast_char_octet_length  result_cast_char_set_catalog  result_cast_char_set_schema  result_cast_char_set_name  result_cast_collation_catalog  result_cast_collation_schema  result_cast_collation_name  result_cast_numeric_precision  result_cast_numeric_precision_radix  result_cast_numeric_scale  result_cast_datetime_precision  result_cast_interval_type  result_cast_interval_precision  result_cast_type_udt_catalog  result_cast_type_udt_schema  result_cast_type_udt_name  result_cast_scope_catalog  result_cast_scope_schema  result_cast_scope_name  result_cast_maximum_cardinality  result_cast_dtd_identifier
+
+# test information_schema.parameters
+query TTBTTTB colnames
+SHOW COLUMNS FROM information_schema.parameters
+----
+column_name               data_type  is_nullable  column_default  generation_expression  indices  is_hidden
+specific_catalog          STRING     true         NULL            ·                      {}       false
+specific_schema           STRING     true         NULL            ·                      {}       false
+specific_name             STRING     true         NULL            ·                      {}       false
+ordinal_position          INT        true         NULL            ·                      {}       false
+parameter_mode            STRING     true         NULL            ·                      {}       false
+is_result                 STRING     true         NULL            ·                      {}       false
+as_locator                STRING     true         NULL            ·                      {}       false
+parameter_name            STRING     true         NULL            ·                      {}       false
+data_type                 STRING     true         NULL            ·                      {}       false
+character_maximum_length  INT        true         NULL            ·                      {}       false
+character_octet_length    INT        true         NULL            ·                      {}       false
+character_set_catalog     STRING     true         NULL            ·                      {}       false
+character_set_schema      STRING     true         NULL            ·                      {}       false
+character_set_name        STRING     true         NULL            ·                      {}       false
+collation_catalog         STRING     true         NULL            ·                      {}       false
+collation_schema          STRING     true         NULL            ·                      {}       false
+collation_name            STRING     true         NULL            ·                      {}       false
+numeric_precision         INT        true         NULL            ·                      {}       false
+numeric_precision_radix   INT        true         NULL            ·                      {}       false
+numeric_scale             INT        true         NULL            ·                      {}       false
+datetime_precision        INT        true         NULL            ·                      {}       false
+interval_type             STRING     true         NULL            ·                      {}       false
+interval_precision        INT        true         NULL            ·                      {}       false
+udt_catalog               STRING     true         NULL            ·                      {}       false
+udt_schema                STRING     true         NULL            ·                      {}       false
+udt_name                  STRING     true         NULL            ·                      {}       false
+scope_catalog             STRING     true         NULL            ·                      {}       false
+scope_schema              STRING     true         NULL            ·                      {}       false
+scope_name                STRING     true         NULL            ·                      {}       false
+maximum_cardinality       INT        true         NULL            ·                      {}       false
+dtd_identifier            STRING     true         NULL            ·                      {}       false
+parameter_default         STRING     true         NULL            ·                      {}       false
+
+query TTTITTTTTIITTTTTTIIIITITTTTTTITT colnames
+SELECT * FROM information_schema.parameters
+----
+specific_catalog  specific_schema  specific_name  ordinal_position  parameter_mode  is_result  as_locator  parameter_name  data_type  character_maximum_length  character_octet_length  character_set_catalog  character_set_schema  character_set_name  collation_catalog  collation_schema  collation_name  numeric_precision  numeric_precision_radix  numeric_scale  datetime_precision  interval_type  interval_precision  udt_catalog  udt_schema  udt_name  scope_catalog  scope_schema  scope_name  maximum_cardinality  dtd_identifier  parameter_default
+
+query TTTTTTTT colnames
+SELECT * FROM system.information_schema.column_privileges WHERE table_name = 'eventlog'
+----
+grantor  grantee  table_catalog  table_schema  table_name  column_name  privilege_type  is_grantable
+admin    admin    system         public        eventlog    timestamp    SELECT          YES
+admin    admin    system         public        eventlog    timestamp    INSERT          YES
+admin    admin    system         public        eventlog    timestamp    UPDATE          YES
+admin    root     system         public        eventlog    timestamp    SELECT          YES
+admin    root     system         public        eventlog    timestamp    INSERT          YES
+admin    root     system         public        eventlog    timestamp    UPDATE          YES
+admin    admin    system         public        eventlog    eventType    SELECT          YES
+admin    admin    system         public        eventlog    eventType    INSERT          YES
+admin    admin    system         public        eventlog    eventType    UPDATE          YES
+admin    root     system         public        eventlog    eventType    SELECT          YES
+admin    root     system         public        eventlog    eventType    INSERT          YES
+admin    root     system         public        eventlog    eventType    UPDATE          YES
+admin    admin    system         public        eventlog    targetID     SELECT          YES
+admin    admin    system         public        eventlog    targetID     INSERT          YES
+admin    admin    system         public        eventlog    targetID     UPDATE          YES
+admin    root     system         public        eventlog    targetID     SELECT          YES
+admin    root     system         public        eventlog    targetID     INSERT          YES
+admin    root     system         public        eventlog    targetID     UPDATE          YES
+admin    admin    system         public        eventlog    reportingID  SELECT          YES
+admin    admin    system         public        eventlog    reportingID  INSERT          YES
+admin    admin    system         public        eventlog    reportingID  UPDATE          YES
+admin    root     system         public        eventlog    reportingID  SELECT          YES
+admin    root     system         public        eventlog    reportingID  INSERT          YES
+admin    root     system         public        eventlog    reportingID  UPDATE          YES
+admin    admin    system         public        eventlog    info         SELECT          YES
+admin    admin    system         public        eventlog    info         INSERT          YES
+admin    admin    system         public        eventlog    info         UPDATE          YES
+admin    root     system         public        eventlog    info         SELECT          YES
+admin    root     system         public        eventlog    info         INSERT          YES
+admin    root     system         public        eventlog    info         UPDATE          YES
+admin    admin    system         public        eventlog    uniqueID     SELECT          YES
+admin    admin    system         public        eventlog    uniqueID     INSERT          YES
+admin    admin    system         public        eventlog    uniqueID     UPDATE          YES
+admin    root     system         public        eventlog    uniqueID     SELECT          YES
+admin    root     system         public        eventlog    uniqueID     INSERT          YES
+admin    root     system         public        eventlog    uniqueID     UPDATE          YES
+
+# information_schema.administrable_role_authorizations
+
+query TTT colnames,rowsort
+SELECT * FROM information_schema.administrable_role_authorizations
+----
+role_name  member  is_admin
+admin      root    YES
+
+user testuser
+
+query TTT colnames,rowsort
+SELECT * FROM information_schema.administrable_role_authorizations
+----
+role_name  member  is_admin
+admin      root    YES
+
+user root
+
+# information_schema.applicable_roles
+
+query TTT colnames,rowsort
+SELECT * FROM information_schema.applicable_roles
+----
+grantee  role_name  is_grantable
+root     admin      YES
+
+user testuser
+
+query TTT colnames,rowsort
+SELECT * FROM information_schema.applicable_roles
+----
+grantee  role_name  is_grantable
+
+user root
+
+# information_schema.enabled_roles
+
+query T colnames,rowsort
+SELECT * FROM information_schema.enabled_roles
+----
+role_name
+admin
+root
+testuser
+
+user testuser
+
+query T colnames,rowsort
+SELECT * FROM information_schema.enabled_roles
+----
+role_name
+testuser
+
+user root
+
+subtest fk_match_type
+
+statement ok
+CREATE DATABASE dfk; SET database=dfk
+
+statement ok
+CREATE TABLE v(x INT, y INT, UNIQUE (x,y))
+
+statement ok
+CREATE TABLE w(
+  a INT, b INT, c INT, d INT,
+  FOREIGN KEY (a,b) REFERENCES v(x,y) MATCH FULL,
+  FOREIGN KEY (c,d) REFERENCES v(x,y) MATCH SIMPLE
+  );
+
+query TTTT
+SELECT constraint_name, table_name, referenced_table_name, match_option
+  FROM information_schema.referential_constraints
+----
+fk_a_ref_v  w  v  FULL
+fk_c_ref_v  w  v  NONE
+
+statement ok
+SET database = test
+
+statement ok
+DROP DATABASE dfk CASCADE

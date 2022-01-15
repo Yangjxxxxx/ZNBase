@@ -1,0 +1,73 @@
+# LogicTest: local
+
+query T
+select '2020-12-25 12:00:02' AT TIME ZONE 'America/Cordoba'
+----
+2020-12-25 09:00:02
+
+query T
+select '2020-12-25' AT TIME ZONE 'America/Cordoba'
+----
+2020-12-24 21:00:00
+
+query T
+select '2020-12-25 12:00:00' AT TIME ZONE INTERVAL '-08:00:00'
+----
+2020-12-25 04:00:00
+
+query T
+select '2020-12-25' AT TIME ZONE INTERVAL '08:05:05'
+----
+2020-12-25 08:05:05
+
+query T
+select '2020-12-25 12:00:00' AT TIME ZONE INTERVAL '-25:00:00'
+----
+2020-12-24 11:00:00
+
+query T
+select '2020-12-25 12:00:00' AT TIME ZONE INTERVAL '1111'
+----
+2020-12-25 12:18:31
+
+query error pq: syntax error: AtTimeZone failed: parsing time "2020-12-25 12:00:00:00": extra text: ":00" at or near "EOF"
+select '2020-12-25 12:00:00:00' AT TIME ZONE 'America/Cordoba'
+
+query error pq: syntax error: AtTimeZone failed: parsing time "2020-13-25 12:00:00": month out of range at or near "EOF"
+select '2020-13-25 12:00:00' AT TIME ZONE 'America/Cordoba'
+
+query error pq: syntax error: AtTimeZone failed: parsing time "2020-12-34 12:00:00": day out of range at or near "EOF"
+select '2020-12-34 12:00:00' AT TIME ZONE 'America/Cordoba'
+
+query error pq: syntax error: AtTimeZone failed: parsing time "2020-12-25 25:00:00": hour out of range at or near "EOF"
+select '2020-12-25 25:00:00' AT TIME ZONE 'America/Cordoba'
+
+query error pq: syntax error: AtTimeZone failed: parsing time "2020-12-25 12:70:00": minute out of range at or near "EOF"
+select '2020-12-25 12:70:00' AT TIME ZONE 'America/Cordoba'
+
+query error pq: syntax error: AtTimeZone failed: parsing time "2020-12-25 12:00:70": second out of range at or near "EOF"
+select '2020-12-25 12:00:70' AT TIME ZONE 'America/Cordoba'
+
+query error pq: syntax error: AtTimeZone failed: parsing time "'1'" as "2006-01-02 15:04:05": cannot parse "'1'" as "2006" at or near "EOF"
+select '1' AT TIME ZONE 'America/Cordoba'
+
+query error pq: syntax error: AtTimeZone failed: parsing time "sadsdf" as "2006-01-02 15:04:05": cannot parse "sadsdf" as "2006" at or near "EOF"
+select 'sadsdf' AT TIME ZONE 'America/Cordoba'
+
+query error pq: syntax error: parseWithLocation failed: unknown time zone safh at or near "EOF"
+select '2020-12-25 12:00:00' AT TIME ZONE 'safh'
+
+query error pq: syntax error: could not parse "America/Cordoba" as type interval: interval: missing unit at position 0: "America/Cordoba" at or near "EOF"
+select '2020-12-25 12:00:00' AT TIME ZONE INTERVAL 'America/Cordoba'
+
+query error pq: syntax error: type does not exist at or near "America/Cordoba"
+select '2020-12-25 12:00:00' AT TIME ZONE INTERVfL 'America/Cordoba'
+
+query error pq: syntax error: could not parse "-08:00:00:00" as type interval: invalid input syntax for type interval -08:00:00:00 at or near "EOF"
+select '2020-12-25 12:00:00' AT TIME ZONE INTERVAL '-08:00:00:00'
+
+statement ok
+CREATE TABLE timestamps (c1 INT PRIMARY KEY, c2 TIMESTAMP, c3 TIMESTAMPTZ);
+INSERT INTO timestamps VALUES(1, '2016-03-26', '2016-03-26 10:10:10' AT TIME ZONE 'America/Chicago');
+INSERT INTO timestamps VALUES(2, '2016-03-26' AT TIME ZONE 'America/Chicago', '2016-03-26 10:10:10');
+INSERT INTO timestamps VALUES(3, now(), now() AT TIME ZONE 'America/Chicago');

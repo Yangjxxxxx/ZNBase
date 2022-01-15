@@ -1,0 +1,281 @@
+# LogicTest: local local-opt
+
+statement ok
+CREATE TABLE t (id int,name string,birth timestamp,marry bool)
+
+statement ok
+INSERT INTO t VALUES (1,'xiaoming','1999-03-08 14:14:22',true),(2,'lilei','2004-12-08 00:11:22',true),
+(3,'wanghua','1988-04-08 18:01:33.225455',true),(4,'bingdao','2000-03-08 14:14:22',false)
+
+statement ok
+DECLARE cur1 CURSOR FOR SELECT * FROM t
+
+statement ok
+OPEN cur1
+
+statement error pq: Cannot open a cursor that is already open!
+OPEN cur1
+
+
+# FETCH CURSOR
+
+query ITTB
+FETCH ALL IN cur1
+----
+1  xiaoming  1999-03-08 14:14:22 +0000 +0000         true
+2  lilei     2004-12-08 00:11:22 +0000 +0000         true
+3  wanghua   1988-04-08 18:01:33.225455 +0000 +0000  true
+4  bingdao   2000-03-08 14:14:22 +0000 +0000         false
+
+#FETCH again
+query ITTB
+FETCH NEXT IN cur1
+----
+
+query ITTB
+FETCH BACKWARD ALL IN cur1
+----
+4  bingdao   2000-03-08 14:14:22 +0000 +0000         false
+3  wanghua   1988-04-08 18:01:33.225455 +0000 +0000  true
+2  lilei     2004-12-08 00:11:22 +0000 +0000         true
+1  xiaoming  1999-03-08 14:14:22 +0000 +0000         true
+
+query ITTB
+FETCH RELATIVE 1 IN cur1
+----
+1  xiaoming  1999-03-08 14:14:22 +0000 +0000         true
+
+query ITTB
+FETCH ABSOLUTE 4 IN cur1
+----
+4  bingdao   2000-03-08 14:14:22 +0000 +0000         false
+
+statement ok
+CLOSE cur1
+
+
+# Test param cursor
+
+statement ok
+DECLARE curvar CURSOR(x int,t timestamp) FOR SELECT * FROM t WHERE id>x AND birth>t
+
+statement ok
+OPEN curvar(x=2,t='1999-01-01 19:20:20')
+
+query ITTB
+FETCH ALL IN curvar
+----
+4  bingdao  2000-03-08 14:14:22 +0000 +0000  false
+
+statement ok
+CLOSE curvar
+
+statement ok
+CREATE TABLE test (id INT, number FLOAT, name STRING, birth TIMESTAMP, entry DATE, clock TIME,
+                    marry BOOL, ip INET, uuid UUID, j JSONB, xlist INT[], slist STRING[],
+                    PRIMARY KEY (id,number,name,birth,entry,clock,marry,ip,uuid) )
+
+statement ok
+INSERT INTO test VALUES (1,1.243,'xiaoming','1996-04-09 18:55:00.123456','2019-12-12','12:15:16',TRUE,'2001:4f8:3:ba:2e0:81ff:fe22:d1f1','{acde070d-8c4c-4f0d-9d8a-162843c10333}','{"type": "account creation", "username": "xiaoming"}',ARRAY[1,5,66],ARRAY['HALOU','xixi']),
+                        (2,12.883,'zhangsan','1999-04-09 18:55:00.123456','2018-04-14','02:15:16',FALSE,'190.0.0.0/24','{bbbb070d-8c4c-4f0d-9d8a-162843c10333}','{"type": "account creation", "username": "zhangsan"}',ARRAY[2,4,5,-11],ARRAY['sdf','jianjia']),
+                        (3,99.47,'wangwu','1899-12-26 18:55:00.116','2015-02-14','13:55:56',TRUE,'192.168.1.4','{bbbb070d-8c4c-4f0d-9d8a-162843c44782}','{"type": "laoyuangong", "username": "wangwu"}',ARRAY[100],ARRAY['hexin'])
+
+query IRTTTTBTTTTT
+SELECT * FROM test
+----
+1  1.243   xiaoming  1996-04-09 18:55:00.123456 +0000 +0000  2019-12-12 00:00:00 +0000 +0000  0000-01-01 12:15:16 +0000 UTC  true   2001:4f8:3:ba:2e0:81ff:fe22:d1f1  acde070d-8c4c-4f0d-9d8a-162843c10333  {"type": "account creation", "username": "xiaoming"}  {1,5,66}     {HALOU,xixi}
+2  12.883  zhangsan  1999-04-09 18:55:00.123456 +0000 +0000  2018-04-14 00:00:00 +0000 +0000  0000-01-01 02:15:16 +0000 UTC  false  190.0.0.0/24                      bbbb070d-8c4c-4f0d-9d8a-162843c10333  {"type": "account creation", "username": "zhangsan"}  {2,4,5,-11}  {sdf,jianjia}
+3  99.47   wangwu    1899-12-26 18:55:00.116 +0000 +0000     2015-02-14 00:00:00 +0000 +0000  0000-01-01 13:55:56 +0000 UTC  true   192.168.1.4                       bbbb070d-8c4c-4f0d-9d8a-162843c44782  {"type": "laoyuangong", "username": "wangwu"}         {100}        {hexin}
+
+# VARIABLE TEST
+
+statement ok
+DECLARE cur CURSOR FOR SELECT id,birth,uuid,j FROM test
+
+
+statement error Cannot move a cursor that has not been opened!
+MOVE FORWARD 2 IN cur
+
+statement ok
+OPEN cur
+
+statement ok
+MOVE FORWARD 2 IN cur
+
+statement ok
+DECLARE x INT
+
+statement ok
+DECLARE y TIMESTAMP
+
+statement ok
+DECLARE u UUID
+
+statement ok
+DECLARE jsb JSONB
+
+statement ok
+FETCH RELATIVE 0 IN cur INTO x,y,u,jsb
+
+query I
+FETCH VARIABLE x
+----
+2
+
+query T
+FETCH VARIABLE y
+----
+1999-04-09 18:55:00.123456 +0000 +0000
+
+query T
+FETCH VARIABLE u
+----
+bbbb070d-8c4c-4f0d-9d8a-162843c10333
+
+query T
+FETCH VARIABLE jsb
+----
+{"type": "account creation", "username": "zhangsan"}
+
+statement ok
+CLOSE cur
+
+# Test UPDATE/DELETE WHERE CURRENT OF CURSOR
+
+statement ok
+set optimizer = off
+
+statement ok
+DECLARE cur CURSOR FOR SELECT * FROM test
+
+statement ok
+OPEN cur
+
+query IRTTTTBTTTTT
+FETCH ABSOLUTE 2 IN cur
+----
+2  12.883  zhangsan  1999-04-09 18:55:00.123456 +0000 +0000  2018-04-14 00:00:00 +0000 +0000  0000-01-01 02:15:16 +0000 UTC  false  190.0.0.0/24  bbbb070d-8c4c-4f0d-9d8a-162843c10333  {"type": "account creation", "username": "zhangsan"}  {2,4,5,-11}  {sdf,jianjia}
+
+statement ok
+MOVE NEXT IN cur
+
+statement ok
+UPDATE test SET name='change' WHERE CURRENT OF cur
+
+query T
+SELECT name FROM test where id=3
+----
+change
+
+query IRTTTTBTTTTT
+FETCH PRIOR FROM cur
+----
+2  12.883  zhangsan  1999-04-09 18:55:00.123456 +0000 +0000  2018-04-14 00:00:00 +0000 +0000  0000-01-01 02:15:16 +0000 UTC  false  190.0.0.0/24  bbbb070d-8c4c-4f0d-9d8a-162843c10333  {"type": "account creation", "username": "zhangsan"}  {2,4,5,-11}  {sdf,jianjia}
+
+statement ok
+DELETE FROM test WHERE CURRENT OF cur
+
+query IT
+SELECT id,name FROM test
+----
+1  xiaoming
+3  change
+
+# CLOSE CURSOR
+
+statement ok
+CLOSE cur
+
+# Test multiple tables
+
+statement ok
+CREATE TABLE tt1 (id int, name string, age int)
+
+statement ok
+CREATE TABLE tt2 (id int, name string, age int)
+
+statement ok
+INSERT INTO tt1 VALUES(1,'a!',1),(2,'b@',2),(3,'c#',3),(4,'d$',4), (5,'e%',5),(6,'f^',6),(7,'g&',7),(8,'h*',8),(9,'i(',9), (10,'j)',10)
+
+statement ok
+INSERT INTO tt2 VALUES(1,'a!',11),(2,'b@',12),(3,'c#',13),(4,'d$',14), (5,'e%',15)
+
+statement ok
+DECLARE cur1 CURSOR(x int,y string) FOR SELECT * FROM tt1 t1 JOIN tt2 t2 ON t1.id=t2.id WHERE t1.age>x AND t2.name=y;
+
+statement ok
+OPEN cur1(x=2,y='e%')
+
+query ITIITI
+FETCH FORWARD ALL IN cur1;
+----
+5  e%  5  5  e%  15
+
+statement ok
+CLOSE cur1
+
+statement ok
+DROP TABLE tt1
+
+statement ok
+DROP TABLE tt2
+
+# Test multiple tables END
+
+# rowid测试
+#----准备操作----#
+
+statement ok
+CREATE TABLE t_rowid_pk (rowid INT PRIMARY KEY, name STRING);
+
+statement ok
+INSERT INTO t_rowid_pk VALUES (1,'aaa'),(2,'bbb'),(3,'ccc');
+
+statement ok
+CREATE TABLE t_rowid (rowid INT, name STRING );
+
+statement ok
+INSERT INTO t_rowid VALUES (1,'aaa'),(2,'bbb'),(3,'ccc');
+
+#----创建、打开游标----#
+statement ok
+DECLARE cur_pk CURSOR FOR SELECT *,name FROM t_rowid_pk;
+
+statement ok
+DECLARE cur    CURSOR FOR SELECT *,name FROM t_rowid;
+
+statement ok
+OPEN cur_pk;
+
+statement ok
+OPEN cur;
+
+#----验证数值----#
+query ITT
+FETCH FORWARD ALL IN cur_pk;
+----
+1  aaa  aaa
+2  bbb  bbb
+3  ccc  ccc
+
+query ITT
+FETCH FORWARD ALL IN cur;
+----
+1  aaa  aaa
+2  bbb  bbb
+3  ccc  ccc
+
+#----删除游标和表----#
+statement ok
+DROP TABLE t_rowid_pk;
+
+statement ok
+DROP TABLE t_rowid;
+
+statement ok
+CLOSE cur_pk;
+
+statement ok
+CLOSE cur;
+
+# rowid测试 END

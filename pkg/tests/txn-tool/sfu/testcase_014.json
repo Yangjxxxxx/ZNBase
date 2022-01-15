@@ -1,0 +1,83 @@
+{
+    "初始化": [
+        {
+            "cmd": "DROP TABLE IF EXISTS t",
+            "type": "execute"
+        },
+        {
+            "cmd": "CREATE TABLE t(a INT, b INT, c INT, primary key(a, b));",
+            "type": "execute"
+        },
+        {
+            "cmd": "INSERT INTO t VALUES(1, 1, 1), (2, 2, 2),(3, 3, 3);",
+            "type": "execute"
+        }
+    ],
+    "执行": [
+        {
+            "cmd": "BEGIN;",
+            "conn": "conn1",
+            "type": "execute",
+            "result": {
+                "regular": "BEG.*"
+            }
+        },
+        {
+            "cmd": "SAVEPOINT s1;",
+            "conn": "conn1",
+            "type": "execute"
+        },
+        {
+            "cmd": "SELECT * FROM t for update;",
+            "conn": "conn1",
+            "type": "query",
+            "result": {
+                "header": [
+                    "a",
+                    "b",
+                    "c"
+                ],
+                "body": [
+                    [
+                        1,
+                        1,
+                        1
+                    ],
+                    [
+                        2,
+                        2,
+                        2
+                    ],
+                    [
+                        3,
+                        3,
+                        3
+                    ]
+                ]
+            }
+        },
+        {
+            "cmd": "SELECT * FROM t for update nowait;",
+            "conn": "conn2",
+            "type": "query",
+            "block": false,
+            "error": "could not obtain lock on row \\(a,b\\)=\\(1,1\\) in t@primary"
+        },
+        {
+            "cmd": "ROLLBACK TO SAVEPOINT s1;",
+            "conn": "conn1",
+            "type": "execute"
+        },
+        {
+            "cmd": "SELECT * FROM t for update nowait;",
+            "conn": "conn2",
+            "type": "query",
+            "block": false,
+            "error": "could not obtain lock on row \\(a,b\\)=\\(1,1\\) in t@primary"
+        },
+        {
+            "cmd": "COMMIT;",
+            "conn": "conn1"
+        }
+    ]
+}

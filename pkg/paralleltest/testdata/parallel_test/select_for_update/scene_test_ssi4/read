@@ -1,0 +1,14 @@
+statement ok
+SET statement_timeout = 1000;
+SELECT pg_sleep(0.8);
+
+statement ok
+BEGIN;
+
+statement error query execution canceled due to statement timeout
+SELECT * FROM t WHERE key = 0;
+
+
+statement ok
+COMMIT;
+

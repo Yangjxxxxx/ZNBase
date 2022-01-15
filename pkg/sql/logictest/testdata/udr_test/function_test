@@ -1,0 +1,6061 @@
+# LogicTest: local-opt
+
+# 动态sql execute queryString into ...
+
+# use defaultdb, for test
+statement ok
+use defaultdb
+
+statement ok
+create or replace function somefunc1()
+returns varchar as
+$$
+declare
+  name varchar := 'wangzhen';
+begin
+  return name;
+End;
+$$ language plpgsql;
+
+query T
+select somefunc1();
+----
+wangzhen
+
+statement ok
+create table totalRecords(id int);
+insert into totalRecords values(1),(2),(3);
+
+statement ok
+CREATE OR REPLACE FUNCTION totalRecords()
+RETURNS integer AS $$
+declare
+    total integer;
+BEGIN
+   SELECT count(*) into total FROM totalRecords;
+   RETURN total;
+END;
+$$ LANGUAGE plpgsql;
+
+query I
+select totalRecords();
+----
+3
+
+statement ok
+drop table totalRecords;
+
+statement ok
+CREATE OR REPLACE function sumint(subtotal int) returns int AS $$
+DECLARE
+sum int;
+BEGIN
+sum:= subtotal * 2;
+RETURN  sum;
+END;
+$$ LANGUAGE plpgsql;
+
+query I
+select sumint(2);
+----
+4
+
+statement ok
+CREATE OR REPLACE FUNCTION get_sum(
+   a int,
+   b int)
+RETURNS int AS $$
+BEGIN
+   RETURN a + b;
+END;
+$$ LANGUAGE plpgsql;
+
+
+query I
+SELECT get_sum(10,20);
+----
+30
+
+statement ok
+CREATE OR REPLACE FUNCTION sum_n1_product(x int, y int) returns int
+AS $$
+DECLARE
+sum int;
+BEGIN
+sum := x * y;
+RETURN  sum;
+END;
+$$ LANGUAGE plpgsql;
+
+
+query I
+Select sum_n1_product(2, 2);
+----
+4
+
+#
+statement ok
+CREATE OR REPLACE FUNCTION sum_100_product()
+returns int AS
+$$
+DECLARE
+sum int;
+i int;
+BEGIN
+sum := 0;
+i := 0;
+loop
+i := i + 1;
+sum := sum + i;
+exit when i = 100 ;
+end loop;
+return sum;
+End;
+$$ language plpgsql;
+
+
+query I
+select sum_100_product();
+----
+5050
+
+#
+statement ok
+CREATE OR REPLACE FUNCTION HelloWorld4() RETURNS varchar AS $$
+BEGIN
+  RETURN 'Hello World!';
+END;
+$$ LANGUAGE plpgsql;
+
+
+query T
+select HelloWorld4();
+----
+Hello World!
+
+
+#
+statement ok
+CREATE FUNCTION somefunc111() RETURNS integer AS $$
+DECLARE
+ quantity integer := 30;
+BEGIN
+ quantity := 50;
+ return quantity;
+END;
+$$ LANGUAGE plpgsql;
+
+query I
+select somefunc111();
+----
+50
+
+
+#
+statement ok
+CREATE OR REPLACE FUNCTION discount_5(number int) RETURNS int AS
+$$
+BEGIN
+RETURN number * 0.8;
+END;
+$$ LANGUAGE plpgsql;
+
+query I
+select discount_5(3);
+----
+2
+
+#
+statement ok
+CREATE or replace FUNCTION less_than1(a int, b int) RETURNS boolean AS $$
+BEGIN
+    RETURN a < b;
+END;
+$$ LANGUAGE plpgsql;
+
+
+query B
+select less_than1(1,2);
+----
+true
+
+#
+statement ok
+CREATE or replace FUNCTION less_than(a text, b text) RETURNS boolean AS $$
+DECLARE
+    local_a text := a;
+    local_b text := b;
+BEGIN
+    RETURN local_a < local_b;
+END;
+$$ LANGUAGE plpgsql;
+
+query B
+select less_than('a','b');
+----
+true
+
+#
+statement ok
+create or replace function func(x int) returns varchar as $$
+declare
+msg varchar;
+BEGIN
+case x
+   WHEN 1, 2 THEN
+     msg := 'one or two';
+   ELSE
+     msg := 'other value than one or two';
+ END CASE;
+return msg;
+End;
+$$ language plpgsql;
+
+query T
+select func(1);
+----
+one or two
+
+query T
+select func(0);
+----
+other value than one or two
+
+#
+statement ok
+CREATE OR REPLACE FUNCTION LOOP_TEST_04()
+RETURNS int AS $$
+DECLARE
+n numeric := 0;
+BEGIN
+  WHILE n < 10 LOOP
+  n := n + 1;
+  CONTINUE WHEN n = 5;
+ END LOOP;
+return n;
+END;
+$$ LANGUAGE PLPGSQL;
+
+query I
+select LOOP_TEST_04();
+----
+10
+
+
+#
+statement ok
+CREATE OR REPLACE FUNCTION LOOP_TEST_05()
+RETURNS int AS $$
+DECLARE
+n numeric := 0;
+BEGIN
+WHILE n < 10 LOOP
+n := n + 1;
+EXIT WHEN n = 5;
+END LOOP;
+return n;
+END;
+$$ LANGUAGE PLPGSQL;
+
+query I
+select LOOP_TEST_05();
+----
+5
+
+#
+statement ok
+CREATE OR REPLACE FUNCTION getCompFoo1( in_col2 TEXT)
+RETURNS text AS $$
+DECLARE
+lottu text;
+BEGIN
+lottu := in_col2 || '_result';
+RETURN lottu;
+END;
+$$ LANGUAGE PLPGSQL;
+
+query T
+select getcompfoo1('wdd');
+----
+wdd_result
+
+
+#
+statement ok
+CREATE OR REPLACE FUNCTION fibonacci (n INTEGER)
+RETURNS INTEGER AS $$
+DECLARE
+  counter INTEGER := 0 ;
+  i INTEGER := 0 ;
+  j INTEGER := 1 ;
+BEGIN
+  IF (n < 1) THEN
+   RETURN 0 ;
+  END IF;
+  LOOP
+   EXIT WHEN counter = n ;
+   counter := counter + 1 ;
+   SELECT j, i + j INTO i,  j ;
+  END LOOP ;
+  RETURN i ;
+END ;
+$$ LANGUAGE plpgsql;
+
+query I
+select fibonacci(2);
+----
+1
+
+#
+statement ok
+CREATE OR REPLACE FUNCTION fibonacci1(n INTEGER)
+RETURNS INTEGER AS $$
+DECLARE
+   counter INTEGER := 0 ;
+   i INTEGER := 0 ;
+   j INTEGER := 1 ;
+BEGIN
+   IF (n < 1) THEN
+      RETURN 0 ;
+   END IF;
+   WHILE counter <= n LOOP
+      counter := counter + 1 ;
+      SELECT j, i + j INTO i, j ;
+   END LOOP ;
+   RETURN i ;
+END;
+$$ LANGUAGE plpgsql;
+
+
+query I
+select fibonacci1(2);
+----
+2
+
+#
+statement ok
+create table users (
+    id int,
+    player varchar(255) not null,
+    score real,
+    team varchar(255)
+);
+insert into users (id, player, score, team) values
+(1,'库里', 28.3, '勇士'),
+(2,'哈登', 30.2, '火箭'),
+(3,'阿杜', 25.6, '勇士'),
+(4,'阿詹', 27.8, '骑士'),
+(5,'神龟', 31.3, '雷霆'),
+(6,'白边', 19.8, '热火');
+
+
+statement ok
+create or replace function users1() returns text
+as $$
+DECLARE
+result text;
+cursor1 CURSOR for select player from users;
+BEGIN
+open cursor1;
+loop
+fetch cursor1 into result;
+RETURN result;
+end loop;
+close cursor1;
+END
+$$ LANGUAGE plpgsql;
+
+
+query T
+select users1();
+----
+库里
+
+#
+statement ok
+create or replace function users4() returns text
+as $$
+DECLARE
+result text;
+cursor1 CURSOR for select player from users where id = 2;
+BEGIN
+open cursor1;
+loop
+fetch cursor1 into result;
+RETURN result;
+end loop;
+close cursor1;
+END
+$$ LANGUAGE plpgsql;
+
+query T
+select users4();
+----
+哈登
+
+#
+statement ok
+create or replace function users20(nnn text) returns int as $$
+DECLARE
+result int;
+cursor1 CURSOR for select id from users where player = nnn;
+BEGIN
+open cursor1;
+loop
+fetch cursor1 into result;
+RETURN  result;
+end loop;
+close cursor1;
+END
+$$ LANGUAGE plpgsql;
+
+query I
+select users20('白边');
+----
+6
+
+statement ok
+drop table users;
+
+
+#
+statement ok
+create or replace function testlist(arrn int[]) returns int[] as
+$$
+begin
+  return arrn;
+end;
+$$ language plpgsql;
+
+query O
+select testlist(array[1,2,3,4,5]);
+----
+{1,2,3,4,5}
+
+#
+statement ok
+create function list11(arrt text[]) returns text as
+$$
+begin
+  return arrt;
+end
+$$ language plpgsql;
+
+query T
+select list11(array['a','b','c']::text[]);
+----
+{a,b,c}
+
+#
+statement ok
+CREATE or replace FUNCTION func10() RETURNS text
+as $$
+DECLARE
+a integer := 10;
+b integer := 20;
+msg text;
+BEGIN
+  IF a > b THEN
+ msg:= 'a is greater than b';
+  END IF;
+IF a < b THEN
+ msg:= 'a is less than b';
+  END IF;
+IF a = b THEN
+ msg:= 'a is equal to b';
+  END IF;
+return msg;
+END;
+$$ LANGUAGE plpgsql;
+
+query T
+select func10();
+----
+a is less than b
+
+#
+statement ok
+CREATE or replace FUNCTION comparefunc11(a int, b int) RETURNS text AS $$
+DECLARE
+  a integer := $1;
+  b integer := $2;
+ msg text;
+BEGIN
+  IF a > b THEN
+ msg:= 'a is greater than b';
+  END IF;
+IF a < b THEN
+ msg:= 'a is less than b';
+  END IF;
+IF a = b THEN
+ msg:= 'a is equal to b';
+  END IF;
+return msg;
+END;
+$$ LANGUAGE plpgsql;
+
+query T
+select comparefunc11(12,12);
+----
+a is equal to b
+
+#
+statement ok
+CREATE OR REPLACE  function fun_isinarea(x1 numeric,y1 numeric,x2 numeric,y2 numeric,xmin numeric,xmax numeric,ymin numeric,ymax numeric) returns BOOLEAN
+as $$
+declare bResult boolean=false;
+begin
+   if((x1>=xmin and x1<=xmax) and (y1>=ymin and y1<=ymax)) then bResult=true;
+   end if;
+   if((x2>=xmin and x2<=xmax) and (y2>=ymin and y2<=ymax)) then bResult=true;
+   end if;
+   return bResult ;
+end;
+$$ LANGUAGE plpgsql;
+
+query B
+select fun_isinarea(120,120,120,120,118.6918,118.7918,37.41341,37.42341);
+----
+false
+
+# 10. 动态sql execute queryString into ... queryString 为空串
+statement ok
+create or replace function test_prc1234554321() returns integer as $$
+declare
+    mysql text;
+    counts integer;
+begin
+    execute mysql into counts;
+    return counts;
+end
+$$ language plpgsql;
+
+statement error pq: test_prc1234554321\(\): ZNBase PLSQL ERMSG: query string argument of EXECUTE is null
+select test_prc1234554321()
+
+# 10.1 动态sql execute queryString into ...
+statement ok
+create or replace function mycount3()
+returns integer as $$
+declare
+    mysql text;
+    counts integer;
+begin
+    mysql:='select 1';
+    execute mysql into counts;
+    return counts;
+end
+$$ language plpgsql;
+
+query I
+select mycount3()
+----
+1
+
+# 11. 变量别名
+statement ok
+CREATE OR REPLACE FUNCTION gen_number(integer, integer) RETURNS integer AS
+$$
+DECLARE
+    start_int ALIAS FOR $1;
+    end_int ALIAS FOR $2;
+BEGIN
+    RETURN trunc(random() * (end_int-start_int + 1) + start_int);
+END;
+$$
+LANGUAGE plpgsql
+
+# 此函数不进行查询，因为结果是随机数，但是可以成功执行
+# query I
+# select gen_number(1, 100)
+
+statement ok
+drop function gen_number(int, int)
+
+statement ok
+create or replace function test_prc(a1 int)
+returns INT as $$
+declare
+    start_int ALIAS FOR a1 ;
+    start_int1 ALIAS FOR a1 ;
+    start_int2 ALIAS FOR a1 ;
+    start_int3 ALIAS FOR a1 ;
+    t int;
+begin
+    start_int = 10;
+    start_int1 =12;
+    start_int2 =14;
+    start_int3 =100;
+    t=start_int + start_int1 + start_int2 + start_int3 ;
+    return t;
+end
+$$ language plpgsql;
+
+query I
+select test_prc(1)
+----
+400
+
+statement ok
+drop function test_prc(int)
+
+#NEWSQL-5043
+statement ok
+CREATE OR REPLACE FUNCTION LOOP_TEST2(m INT)
+RETURNS text
+AS $$
+DECLARE
+n NUMERIC := 0;
+l INT;
+BEGIN
+LOOP
+n:=n + 1;
+l:=m*n;
+EXIT WHEN l >= 10;
+END LOOP;
+return l;
+END;
+$$ LANGUAGE PLPGSQL;
+
+query T
+SELECT LOOP_TEST2(10)
+----
+10
+
+query T
+SELECT LOOP_TEST2(1)
+----
+10
+
+query T
+SELECT LOOP_TEST2(10000)
+----
+10000
+
+#NEWSQL-5037
+statement ok
+drop table if exists mytable cascade
+
+statement ok
+create table mytable (ID int,Description varchar)
+
+statement ok
+CREATE OR REPLACE function test_index() returns text AS $$
+declare
+res text;
+begin
+ drop index if exists idx2;
+   CREATE index idx1 on mytable(id);
+   alter index idx1 rename to idx2;
+    return res;
+END
+$$ LANGUAGE plpgsql;
+
+statement ok
+SELECT test_index()
+
+#NEWSQL-5046
+statement ok
+drop function if exists in_type1(p1 INT)
+
+statement ok
+CREATE OR REPLACE FUNCTION in_type1(p1 INT) RETURNS int AS $$ DECLARE a ALIAS FOR $1; BEGIN RETURN a; END; $$ LANGUAGE plpgsql;
+
+statement ok
+select in_type1(-9223372036854775808)
+
+statement ok
+drop function if exists in_type1(p1 INT)
+
+statement error pq: No function/procedure matches the given name and argument types.
+select in_type1(-9223372036854775808)
+
+#NEWSQL-5047
+statement ok
+create function string_to_json(varchar) returns json as $$
+BEGIN
+    return $1::json;
+END;
+$$
+LANGUAGE 'plpgsql';
+
+query T
+select string_to_json('11111111111');
+----
+11111111111
+
+# 12. 动态sql调用未声明变量
+statement ok
+create or replace function test_prc1234554321() returns integer as $$
+declare
+    mysql text;
+    counts integer;
+begin
+    execute mysql into counts;
+    return counts;
+end
+$$ language plpgsql;
+
+statement error pq: test_prc1234554321\(\): ZNBase PLSQL ERMSG: query string argument of EXECUTE is null
+select test_prc1234554321()
+
+#NEWSQL-4942
+statement ok
+CREATE OR REPLACE FUNCTION in_type6(p6 INT4) RETURNS INT4 AS $$ DECLARE a ALIAS FOR $1; BEGIN RETURN a; END; $$ LANGUAGE plpgsql;
+
+statement error pq: value is out of range for type int4
+select in_type6(-21474836480::INT4)
+
+statement error pq: value is out of range for type int4
+select in_type6(+21474836470::INT4)
+
+#NEWSQL-5039
+statement ok
+CREATE OR REPLACE FUNCTION LOOP_TEST1()
+RETURNS text
+AS $$
+DECLARE
+a int;
+b int;
+c int;
+BEGIN
+     a='1';
+    b='2';
+    c='3' ;
+    return a,b,c;
+    END;
+$$ LANGUAGE PLPGSQL;
+
+statement error pq: loop_test1\(\): ZNBase PLSQL ERMSG: query "SELECT a,b,c" returned 3 columns
+select LOOP_TEST1()
+
+#NEWSQL-4938
+statement ok
+CREATE OR REPLACE FUNCTION in_type2(p2 SMALLINT) RETURNS SMALLINT AS $$ DECLARE a ALIAS FOR $1; BEGIN RETURN a; END; $$ LANGUAGE plpgsql;
+
+query I
+select in_type2(-32767::SMALLINT)
+----
+-32767
+
+query I
+select in_type2(0::SMALLINT)
+----
+0
+
+query I
+select in_type2(2::SMALLINT)
+----
+2
+
+query I
+select in_type2(+32767::SMALLINT)
+----
+32767
+
+statement error pq: value is out of range for type int2
+select in_type2(-3276890::SMALLINT)
+
+statement error pq: value is out of range for type int2
+select in_type2(+3276700::SMALLINT)
+
+# 13. 之前因为$占位符没有做类型转换导致的宕机问题用例  5385
+statement ok
+CREATE OR REPLACE FUNCTION fun_two1 (IN x int, IN y int) RETURNS int AS
+$$
+DECLARE re int;
+BEGIN
+    re= $1 - $2*2;
+    return re;
+END
+$$ LANGUAGE PLPGSQL;
+
+query I
+select fun_two1(7, 2)
+----
+3
+
+#NEWSQL-5390
+statement ok
+CREATE OR REPLACE FUNCTION for_test(n int)
+RETURNS text
+AS $$
+DECLARE
+tmp INT;
+a INT=1;
+b INT=1;
+BEGIN
+      FOR num in 1..n LOOP
+     tmp=a;
+     a=a+b;
+     b=tmp;
+     END LOOP;
+return a;
+END;
+$$ language plpgsql;
+
+statement error pq: for_test\(\): ZNBase PLSQL ERMSG: ERROR: "22003:integer out of range"
+SELECT for_test(150);
+
+#NEWSQL-5564
+statement ok
+drop function if exists string_to_json(varchar)
+
+statement ok
+create function string_to_json(varchar) returns json as $$
+BEGIN
+    return $1::json;
+END;
+$$
+LANGUAGE 'plpgsql';
+
+statement error pq: string_to_json\(\): ZNBase PLSQL ERMSG: XXOOO:could not parse JSON: error decoding JSON: invalid character 'a' looking for beginning of value
+select string_to_json('ad')
+
+# 14. memo cacheed, 但是实际类型不同导致的panic jira-5594
+# first
+statement ok
+drop PROCEDURE if exists proc_in_type13(INOUT p FLOAT8)
+
+statement ok
+CREATE OR REPLACE PROCEDURE proc_in_type13(INOUT p FLOAT8) AS $$
+DECLARE
+    a ALIAS FOR $1;
+BEGIN
+    select * from (select a) c into p;
+END
+$$ LANGUAGE plpgsql
+
+query R
+CALL proc_in_type13(-3.40E38)
+----
+-3.4e+38
+
+# second
+statement ok
+drop PROCEDURE if exists proc_in_type17(BOOL);
+
+statement ok
+CREATE OR REPLACE PROCEDURE proc_in_type17(INOUT p BOOL) AS $$
+DECLARE
+    a ALIAS FOR $1;
+BEGIN
+    select * from (select a) c into p;
+END
+$$ LANGUAGE plpgsql;
+
+query B
+CALL proc_in_type17('0')
+----
+false
+
+# jira 5604, cursor with parameters
+statement ok
+drop table if exists test
+
+statement ok
+create table test(id int)
+
+statement ok
+insert into test values (1), (3), (5), (7), (9), (10);
+
+statement ok
+DROP function IF EXISTS fun_cur();
+
+statement ok
+create or replace function fun_cur()
+RETURNS INT as $$
+DECLARE
+    result INT ;
+    result1 INT ;
+    cursor1 CURSOR (id1 INT) for select id from test WHERE id<=id1;
+BEGIN
+    open cursor1(id1=10);
+    loop
+        fetch cursor1 into result;
+        exit when NOT FOUND;
+        result1=result;
+    end loop;
+    close cursor1;
+    return result1;
+END
+$$ LANGUAGE plpgsql;
+
+query I
+select fun_cur()
+----
+10
+
+# 数据清理
+statement ok
+drop table if exists test
+
+# jira 5620
+# open 已经关闭的游标
+statement ok
+CREATE TABLE test(id INT);
+
+statement ok
+insert into test values(1);
+
+statement ok
+DROP function IF EXISTS fun_cur()
+
+statement ok
+create or replace function fun_cur() RETURNS INT as $$
+DECLARE
+    result INT ;
+    res INT;
+    cursor1 CURSOR for select id from test ;
+BEGIN
+    open cursor1;
+    close cursor1;
+    open cursor1;
+    loop
+        fetch cursor1 into result;
+        exit when not found;
+        res = result;
+    end loop;
+    return res;
+END
+$$ LANGUAGE plpgsql
+
+query error pq: fun_cur\(\): ZNBase PLSQL ERMSG: XXOOO:"cursor1" has not been declared!
+SELECT fun_cur();
+
+# jira-5616 fetch into 缺少隐式类型转换 (已添加)
+statement ok
+DROP table IF EXISTS test1;
+
+statement ok
+CREATE table test1(id int);
+
+statement ok
+INSERT INTO test1 VALUES (10), (20), (33), (123);
+
+statement ok
+DROP function IF EXISTS fun_cur(int, string, bool);
+
+statement ok
+create or replace function fun_cur(id1 int,eng1 TEXT,che1 BOOL)
+RETURNS text as $$
+DECLARE
+    result1 TEXT ;
+    res TEXT ;
+    cursor1 CURSOR for select id from test1 ;
+DECLARE
+BEGIN
+    open cursor1;
+    loop
+        fetch cursor1 into result1;
+        exit when not found;
+        res = result1 ;
+    end loop;
+    close cursor1;
+    return res;
+END
+$$ LANGUAGE plpgsql;
+
+query T
+SELECT fun_cur(11,'ccc',FALSE)
+----
+123
+
+# jira-4885 匿名参数的识别
+statement ok
+drop function if exists add_two(int)
+
+statement ok
+create or replace function add_two(int)
+returns int as $$
+declare
+    a int;
+begin
+    select $1 into a;
+    return a;
+end
+$$ LANGUAGE plpgsql;
+
+query I
+select add_two(2)
+----
+2
+
+statement ok
+drop function add_two(int)
+
+# jira-5640 单个out参数导致的宕机
+statement ok
+drop function if exists dup1(int)
+
+statement ok
+CREATE FUNCTION dup1(in f1 int, out f2 int)AS
+$$
+begin
+    f2=f1;
+end
+$$ LANGUAGE PLPGSQL;
+
+# 概率panic，待修复
+query I
+select dup1(42)
+----
+42
+
+statement ok
+drop function dup1(int)
+
+# jira-5648 INOUT 参数导致的计算异常  （处理inout参数的顺序导致的问题）
+statement ok
+CREATE OR REPLACE function func_10 (OUT x int,IN y int,OUT z int )AS
+$$
+BEGIN
+    x=y;
+    z=y;
+END
+$$ LANGUAGE PLPGSQL;
+
+# 概率panic，待修复
+query T
+select func_10(2)
+----
+(2,2)
+
+statement ok
+drop function func_10(int)
+
+# jira-5629 fix when use placeholder in cursor select statement cause server die
+statement ok
+DROP TABLE IF EXISTS test;
+
+statement ok
+CREATE TABLE test(id INT PRIMARY KEY , eng TEXT unique ,che BOOL NOT NULL );
+
+statement ok
+INSERT INTO test VALUES (1,'aaa',TRUE),(2,'bbb',FALSE),(3,'ccc',TRUE),
+(4,'ddd',FALSE),(5,'eee',TRUE),(6,'fff',FALSE),
+(7,'ggg',TRUE),(8,'hhh',FALSE),(9,'iii',TRUE),
+(10,'jjj',FALSE),(11,'kkk',TRUE),(12,'lll',FALSE),
+(13,'mmm',TRUE),(14,'nnn',FALSE),(15,'ooo',TRUE),
+(16,'ppp',FALSE),(17,'qqq',TRUE),(18,'rrr',FALSE),
+(19,'sss',TRUE),(20,'ttt',FALSE),(21,'uuu',TRUE),
+(22,'vvv',FALSE),(23,'www',TRUE),(24,'xxx',FALSE),
+(25,'yyy',TRUE),(26,'zzz',FALSE);
+
+statement ok
+drop function if exists fun_cur(int, text, bool)
+
+statement ok
+create or replace function fun_cur(int,TEXT,BOOL)
+RETURNS text as $$
+DECLARE
+    result1 INT ;
+    result2 TEXT;
+    result3 BOOL;
+    res TEXT ;
+    cursor1 CURSOR for select * from test where id<=$1 AND eng>=$2 AND che=$3 ;
+DECLARE
+BEGIN
+    open cursor1;
+    loop
+        fetch cursor1 into result1,result2,result3;
+        exit when not found;
+        res = result1||result2||result3 ;
+    end loop;
+    close cursor1;
+    return res;
+END
+$$ LANGUAGE plpgsql;
+
+query T
+select fun_cur(11, 'b', false)
+----
+10jjjfalse
+
+# jira-5630 游标中query中有参数别名时无法解析
+statement ok
+drop function fun_cur(int, text, bool)
+
+statement ok
+create or replace function fun_cur(int,TEXT,BOOL)
+RETURNS text as $$
+DECLARE
+    result1 INT ;
+    result2 TEXT;
+    result3 BOOL;
+    res TEXT ;
+    start_int1 ALIAS FOR $1 ;
+    start_int2 ALIAS FOR $2 ;
+    start_int3 ALIAS FOR $3 ;
+    cursor1 CURSOR for select * from test where id<=start_int1 AND eng>=start_int2 AND che=start_int3 ;
+DECLARE
+BEGIN
+    open cursor1;
+    loop
+        fetch cursor1 into result1,result2,result3;
+        exit when not found;
+        res = result1||result2||result3 ;
+    end loop;
+    close cursor1;
+    return res;
+END
+$$ LANGUAGE plpgsql;
+
+query T
+select fun_cur(11, 'b', false)
+----
+10jjjfalse
+
+statement ok
+drop function fun_cur(int, text, bool)
+
+# jira-5587 empty arg name create or replace a new name not cause error
+statement ok
+drop function if exists changename22(a integer);
+
+statement ok
+CREATE OR REPLACE FUNCTION changename22(int) RETURNS int AS $$
+DECLARE
+    a ALIAS FOR $1;
+BEGIN
+    RETURN a;
+END
+$$ LANGUAGE plpgsql;
+
+query I
+select changename22(1)
+----
+1
+
+statement ok
+CREATE OR REPLACE FUNCTION changename22(b int) RETURNS int AS $$
+DECLARE
+    a ALIAS FOR $1;
+BEGIN
+    RETURN a::int+1;
+END
+$$ LANGUAGE plpgsql;
+
+query I
+select changename22(1)
+----
+2
+
+# jira-4883 调用没有缺少return且没有out参数的function时不报错
+statement ok
+create table city (
+  cityId int,
+  cityName varchar(20)
+ );
+
+statement ok
+insert into city values(1,'BeiJing'),(2,'NewYork'),(3,'Hong kong'),(4,'ShaingHai');
+
+statement ok
+create or replace function getCity() returns string as
+$$
+declare
+    ci int;
+begin
+    select cityId into ci from city ;
+end;
+$$ language plpgsql;
+
+query error pq: getcity\(\): ZNBase PLSQL ERMSG: control reached end of function without RETURN
+select getCity()
+
+statement ok
+drop function getCity()
+
+statement ok
+drop table city
+
+# jira-5009 return void 类型报错问题
+statement ok
+drop function if exists in_type49(p49 BIT );
+
+statement ok
+create table t(a int)
+
+statement ok
+CREATE OR REPLACE FUNCTION in_type49(int) RETURNS void AS $$
+BEGIN
+    insert into t values(1);
+END
+$$ LANGUAGE plpgsql;
+
+statement ok
+select in_type49(1)
+
+query I
+select * from t
+----
+1
+
+# 默认值相关问题
+# 默认值1 jira-5012
+statement ok
+CREATE TABLE employee (empno NUMERIC PRIMARY KEY,sal NUMERIC);
+
+statement ok
+INSERT INTO employee values(1,1500),(2,2000),(3,1000),(4,500),(5,2500);
+
+statement ok
+CREATE OR REPLACE FUNCTION if_test(a NUMERIC)
+RETURNS string
+AS $$
+DECLARE
+    sal1 numeric;
+BEGIN
+    select sal into sal1 from employee where sal = a;
+    IF sal1 is null THEN
+        return '该员工不存在';
+    ELSIF sal1 < 1500 THEN
+        return '加工资';
+    ELSE
+        return '不加工资';
+    END IF;
+END;
+$$ LANGUAGE PLPGSQL;
+
+
+query T
+SELECT if_test(3000)
+----
+该员工不存在
+
+query T
+SELECT if_test(2000)
+----
+不加工资
+
+query T
+SELECT if_test(1000)
+----
+加工资
+
+# 清理数据
+statement ok
+drop table employee
+
+statement ok
+drop function if_test(numeric)
+
+# 默认值2 jira-5802
+statement ok
+DROP function IF EXISTS fun_cur();
+
+statement ok
+create or replace function fun_cur()
+RETURNS UUID as $$
+DECLARE
+    result UUID;
+DECLARE
+BEGIN
+    return result;
+END
+$$ LANGUAGE plpgsql;
+
+query T
+select fun_cur()
+----
+NULL
+
+# 清理数据
+statement ok
+drop function fun_cur()
+
+# 默认值3 jira-5804
+statement ok
+DROP function IF EXISTS fun_cur();
+
+statement ok
+create or replace function fun_cur() RETURNS INT ARRAY as $$
+DECLARE
+    result INT [] ;
+DECLARE
+BEGIN
+    return result;
+END
+$$ LANGUAGE plpgsql;
+
+query T
+SELECT fun_cur()
+----
+NULL
+
+# 清理数据
+statement ok
+drop function fun_cur()
+
+# 默认值4 jira-5805
+statement ok
+DROP function IF EXISTS fun_cur();
+
+statement ok
+create or replace function fun_cur() RETURNS bool as $$
+DECLARE
+    result bool ;
+DECLARE
+BEGIN
+    return result;
+END
+$$ LANGUAGE plpgsql;
+
+query T
+SELECT fun_cur()
+----
+NULL
+
+#清理数据
+statement ok
+drop function fun_cur()
+
+# 默认值5 jira-5806
+statement ok
+DROP function IF EXISTS fun_cur();
+
+statement ok
+create or replace function fun_cur() RETURNS decimal as $$
+DECLARE
+    result decimal;
+DECLARE
+BEGIN
+    return result;
+END
+$$ LANGUAGE plpgsql;
+
+query T
+SELECT fun_cur()
+----
+NULL
+
+#清理数据
+statement ok
+drop function fun_cur()
+
+########### 默认值结束
+# jira-5897 bit 类型错误
+statement ok
+drop function IF EXISTS test_prc();
+
+statement ok
+create or replace function test_prc()
+returns BIT as $$
+declare
+    BIT BIT ;
+begin
+    BIT= -1.9;
+    return BIT;
+end;
+$$ language plpgsql;
+
+query T
+select test_prc();
+----
+0
+
+statement ok
+create or replace function test_prc2()
+returns BIT as $$
+declare
+    BIT BIT ;
+begin
+    BIT= 2.9;
+    return BIT;
+end;
+$$ language plpgsql;
+
+query T
+select test_prc2();
+----
+1
+
+statement ok
+drop function test_prc()
+
+statement ok
+drop function test_prc2()
+
+statement ok
+CREATE OR REPLACE FUNCTION add_two1 (IN x int, IN y int) RETURNS int AS
+$$
+DECLARE re int;
+BEGIN
+    re=x-y*2;
+return re;
+END
+$$ LANGUAGE PLPGSQL;
+
+query I
+select add_two1(6,4)
+----
+-2
+
+statement ok
+CREATE TABLE dat1 (
+      id INT,
+      a INT,
+      b INT
+);
+insert into dat1 (id, a, b) values
+(3, 7, 2),
+(4, 8, 2),
+(6, 12, 13),
+(2, 8, 3),
+(1, 7, 3);
+
+query I
+select add_two1(a,b) from dat1 where id=1;
+----
+1
+
+query I
+select add_two1(a,b) from dat1 where id=2;
+----
+2
+
+query I
+select add_two1(a,b) + add_two1(a,b) from dat1 where id=1;
+----
+2
+
+statement ok
+drop function add_two1(int, int)
+
+statement ok
+create or replace procedure GETEXCEPTION(v_phone text) as $$
+begin
+if v_phone = 'iphone' then raise exception 'iphone wrong！';
+elsif v_phone = 'samsung' then raise exception 'samsung wrong';
+else return;
+end if;
+exception
+when others then
+raise exception '(%)',sqlerrm;
+end $$ language PLPGSQL;
+
+statement ok
+drop function if exists test_prc();
+
+statement ok
+create or replace function test_prc() returns char(2) as $$
+declare counts char(2) ;
+begin counts ='abc';
+return counts ;
+end; $$ language plpgsql;
+
+query T
+select test_prc();
+----
+ab
+
+statement ok
+drop function if exists test_prc();
+
+statement ok
+create or replace function test_prc() returns char(2) as $$
+declare counts varchar(2) ;
+begin counts ='abc';
+return counts ; end; $$ language plpgsql;
+
+query T
+select test_prc();
+----
+ab
+
+statement ok
+drop function IF EXISTS test_prc();
+
+statement ok
+create or replace function test_prc()
+returns decimal(6,2) as $$
+declare
+ t1 decimal(6,2) DEFAULT 1234.56 ;
+begin
+ t1 = 1.257999;
+ return t1 ;
+end;
+$$ language plpgsql;
+
+query T
+select test_prc();
+----
+1.26
+
+statement ok
+drop function IF EXISTS test_prc();
+
+statement ok
+create or replace function test_prc()
+returns decimal as $$
+declare
+ t1 decimal(6,2) DEFAULT 1234.56 ;
+begin
+ t1 = 1.257999;
+ return t1 ;
+end;
+$$ language plpgsql;
+
+query T
+select test_prc();
+----
+1.26
+
+statement ok
+drop function IF EXISTS test_prc();
+
+statement ok
+create or replace function test_prc()
+returns record as $$
+declare
+t1 INT ;
+t2 INT ;
+begin
+t1 = 1;
+t2 = 2;
+return t1,t2;
+end;
+$$ language plpgsql;
+
+query error pq: test_prc\(\): ZNBase PLSQL ERMSG: query "SELECT t1,t2" returned 2 columns
+select test_prc();
+
+statement ok
+drop function IF EXISTS test_prc();
+
+statement ok
+create or replace function test_prc()
+returns INT as $$
+declare
+t1 INT ;
+t2 INT ;
+begin
+t1 = 1;
+t2 = 2;
+return t1,t2;
+end;
+$$ language plpgsql;
+
+query error pq: test_prc\(\): ZNBase PLSQL ERMSG: query "SELECT t1,t2" returned 2 columns
+select test_prc();
+
+
+# jira-6113 serial type report error
+statement ok
+CREATE DATABASE db_cur;
+
+statement ok
+CREATE SCHEMA db_cur.sc_cur;
+
+statement ok
+CREATE TABLE db_cur.sc_cur.type_cur
+(p1 INT,
+p2 SMALLINT,
+p3 BIGINT,
+p4 INTEGER,
+p5 INT2,
+p6 INT4,
+p7 INT8,
+p8 INT64,
+p9 SERIAL,
+p10 SMALLSERIAL,
+p11 BIGSERIAL,
+p12 SERIAL2,
+p13 SERIAL4,
+p14 SERIAL8,
+p15 FLOAT,
+p16 REAL,
+p17 DOUBLE PRECISION,
+p18 FLOAT4,
+p19 FLOAT8,
+p20 DECIMAL,
+p21 DEC,
+p22 NUMERIC,
+p23 BOOL,
+p24 BOOLEAN,
+p25 BIT,
+p26 BIT(3),
+p27 VARBIT,
+p28 VARBIT(3),
+p29 BYTES,
+p30 BLOB,
+p31 BYTEA,
+p32 STRING,
+p33 CHARACTER,
+p34 CHAR,
+p35 VARCHAR,
+p36 TEXT,
+p37 STRING(5),
+p38 CHARACTER(5),
+p39 CHARACTER VARYING(5),
+p40 CHAR(5),
+p41 CHAR VARYING(5),
+p42 VARCHAR(5),
+p43 STRING COLLATE en,
+ p44 TEXT COLLATE en,
+p45 DATE,p46 TIME,
+p47 TIMESTAMP,
+p48 TIMESTAMPTZ,
+p49 TIMESTAMP WITHOUT TIME ZONE,
+p50 TIMESTAMP WITH TIME ZONE,
+p51 INTERVAL,
+p52 INET,
+p53 UUID,
+p54 JSONB,
+p55 JSON,
+p56 INT ARRAY,
+p57 FLOAT[],
+p58 STRING ARRAY);
+
+statement ok
+INSERT INTO db_cur.sc_cur.type_cur
+(p1,p2,p3,p4,p5,p6,p7,p8,p9,p10,p11,
+p12,p13,p14,p15,p16,p17,p18,p19,p20,p21,p22,p23,p24,
+p25,p26,p27,p28,p30,p32,p33,p34,p35,p36,p37,p38,p39,
+p40,p41,p42,p43,p45,p46,p47,p48,p49,p50,p51,p52,p53,
+p54,p55,p56,p57,p58) VALUES
+ (1,2,3,1,1,1,1,1,588062923893440513,10366,
+588062923893440513,10366,339738625,
+588062923893440513,1.2222,1.2222,1.2222,
+2.2222,2.2222,2.2222,2.2222,2.2222,false,true,
+'1','010','111111','111',b'\141\142\143',
+'adfdsfgfdh','a','a','sdfh','adhia中文','aaaaa',
+'aaaaa','aaaaa','aaaaa','aaaaa','aaaaa',
+'巴啦啦小魔仙','2020-09-12','09:00:00',
+'2020-09-12 09:00:00.000','2020-09-12 17:00:00.000',
+'2020-09-12 09:00:00.000','2020-09-12 17:00:00.000',
+'1-2 00:00:03','2001:4f8:3:ba:2e0:81ff:fe22:d1f1/120',
+'63616665-6630-3064-6465-616462656562','{"a": "aa", "b": "bb", "c": "cc"}',
+'{"a": "aa", "b": "bb", "c": "cc"}','{1,22222,121}','{1.1,2.2,3.3}',
+'{a,b,c,d}');
+
+statement ok
+DROP function IF EXISTS fun_cur();
+
+statement ok
+create or replace function fun_cur()
+RETURNS SERIAL as $$
+DECLARE
+    res SERIAL;
+    result SERIAL;
+    cursor1 CURSOR for select p9 from db_cur.sc_cur.type_cur;
+DECLARE
+BEGIN
+    open cursor1;
+    loop
+        fetch cursor1 into result;
+        exit when not found;
+        res=result ;
+    end loop;
+    close cursor1;
+    return res;
+END
+$$ LANGUAGE plpgsql;
+
+query I
+SELECT fun_cur()
+----
+588062923893440513
+
+
+statement ok
+drop table db_cur.sc_cur.type_cur
+
+statement ok
+drop schema db_cur.sc_cur
+
+statement ok
+drop database db_cur
+
+statement ok
+drop function fun_cur()
+
+# memo 缓存可能导致的问题
+statement ok
+DROP TABLE IF EXISTS TEST;
+
+statement ok
+CREATE TABLE test(id INT PRIMARY KEY , eng TEXT unique ,che BOOL NOT NULL );
+
+statement ok
+INSERT INTO  test VALUES (1,'aaa',TRUE);
+
+statement ok
+create or replace FUNCTION fun_cur(wrong int)
+RETURNS INT as $$
+DECLARE
+    result int;
+    res int;
+    cursor1 CURSOR for select wrong from test ;
+BEGIN
+open cursor1 ;
+    loop
+        fetch cursor1 into result;
+        exit when not found;
+        res=result;
+    end loop;
+    close cursor1;
+    return res;
+END
+$$ LANGUAGE plpgsql;
+
+query I
+SELECT fun_cur(1)
+----
+1
+
+query error pq: column "wrong" does not exist
+select wrong from test
+
+# 清理数据
+statement ok
+drop table test
+
+statement ok
+drop function fun_cur(int)
+
+statement ok
+CREATE TABLE test (
+      id INT PRIMARY KEY,
+      eng TEXT UNIQUE,
+      che BOOL NOT NULL
+);
+
+statement ok
+insert into test (id, eng, che) values
+(1, 'aaa', TRUE),
+(2, 'bbb', FALSE),
+(3, 'ccc', TRUE),
+(4, 'ddd', FALSE),
+(5, 'eee', TRUE),
+(6, 'fff', TRUE),
+(7, 'ggg', TRUE),
+(8, 'hhh', FALSE),
+(9, 'iii', TRUE),
+(10, 'jjj', FALSE),
+(11, 'kkk', TRUE),
+(12, 'lll', FALSE),
+(13, 'mmm', TRUE),
+(14, 'nnn', FALSE),
+(15, 'ooo', TRUE),
+(16, 'ppp', FALSE),
+(17, 'qqq', TRUE),
+(18, 'rrr', FALSE),
+(19, 'sss', TRUE),
+(20, 'ttt', FALSE),
+(21, 'uuu', TRUE),
+(22, 'vvv', FALSE),
+(23, 'www', TRUE),
+(24, 'xxx', FALSE),
+(25, 'yyy', TRUE),
+(26, 'zzz', FALSE);
+
+statement ok
+create or replace FUNCTION fun_cur1()
+RETURNS INT as $$
+DECLARE
+    result int;
+    mysql text;
+DECLARE
+BEGIN
+    mysql='select id from test';
+    execute mysql into result;
+RETURN result;
+END
+$$ LANGUAGE plpgsql;
+
+query I
+SELECT fun_cur1()
+----
+1
+
+statement ok
+create or replace FUNCTION fun_cur2()
+RETURNS INT as $$
+DECLARE
+    result int;
+    mysql text;
+DECLARE
+BEGIN
+    mysql='select id from test where id%3=0';
+    execute mysql into result;
+RETURN result;
+END
+$$ LANGUAGE plpgsql;
+
+query I
+SELECT fun_cur2()
+----
+3
+
+# 清理数据
+statement ok
+drop table test
+
+statement ok
+drop function fun_cur1()
+
+statement ok
+drop function fun_cur2()
+
+# jira-5023 unwrap type in plpgvar type check
+statement ok
+drop function test_prc();
+
+statement ok
+create or replace function test_prc()
+returns integer as $$
+declare
+    counts1 string;
+    counts2 int;
+    counts3 int;
+begin
+    return counts1*(counts2+counts3);
+end;
+$$ language plpgsql;
+
+query T
+select test_prc()
+----
+NULL
+
+statement ok
+drop function test_prc()
+
+statement ok
+drop table if exists mytable;
+
+statement ok
+create table mytable (ID int,Description varchar);
+
+statement ok
+insert into mytable values(1,'1'),(2,'2'),(3,'3'),(4,'4'),(5,'5'),(6,'6'),(7,'7');
+
+statement ok
+drop function if exists hi_lo( IN a NUMERIC, IN b NUMERIC,OUT c NUMERIC,OUT hi NUMERIC,INOUT lo NUMERIC);
+
+statement ok
+CREATE OR REPLACE FUNCTION hi_lo( IN a NUMERIC,IN b NUMERIC,OUT c NUMERIC,OUT hi NUMERIC,INOUT lo NUMERIC) AS $$
+BEGIN
+    select max(id) into c from mytable where id=a;
+    select min(id) into hi from mytable where id=b;
+    select sum(id) into lo from mytable;
+END
+$$ LANGUAGE plpgsql;
+
+query T
+select hi_lo(1,2,3)
+----
+(1,2,28)
+
+statement error pq: cannot change return type of existing function\nDetail: Row type defined by OUT parameters is different.\nUse DROP FUNCTION hi_lo\(DECIMAL,DECIMAL,DECIMAL\) first.
+create or replace function hi_lo( in a numeric, in b numeric, out c numeric, out hi numeric, out d numeric, inout lo numeric) as $$
+begin
+    select max(id) into c from mytable where id = a;
+    select min(id) into hi from mytable where id = b;
+    select sum(id) into lo from mytable;
+    select max(ID) into d from mytable;
+end;
+$$ language plpgsql;
+
+statement ok
+DROP FUNCTION hi_lo(NUMERIC,NUMERIC,NUMERIC);
+
+# NEWSQL-5381
+#pq: unknown procedure: nonexistent()
+#CALL nonexistent();
+
+# NEWSQL-5641
+#inout-->in
+statement ok
+CREATE OR REPLACE function func_3 ( x int,IN y int,INOUT z int,OUT re int ) AS
+$$
+BEGIN
+re=x+y+z;
+END
+$$ LANGUAGE PLPGSQL;
+
+statement error pq: cannot change return type of existing function\nUse DROP FUNCTION func_3\(INT,INT,INT\) first.
+CREATE OR REPLACE function func_3 ( x int,IN y int,IN z int,OUT re int ) AS
+$$
+BEGIN
+re=x+y+z;
+END
+$$ LANGUAGE PLPGSQL;
+
+statement ok
+DROP FUNCTION func_3(INT,INT,INT);
+
+#in-->inout
+statement ok
+CREATE OR REPLACE function func_4 ( x int,IN y int,IN z int,OUT re int ) AS
+$$
+BEGIN
+re=x+y+z;
+END
+$$ LANGUAGE PLPGSQL;
+
+statement error pq: cannot change return type of existing function\nUse DROP FUNCTION func_4\(INT,INT,INT\) first.
+CREATE OR REPLACE function func_4 ( x int,IN y int,INOUT z int,OUT re int ) AS
+$$
+BEGIN
+re=x+y+z;
+END
+$$ LANGUAGE PLPGSQL;
+
+statement ok
+DROP FUNCTION func_4(INT,INT,INT);
+
+# cursor for NULL select, return NULL
+statement ok
+create table notest(id1 int);
+
+statement ok
+create or replace function fun_cur()
+RETURNS INT as $$
+DECLARE
+    result INT ;
+    res INT ;
+    cursor1 CURSOR(a INT) for select id1 from notest WHERE a<=id1 order by id1 desc;
+BEGIN
+    open cursor1(a=3);
+    loop
+        fetch cursor1 into result;
+        exit when not found;
+        res=result;
+    end loop;
+    close cursor1;
+    return res;
+END
+$$ LANGUAGE plpgsql;
+
+query T
+select fun_cur()
+----
+NULL
+
+statement ok
+drop table notest
+
+statement ok
+drop function fun_cur()
+
+# jira-5554 foreach 循环
+statement ok
+CREATE OR REPLACE FUNCTION foreach_test(int[])
+RETURNS text
+AS $$
+DECLARE
+s INT=0;
+x INT;
+BEGIN
+    FOREACH x IN ARRAY $1 LOOP
+        s=s+x;
+    END LOOP;
+    return s;
+END;
+$$ language plpgsql;
+
+query T
+select foreach_test(array[1, 2, 3])
+----
+6
+
+statement ok
+drop function foreach_test(int[])
+
+#jira-5576 don't support diagnostics
+statement error pq: ZNBase PLSQL ERMSG: don't support diagnostics
+CREATE OR REPLACE procedure fun_affect_rows(INOUT inscount int,INOUT delcount int,INOUT upcount int) AS
+$$
+declare
+    v_count1 int;
+    v_count2 int;
+    v_count3 int;
+begin
+    insert into test values(99),(98);
+    GET DIAGNOSTICS v_count1 = ROW_COUNT;
+    select v_count1 into inscount;
+    delete from test where id < 15;
+    GET DIAGNOSTICS v_count2 = ROW_COUNT;
+    select v_count2 into delcount;
+    update test set id = 100 where id >90;
+    GET DIAGNOSTICS v_count3 = ROW_COUNT;
+    select v_count3 into upcount;
+end;
+$$ LANGUAGE plpgsql;
+
+#jira-5589 【UDR】修改自定义函数，增加OUT参数时返回的提示信息不明确
+statement ok
+drop table if exists mytable;
+
+statement ok
+create table mytable (ID int,Description varchar);
+
+statement ok
+insert into mytable values(1,'1');
+
+statement ok
+insert into mytable values(2,'2');
+
+statement ok
+insert into mytable values(3,'3');
+
+statement ok
+insert into mytable values(4,'4');
+
+statement ok
+insert into mytable values(5,'5');
+
+statement ok
+insert into mytable values(6,'6');
+
+statement ok
+insert into mytable values(7,'7');
+
+statement error pq: function hi_lo\(DECIMAL,DECIMAL,DECIMAL\) does not exist
+DROP FUNCTION hi_lo(numeric,numeric,numeric);
+
+statement ok
+CREATE OR REPLACE FUNCTION hi_lo( IN a NUMERIC,IN b NUMERIC,OUT c NUMERIC,OUT hi NUMERIC,INOUT lo NUMERIC) AS $$ BEGIN select max(id) into c from mytable where id=a; select min(id) into hi from mytable where id=b; select sum(id) into lo from mytable; END; $$ LANGUAGE plpgsql;
+
+statement error pq: cannot change return type of existing function\nDetail: Row type defined by OUT parameters is different.\nUse DROP FUNCTION hi_lo\(DECIMAL,DECIMAL,DECIMAL\) first.
+CREATE OR REPLACE FUNCTION hi_lo
+( IN a NUMERIC,IN b NUMERIC,OUT c NUMERIC,OUT hi NUMERIC,INOUT lo numeric,OUT numeric)
+AS $$
+BEGIN
+select max(id) into c from mytable where id=a;
+select min(id) into hi from mytable where id=b;
+select sum(id) into lo from mytable;
+SELECT max(ID) INTO d from mytable;
+END;
+$$ LANGUAGE plpgsql;
+
+#1 /out 参数类型不一致
+statement ok
+DROP FUNCTION hi_lo(numeric,numeric,numeric);
+
+statement ok
+CREATE OR REPLACE function func_3 ( x int,OUT z int ) AS
+$$
+BEGIN
+null;
+END
+$$ LANGUAGE PLPGSQL;
+
+statement error pq: cannot change return type of existing function\nUse DROP FUNCTION func_3\(INT\) first.
+CREATE OR REPLACE function func_3 ( x int,OUT z text ) AS
+$$
+BEGIN
+null;
+END
+$$ LANGUAGE PLPGSQL;
+
+statement ok
+drop function func_3(int);
+
+#2/ 返回值类型不同
+statement ok
+CREATE OR REPLACE function func_3 ( x text,OUT z int ) AS
+$$
+BEGIN
+null;
+END
+$$ LANGUAGE PLPGSQL;
+
+statement ok
+CREATE OR REPLACE function func_3 ( x int,OUT z text ) AS
+$$
+BEGIN
+null;
+END
+$$ LANGUAGE PLPGSQL;
+
+statement ok
+drop function func_3(int);
+
+statement ok
+drop function func_3(text);
+
+#3/ 互换形参名
+statement ok
+CREATE OR REPLACE function func_3 ( x int,OUT z int ) AS
+$$
+BEGIN
+null;
+END
+$$ LANGUAGE PLPGSQL;
+
+statement error pq: can not change the name of input parameter "x"
+CREATE OR REPLACE function func_3 ( z int,OUT x int ) AS
+$$
+BEGIN
+null;
+END
+$$ LANGUAGE PLPGSQL;
+
+statement ok
+drop function func_3(int);
+
+#4/ 参数顺序
+statement ok
+CREATE OR REPLACE function func_3 ( x int,OUT z int ) AS
+$$
+BEGIN
+null;
+END
+$$ LANGUAGE PLPGSQL;
+
+statement ok
+CREATE OR REPLACE function func_3 ( OUT z int,x int ) AS
+$$
+BEGIN
+null;
+END
+$$ LANGUAGE PLPGSQL;
+
+statement ok
+drop function func_3(int);
+
+statement ok
+CREATE OR REPLACE function func_3 ( x int,OUT z int,s text) AS
+$$
+BEGIN
+null;
+END
+$$ LANGUAGE PLPGSQL;
+
+statement ok
+CREATE OR REPLACE function func_3 ( OUT z int,x int,s text) AS
+$$
+BEGIN
+null;
+END
+$$ LANGUAGE PLPGSQL;
+
+statement ok
+drop function func_3(int,text);
+
+# jira-5394
+statement ok
+CREATE OR REPLACE FUNCTION for_test4(n int)
+RETURNS text
+AS $$
+DECLARE
+    tmp INT;
+    a INT=1;
+    b INT=1;
+BEGIN
+    FOR num in reverse n..1 BY 3 LOOP
+        tmp=a;
+        a=a+b;
+        b=tmp;
+    END LOOP;
+    return a;
+END;
+$$ language plpgsql;
+
+query T
+SELECT for_test4(5)
+----
+3
+
+statement ok
+drop function for_test4(int)
+
+statement ok
+CREATE OR REPLACE FUNCTION for_test4(n int)
+RETURNS text
+AS $$
+DECLARE
+    tmp INT;
+    a INT = 1;
+BEGIN
+    FOR num in reverse n..1 BY 3 LOOP
+        a=a+num;
+    END LOOP;
+    return a;
+END;
+$$ language plpgsql;
+
+query T
+SELECT for_test4(5)
+----
+8
+
+statement ok
+drop function for_test4(int)
+
+# jira-4939 变量名识别错误，涉及隐式类型转换
+statement ok
+CREATE OR REPLACE FUNCTION gen_number(integer, integer) RETURNS integer AS
+$$
+DECLARE
+    start_int ALIAS FOR $1;
+    end_int ALIAS FOR $2;
+BEGIN
+    RETURN trunc(random() * (end_int-start_int + 1) + start_int);
+END;
+$$
+LANGUAGE plpgsql;
+
+# 可以强制类型转换使用
+query error pq: gen_number\(\): ZNBase PLSQL ERMSG: XXOOO:trunc\(\): unsupported binary operator: <float> \+ <int>
+SELECT gen_number(1,100)
+
+# 清理数据
+statement ok
+drop function gen_number(integer, integer)
+
+# jira-6158 带范围限制的类型的参数赋值
+statement ok
+create table a(p21 decimal);
+
+statement ok
+insert into a values(2.2222);
+
+statement ok
+create or replace function fun_cur()
+RETURNS DEC as $$
+DECLARE
+    res DEC(2,1) ;
+    result DEC(2,1) ;
+    cursor1 CURSOR for select p21 from a ;
+DECLARE
+BEGIN
+    open cursor1;
+    loop
+        fetch cursor1 into result;
+        exit when not found;
+        res=result ;
+    end loop;
+    close cursor1;
+    return res;
+END
+$$ LANGUAGE plpgsql;
+
+query R
+select fun_cur()
+----
+2.2
+
+statement ok
+drop table a
+
+statement ok
+drop function fun_cur();
+
+#jira-5577 【UDR】重载字符类型的函数，创建的函数数量不正确
+
+#在不区分函数字符串参数列表的前提下，重新定义字符串返回值类型，
+#char,character,char(),character(),string(),varchar()同一类型
+#text、varchar和string是同一种类型；
+#char,character 长度是1，等价于char(1),。
+
+#首先创建返回值类型为char/character的函数
+statement ok
+CREATE OR REPLACE FUNCTION fun_7 (IN x char) RETURNS char AS
+$$
+DECLARE re char;
+BEGIN
+RETURN concat(x,'+char');
+END
+$$ LANGUAGE PLPGSQL;
+
+statement ok
+CREATE OR REPLACE FUNCTION fun_7 (IN x CHARACTER) RETURNS CHARACTER AS
+$$
+DECLARE re CHARACTER;
+BEGIN
+RETURN concat(x,'+CHARACTER');
+END
+$$ LANGUAGE PLPGSQL;
+
+statement error pq: cannot change return type of existing function\nUse DROP FUNCTION fun_7\(STRING\) first.
+CREATE OR REPLACE FUNCTION fun_7 (IN x varchar) RETURNS varchar AS
+$$
+DECLARE re varchar;
+BEGIN
+RETURN concat(x,'+varchar');
+END
+$$ LANGUAGE PLPGSQL;
+
+statement error pq: cannot change return type of existing function\nUse DROP FUNCTION fun_7\(STRING\) first.
+CREATE OR REPLACE FUNCTION fun_7 (IN x text) RETURNS text AS
+$$
+DECLARE re text;
+BEGIN
+RETURN concat(x,'+text');
+END
+$$ LANGUAGE PLPGSQL;
+
+statement error pq: cannot change return type of existing function\nUse DROP FUNCTION fun_7\(STRING\) first.
+CREATE OR REPLACE FUNCTION fun_7 (IN x string) RETURNS string AS
+$$
+DECLARE re string;
+BEGIN
+RETURN concat(x,'+string');
+END
+$$ LANGUAGE PLPGSQL;
+
+query T
+select * from fun_7('h');
+----
+h
+
+query T
+select * from fun_7('h'::char);
+----
+h
+
+query T
+select * from fun_7('h'::varchar);
+----
+h
+
+query T
+select * from fun_7('h'::text);
+----
+h
+
+statement ok
+drop function fun_7(string);
+
+#首先创建返回值类型为varchar/text/string的函数
+statement ok
+CREATE OR REPLACE FUNCTION fun_7 (IN x varchar) RETURNS varchar AS
+$$
+DECLARE re varchar;
+BEGIN
+RETURN concat(x,'+varchar');
+END
+$$ LANGUAGE PLPGSQL;
+
+statement ok
+CREATE OR REPLACE FUNCTION fun_7 (IN x text) RETURNS text AS
+$$
+DECLARE re text;
+BEGIN
+RETURN concat(x,'+text');
+END
+$$ LANGUAGE PLPGSQL;
+
+statement ok
+CREATE OR REPLACE FUNCTION fun_7 (IN x string) RETURNS string AS
+$$
+DECLARE re string;
+BEGIN
+RETURN concat(x,'+string');
+END
+$$ LANGUAGE PLPGSQL;
+
+statement error pq: cannot change return type of existing function\nUse DROP FUNCTION fun_7\(STRING\) first.
+CREATE OR REPLACE FUNCTION fun_7 (IN x char) RETURNS char AS
+$$
+DECLARE re char;
+BEGIN
+RETURN concat(x,'+char');
+END
+$$ LANGUAGE PLPGSQL;
+
+statement error pq: cannot change return type of existing function\nUse DROP FUNCTION fun_7\(STRING\) first.
+CREATE OR REPLACE FUNCTION fun_7 (IN x CHARACTER) RETURNS CHARACTER AS
+$$
+DECLARE re CHARACTER;
+BEGIN
+RETURN concat(x,'+CHARACTER');
+END
+$$ LANGUAGE PLPGSQL;
+
+query T
+select * from fun_7('h');
+----
+h+string
+
+query T
+select * from fun_7('h'::varchar);
+----
+h+string
+
+query T
+select * from fun_7('h'::text);
+----
+h+string
+
+statement ok
+drop function fun_7(string);
+
+#char和char(x)是不同类型
+
+statement ok
+CREATE OR REPLACE FUNCTION fun_2 (IN x char) RETURNS char(2) AS
+$$
+DECLARE re char;
+BEGIN
+RETURN concat(x,'+22char');
+END
+$$ LANGUAGE PLPGSQL;
+
+query T
+select * from fun_2('h');
+----
+h+
+
+query T
+select * from fun_2('h'::varchar);
+----
+h+
+
+query T
+select * from fun_2('h'::text);
+----
+h+
+
+statement error pq: cannot change return type of existing function\nUse DROP FUNCTION fun_2\(STRING\) first.
+CREATE OR REPLACE FUNCTION fun_2 (IN x char) RETURNS char AS
+$$
+DECLARE re char;
+BEGIN
+RETURN concat(x,'+char');
+END
+$$ LANGUAGE PLPGSQL;
+
+statement error pq: cannot change return type of existing function\nUse DROP FUNCTION fun_2\(STRING\) first.
+CREATE OR REPLACE FUNCTION fun_2 (IN x char) RETURNS char(4) AS
+$$
+DECLARE re char;
+BEGIN
+RETURN concat(x,'+char');
+END
+$$ LANGUAGE PLPGSQL;
+
+statement ok
+CREATE OR REPLACE FUNCTION fun_2 (IN x char) RETURNS character(2) AS
+$$
+DECLARE re char;
+BEGIN
+RETURN concat(x,'=char');
+END
+$$ LANGUAGE PLPGSQL;
+
+query T
+select * from fun_2('h');
+----
+h=
+
+statement ok
+drop function fun_2(string);
+
+#jira-5565 【UDR】char、varchar、text类型重载后，无法使用
+
+statement ok
+CREATE OR REPLACE FUNCTION fun_2 (IN x char) RETURNS char AS
+$$
+DECLARE re char;
+BEGIN
+RETURN concat(x,'+char');
+END
+$$ LANGUAGE PLPGSQL;
+
+#statement ok
+statement error pq: cannot change return type of existing function\nUse DROP FUNCTION fun_2\(STRING\) first.
+CREATE OR REPLACE FUNCTION fun_2 (IN x varchar) RETURNS varchar AS
+$$
+DECLARE re varchar;
+BEGIN
+RETURN concat(x,'+varchar');
+END
+$$ LANGUAGE PLPGSQL;
+
+#statement ok
+statement error pq: cannot change return type of existing function\nUse DROP FUNCTION fun_2\(STRING\) first.
+CREATE OR REPLACE FUNCTION fun_2 (IN x text) RETURNS text AS
+$$
+DECLARE re text;
+BEGIN
+RETURN concat(x,'+text');
+END
+$$ LANGUAGE PLPGSQL;
+
+query T
+select * from fun_2('h');
+----
+h
+
+query T
+select * from fun_2('h'::varchar);
+----
+h
+
+query T
+select * from fun_2('h'::text);
+----
+h
+
+statement ok
+drop function fun_2(text);
+
+#jira-6399 【UDR】创建char、CHARACTER、varchar和text、string自定义函数报错
+
+statement ok
+CREATE OR REPLACE FUNCTION fun_7 (IN x char) RETURNS char AS
+$$
+DECLARE re char;
+BEGIN
+RETURN concat(x,'+char');
+END
+$$ LANGUAGE PLPGSQL;
+
+statement ok
+CREATE OR REPLACE FUNCTION fun_7 (IN x CHARACTER) RETURNS CHARACTER AS
+$$
+DECLARE re CHARACTER;
+BEGIN
+RETURN concat(x,'+CHARACTER');
+END
+$$ LANGUAGE PLPGSQL;
+
+#statement ok
+statement error pq: cannot change return type of existing function\nUse DROP FUNCTION fun_7\(STRING\) first.
+CREATE OR REPLACE FUNCTION fun_7 (IN x varchar) RETURNS varchar AS
+$$
+DECLARE re varchar;
+BEGIN
+RETURN concat(x,'+varchar');
+END
+$$ LANGUAGE PLPGSQL;
+
+#statement ok
+statement error pq: cannot change return type of existing function\nUse DROP FUNCTION fun_7\(STRING\) first.
+CREATE OR REPLACE FUNCTION fun_7 (IN x text) RETURNS text AS
+$$
+DECLARE re text;
+BEGIN
+RETURN concat(x,'+text');
+END
+$$ LANGUAGE PLPGSQL;
+
+#statement ok
+statement error pq: cannot change return type of existing function\nUse DROP FUNCTION fun_7\(STRING\) first.
+CREATE OR REPLACE FUNCTION fun_7 (IN x string) RETURNS string AS
+$$
+DECLARE re string;
+BEGIN
+RETURN concat(x,'+string');
+END
+$$ LANGUAGE PLPGSQL;
+
+statement ok
+drop function fun_7(string);
+
+# jira-6117 fetch 中的隐式类型转换
+statement ok
+CREATE TABLE type_conver (
+id OID PRIMARY KEY, int INT, decimal DECIMAL, float FLOAT,
+string STRING, char char(10), varchar varchar(10), text TEXT,
+bool BOOL, date DATE, time TIME, timestamp TIMESTAMP,
+interval INTERVAL, str string[], i INT[], flo FLOAT[]);
+
+statement ok
+INSERT INTO type_conver VALUES
+(1, 9223372036854775807, 123.4561, 123.4562,
+'123abc!@#一', '123abc!@#二', '123abc!@#三', '123abc!@#',
+TRUE, '2019-10-01', '2019-10-01 10:00:000', '2021-10-01 10:00:000',
+'1-2 00:00:03', ARRAY['a','b','c','d','e'], ARRAY[1,2,3,4,5], ARRAY[11111111.11111111,22222222.22222222,33333333.33333333,44444444.44444444,55555555.55555555]),
+(2, -9223372036854775808, 111111111111111123.4561, 111111111111111111123.4562,
+'Dwqabc!@#一', 'DXQabc!@#二', 'QWDabc!@#三', 'dqwWQDabc!@#',
+TRUE, '2019-10-01', '2019-10-01 10:00:000', '2021-10-01 10:00:000',
+'1-2 00:00:03', ARRAY['a','b','c','d','e'], ARRAY[1,2,3,4,5], ARRAY[11111111.11111111,22222222.22222222,33333333.33333333,44444444.44444444,55555555.55555555]),
+(3, 1, 1.4561, 2.4562,
+'123abc!@#一', '123abc!@#二', '123abc!@#三', '123abc!@#',
+TRUE, '2019-10-01', '2019-10-01 10:00:000', '2021-10-01 10:00:000',
+'1-2 00:00:03', ARRAY['a','b','c','d','e'], ARRAY[1,2,3,4,5], ARRAY[11.11,22.22,33.33,44.44,55.55]);
+
+statement ok
+create or replace function fun_cur()
+RETURNS DECIMAL as $$
+DECLARE
+    res decimal ;
+    result554433 decimal(2,1) ;
+    cursor554433 CURSOR for select int from type_conver where id=1 ;
+DECLARE
+BEGIN
+    open cursor554433;
+    loop
+        fetch cursor554433 into result554433;
+        exit when not found;
+        res=result554433 ;
+    end loop;
+    close cursor554433;
+    return res;
+END
+$$ LANGUAGE plpgsql;
+
+statement error pq: fun_cur\(\): ZNBase PLSQL ERMSG: XXOOO:cannot cast 9223372036854775807 to type DECIMAL\(2,1\)\nDETAIL: value with precision 2, scale 1 must round to an absolute value less than 10\^1
+SELECT fun_cur()
+
+statement ok
+DROP function fun_cur()
+
+statement ok
+create or replace function fun_cur() RETURNS DATE as $$
+DECLARE
+    res DATE ;
+    result DATE ;
+    cursor1 CURSOR for select int from type_conver where id=2 ;
+DECLARE
+BEGIN
+    open cursor1;
+    loop
+        fetch cursor1 into result;
+        exit when not found;
+        res=result ;
+    end loop;
+    close cursor1;
+    return res;
+END
+$$ LANGUAGE plpgsql;
+
+statement error pq: fun_cur\(\): ZNBase PLSQL ERMSG: XXOOO:cannot cast -9223372036854775808 to type DATE\nDETAIL: unexpected number of digits for time in 3236854775808 as type date
+SELECT fun_cur()
+
+statement ok
+DROP function fun_cur()
+
+statement ok
+DROP table type_conver
+
+# jira-5949 游标中 := 指定参数名和值
+statement ok
+DROP TABLE IF EXISTS test;
+
+statement ok
+CREATE TABLE test(id INT PRIMARY KEY , eng TEXT unique ,che BOOL NOT NULL );
+
+statement ok
+INSERT INTO test VALUES
+(1,'aaa',TRUE),(2,'bbb',FALSE),(3,'ccc',TRUE),(4,'ddd',FALSE),
+(5,'eee',TRUE),(6,'fff',FALSE),(7,'ggg',TRUE),(8,'hhh',FALSE),
+(9,'iii',TRUE),(10,'jjj',FALSE),(11,'kkk',TRUE),(12,'lll',FALSE),
+(13,'mmm',TRUE),(14,'nnn',FALSE),(15,'ooo',TRUE),(16,'ppp',FALSE),
+(17,'qqq',TRUE),(18,'rrr',FALSE),(19,'sss',TRUE),(20,'ttt',FALSE),
+(21,'uuu',TRUE),(22,'vvv',FALSE),(23,'www',TRUE),(24,'xxx',FALSE),
+(25,'yyy',TRUE),(26,'zzz',FALSE);
+
+statement ok
+DROP TABLE IF EXISTS test1;
+
+statement ok
+CREATE TABLE test1
+(id INT PRIMARY KEY ,
+ eng TEXT unique ,
+ che BOOL NOT NULL DEFAULT 1
+ );
+
+statement ok
+create or replace FUNCTION fun_cur(a int)
+RETURNS INT as $$
+DECLARE
+    result int;
+    res int;
+    cursor1 CURSOR(a int) for select id from test where a>9;
+BEGIN
+    open cursor1(a:=10);
+    loop
+        fetch cursor1 into result;
+        exit when not found;
+        res=result;
+    end loop;
+    close cursor1;
+    RETURN res+a;
+END
+$$ LANGUAGE plpgsql;
+
+query I
+SELECT fun_cur(1)
+----
+27
+
+statement ok
+DROP TABLE IF EXISTS test;
+
+statement ok
+DROP TABLE IF EXISTS test1;
+
+statement ok
+DROP function fun_cur(int);
+
+# jira 6652 带schema的function识别失败
+statement ok
+create schema zzhtest;
+
+statement ok
+create table zzhtest.t_int_test(
+c1 integer,
+c2 integer
+) ;
+
+statement ok
+create or replace function zzhtest.prc_test(
+in ii_c1 integer,
+in ii_c2 integer
+)
+returns void as $$
+begin
+    insert into zzhtest.t_int_test values(ii_c1,ii_c2);
+end;
+$$ language plpgsql;
+
+statement ok
+select zzhtest.prc_test(1,200)
+
+query II
+select * from zzhtest.t_int_test
+----
+1  200
+
+# jira-5628 子查询失败问题（之一），存储过程中游标中使用嵌套查询进行游标定义，open时失败，存储过程外成功
+statement ok
+CREATE TABLE test(id INT PRIMARY KEY , eng TEXT unique ,che BOOL NOT NULL );
+
+statement ok
+INSERT INTO test VALUES
+(1,'aaa',TRUE),(2,'bbb',FALSE),(3,'ccc',TRUE),
+(4,'ddd',FALSE),(5,'eee',TRUE),(6,'fff',FALSE),
+(7,'ggg',TRUE),(8,'hhh',FALSE),(9,'iii',TRUE),
+(10,'jjj',FALSE),(11,'kkk',TRUE),(12,'lll',FALSE),
+(13,'mmm',TRUE),(14,'nnn',FALSE),(15,'ooo',TRUE),
+(16,'ppp',FALSE),(17,'qqq',TRUE),(18,'rrr',FALSE),
+(19,'sss',TRUE),(20,'ttt',FALSE),(21,'uuu',TRUE),
+(22,'vvv',FALSE),(23,'www',TRUE),(24,'xxx',FALSE),
+(25,'yyy',TRUE),(26,'zzz',FALSE);
+
+statement ok
+CREATE TABLE test1(a1 INT PRIMARY KEY , b1 TEXT UNIQUE);
+
+statement ok
+INSERT INTO test1 VALUES(1,'a!'),(2,'b@'),(3,'c#'),(4,'d$'),(5,'e%')
+,(6,'f^'),(7,'g&'),(8,'h*'),(9,'i('),(10,'j)');
+
+statement ok
+CREATE TABLE test2(b2 TEXT );
+
+statement ok
+INSERT INTO test2 VALUES('a!'),('b@'),('c#'),('d$'),('e%'),('f^'),('g&');
+
+statement ok
+create or replace function fun_cur()
+RETURNS TEXT as $$
+DECLARE
+    result1 TEXT ;
+    res TEXT ;
+    result2 TEXT ;
+    result3 TEXT ;
+    cursor1 CURSOR for SELECT t.id,t.eng,t.che FROM test t WHERE t.id in (SELECT a1 FROM test1 WHERE b1 in (SELECT b2 FROM test2));
+DECLARE
+BEGIN
+    open cursor1;
+    loop
+        fetch cursor1 into result1,result2,result3;
+        exit when not found;
+        res = result1||result2||result3;
+    end loop;
+    close cursor1;
+    return res;
+END
+$$ LANGUAGE plpgsql;
+
+query T
+SELECT fun_cur()
+----
+7gggtrue
+
+# 清理数据
+statement ok
+DROP function IF EXISTS fun_cur();
+
+statement ok
+DROP TABLE IF EXISTS test;
+
+statement ok
+DROP TABLE IF EXISTS test1;
+
+statement ok
+DROP TABLE IF EXISTS test2;
+
+# jira-5555 udrPlanner.result 结果未及时清理导致的结果被覆盖问题
+statement ok
+CREATE OR REPLACE FUNCTION tools_str2array(originstr text)
+RETURNS integer[] AS $$
+declare
+    cindex INTEGER;
+    arrIndex INTEGER;
+    arr_str int4[];
+    tmp_str VARCHAR(10);
+    delimeter VARCHAR(1);
+BEGIN
+    arrIndex:=1;
+    cindex:=1;
+    delimeter:=',';
+    while cindex<"length"(originStr) loop
+        tmp_str:=split_part(originStr, delimeter, arrIndex);
+        if "character_length"(tmp_str)<1 then
+            exit;
+        end if;
+        arr_str := arr_str|| CAST(tmp_str as int4);
+        arrIndex := arrIndex+1;
+    END loop;
+    return arr_str;
+end;
+$$ LANGUAGE plpgsql;
+
+query O
+select tools_str2array('1,2,3,4,5')
+----
+{1,2,3,4,5}
+
+# 清理数据
+statement ok
+DROP function tools_str2array(text);
+
+# replace test
+statement ok
+drop function if exists fun_4(int,int);
+
+statement ok
+CREATE OR REPLACE function fun_4(IN x int2, IN y int2) returns int2 AS
+$$
+DECLARE re int2;
+BEGIN
+re = y;
+return re;
+END
+$$ LANGUAGE PLPGSQL;
+
+query I
+select fun_4(1,3)
+----
+3
+
+statement ok
+CREATE OR REPLACE function fun_4(IN x int2, INOUT y int2) AS
+$$
+DECLARE re int2;
+BEGIN
+y = y+1;
+END
+$$ LANGUAGE PLPGSQL;
+
+query I
+select fun_4(1,3)
+----
+4
+
+statement ok
+CREATE OR REPLACE function fun_4(IN x int2, IN y int2) returns int2 AS
+$$
+DECLARE re int2;
+BEGIN
+re = y;
+return re;
+END
+$$ LANGUAGE PLPGSQL;
+
+query I
+select fun_4(1,3)
+----
+3
+
+statement ok
+CREATE OR REPLACE function fun_4(IN x int2, IN y int2, OUT z int2) AS
+$$
+DECLARE re int2;
+BEGIN
+z = y+2;
+END
+$$ LANGUAGE PLPGSQL;
+
+query I
+select fun_4(1,3)
+----
+5
+
+statement ok
+CREATE OR REPLACE function fun_4(IN x int2, IN y int2) returns int2 AS
+$$
+DECLARE re int2;
+BEGIN
+re = y;
+return re;
+END
+$$ LANGUAGE PLPGSQL;
+
+query I
+select fun_4(1,3)
+----
+3
+
+statement ok
+drop function if exists fun_4(int,int);
+
+statement ok
+CREATE OR REPLACE function fun_4(IN x int2, INOUT y int2) AS
+$$
+DECLARE re int2;
+BEGIN
+y = y+1;
+END
+$$ LANGUAGE PLPGSQL;
+
+query I
+select fun_4(1,3)
+----
+4
+
+statement error pq: cannot change return type of existing function\nDetail: Row type defined by OUT parameters is different.\nUse DROP FUNCTION fun_4\(INT,INT\) first.
+CREATE OR REPLACE function fun_4(IN x int2, IN y int2, OUT z int2) AS
+$$
+DECLARE re int2;
+BEGIN
+z = y+2;
+END
+$$ LANGUAGE PLPGSQL;
+
+
+statement ok
+drop function if exists fun_4(int,int);
+
+statement ok
+CREATE OR REPLACE function fun_4(IN x int2, IN y int2, OUT z int2) AS
+$$
+DECLARE re int2;
+BEGIN
+z = y+2;
+END
+$$ LANGUAGE PLPGSQL;
+
+query I
+select fun_4(1,3)
+----
+5
+
+statement error pq: cannot change return type of existing function\nDetail: Row type defined by OUT parameters is different.\nUse DROP FUNCTION fun_4\(INT,INT\) first.
+CREATE OR REPLACE function fun_4(IN x int2, INOUT y int2) AS
+$$
+DECLARE re int2;
+BEGIN
+y = y+1;
+END
+$$ LANGUAGE PLPGSQL;
+
+statement ok
+drop function if exists fun_4(int,int);
+
+statement ok
+CREATE OR REPLACE function fun_4(IN x int2, IN y int2) returns int2 AS
+$$
+DECLARE re int2;
+BEGIN
+re = y;
+return re;
+END
+$$ LANGUAGE PLPGSQL;
+
+statement error pq: cannot change return type of existing function\nUse DROP FUNCTION fun_4\(INT,INT\) first.
+CREATE OR REPLACE function fun_4(IN x int2, IN y int2) returns string AS
+$$
+DECLARE re string;
+BEGIN
+return "a";
+END
+$$ LANGUAGE PLPGSQL;
+
+statement ok
+drop function if exists fun_4(int,int);
+
+# jira-7238 udr 变量的非空约束以及默认值问题（已初步添加）
+statement ok
+drop table if exists test
+
+statement ok
+create table test(id int)
+
+statement ok
+create or replace function fun_cur() RETURNS TEXT as $$
+DECLARE
+    res TEXT ;
+    result1 INT NOT NULL default 1;
+    cursor1 CURSOR for select id from test ;
+BEGIN
+    open cursor1;
+    loop
+        fetch cursor1 into result1;
+        exit when not found;
+        res=result1;
+    end loop;
+    close cursor1;
+    return res;
+END
+$$ LANGUAGE plpgsql;
+
+statement error pq: fun_cur\(\): ZNBase PLSQL ERMSG: null value cannot be assigned to variable "result1" declared NOT NULL
+select fun_cur()
+
+statement ok
+create or replace function fun_cur2() RETURNS INT as $$
+DECLARE
+    res INT NOT NULL default 23;
+BEGIN
+    return res;
+END
+$$ LANGUAGE plpgsql;
+
+query I
+select fun_cur2()
+----
+23
+
+statement ok
+drop table if exists test;
+
+statement ok
+drop function if exists fun_cur();
+
+statement ok
+drop function if exists fun_cur2();
+
+# jira-7357 事务回滚自定义函数未回滚仍可调用问题
+statement ok
+CREATE TABLE test1(a1 INT PRIMARY KEY, b1 STRING NOT NULL);
+
+statement ok
+INSERT INTO test1 VALUES(1,'a!'),(2,'b@'),(3,'c#'),(4,'d$'),(5,'e%'),(6,'f^'),(7,'g&'),(8,'h*'),(9,'i('),(10,'j)');
+
+statement ok
+BEGIN TRANSACTION
+
+statement ok
+create or replace function fun_cur() RETURNS INT as $$
+DECLARE
+    result INT ;
+    res INT;
+BEGIN
+    update test1 set a1=999 where a1=1;
+    return 3;
+END
+$$ LANGUAGE plpgsql;
+
+query I
+SELECT fun_cur()
+----
+3
+
+query IT
+SELECT * FROM test1
+----
+2    b@
+3    c#
+4    d$
+5    e%
+6    f^
+7    g&
+8    h*
+9    i(
+10   j)
+999  a!
+
+statement ok
+ROLLBACK TRANSACTION
+
+query IT
+SELECT * FROM test1
+----
+1   a!
+2   b@
+3   c#
+4   d$
+5   e%
+6   f^
+7   g&
+8   h*
+9   i(
+10  j)
+
+statement error pq: No function/procedure matches the given name and argument types.
+select fun_cur()
+
+#对于入参为int类型，int2、int4和int8可以替换；
+#对于返回值为int类型，视int2、int4和int8为三种不同的类型。
+#NEWSQL-8865【测试环境】【NEWSQL】【UDR】int2、int4、int8重载后，return依旧是int2
+statement ok
+drop function if exists fun_1(int,int);
+
+statement ok
+create or replace FUNCTION fun_1(in x INT2,in y INT2)
+returns int2
+as $$
+declare re int2;
+begin
+re=x+y+8;
+return re;
+end;
+$$ language plpgsql;
+
+query I
+select fun_1(4::int2,4::int2);
+----
+16
+
+statement ok
+create or replace FUNCTION fun_1(in x INT4,in y INT4)
+returns int2
+as $$
+declare re int2;
+begin
+re=x+y+18;
+return re;
+end;
+$$ language plpgsql;
+
+query I
+select fun_1(4::int2,4::int2);
+----
+26
+
+statement ok
+create or replace FUNCTION fun_1(in x INT8,in y INT8)
+returns int2
+as $$
+declare re int2;
+begin
+re=x+y+28;
+return re;
+end;
+$$ language plpgsql;
+
+query I
+select fun_1(4::int2,4::int2);
+----
+36
+
+statement error pq: cannot change return type of existing function
+create or replace FUNCTION fun_1(in x INT4,in y INT4)
+returns int4
+as $$
+declare re int4;
+begin
+re=x+y+8;
+return re;
+end;
+$$ language plpgsql;
+
+query I
+select fun_1(4::int4,4::int4);
+----
+36
+
+statement ok
+create or replace FUNCTION fun_1(in x INT2,in y INT2)
+returns int2
+as $$
+declare re int2;
+begin
+re=x+y+8;
+return re;
+end;
+$$ language plpgsql;
+
+query I
+select fun_1(4::int2,4::int2);
+----
+16
+
+statement ok
+drop function if exists fun_1(int,int);
+
+statement ok
+drop function if exists fun_2(float,float);
+
+statement ok
+create or replace FUNCTION fun_2(in x float4,in y float4)
+returns float4
+as $$
+declare re float4;
+begin
+re=x+y+8;
+return re;
+end;
+$$ language plpgsql;
+
+query R
+select fun_2(1.5::float4,1.1::float4);
+----
+10.6
+
+statement ok
+create or replace FUNCTION fun_2(in x float8,in y float8)
+returns float4
+as $$
+declare re float4;
+begin
+re=x+y+18;
+return re;
+end;
+$$ language plpgsql;
+
+statement error pq: cannot change return type of existing function
+create or replace FUNCTION fun_2(in x float8,in y float8)
+returns float8
+as $$
+declare re float8;
+begin
+re=x+y+8;
+return re;
+end;
+$$ language plpgsql;
+
+query R
+select fun_2(1.5::float8,1.1::float8);
+----
+20.6
+
+statement ok
+create or replace FUNCTION fun_2(in x float4,in y float4)
+returns float4
+as $$
+declare re float4;
+begin
+re=x+y+8;
+return re;
+end;
+$$ language plpgsql;
+
+query R
+select fun_2(1.5::float4,1.1::float4);
+----
+10.6
+
+statement ok
+drop function if exists fun_2(float,float);
+
+# jira 7937:含返回非空默认值的自定义函数，修改为执行函数会走逻辑
+statement ok
+create or replace FUNCTION fun_declare(a INT)
+returns integer as $$
+declare
+ a int NOT NULL DEFAULT 12;
+begin
+return a ;
+end;
+$$ language plpgsql;
+
+query I
+SELECT fun_declare(NULL);
+----
+12
+
+statement ok
+create or replace FUNCTION fun_declare(a INT)
+returns integer as $$
+declare
+ a CONSTANT int := 12;
+begin
+return a ;
+end;
+$$ language plpgsql;
+
+query I
+SELECT fun_declare(NULL);
+----
+12
+
+statement ok
+create or replace FUNCTION fun_declare(a float)
+returns integer as $$
+declare
+ a CONSTANT INT := 34;
+begin
+return a ;
+end;
+$$ language plpgsql;
+
+query I
+SELECT fun_declare(2.5);
+----
+34
+
+query error pq: ambiguous call: fun_declare\(unknown\), candidates are:\nfun_declare\(float\) -> int\nfun_declare\(int\) -> int
+SELECT fun_declare(null);
+
+statement ok
+drop function if exists fun_declare(int);
+
+statement ok
+drop function if exists fun_declare(float);
+
+# jira 7944:声明时约束默认值有异常
+statement ok
+create or replace FUNCTION fun_assignment()
+returns text as $$
+declare
+res text DEFAULT 'ABCDE';
+begin
+return res;
+end;
+$$ language plpgsql;
+
+query T
+SELECT fun_assignment();
+----
+ABCDE
+
+statement ok
+DROP FUNCTION IF EXISTS fun_assignment();
+
+statement ok
+create or replace FUNCTION fun_assignment()
+RETURNS INT as $$
+DECLARE
+res INT DEFAULT 2^97;
+BEGIN
+return res;
+END
+$$ LANGUAGE plpgsql;
+
+statement error pq: fun_assignment\(\): ZNBase PLSQL ERMSG: 22003:integer out of range
+SELECT fun_assignment();
+
+statement ok
+DROP FUNCTION IF EXISTS fun_assignment();
+
+#jira 7930 returns设定返回字符串类型长度不生效
+#测试char类型
+statement ok
+create or replace FUNCTION test_prc2()
+returns char(2) as $$
+declare
+count1 char(10) := 'abcdefgh';
+begin
+return count1;
+end;
+$$ language plpgsql;
+
+query  T
+select test_prc2();
+----
+ab
+
+statement ok
+DROP FUNCTION IF EXISTS test_prc2();
+
+statement ok
+create or replace FUNCTION test_prc5()
+returns char(5) as $$
+declare
+count1 char(10) := 'abcdefgh';
+begin
+return count1;
+end;
+$$ language plpgsql;
+
+query  T
+select test_prc5();
+----
+abcde
+
+statement ok
+DROP FUNCTION IF EXISTS test_prc5();
+
+#测试bit类型
+statement ok
+create or replace FUNCTION test_bit6()
+returns bit(6) as $$
+declare
+count1 bit(10) := '1100110011';
+begin
+return count1;
+end;
+$$ language plpgsql;
+
+query  O
+select test_bit6();
+----
+110011
+
+statement ok
+DROP FUNCTION IF EXISTS test_bit6();
+
+statement ok
+create or replace FUNCTION test_bit4()
+returns bit(4) as $$
+declare
+count1 bit(10) := '1100110011';
+begin
+return count1;
+end;
+$$ language plpgsql;
+
+query  O
+select test_bit4();
+----
+1100
+
+statement ok
+DROP FUNCTION IF EXISTS test_bit4();
+
+#测试varbit类型
+statement ok
+create or replace FUNCTION test_varbit6()
+returns varbit(6) as $$
+declare
+count1 varbit(10) := '1100110011';
+begin
+return count1;
+end;
+$$ language plpgsql;
+
+query  O
+select test_varbit6();
+----
+110011
+
+statement ok
+DROP FUNCTION IF EXISTS test_varbit6();
+
+statement ok
+create or replace FUNCTION test_varbit4()
+returns varbit(4) as $$
+declare
+count1 varbit(10) := '1100110011';
+begin
+return count1;
+end;
+$$ language plpgsql;
+
+query  O
+select test_varbit4();
+----
+1100
+
+statement ok
+DROP FUNCTION IF EXISTS test_varbit4();
+
+#测试string类型
+statement ok
+create or replace FUNCTION test_string6()
+returns string(6) as $$
+declare
+count1 string(10) := 'helloworld';
+begin
+return count1;
+end;
+$$ language plpgsql;
+
+query  T
+select test_string6();
+----
+hellow
+
+statement error pq: cannot change return type of existing function\nUse DROP FUNCTION test_string6\(\) first.
+create or replace FUNCTION test_string6()
+returns string(2) as $$
+declare
+count1 string(10) := 'helloworld';
+begin
+return count1;
+end;
+$$ language plpgsql;
+
+statement ok
+DROP FUNCTION IF EXISTS test_string6();
+
+statement ok
+create or replace FUNCTION test_string4()
+returns string(4) as $$
+declare
+count1 string(10) := 'helloworld';
+begin
+return count1;
+end;
+$$ language plpgsql;
+
+query  T
+select test_string4();
+----
+hell
+
+statement ok
+DROP FUNCTION IF EXISTS test_string4();
+
+#JIRA -8678 增加创建不含返回值的函数的报错信息
+#【UDR】建立自定义函数无RETURN类型/RETURN值不报错
+statement ok
+DROP PROCEDURE IF EXISTS fun_declare();
+
+statement ok
+DROP TABLE IF EXISTS fun_declare;
+
+statement error pq: function result type must be specified
+create or replace function fun_declare()
+as $$
+declare
+ counts1 string;
+begin
+counts1 = 1;
+end;
+$$ language plpgsql;
+
+statement error pq: function result type must be specified
+create function tf() as $$
+begin
+insert into test values(2);
+end
+$$ language plpgsql;
+
+statement error pq: function result type must be specified
+create or replace function tf() as $$
+begin
+insert into test values(2);
+end
+$$ language plpgsql;
+
+statement error pq: function result type must be specified
+create or replace function tf() as $$
+begin
+insert into test values(2);
+end
+$$ language plpgsql;
+
+statement ok
+DROP FUNCTION IF EXISTS tf();
+
+#NEWSQL-8857【测试环境】【NEWSQL】【UDR】传入参数的个数增加或减少后重载，调用失败
+statement ok
+CREATE OR REPLACE FUNCTION fun_10 (IN x int8, IN y int8)
+RETURNS int8
+AS $$
+DECLARE re int8;
+BEGIN re=x+y;
+RETURN re;
+END
+$$ LANGUAGE PLPGSQL;
+
+query I
+select * from fun_10(6,4);
+----
+10
+
+query error pq: No function/procedure matches the given name and argument types.
+select * from fun_10(1,2,3,4);
+
+statement ok
+CREATE OR REPLACE FUNCTION fun_10 (IN x int8, IN y int8, IN z int8, IN p int8)
+RETURNS int8
+AS $$ DECLARE re int8;
+BEGIN re= x*y*z*p;
+return re;
+END
+$$ LANGUAGE PLPGSQL;
+
+query I
+select * from fun_10(6,4);
+----
+10
+
+query I
+select * from fun_10(1,2,3,4);
+----
+24
+
+statement ok
+DROP FUNCTION IF EXISTS fun_10(int,int);
+
+statement ok
+DROP FUNCTION IF EXISTS fun_10(int,int,int,int);
+
+#NEWSQL-8861【测试环境】【NEWSQL】【UDR】入参类型IN、OUT重载后，调用失败
+statement ok
+drop function if exists func_5(int,int,int);
+
+statement ok
+drop function if exists func_5(int,int);
+
+statement ok
+CREATE OR REPLACE function func_5 ( x int,IN y int,IN z int,OUT re int )
+AS $$
+BEGIN
+re=x+y+z;
+END
+$$ LANGUAGE PLPGSQL;
+
+query I
+select func_5(1,2,3);
+----
+6
+
+statement ok
+CREATE OR REPLACE function func_5 ( x int,IN y int,OUT z int,OUT re int )
+AS $$
+BEGIN
+z=x+y;
+re=z;
+END
+$$ LANGUAGE PLPGSQL;
+
+query O
+select func_5(1,2);
+----
+(3,3)
+
+statement ok
+drop function if exists func_5(int,int,int);
+
+statement ok
+drop function if exists func_5(int,int);
+
+#NEWSQL-8999【测试环境】【NEWSQL】【UDR】DECIMAL、float重载后，float类型无法调用
+statement ok
+CREATE OR REPLACE FUNCTION fun_4 (IN x DECIMAL, IN y DECIMAL)
+RETURNS DECIMAL
+AS $$
+DECLARE re DECIMAL;
+BEGIN re=x+10.0;
+RETURN re;
+END
+$$ LANGUAGE PLPGSQL;
+
+query error pq: No function/procedure matches the given name and argument types.
+select * from fun_4(4.1::float,4.1::float);
+
+query R
+select * from fun_4(4.1::DECIMAL,4.1::DECIMAL);
+----
+14.1
+
+statement ok
+CREATE OR REPLACE FUNCTION fun_4 (IN x float, IN y float)
+RETURNS float
+AS $$
+DECLARE re float;
+BEGIN
+re=x+100.0;
+RETURN re;
+END
+$$ LANGUAGE PLPGSQL;
+
+query R
+select * from fun_4(4.1::float,4.1::float);
+----
+104.1
+
+query R
+select * from fun_4(4.1::DECIMAL,4.1::DECIMAL);
+----
+14.1
+
+statement ok
+drop function if exists fun_4(DECIMAL,DECIMAL);
+
+statement ok
+drop function if exists fun_4(float,float);
+
+#NEWSQL-8842【测试环境】【NEWSQL】【UDR】int8和text重载，text类型不可调用
+statement ok
+CREATE OR REPLACE FUNCTION fun_3 (IN x int8, IN y int8)
+RETURNS int8
+AS $$
+DECLARE re int8;
+BEGIN
+re=x+y;
+RETURN re;
+END
+$$ LANGUAGE PLPGSQL;
+
+query I
+select * from fun_3(6,4);
+----
+10
+
+statement ok
+CREATE OR REPLACE FUNCTION fun_3 (IN tx TEXT, IN ty TEXT)
+RETURNS TEXT
+AS $$
+DECLARE tre TEXT;
+BEGIN
+tre=concat(tx,ty);
+RETURN tre;
+END
+$$ LANGUAGE PLPGSQL;
+
+query I
+select * from fun_3(6,4);
+----
+10
+
+query T
+select * from fun_3('6','4');
+----
+64
+
+query T
+select * from fun_3('6'::text,'4'::text);
+----
+64
+
+statement ok
+drop function if exists fun_3(INT,INT);
+
+statement ok
+drop function if exists fun_3(TEXT,TEXT);
+
+#NEWSQL-8837【测试环境】【NEWSQL】【UDR】int8、float重载，float类型不可调用
+statement ok
+CREATE OR REPLACE FUNCTION fun_2 (IN x int8, IN y int8)
+RETURNS int8
+AS $$
+DECLARE re int8;
+BEGIN
+re=x+y;
+RETURN re;
+END $$ LANGUAGE PLPGSQL;
+
+query error pq: No function/procedure matches the given name and argument types.
+select * from fun_2(1.1,1.2);
+
+statement ok
+CREATE OR REPLACE FUNCTION fun_2 (IN x float, IN y float)
+RETURNS float
+AS $$
+DECLARE re float;
+BEGIN re=x+y+100;
+RETURN re;
+END
+$$ LANGUAGE PLPGSQL;
+
+query R
+select * from fun_2(1.1,1.2);
+----
+102.3
+
+query I
+select * from fun_2(4,6);
+----
+10
+
+statement ok
+drop function if exists fun_2(INT,INT);
+
+statement ok
+drop function if exists fun_2(float,float);
+
+#NEWSQL-8899【UDR】创建numeric类型的入参，删除时用decimal删不掉
+statement ok
+drop function if exists de(a DECIMAL);
+
+statement ok
+create or replace FUNCTION de(a NUMERIC)
+RETURNS NUMERIC as $$
+declare
+ t NUMERIC ;
+begin
+ t = 1.2;
+ RETURN t;
+end;
+$$ language plpgsql;
+SHOW FUNCTIONS;
+
+statement ok
+create or replace FUNCTION de(a decimal)
+RETURNS NUMERIC as $$
+declare
+ t decimal ;
+begin
+ t = 1.2;
+ RETURN t;
+end;
+$$ language plpgsql;
+SHOW FUNCTIONS;
+
+statement ok
+create or replace FUNCTION de(a NUMERIC)
+RETURNS decimal as $$
+declare
+ t decimal ;
+begin
+ t = 1.2;
+ RETURN t;
+end;
+$$ language plpgsql;
+SHOW FUNCTIONS;
+
+statement ok
+create or replace FUNCTION de(a decimal)
+RETURNS decimal as $$
+declare
+ t decimal ;
+begin
+ t = 1.2;
+ RETURN t;
+end;
+$$ language plpgsql;
+SHOW FUNCTIONS;
+
+statement ok
+create or replace FUNCTION de(a NUMERIC)
+RETURNS NUMERIC as $$
+declare
+ t NUMERIC ;
+begin
+ t = 1.2;
+ RETURN t;
+end;
+$$ language plpgsql;
+SHOW FUNCTIONS;
+
+statement ok
+drop function de(a DECIMAL);
+
+statement error pq: function de\(DECIMAL\) does not exist
+drop function de(a NUMERIC);
+
+#NEWSQL-9039 测试环境】【NEWSQL】【UDR】INT数组类型，相同的自定义函数重载失败
+statement ok
+CREATE OR REPLACE FUNCTION fun_1(a INT) returns INT[] as
+$$
+DECLARE
+ t1 INT[];
+ t2 INT ARRAY;
+BEGIN
+t1=ARRAY[0,0,0];
+t2=ARRAY[1,2,3];
+RETURN t1||t2 ;
+END
+$$ LANGUAGE PLPGSQL;
+
+statement ok
+CREATE OR REPLACE FUNCTION fun_1(a INT) returns INT[] as
+$$
+DECLARE
+ t1 INT[];
+ t2 INT ARRAY;
+BEGIN
+t1=ARRAY[0,0,0];
+t2=ARRAY[1,2,3];
+RETURN t1||t2 ;
+END
+$$ LANGUAGE PLPGSQL;
+
+statement ok
+create or replace FUNCTION fun_assignment()
+returns FLOAT[] as $$
+DECLARE
+t1 FLOAT [] ;
+t2 FLOAT ARRAY ;
+BEGIN
+t1 = ARRAY['a','b','c'];
+t2 = ARRAY[1,2,3];
+return t1||t2 ;
+END
+$$ language plpgsql
+
+statement ok
+create or replace FUNCTION fun_assignment()
+returns FLOAT[] as $$
+DECLARE
+t1 FLOAT [] ;
+t2 FLOAT ARRAY ;
+BEGIN
+t1 = ARRAY['a','b','c'];
+t2 = ARRAY[1,2,3];
+return t1||t2 ;
+END
+$$ language plpgsql
+
+statement ok
+drop function fun_1(a int);
+
+statement ok
+drop function fun_assignment();
+
+#NEWSQL-8692【测试环境】【NEWSQL数据库】【UDR】对入参重新声明后值变为0
+statement ok
+DROP FUNCTION IF EXISTS fun_declare();
+
+statement ok
+create or replace FUNCTION fun_declare(a INT)
+returns integer as $$
+declare
+ counts int;
+ a int;
+begin
+ counts = 1;
+return a+counts ;
+end;
+$$ language plpgsql;
+
+query I
+SELECT fun_declare(1);
+----
+NULL
+
+statement ok
+DROP FUNCTION IF EXISTS fun_declare();
+
+#NEWSQL-9040【测试环境】【NEWSQL】【UDR】int、float、string、bool等数组类型，重载后调用失败
+#1.INT[]
+
+statement ok
+CREATE OR REPLACE FUNCTION fun_1(a INT) returns INT[] as
+$$
+DECLARE
+t1 INT[];
+t2 INT ARRAY;
+BEGIN
+t1=ARRAY[0,0,0];
+t2=ARRAY[1,2,3];
+RETURN t1||t2 ;
+END
+$$ LANGUAGE PLPGSQL;
+
+query O
+select * from fun_1(1);
+----
+{0,0,0,1,2,3}
+
+statement ok
+CREATE OR REPLACE FUNCTION fun_1(a INT,b INT) returns INT[] as
+$$
+DECLARE
+t1 INT[];
+t2 INT ARRAY;
+BEGIN
+t1=ARRAY[1,1,1];
+t2=ARRAY[2,2,2];
+RETURN t1||t2 ;
+END
+$$ LANGUAGE PLPGSQL;
+
+query O
+select * from fun_1(1,2);
+----
+{1,1,1,2,2,2}
+
+statement ok
+DROP FUNCTION fun_1(a INT);
+
+statement ok
+DROP FUNCTION fun_1(a INT,b INT);
+
+#2.STRING[]
+statement ok
+CREATE OR REPLACE FUNCTION fun_2(a STRING) returns STRING[] as
+$$
+DECLARE
+t1 STRING[];
+t2 STRING ARRAY;
+BEGIN
+t1=ARRAY['0','0','0'];
+t2=ARRAY['1','2','3'];
+RETURN t1||t2 ;
+END
+$$ LANGUAGE PLPGSQL;
+
+query O
+select * from fun_2('1');
+----
+{0,0,0,1,2,3}
+
+statement ok
+CREATE OR REPLACE FUNCTION fun_2(a STRING,b STRING) returns STRING[] as
+$$
+DECLARE
+t1 STRING[];
+t2 STRING ARRAY;
+BEGIN
+t1=ARRAY['1','1','1'];
+t2=ARRAY['2','2','2'];
+RETURN t1||t2 ;
+END
+$$ LANGUAGE PLPGSQL;
+
+query O
+select * from fun_2('1','2');
+----
+{1,1,1,2,2,2}
+
+statement ok
+DROP FUNCTION fun_2(a STRING);
+
+statement ok
+DROP FUNCTION fun_2(a STRING,b STRING);
+
+#3.FLOAT[]
+statement ok
+CREATE OR REPLACE FUNCTION fun_3(a float) returns float[] as
+$$
+DECLARE
+t1 float[];
+t2 float ARRAY;
+BEGIN
+t1=ARRAY[0.4,0.5,0.6];
+t2=ARRAY[1.2,2.3,3.4];
+RETURN t1||t2 ;
+END
+$$ LANGUAGE PLPGSQL;
+
+query O
+select * from fun_3(1.5);
+----
+{0.4,0.5,0.6,1.2,2.3,3.4}
+
+statement ok
+CREATE OR REPLACE FUNCTION fun_3(a float,b float) returns float[] as
+$$
+DECLARE
+t1 float[];
+t2 float ARRAY;
+BEGIN
+t1=ARRAY[1.1,1.1,1.1];
+t2=ARRAY[2.2,2.2,2.2];
+RETURN t1||t2 ;
+END
+$$ LANGUAGE PLPGSQL;
+
+query O
+select * from fun_3(1.1,2.2);
+----
+{1.1,1.1,1.1,2.2,2.2,2.2}
+
+statement ok
+DROP FUNCTION fun_3(a FLOAT);
+
+statement ok
+DROP FUNCTION fun_3(a FLOAT,b FLOAT);
+
+#4.BOOL[]
+statement ok
+CREATE OR REPLACE FUNCTION fun_4(a BOOL) returns BOOL[] as
+$$
+DECLARE
+t1 BOOL[];
+t2 BOOL ARRAY;
+BEGIN
+t1=ARRAY[TRUE,TRUE,TRUE];
+t2=ARRAY[FALSE,FALSE,FALSE];
+RETURN t1||t2 ;
+END
+$$ LANGUAGE PLPGSQL;
+
+query O
+select * from fun_4(TRUE);
+----
+{t,t,t,f,f,f}
+
+statement ok
+CREATE OR REPLACE FUNCTION fun_4(a BOOL,b BOOL) returns BOOL[] as
+$$
+DECLARE
+t1 BOOL[];
+t2 BOOL ARRAY;
+BEGIN
+t1=ARRAY[FALSE,TRUE,TRUE];
+t2=ARRAY[FALSE,TRUE,TRUE];
+RETURN t1||t2 ;
+END
+$$ LANGUAGE PLPGSQL;
+
+query O
+select * from fun_4(FALSE,FALSE);
+----
+{f,t,t,f,t,t}
+
+statement ok
+DROP FUNCTION fun_4(a BOOL);
+
+statement ok
+DROP FUNCTION fun_4(a BOOL,b BOOL);
+
+#NEWSQL-8692【测试环境】【NEWSQL数据库】【UDR】对入参重新声明后值变为0
+statement ok
+DROP FUNCTION IF EXISTS fun_declare(int);
+
+statement ok
+create or replace FUNCTION fun_declare(a INT)
+returns integer as $$
+declare
+ counts int;
+ a int;
+begin
+ counts = 1;
+return a+counts ;
+end;
+$$ language plpgsql;
+
+query I
+SELECT fun_declare(1)
+----
+NULL
+
+statement ok
+DROP FUNCTION IF EXISTS fun_declare(int);
+
+statement ok
+create schema a;
+
+statement ok
+create schema b;
+
+statement ok
+create or replace function defaultdb.a.test() returns int as $$
+begin
+return 0;
+end $$ language plpgsql;
+
+query I
+select defaultdb.a.test()
+----
+0
+
+statement ok
+create or replace function defaultdb.a.test(a int) returns int as $$
+begin
+return a*10;
+end $$ language plpgsql;
+
+query I
+select defaultdb.a.test(1)
+----
+10
+
+statement ok
+create or replace function defaultdb.b.test() returns int as $$
+begin
+return 1;
+end $$ language plpgsql;
+
+statement ok
+create or replace function defaultdb.b.test(a int,b int) returns int as $$
+begin
+return a*10+b;
+end $$ language plpgsql;
+
+query I
+select defaultdb.b.test(1,2)
+----
+12
+
+statement ok
+alter function defaultdb.a.test(int) rename to defaultdb.b.test
+
+query I
+select defaultdb.b.test(1,2)
+----
+12
+
+query I
+select defaultdb.b.test(1)
+----
+10
+
+statement ok
+alter function defaultdb.b.test(int,int) rename to defaultdb.a.test
+
+query I
+select defaultdb.a.test(3,4)
+----
+34
+
+statement error pq: No function/procedure matches the given name and argument types.
+select defaultdb.b.test(1,2)
+
+statement ok
+alter function defaultdb.a.test(int,int) rename to defaultdb.b.test
+
+statement ok
+alter function defaultdb.b.test(int) rename to defaultdb.a.test
+
+query I
+select defaultdb.a.test()
+----
+0
+
+query I
+select defaultdb.a.test(4)
+----
+40
+
+statement error pq: No function/procedure matches the given name and argument types.
+select defaultdb.a.test(1,2)
+
+query I
+select defaultdb.b.test()
+----
+1
+
+statement error pq: No function/procedure matches the given name and argument types.
+select defaultdb.b.test(1)
+
+query I
+select defaultdb.b.test(5,5)
+----
+55
+
+statement ok
+drop schema a;
+
+statement ok
+drop schema b;
+
+#NEWSQL-8703【测试环境】【NEWSQL数据库】【UDR】直接将表中数据注入到参数中未指定特定行，宕机溢出堆栈
+statement ok
+CREATE TABLE declare_tab(a1 INT NOT NULL , b1 STRING UNIQUE ,CD_ID INT PRIMARY KEY);
+
+statement ok
+INSERT INTO declare_tab VALUES
+(1,'a!',001),(2,'b@',002),(3,'c#',003),(4,'d$',004),
+(5,'e%',005),(6,'f^',006),(7,'g&',007),(8,'h*',008),
+(9,'i(',009), (10,'j)',010);
+
+statement ok
+DROP FUNCTION IF EXISTS fun_declare();
+
+statement ok
+create or replace FUNCTION fun_declare()
+returns INT as $$
+declare
+t INT ;
+text TEXT := 'SELECT * FROM declare_tab';
+begin
+execute text into t;
+return t ;
+end;
+$$ language plpgsql;
+
+query I
+SELECT fun_declare();
+----
+1
+
+statement ok
+DROP FUNCTION IF EXISTS fun_declare();
+
+statement ok
+DROP TABLE IF EXISTS declare_tab;
+
+#NEWSQL-8772【测试环境】【NEWSQL数据库】【UDR】建立存储过程声明BIT类型变量不赋值插入非空表，不报错数据库宕机无堆栈
+#BIT
+statement ok
+CREATE TABLE notnull_tab(a BIT NOT NULL);
+
+statement ok
+create or replace PROCEDURE prc_declare()
+as $$
+declare
+ BIT BIT ;
+begin
+ INSERT INTO notnull_tab VALUES (BIT);
+end;
+$$ language plpgsql;
+
+statement error pq: ZNBase PLSQL ERMSG: 23502:null value in column "a" violates not-null constraint
+call prc_declare();
+
+statement ok
+DROP PROCEDURE IF EXISTS prc_declare();
+
+statement ok
+DROP TABLE IF EXISTS notnull_tab;
+
+#CHAR
+statement ok
+CREATE TABLE notnull_tab(a char NOT NULL);
+
+statement ok
+create or replace PROCEDURE prc_declare()
+as $$
+declare
+ char char ;
+begin
+ INSERT INTO notnull_tab VALUES (char);
+end;
+$$ language plpgsql;
+
+statement error pq: ZNBase PLSQL ERMSG: 23502:null value in column "a" violates not-null constraint
+call prc_declare();
+
+statement ok
+DROP PROCEDURE IF EXISTS prc_declare();
+
+statement ok
+DROP TABLE IF EXISTS notnull_tab;
+
+#bytea
+statement ok
+CREATE TABLE notnull_tab(a bytea NOT NULL);
+
+statement ok
+create or replace PROCEDURE prc_declare()
+as $$
+declare
+ bytea bytea ;
+begin
+ INSERT INTO notnull_tab VALUES (bytea);
+end;
+$$ language plpgsql;
+
+statement error pq: ZNBase PLSQL ERMSG: 23502:null value in column "a" violates not-null constraint
+call prc_declare();
+
+statement ok
+DROP PROCEDURE IF EXISTS prc_declare();
+
+statement ok
+DROP TABLE IF EXISTS notnull_tab;
+
+#NEWSQL-8789【测试环境】【NEWSQL数据库】【UDR】建立存储过程声明时间类型变量不赋值插入非空表，不报错数据库宕机无堆栈
+#date
+statement ok
+CREATE TABLE notnull_tab(a date NOT NULL);
+
+statement ok
+create or replace PROCEDURE prc_declare()
+as $$
+declare
+a date ;
+begin
+INSERT INTO notnull_tab VALUES (a);
+end;
+$$ language plpgsql;
+
+statement error pq: ZNBase PLSQL ERMSG: 23502:null value in column "a" violates not-null constraint
+call prc_declare();
+
+statement ok
+DROP PROCEDURE IF EXISTS prc_declare();
+
+statement ok
+DROP TABLE IF EXISTS notnull_tab;
+
+#TIME
+statement ok
+CREATE TABLE notnull_tab(a time NOT NULL);
+
+statement ok
+create or replace PROCEDURE prc_declare()
+as $$
+declare
+a time ;
+begin
+INSERT INTO notnull_tab VALUES (a);
+end;
+$$ language plpgsql;
+
+statement error pq: ZNBase PLSQL ERMSG: 23502:null value in column "a" violates not-null constraint
+call prc_declare();
+
+statement ok
+DROP PROCEDURE IF EXISTS prc_declare();
+
+statement ok
+DROP TABLE IF EXISTS notnull_tab;
+
+#TIMESTAMP
+statement ok
+CREATE TABLE notnull_tab(a TIMESTAMP NOT NULL);
+
+statement ok
+create or replace PROCEDURE prc_declare()
+as $$
+declare
+a TIMESTAMP ;
+begin
+INSERT INTO notnull_tab VALUES (a);
+end;
+$$ language plpgsql;
+
+statement error pq: ZNBase PLSQL ERMSG: 23502:null value in column "a" violates not-null constraint
+call prc_declare();
+
+statement ok
+DROP PROCEDURE IF EXISTS prc_declare();
+
+statement ok
+DROP TABLE IF EXISTS notnull_tab;
+
+#TIMESTAMPTZ
+statement ok
+CREATE TABLE notnull_tab(a TIMESTAMPTZ NOT NULL);
+
+statement ok
+create or replace PROCEDURE prc_declare()
+as $$
+declare
+a TIMESTAMPTZ ;
+begin
+INSERT INTO notnull_tab VALUES (a);
+end;
+$$ language plpgsql;
+
+statement error pq: ZNBase PLSQL ERMSG: 23502:null value in column "a" violates not-null constraint
+call prc_declare();
+
+statement ok
+DROP PROCEDURE IF EXISTS prc_declare();
+
+statement ok
+DROP TABLE IF EXISTS notnull_tab;
+
+#TIMESTAMP WITHOUT TIME ZONE
+statement ok
+CREATE TABLE notnull_tab(a TIMESTAMP WITHOUT TIME ZONE NOT NULL);
+
+statement ok
+create or replace PROCEDURE prc_declare()
+as $$
+declare
+a TIMESTAMP WITHOUT TIME ZONE ;
+begin
+INSERT INTO notnull_tab VALUES (a);
+end;
+$$ language plpgsql;
+
+statement error pq: ZNBase PLSQL ERMSG: 23502:null value in column "a" violates not-null constraint
+call prc_declare();
+
+statement ok
+DROP PROCEDURE IF EXISTS prc_declare();
+
+statement ok
+DROP TABLE IF EXISTS notnull_tab;
+
+#TIMESTAMP WITH TIME ZONE
+statement ok
+CREATE TABLE notnull_tab(a TIMESTAMP WITH TIME ZONE NOT NULL);
+
+statement ok
+create or replace PROCEDURE prc_declare()
+as $$
+declare
+a TIMESTAMP WITH TIME ZONE ;
+begin
+INSERT INTO notnull_tab VALUES (a);
+end;
+$$ language plpgsql;
+
+statement error pq: ZNBase PLSQL ERMSG: 23502:null value in column "a" violates not-null constraint
+call prc_declare();
+
+statement ok
+DROP PROCEDURE IF EXISTS prc_declare();
+
+statement ok
+DROP TABLE IF EXISTS notnull_tab;
+
+#INTERVAL
+statement ok
+CREATE TABLE notnull_tab(a INTERVAL NOT NULL);
+
+statement ok
+create or replace PROCEDURE prc_declare()
+as $$
+declare
+a INTERVAL ;
+begin
+INSERT INTO notnull_tab VALUES (a);
+end;
+$$ language plpgsql;
+
+statement error pq: ZNBase PLSQL ERMSG: 23502:null value in column "a" violates not-null constraint
+call prc_declare();
+
+statement ok
+DROP PROCEDURE IF EXISTS prc_declare();
+
+statement ok
+DROP TABLE IF EXISTS notnull_tab;
+
+#INET
+statement ok
+CREATE TABLE notnull_tab(a INET NOT NULL);
+
+statement ok
+create or replace PROCEDURE prc_declare()
+as $$
+declare
+a INET ;
+begin
+INSERT INTO notnull_tab VALUES (a);
+end;
+$$ language plpgsql;
+
+statement error pq: ZNBase PLSQL ERMSG: 23502:null value in column "a" violates not-null constraint
+call prc_declare();
+
+statement ok
+DROP PROCEDURE IF EXISTS prc_declare();
+
+statement ok
+DROP TABLE IF EXISTS notnull_tab;
+
+#UUID
+statement ok
+CREATE TABLE notnull_tab(a UUID NOT NULL);
+
+statement ok
+create or replace PROCEDURE prc_declare()
+as $$
+declare
+a UUID ;
+begin
+INSERT INTO notnull_tab VALUES (a);
+end;
+$$ language plpgsql;
+
+statement error pq: ZNBase PLSQL ERMSG: 23502:null value in column "a" violates not-null constraint
+call prc_declare();
+
+statement ok
+DROP PROCEDURE IF EXISTS prc_declare();
+
+statement ok
+DROP TABLE IF EXISTS notnull_tab;
+
+#JSONB
+statement ok
+CREATE TABLE notnull_tab(a JSONB NOT NULL);
+
+statement ok
+create or replace PROCEDURE prc_declare()
+as $$
+declare
+a JSONB ;
+begin
+INSERT INTO notnull_tab VALUES (a);
+end;
+$$ language plpgsql;
+
+statement error pq: ZNBase PLSQL ERMSG: 23502:null value in column "a" violates not-null constraint
+call prc_declare();
+
+statement ok
+DROP PROCEDURE IF EXISTS prc_declare();
+
+statement ok
+DROP TABLE IF EXISTS notnull_tab;
+
+#JSON
+statement ok
+CREATE TABLE notnull_tab(a JSON NOT NULL);
+
+statement ok
+create or replace PROCEDURE prc_declare()
+as $$
+declare
+a JSON ;
+begin
+INSERT INTO notnull_tab VALUES (a);
+end;
+$$ language plpgsql;
+
+statement error pq: ZNBase PLSQL ERMSG: 23502:null value in column "a" violates not-null constraint
+call prc_declare();
+
+statement ok
+DROP PROCEDURE IF EXISTS prc_declare();
+
+statement ok
+DROP TABLE IF EXISTS notnull_tab;
+
+#INT ARRAY,
+statement ok
+CREATE TABLE notnull_tab(a INT ARRAY NOT NULL);
+
+statement ok
+create or replace PROCEDURE prc_declare()
+as $$
+declare
+a INT ARRAY;
+begin
+INSERT INTO notnull_tab VALUES (a);
+end;
+$$ language plpgsql;
+
+statement error pq: ZNBase PLSQL ERMSG: 23502:null value in column "a" violates not-null constraint
+call prc_declare();
+
+statement ok
+DROP PROCEDURE IF EXISTS prc_declare();
+
+statement ok
+DROP TABLE IF EXISTS notnull_tab;
+
+#FLOAT[]
+statement ok
+CREATE TABLE notnull_tab(a FLOAT[] NOT NULL);
+
+statement ok
+create or replace PROCEDURE prc_declare()
+as $$
+declare
+a FLOAT[] ;
+begin
+INSERT INTO notnull_tab VALUES (a);
+end;
+$$ language plpgsql;
+
+statement error pq: ZNBase PLSQL ERMSG: 23502:null value in column "a" violates not-null constraint
+call prc_declare();
+
+statement ok
+DROP PROCEDURE IF EXISTS prc_declare();
+
+statement ok
+DROP TABLE IF EXISTS notnull_tab;
+
+#STRING ARRAY
+statement ok
+CREATE TABLE notnull_tab(a STRING ARRAY NOT NULL);
+
+statement ok
+create or replace PROCEDURE prc_declare()
+as $$
+declare
+a STRING ARRAY ;
+begin
+INSERT INTO notnull_tab VALUES (a);
+end;
+$$ language plpgsql;
+
+statement error pq: ZNBase PLSQL ERMSG: 23502:null value in column "a" violates not-null constraint
+call prc_declare();
+
+statement ok
+DROP PROCEDURE IF EXISTS prc_declare();
+
+statement ok
+DROP TABLE IF EXISTS notnull_tab;
+
+#OID
+statement ok
+CREATE TABLE notnull_tab(a OID NOT NULL);
+
+statement ok
+create or replace PROCEDURE prc_declare()
+as $$
+declare
+a OID;
+begin
+INSERT INTO notnull_tab VALUES (a);
+end;
+$$ language plpgsql;
+
+statement error pq: ZNBase PLSQL ERMSG: 23502:null value in column "a" violates not-null constraint
+call prc_declare();
+
+statement ok
+DROP PROCEDURE IF EXISTS prc_declare();
+
+statement ok
+DROP TABLE IF EXISTS notnull_tab;
+
+#NEWSQL-9038【测试环境】【NEWSQL数据库】【UDF】非法命名：UDF
+statement ok
+create database "‘数据库""]}'#$%^&*(";
+
+statement ok
+create schema "‘数据库""]}'#$%^&*("."'sdddd~/*&$#@!~";
+
+statement ok
+create or replace FUNCTION "‘数据库""]}'#$%^&*("."'sdddd~/*&$#@!~" .fun(a INT)
+returns integer as $$
+DECLARE
+ counts int;
+ a int = 4;
+BEGIN
+ counts = 1;
+ a=10;
+ a=11;
+return a+counts ;
+END
+$$ language plpgsql;
+
+statement ok
+DROP database IF EXISTS "‘数据库""]}'#$%^&*(";
+
+statement ok
+DROP schema  IF EXISTS "'sdddd~/*&$#@!~";
+
+statement ok
+DROP function IF EXISTS fun(a INT);
+
+# jira-8669
+statement ok
+drop table if exists prc_declare;
+
+statement ok
+create or replace function prc_declare1(a INT)
+RETURNS INT as $$
+declare
+a INT = 10;
+begin
+CREATE TABLE prc_declare AS SELECT a ;
+end;
+$$ language plpgsql;
+
+statement error prc_declare1\(\): ZNBase PLSQL ERMSG: control reached end of function without RETURN
+select prc_declare1(5);
+
+statement ok
+create or replace function prc_declare1(a INT)
+RETURNS INT as $$
+declare
+a INT = 10;
+begin
+CREATE TABLE prc_declare AS SELECT a ;
+return 12345;
+end;
+$$ language plpgsql;
+
+query I
+select prc_declare1(5);
+----
+12345
+
+statement ok
+drop function prc_declare1(int)
+
+# *tree.CreateRole not support in logic test, test in terminal
+# # jira-8836
+# statement ok
+# drop PROCEDURE if exists test_prv2();
+#
+# statement ok
+# CREATE OR REPLACE PROCEDURE test_prv2() AS $$
+# BEGIN
+#     create user u1;
+#     grant usage on database defaultdb to u1 with grant option;
+#     grant all on database defaultdb to u1;
+#     revoke grant option for usage on database defaultdb from u1;
+#     revoke all on database defaultdb from u1;
+#     create role role1;
+#     grant role1 to u1 with admin option;
+#     grant all on database defaultdb to role1;
+#     revoke admin option for role1 from u1;
+#     revoke role1 from u1;
+#     revoke all on database defaultdb from role1;
+#     drop user u1;
+#     drop role role1;
+# END $$ LANGUAGE plpgsql;
+#
+# statement ok
+# call test_prv2();
+#
+# statement ok
+# drop procedure test_prv2()
+
+#jira 9443
+statement ok
+DROP FUNCTION IF EXISTS fun_declare(OUT a INT);
+
+statement error pq: function result type must be INT because of OUT parameters
+create or replace FUNCTION fun_declare(OUT a INT)
+returns TEXT as $$
+declare
+a = 10;
+begin
+return a ;
+end;
+$$ language plpgsql;
+
+query error pq: No function/procedure matches the given name and argument types.
+SELECT fun_declare(1);
+
+statement ok
+DROP FUNCTION IF EXISTS fun_declare(OUT a INT);
+
+# jira-9846
+statement ok
+DROP FUNCTION IF EXISTS fun_declare();
+
+statement ok
+create or replace FUNCTION fun_declare()
+returns record as $$
+declare
+t1 INT[] ;
+begin
+t1 = ARRAY['a','b','c'];
+return t1;
+end;
+$$ language plpgsql;
+
+query T
+SELECT fun_declare();
+----
+(0,0,0)
+
+statement ok
+DROP FUNCTION fun_declare();
+
+statement ok
+drop function if exists test_udr();
+
+statement ok
+create or replace function test_udr()
+RETURNS int2 as $$
+DECLARE
+a INT :=39999;
+BEGIN
+return a;
+END
+$$ LANGUAGE plpgsql;
+
+query error pq: test_udr\(\): integer out of range for type INT2 \(variable "Return"\)
+select test_udr();
+
+statement ok
+drop function test_udr();
+
+#NEWSQL-10015 【NEWSQL数据库】【UDR】RETURNS类型、INOUT参数后类型，作为别名应该不报错
+#NEWSQL-10016  测试环境】【NEWSQL数据库】【UDR】入参利用别名替换，不应该报错应直接替换
+
+#int8 类型别名
+statement ok
+drop function if exists fun(int8);
+
+statement ok
+CREATE OR REPLACE function fun(a INT8)
+RETURNS INT8 as $$
+DECLARE
+a INT :=1;
+BEGIN
+return a;
+END $$ LANGUAGE plpgsql;
+
+query I
+select fun(12);
+----
+1
+
+statement ok
+CREATE OR REPLACE function fun(a bigINT)
+RETURNS INT8 as $$
+DECLARE
+a INT :=11;
+BEGIN
+return a;
+END $$ LANGUAGE plpgsql;
+
+query I
+select fun(12);
+----
+11
+
+statement ok
+CREATE OR REPLACE function fun(a bigINT)
+RETURNS bigINT as $$
+DECLARE
+a INT :=15;
+BEGIN
+return a;
+END $$ LANGUAGE plpgsql;
+
+query I
+select fun(12);
+----
+15
+
+statement ok
+CREATE OR REPLACE function fun(a integer)
+RETURNS integer as $$
+DECLARE
+a INT :=21;
+BEGIN
+return a;
+END $$ LANGUAGE plpgsql;
+
+query I
+select fun(12);
+----
+21
+
+statement ok
+CREATE OR REPLACE function fun(a int)
+RETURNS int as $$
+DECLARE
+a INT :=25;
+BEGIN
+return a;
+END $$ LANGUAGE plpgsql;
+
+query I
+select fun(12);
+----
+25
+
+statement ok
+CREATE OR REPLACE function fun(a int)
+RETURNS integer as $$
+DECLARE
+a INT :=31;
+BEGIN
+return a;
+END $$ LANGUAGE plpgsql;
+
+query I
+select fun(12);
+----
+31
+
+statement ok
+CREATE OR REPLACE function fun(a int64)
+RETURNS integer as $$
+DECLARE
+a INT :=35;
+BEGIN
+return a;
+END $$ LANGUAGE plpgsql;
+
+query I
+select fun(12);
+----
+35
+
+statement ok
+CREATE OR REPLACE function fun(a int64)
+RETURNS int64 as $$
+DECLARE
+a INT :=41;
+BEGIN
+return a;
+END $$ LANGUAGE plpgsql;
+
+query I
+select fun(12);
+----
+41
+
+statement ok
+CREATE OR REPLACE function fun(a serial8)
+RETURNS integer as $$
+DECLARE
+a INT :=45;
+BEGIN
+return a;
+END $$ LANGUAGE plpgsql;
+
+query I
+select fun(12);
+----
+45
+
+statement ok
+CREATE OR REPLACE function fun(a serial8)
+RETURNS serial8 as $$
+DECLARE
+a INT :=49;
+BEGIN
+return a;
+END $$ LANGUAGE plpgsql;
+
+query I
+select fun(12);
+----
+49
+
+statement ok
+CREATE OR REPLACE function fun(a bigserial)
+RETURNS bigserial as $$
+DECLARE
+a INT :=51;
+BEGIN
+return a;
+END $$ LANGUAGE plpgsql;
+
+query I
+select fun(12);
+----
+51
+
+statement ok
+CREATE OR REPLACE function fun(a serial8)
+RETURNS bigserial as $$
+DECLARE
+a INT :=61;
+BEGIN
+return a;
+END $$ LANGUAGE plpgsql;
+
+query I
+select fun(12);
+----
+61
+
+statement ok
+drop function if exists fun(int8);
+
+#int4 类型别名
+statement ok
+drop function if exists fun_reload2(int4);
+
+statement ok
+CREATE OR REPLACE function fun_reload2(a INT4)
+RETURNS INT4 as $$
+DECLARE
+a INT :=11;
+BEGIN
+return a;
+END $$ LANGUAGE plpgsql;
+
+query I
+select fun_reload2(12);
+----
+11
+
+statement ok
+CREATE OR REPLACE function fun_reload2(a serial4)
+RETURNS INT4 as $$
+DECLARE
+a INT :=15;
+BEGIN
+return a;
+END $$ LANGUAGE plpgsql;
+
+query I
+select fun_reload2(12);
+----
+15
+
+statement ok
+CREATE OR REPLACE function fun_reload2(a INT4)
+RETURNS serial4 as $$
+DECLARE
+a INT :=35;
+BEGIN
+return a;
+END $$ LANGUAGE plpgsql;
+
+query I
+select fun_reload2(12);
+----
+35
+
+statement ok
+CREATE OR REPLACE function fun_reload2(a serial4)
+RETURNS serial4 as $$
+DECLARE
+a INT :=17;
+BEGIN
+return a;
+END $$ LANGUAGE plpgsql;
+
+query I
+select fun_reload2(12);
+----
+17
+
+statement ok
+drop function if exists fun_reload2(int4);
+
+#int2 类型别名
+statement ok
+drop function if exists fun_reload(int2);
+
+statement ok
+CREATE OR REPLACE function fun_reload(a INT2)
+RETURNS INT2 as $$
+DECLARE
+a INT :=27;
+BEGIN
+return a;
+END $$ LANGUAGE plpgsql;
+
+query I
+select fun_reload(12);
+----
+27
+
+statement ok
+CREATE OR REPLACE function fun_reload(a SMALLINT)
+RETURNS SMALLINT as $$
+DECLARE
+a INT :=7;
+BEGIN
+return a;
+END $$ LANGUAGE plpgsql;
+
+query I
+select fun_reload(12);
+----
+7
+
+statement ok
+CREATE OR REPLACE function fun_reload(a int2)
+RETURNS serial2 as $$
+DECLARE
+a INT :=37;
+BEGIN
+return a;
+END $$ LANGUAGE plpgsql;
+
+query I
+select fun_reload(12);
+----
+37
+
+statement ok
+CREATE OR REPLACE function fun_reload(a serial2)
+RETURNS serial2 as $$
+DECLARE
+a INT :=47;
+BEGIN
+return a;
+END $$ LANGUAGE plpgsql;
+
+query I
+select fun_reload(12);
+----
+47
+
+statement ok
+CREATE OR REPLACE function fun_reload(a smallserial)
+RETURNS smallserial as $$
+DECLARE
+a INT :=57;
+BEGIN
+return a;
+END $$ LANGUAGE plpgsql;
+
+query I
+select fun_reload(12);
+----
+57
+
+statement ok
+drop function if exists fun_reload(int2);
+
+#float4 类型别名
+statement ok
+drop function if exists fun_reload(float4);
+
+statement ok
+CREATE OR REPLACE function fun_reload(a float4)
+RETURNS float4 as $$
+DECLARE
+a float4 :=1.7;
+BEGIN
+return a;
+END $$ LANGUAGE plpgsql;
+
+query R
+select fun_reload(1.0)
+----
+1.7
+
+statement ok
+CREATE OR REPLACE function fun_reload(a REAL)
+RETURNS REAL as $$
+DECLARE
+a REAL :=2.7;
+BEGIN
+return a;
+END $$ LANGUAGE plpgsql;
+
+query R
+select fun_reload(1.0)
+----
+2.7
+
+statement ok
+CREATE OR REPLACE function fun_reload(a float4)
+RETURNS REAL as $$
+DECLARE
+a REAL :=3.7;
+BEGIN
+return a;
+END $$ LANGUAGE plpgsql;
+
+query R
+select fun_reload(1.0)
+----
+3.7
+
+statement ok
+CREATE OR REPLACE function fun_reload(a REAL)
+RETURNS float4 as $$
+DECLARE
+a REAL :=4.7;
+BEGIN
+return a;
+END $$ LANGUAGE plpgsql;
+
+query R
+select fun_reload(1.0)
+----
+4.7
+
+statement ok
+drop function if exists fun_reload(float4);
+
+#float8 类型别名
+statement ok
+drop function if exists fun_reload(float8);
+
+statement ok
+CREATE OR REPLACE function fun_reload(a float8)
+RETURNS float8 as $$
+DECLARE
+a float8 :=1.7;
+BEGIN
+return a;
+END $$ LANGUAGE plpgsql;
+
+query R
+select fun_reload(1.0)
+----
+1.7
+
+statement ok
+CREATE OR REPLACE function fun_reload(a DOUBLE PRECISION)
+RETURNS DOUBLE PRECISION as $$
+DECLARE
+a DOUBLE PRECISION :=2.7;
+BEGIN
+return a;
+END $$ LANGUAGE plpgsql;
+
+query R
+select fun_reload(1.0)
+----
+2.7
+
+statement ok
+CREATE OR REPLACE function fun_reload(a DOUBLE PRECISION)
+RETURNS float8 as $$
+DECLARE
+a REAL :=3.7;
+BEGIN
+return a;
+END $$ LANGUAGE plpgsql;
+
+query R
+select fun_reload(1.0)
+----
+3.7
+
+statement ok
+CREATE OR REPLACE function fun_reload(a float8)
+RETURNS DOUBLE PRECISION as $$
+DECLARE
+a REAL :=4.7;
+BEGIN
+return a;
+END $$ LANGUAGE plpgsql;
+
+query R
+select fun_reload(1.0)
+----
+4.7
+
+statement ok
+drop function if exists fun_reload(float4);
+
+
+#json 类型别名
+
+statement ok
+drop function if exists fun_assignment();
+
+statement ok
+create or replace FUNCTION fun_assignment()
+returns JSONB as $$
+declare
+ JSONB  JSONB ;
+begin
+ JSONB= ('{"11foo":"bar"}'::JSON);
+ return JSONB ;
+end;
+$$ language plpgsql;
+
+query O
+select fun_assignment();
+----
+{"11foo": "bar"}
+
+statement ok
+create or replace FUNCTION fun_assignment()
+returns JSONB as $$
+declare
+ JSONB  JSONB ;
+begin
+ JSONB= ('{"22foo":"bar"}'::JSONB);
+ return JSONB ;
+end;
+$$ language plpgsql;
+
+query O
+select fun_assignment();
+----
+{"22foo": "bar"}
+
+statement ok
+create or replace FUNCTION fun_assignment()
+returns JSON as $$
+declare
+ JSON JSON  ;
+begin
+ JSON = ('{"33foo":"bar"}'::JSONB);
+ return JSON;
+end;
+$$ language plpgsql;
+
+query O
+select fun_assignment();
+----
+{"33foo": "bar"}
+
+statement ok
+create or replace FUNCTION fun_assignment()
+returns JSON as $$
+declare
+ JSON JSON  ;
+begin
+ JSON = ('{"44foo":"bar"}'::JSON);
+ return JSON;
+end;
+$$ language plpgsql;
+
+query O
+select fun_assignment();
+----
+{"44foo": "bar"}
+
+statement ok
+drop function if exists fun_assignment();
+
+#timestamp 类型别名
+statement ok
+drop function if exists fun_assignment(TIMESTAMP);
+
+statement ok
+create or replace FUNCTION fun_assignment(a TIMESTAMP)
+returns TIMESTAMP  as $$
+declare
+ TIMESTAMP TIMESTAMP ;
+begin
+ TIMESTAMP= '20001022';
+ return TIMESTAMP;
+end;
+$$ language plpgsql;
+
+query T
+select fun_assignment('20001005'::TIMESTAMP);
+----
+2000-10-22 00:00:00 +0000 +0000
+
+statement ok
+create or replace FUNCTION fun_assignment(a TIMESTAMP WITHOUT TIME ZONE)
+returns TIMESTAMP WITHOUT TIME ZONE  as $$
+declare
+ TIMESTAMP TIMESTAMP WITHOUT TIME ZONE ;
+begin
+ TIMESTAMP= '20001023';
+ return TIMESTAMP;
+end;
+$$ language plpgsql;
+
+query T
+select fun_assignment('20001005'::TIMESTAMP WITHOUT TIME ZONE);
+----
+2000-10-23 00:00:00 +0000 +0000
+
+statement ok
+create or replace FUNCTION fun_assignment(a TIMESTAMP WITHOUT TIME ZONE)
+returns TIMESTAMP as $$
+declare
+ TIMESTAMP TIMESTAMP WITHOUT TIME ZONE ;
+begin
+ TIMESTAMP= '20001024';
+ return TIMESTAMP;
+end;
+$$ language plpgsql;
+
+query T
+select fun_assignment('20001005'::TIMESTAMP WITHOUT TIME ZONE);
+----
+2000-10-24 00:00:00 +0000 +0000
+
+statement ok
+create or replace FUNCTION fun_assignment(a TIMESTAMP WITHOUT TIME ZONE)
+returns TIMESTAMP WITHOUT TIME ZONE as $$
+declare
+ TIMESTAMP TIMESTAMP ;
+begin
+ TIMESTAMP= '20001025';
+ return TIMESTAMP;
+end;
+$$ language plpgsql;
+
+query T
+select fun_assignment('20001005'::TIMESTAMP WITHOUT TIME ZONE);
+----
+2000-10-25 00:00:00 +0000 +0000
+
+statement error pq: cannot change return type of existing function\nUse DROP FUNCTION fun_assignment\(TIMESTAMP\) first.
+create or replace FUNCTION fun_assignment(a TIMESTAMP WITHOUT TIME ZONE)
+returns TIMESTAMP WITH TIME ZONE as $$
+declare
+ TIMESTAMP TIMESTAMP ;
+begin
+ TIMESTAMP= '20001026';
+ return TIMESTAMP;
+end;
+$$ language plpgsql;
+
+statement ok
+drop function if exists fun_assignment(TIMESTAMP);
+
+#timestamptz 类型别名
+statement ok
+drop function if exists fun_assignment(TIMESTAMPTZ);
+
+statement ok
+create or replace FUNCTION fun_assignment(a TIMESTAMPTZ)
+returns TIMESTAMPTZ as $$
+declare
+ TIMESTAMPTZ TIMESTAMPTZ ;
+begin
+ TIMESTAMPTZ= '20001122';
+ return TIMESTAMPTZ;
+end;
+$$ language plpgsql;
+
+query T
+select fun_assignment('20001005'::TIMESTAMPTZ);
+----
+2000-11-22 00:00:00 +0000 UTC
+
+statement ok
+create or replace FUNCTION fun_assignment(a TIMESTAMP WITH TIME ZONE)
+returns TIMESTAMP WITH TIME ZONE  as $$
+declare
+ TIMESTAMPTZ TIMESTAMP WITH TIME ZONE ;
+begin
+ TIMESTAMPTZ= '20001123';
+ return TIMESTAMPTZ;
+end;
+$$ language plpgsql;
+
+query T
+select fun_assignment('20001005'::TIMESTAMP WITH TIME ZONE);
+----
+2000-11-23 00:00:00 +0000 UTC
+
+statement ok
+create or replace FUNCTION fun_assignment(a TIMESTAMP WITH TIME ZONE)
+returns TIMESTAMPTZ as $$
+declare
+ TIMESTAMPTZ TIMESTAMP WITH TIME ZONE ;
+begin
+ TIMESTAMPTZ= '20001124';
+ return TIMESTAMPTZ;
+end;
+$$ language plpgsql;
+
+query T
+select fun_assignment('20001005'::TIMESTAMP WITH TIME ZONE);
+----
+2000-11-24 00:00:00 +0000 UTC
+
+statement ok
+create or replace FUNCTION fun_assignment(a TIMESTAMP WITH TIME ZONE)
+returns TIMESTAMP WITH TIME ZONE as $$
+declare
+ TIMESTAMPTZ TIMESTAMPTZ ;
+begin
+ TIMESTAMPTZ= '20001125';
+ return TIMESTAMPTZ;
+end;
+$$ language plpgsql;
+
+query T
+select fun_assignment('20001005'::TIMESTAMP WITH TIME ZONE);
+----
+2000-11-25 00:00:00 +0000 UTC
+
+statement error pq: cannot change return type of existing function\nUse DROP FUNCTION fun_assignment\(TIMESTAMPTZ\) first.
+create or replace FUNCTION fun_assignment(a TIMESTAMP WITH TIME ZONE)
+returns TIMESTAMP WITHOUT TIME ZONE as $$
+declare
+ TIMESTAMPTZ TIMESTAMPTZ ;
+begin
+ TIMESTAMPTZ= '20001126';
+ return TIMESTAMPTZ;
+end;
+$$ language plpgsql;
+
+statement ok
+drop function if exists fun_assignment(TIMESTAMPTZ);
+
+#bool 类型别名
+statement ok
+drop function if exists less_than1(boolean);
+
+statement ok
+CREATE or replace FUNCTION less_than1(a int, b int) RETURNS boolean AS $$
+BEGIN
+    RETURN a < b;
+END;
+$$ LANGUAGE plpgsql;
+
+
+query B
+select less_than1(1,2);
+----
+true
+
+statement ok
+CREATE or replace FUNCTION less_than1(a int, b int) RETURNS bool AS $$
+BEGIN
+    RETURN a < b;
+END;
+$$ LANGUAGE plpgsql;
+
+
+query B
+select less_than1(1,2);
+----
+true
+
+statement ok
+drop function if exists less_than1(boolean);
+
+#bool 类型别名
+statement ok
+drop function if exists fun_reload2(boolean);
+
+statement ok
+CREATE OR REPLACE function fun_reload2(a bool)
+RETURNS bool as $$
+DECLARE
+a bool := 1 < 2;
+BEGIN
+return a;
+END $$ LANGUAGE plpgsql;
+
+query B
+select fun_reload2(true);
+----
+true
+
+statement ok
+CREATE OR REPLACE function fun_reload2(a boolean)
+RETURNS boolean as $$
+DECLARE
+a boolean := 3 < 2;
+BEGIN
+return a;
+END $$ LANGUAGE plpgsql;
+
+query B
+select fun_reload2(true);
+----
+false
+
+statement ok
+CREATE OR REPLACE function fun_reload2(a bool)
+RETURNS boolean as $$
+DECLARE
+a bool := 12 < 2;
+BEGIN
+return a;
+END $$ LANGUAGE plpgsql;
+
+query B
+select fun_reload2(true);
+----
+false
+
+statement ok
+CREATE OR REPLACE function fun_reload2(a boolean)
+RETURNS bool as $$
+DECLARE
+a boolean := 3 < 5;
+BEGIN
+return a;
+END $$ LANGUAGE plpgsql;
+
+query B
+select fun_reload2(true);
+----
+true
+
+statement ok
+drop function if exists fun_reload2(boolean);
+
+#VARBIT 类型
+statement ok
+drop function IF EXISTS test_prc();
+
+statement ok
+create or replace function test_prc()
+returns VARBIT as $$
+declare
+    VARBIT VARBIT ;
+begin
+    VARBIT= 39;
+    return VARBIT;
+end;
+$$ language plpgsql;
+
+query T
+select test_prc();
+----
+100111
+
+statement ok
+create or replace function test_prc()
+returns BIT VARYING as $$
+declare
+    VARBIT BIT VARYING ;
+begin
+    VARBIT= 40;
+    return VARBIT;
+end;
+$$ language plpgsql;
+
+query T
+select test_prc();
+----
+101000
+
+statement ok
+drop function IF EXISTS test_prc();
+
+statement ok
+create or replace function test_prc()
+returns VARBIT as $$
+declare
+    VARBIT bit varying ;
+begin
+    VARBIT= 41;
+    return VARBIT;
+end;
+$$ language plpgsql;
+
+query T
+select test_prc();
+----
+101001
+
+statement ok
+create or replace function test_prc()
+returns VARBIT as $$
+declare
+    VARBIT BIT VARYING ;
+begin
+    VARBIT= 42;
+    return VARBIT;
+end;
+$$ language plpgsql;
+
+query T
+select test_prc();
+----
+101010
+
+statement ok
+drop function IF EXISTS test_prc();
+
+#BYTES 类型
+statement ok
+drop function IF EXISTS test_prc();
+
+statement ok
+create or replace function test_prc()
+returns BYTES as $$
+declare
+    BYTES BYTES ;
+begin
+    BYTES= b'\141\142\143';
+    return BYTES;
+end;
+$$ language plpgsql;
+
+query T
+select test_prc();
+----
+abc
+
+statement ok
+create or replace function test_prc()
+returns BYTEA as $$
+declare
+    BYTEA BYTEA ;
+begin
+    BYTEA= b'\141\142\144';
+    return BYTEA;
+end;
+$$ language plpgsql;
+
+query T
+select test_prc();
+----
+abd
+
+statement ok
+create or replace function test_prc()
+returns blob as $$
+declare
+    blob blob ;
+begin
+    blob= b'\141\142\145';
+    return blob;
+end;
+$$ language plpgsql;
+
+query T
+select test_prc();
+----
+abe
+
+statement ok
+create or replace function test_prc()
+returns blob as $$
+declare
+    blob BYTEA ;
+begin
+    blob= b'\141\142\146';
+    return blob;
+end;
+$$ language plpgsql;
+
+query T
+select test_prc();
+----
+abf
+
+statement ok
+create or replace function test_prc()
+returns blob as $$
+declare
+    blob bytes ;
+begin
+    blob= b'\141\142\147';
+    return blob;
+end;
+$$ language plpgsql;
+
+query T
+select test_prc();
+----
+abg
+
+statement ok
+create or replace function test_prc()
+returns bytes as $$
+declare
+    bytes bytea ;
+begin
+    bytes= b'\141\142\142';
+    return bytes;
+end;
+$$ language plpgsql;
+
+query T
+select test_prc();
+----
+abb
+
+statement ok
+create or replace function test_prc()
+returns blob as $$
+declare
+    blob bytea ;
+begin
+    blob= b'\141\142\141';
+    return blob;
+end;
+$$ language plpgsql;
+
+query T
+select test_prc();
+----
+aba
+
+statement ok
+drop function if exists test_prc();
+
+#int 数组
+statement ok
+drop function if exists fun_1(a INT);
+
+statement ok
+CREATE OR REPLACE FUNCTION fun_1(a INT) returns INT[] as
+$$
+DECLARE
+ t1 INT[];
+ t2 INT ARRAY;
+BEGIN
+t1=ARRAY[0,0,0];
+t2=ARRAY[1,2,3];
+RETURN t1||t2 ;
+END
+$$ LANGUAGE PLPGSQL;
+
+query O
+select * from fun_1(23);
+----
+{0,0,0,1,2,3}
+
+statement ok
+CREATE OR REPLACE FUNCTION fun_1(a INT) returns INT[] as
+$$
+DECLARE
+ t1 INT ARRAY;
+ t2 INT [];
+BEGIN
+t1=ARRAY[10,10,10];
+t2=ARRAY[11,12,13];
+RETURN t1||t2 ;
+END
+$$ LANGUAGE PLPGSQL;
+
+query O
+select * from fun_1(23);
+----
+{10,10,10,11,12,13}
+
+statement ok
+drop function if exists fun_1(a INT);
+
+#float 数组
+statement ok
+drop function if exists fun_assignment();
+
+statement ok
+create or replace FUNCTION fun_assignment()
+returns FLOAT[] as $$
+DECLARE
+t1 FLOAT [] ;
+t2 FLOAT ARRAY ;
+BEGIN
+t1 = ARRAY[1,2,3];
+t2 = ARRAY[1,2,3];
+return t1||t2 ;
+END
+$$ language plpgsql
+
+query O
+select * from fun_assignment();
+----
+{1.0,2.0,3.0,1.0,2.0,3.0}
+
+statement ok
+create or replace FUNCTION fun_assignment()
+returns FLOAT[] as $$
+DECLARE
+t1 FLOAT ARRAY ;
+t2 FLOAT  [];
+BEGIN
+t1 = ARRAY[2,3,4];
+t2 = ARRAY[13,23,34];
+return t1||t2 ;
+END
+$$ language plpgsql
+
+query O
+select * from fun_assignment();
+----
+{2.0,3.0,4.0,13.0,23.0,34.0}
+
+statement ok
+drop function fun_assignment();
+
+#string 数组
+statement ok
+CREATE OR REPLACE FUNCTION fun_2(a STRING) returns STRING[] as
+$$
+DECLARE
+t1 STRING[];
+t2 STRING ARRAY;
+BEGIN
+t1=ARRAY['0','0','0'];
+t2=ARRAY['1','2','3'];
+RETURN t1||t2 ;
+END
+$$ LANGUAGE PLPGSQL;
+
+query O
+select * from fun_2('1');
+----
+{0,0,0,1,2,3}
+
+statement ok
+CREATE OR REPLACE FUNCTION fun_2(a STRING,b STRING) returns STRING[] as
+$$
+DECLARE
+t1 STRING ARRAY;
+t2 STRING [];
+BEGIN
+t1=ARRAY['13','13','13'];
+t2=ARRAY['32','32','32'];
+RETURN t1||t2 ;
+END
+$$ LANGUAGE PLPGSQL;
+
+query O
+select * from fun_2('1','2');
+----
+{13,13,13,32,32,32}
+
+statement ok
+DROP FUNCTION fun_2(a STRING,b STRING);
+
+#bool 数组
+statement ok
+CREATE OR REPLACE FUNCTION fun_4(a BOOL) returns BOOL[] as
+$$
+DECLARE
+t1 BOOL[];
+t2 BOOL ARRAY;
+BEGIN
+t1=ARRAY[TRUE,TRUE,TRUE];
+t2=ARRAY[FALSE,FALSE,FALSE];
+RETURN t1||t2 ;
+END
+$$ LANGUAGE PLPGSQL;
+
+query O
+select * from fun_4(TRUE);
+----
+{t,t,t,f,f,f}
+
+statement ok
+CREATE OR REPLACE FUNCTION fun_4(a BOOL,b BOOL) returns BOOL[] as
+$$
+DECLARE
+t1 BOOL ARRAY;
+t2 BOOL [];
+BEGIN
+t1=ARRAY[FALSE,false,false];
+t2=ARRAY[true,TRUE,TRUE];
+RETURN t1||t2 ;
+END
+$$ LANGUAGE PLPGSQL;
+
+query O
+select * from fun_4(FALSE,FALSE);
+----
+{f,f,f,t,t,t}
+
+statement ok
+DROP FUNCTION fun_4(a BOOL,b BOOL);
+
+statement ok
+drop function if exists fun_reload(string);
+
+statement ok
+CREATE OR REPLACE function fun_reload(a char(5))
+RETURNS serial as $$
+DECLARE
+a serial :=10;
+BEGIN
+return a;
+END $$ LANGUAGE plpgsql;
+
+statement ok
+CREATE OR REPLACE function fun_reload(a text)
+RETURNS serial as $$
+DECLARE
+a serial :=10;
+BEGIN
+return a;
+END $$ LANGUAGE plpgsql;
+
+statement ok
+drop function if exists fun_reload(string);
+
+# jira 9446
+statement ok
+DROP FUNCTION IF EXISTS fun_declare();
+
+statement ok
+create or replace FUNCTION fun_declare()
+returns INT as $$
+declare
+ t INT ARRAY:=array[1,2,3]+array[1,2,3] ;
+begin
+ return t ;
+end;
+$$ language plpgsql;
+
+statement error pq: fun_declare\(\): ZNBase PLSQL ERMSG: XXOOO:unsupported binary operator: <int\[\]> \+ <int\[\]>
+SELECT fun_declare();
+
+statement ok
+DROP FUNCTION fun_declare();
+
+#10673
+statement ok
+CREATE OR REPLACE FUNCTION fun_14 (IN x float, IN y float)
+RETURNS float4 AS $$
+DECLARE
+re float;
+BEGIN
+re=x;
+RETURN re;
+END $$ LANGUAGE PLPGSQL;
+
+statement ok
+CREATE OR REPLACE FUNCTION fun_14 (IN x float, IN y float)
+RETURNS float4 AS $$
+DECLARE
+re float;
+BEGIN
+re=x;
+RETURN re;
+END $$ LANGUAGE PLPGSQL;
+
+statement ok
+CREATE OR REPLACE FUNCTION fun_14 (IN x float4, IN y float4)
+RETURNS float4 AS $$
+DECLARE
+re float;
+BEGIN
+re=x;
+RETURN re;
+END $$ LANGUAGE PLPGSQL;
+
+statement error pq: cannot change return type of existing function\nUse DROP FUNCTION fun_14\(FLOAT,FLOAT\) first.
+CREATE OR REPLACE FUNCTION fun_14 (IN x float, IN y float)
+RETURNS float8 AS $$
+DECLARE
+re float;
+BEGIN
+re=x;
+RETURN re;
+END $$ LANGUAGE PLPGSQL;
+
+statement ok
+drop function if exists fun_cur();
+
+statement ok
+create or replace function fun_cur()
+RETURNS INT as $$
+DECLARE
+cur1 cursor for select 1;
+BEGIN
+open cur1;
+return 1;
+END
+$$ LANGUAGE plpgsql;
+
+query I
+select fun_cur();
+----
+1
+
+
+statement ok
+drop function if exists fun_cur();

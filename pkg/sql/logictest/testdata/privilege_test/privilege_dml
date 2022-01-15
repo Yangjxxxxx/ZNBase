@@ -1,0 +1,461 @@
+# LogicTest: local-insecure-opt
+# LogicTest: local-insecure
+
+
+# Insert On Conflict Do Update privilege test
+userInsecure root
+
+statement ok
+CREATE USER u1;
+GRANT USAGE ON DATABASE test TO u1;
+CREATE TABLE t (a INT PRIMARY KEY, b INT, c INT, d INT);
+INSERT INTO t VALUES (1, 11, 111, 1111), (2, 22, 222, 2222), (3, 33, 333, 3333);
+
+#Test 1: Table privilege test - privilege check when there's no conflict
+userInsecure u1
+
+statement error user u1 does not have INSERT privilege on relation test.public.t
+INSERT INTO t (a, b, c) VALUES (4, 5, 6) ON CONFLICT (a) DO UPDATE SET c = EXCLUDED.c;
+
+userInsecure root
+
+statement ok
+GRANT INSERT (a, b, c) ON t TO u1;
+
+userInsecure u1
+
+statement error user u1 does not have UPDATE privilege on relation test.public.t
+INSERT INTO t (a, b, c) VALUES (4, 5, 6) ON CONFLICT (a) DO UPDATE SET c = EXCLUDED.c;
+
+userInsecure root
+
+statement ok
+GRANT UPDATE(c) ON t TO u1;
+
+userInsecure u1
+
+statement error user u1 does not have SELECT privilege on relation test.public.t
+INSERT INTO t (a, b, c) VALUES (4, 5, 6) ON CONFLICT (a) DO UPDATE SET c = EXCLUDED.c;
+
+userInsecure root
+
+statement ok
+GRANT SELECT(a) ON t TO u1;
+
+userInsecure u1
+
+statement error user u1 does not have SELECT privilege on relation test.public.t
+INSERT INTO t (a, b, c) VALUES (4, 5, 6) ON CONFLICT (a) DO UPDATE SET c = EXCLUDED.c;
+
+userInsecure root
+
+statement ok
+GRANT SELECT(c) ON t TO u1;
+
+userInsecure u1
+
+statement ok
+INSERT INTO t (a, b, c) VALUES (4, 5, 6) ON CONFLICT (a) DO UPDATE SET c = EXCLUDED.c;
+
+
+#Test 2: Table privilege test - privilege check when there is a conflict
+userInsecure root
+
+statement ok
+REVOKE ALL ON TABLE t FROM u1;
+
+userInsecure u1
+
+statement error user u1 does not have INSERT privilege on relation test.public.t
+INSERT INTO t (a, b, c) VALUES (1, 100, 100) ON CONFLICT (a) DO UPDATE SET c = EXCLUDED.c;
+
+userInsecure root
+
+statement ok
+GRANT insert(a, b, c) ON t TO u1;
+
+userInsecure u1
+
+statement error user u1 does not have UPDATE privilege on relation test.public.t
+INSERT INTO t (a, b, c) VALUES (1, 100, 100) ON CONFLICT (a) DO UPDATE SET c = EXCLUDED.c;
+
+userInsecure root
+
+statement ok
+GRANT UPDATE(c) ON t TO u1;
+
+userInsecure u1
+
+statement error user u1 does not have SELECT privilege on relation test.public.t
+INSERT INTO t (a, b, c) VALUES (1, 100, 100) ON CONFLICT (a) DO UPDATE SET c = EXCLUDED.c;
+
+userInsecure root
+
+statement ok
+GRANT SELECT(a, c) ON t TO u1;
+
+userInsecure u1
+
+statement ok
+INSERT INTO t (a, b, c) VALUES (1, 100, 100) ON CONFLICT (a) DO UPDATE SET c = EXCLUDED.c;
+
+
+#Test 3: Table privilege test - ON CONFLICT column is not a UNIQUE column
+userInsecure root
+
+statement ok
+REVOKE SELECT ON t FROM u1;
+GRANT SELECT (b, c) ON t TO u1;
+
+userInsecure u1
+
+statement error pq: there is no unique or exclusion constraint matching the ON CONFLICT specification
+INSERT INTO t (a, b, c) VALUES (0, 33, 0) ON CONFLICT (b) DO UPDATE SET c = EXCLUDED.c;
+
+
+#Test 4: Table privilege test - Grant all (column) to u1
+userInsecure root
+
+statement ok
+REVOKE ALL ON t FROM u1;
+GRANT ALL (a) ON t TO u1;
+
+userInsecure u1
+
+statement ok
+INSERT INTO t VALUES (3) ON CONFLICT (a) DO NOTHING;
+
+
+#Test 5: UPSERT INTO TABLE test
+userInsecure root
+
+statement ok
+REVOKE ALL ON TABLE t FROM u1;
+
+userInsecure u1
+
+statement error pq: user u1 does not have INSERT privilege on relation test.public.t
+UPSERT INTO t (a, b) VALUES (1, 0);
+
+userInsecure root
+
+statement ok
+GRANT insert(a, b) ON t TO u1;
+
+userInsecure u1
+
+statement error pq: user u1 does not have UPDATE privilege on relation test.public.t
+UPSERT INTO t (a, b) VALUES (1, 0);
+
+userInsecure root
+
+statement ok
+GRANT UPDATE(a, b) ON t TO u1;
+
+userInsecure u1
+
+statement error pq: user u1 does not have SELECT privilege on relation test.public.t
+UPSERT INTO t (a, b) VALUES (1, 0);
+
+userInsecure root
+
+statement ok
+GRANT SELECT(a, b) ON t TO u1;
+
+userInsecure u1
+
+statement ok
+UPSERT INTO t (a, b) VALUES (1, 0);
+
+
+#Test 6: UPSERT INTO TABLE test - without column names
+userInsecure u1
+
+statement error pq: user u1 does not have INSERT privilege on relation test.public.t
+UPSERT INTO t VALUES (3, 0, 0);
+
+userInsecure root
+
+statement ok
+GRANT INSERT (a, b, c, d) ON t TO u1;
+
+userInsecure u1
+
+statement error pq: user u1 does not have UPDATE privilege on relation test.public.t
+UPSERT INTO t VALUES (3, 0, 0);
+
+userInsecure root
+
+statement ok
+GRANT UPDATE (a, b, c, d) ON t TO u1;
+
+userInsecure u1
+
+statement error pq: user u1 does not have SELECT privilege on relation test.public.t
+UPSERT INTO t VALUES (3, 0, 0);
+
+userInsecure root
+
+statement ok
+GRANT SELECT (a, b, c, d) ON t TO u1;
+
+userInsecure u1
+
+statement ok
+UPSERT INTO t VALUES (3, 0, 0);
+
+userInsecure root
+
+statement ok
+DROP TABLE t;
+
+#Test 7: UPSERT with UNIQUE constraint
+userInsecure root
+
+statement ok
+CREATE TABLE t0 (a INT PRIMARY KEY, b INT UNIQUE, c INT);
+INSERT INTO t0 VALUES (1, 2, 3), (4, 5, 6);
+
+userInsecure u1
+
+statement error pq: user u1 does not have INSERT privilege on relation test.public.t0
+UPSERT INTO t0 VALUES (2, 2, 10);
+
+userInsecure root
+
+statement ok
+GRANT INSERT ON t0 TO u1;
+
+userInsecure u1
+
+statement error pq: user u1 does not have UPDATE privilege on relation test.public.t0
+UPSERT INTO t0 VALUES (2, 2, 10);
+
+userInsecure root
+
+statement ok
+GRANT UPDATE ON t0 TO u1;
+
+userInsecure u1
+
+statement error pq: user u1 does not have SELECT privilege on relation test.public.t0
+UPSERT INTO t0 VALUES (2, 2, 10);
+
+userInsecure root
+
+statement ok
+GRANT SELECT ON t0 TO u1;
+
+userInsecure u1
+
+statement error pq: 相同的键值 b=2 违反了唯一性约束 "t0_b_key"
+UPSERT INTO t0 VALUES (2, 2, 10);
+
+userInsecure root
+
+statement ok
+REVOKE ALL ON SCHEMA public FROM u1;
+REVOKE ALL ON DATABASE test FROM u1;
+DROP TABLE t0;
+DROP USER u1;
+
+
+###########################  JIRA Logic Test  ###################################
+
+#Test 1: JIRA bug number:11286 do nothing场景conflict列select权限检查缺失
+userInsecure root
+
+statement ok
+CREATE DATABASE db;
+CREATE SCHEMA db.sch;
+CREATE TABLE db.sch.t(a INT PRIMARY KEY DEFAULT unique_rowid(), b INT UNIQUE DEFAULT 66);
+INSERT INTO db.sch.t VALUES(1, 1),(2, 2);
+CREATE USER u;
+GRANT USAGE ON DATABASE db TO u;
+GRANT USAGE ON SCHEMA db.sch TO u;
+GRANT ALL(a) ON db.sch.t to u;
+
+userInsecure u
+
+statement ok
+use db;
+
+statement error pq: user u does not have SELECT privilege on relation db.sch.t
+INSERT INTO db.sch.t(a) VALUES(4) ON CONFLICT(b) DO NOTHING;
+
+#Test 2: JIRA bug number:11287 do nothing场景权限检查BUG
+userInsecure root
+
+statement ok
+GRANT ALL(a, b) ON db.sch.t to u;
+
+userInsecure u
+
+statement ok
+INSERT INTO db.sch.t(a) VALUES(4) ON CONFLICT(b) DO NOTHING;
+
+userInsecure root
+
+statement ok
+REVOKE ALL ON SCHEMA db.sch FROM u;
+REVOKE ALL ON DATABASE db FROM u;
+DROP TABLE db.sch.t;
+DROP USER u;
+
+#Test 3: JIRA bug number:11290
+userInsecure root
+
+statement ok
+CREATE TABLE db.sch.t(a INT, b INT, c INT, d INT, PRIMARY KEY(a, b));
+INSERT INTO db.sch.t VALUES(1, 1, 1, 1),(2, 2, 2, 2);
+CREATE TABLE db.sch.test(c1 INT, c2 INT, c3 INT);
+INSERT INTO db.sch.test VALUES(1, 1, 1),(2, 2, 2),(3, 3, 3),(1, 1, 1),(2, 2, 2),(3, 3, 3),(4, 4, 4);
+CREATE USER u;
+GRANT USAGE ON DATABASE db TO u;
+GRANT USAGE ON SCHEMA db.sch TO u;
+GRANT insert(a, b, c) ON db.sch.t to u;
+GRANT SELECT(a, b) ON db.sch.t to u;
+GRANT SELECT ON db.sch.test to u;
+
+userInsecure u
+
+statement ok
+USE db;
+INSERT INTO db.sch.t (SELECT DISTINCT ON(c1, c2, c3) * FROM db.sch.test) ON CONFLICT (a, b) DO NOTHING;
+INSERT INTO db.sch.t VALUES(1, 1, 1),(2, 2, 2),(3, 3, 3),(1, 1, 1),(2, 2, 2),(3, 3, 3),(4, 4, 4),(5, 5, 5) ON CONFLICT (a, b) DO NOTHING;
+
+userInsecure root
+
+statement ok
+REVOKE ALL ON SCHEMA db.sch FROM u;
+REVOKE ALL ON DATABASE db FROM u;
+DROP TABLE db.sch.t;
+DROP TABLE db.sch.test;
+DROP USER u;
+DROP SCHEMA db.sch;
+DROP DATABASE db;
+
+#Test 4: JIRA bug number:11289
+userInsecure root
+
+statement ok
+CREATE DATABASE db;
+CREATE SCHEMA db.sch;
+CREATE TABLE db.sch.t(city VARCHAR, user_id INT, node TIMESTAMP, usage_count INT, UNIQUE(city, user_id));
+INSERT INTO db.sch.t VALUES('bj', 1001, now(), 1),('tj', 1001, now(), 2);
+CREATE USER u;
+GRANT USAGE ON DATABASE db TO u;
+GRANT USAGE ON SCHEMA db.sch TO u;
+GRANT ALL(city, user_id, node) ON db.sch.t to u;
+
+userInsecure u
+
+statement ok
+INSERT INTO db.sch.t VALUES('bj', 1002, '2016-01-01') ON CONFLICT(city, user_id) DO UPDATE SET node = excluded.node;
+INSERT INTO db.sch.t VALUES('bj', 1002, '2016-01-01') ON CONFLICT(city, user_id) DO UPDATE SET node = (db.sch.t.node+excluded.node) WHERE excluded.node='2016-01-01';
+
+userInsecure root
+
+statement ok
+REVOKE ALL ON SCHEMA db.sch FROM u;
+REVOKE ALL ON DATABASE db FROM u;
+DROP TABLE db.sch.t;
+DROP USER u;
+DROP SCHEMA db.sch;
+DROP DATABASE db;
+
+#Test 5: JIRA bug number:11289 EXTRA (bug in comment)
+userInsecure root
+
+statement ok
+CREATE DATABASE db;
+CREATE SCHEMA db.sch;
+CREATE TABLE db.sch.t(city VARCHAR, user_id INT, node TIMESTAMP DEFAULT now(), usage_count INT DEFAULT 66, e INT, PRIMARY KEY(city, user_id), UNIQUE(node, usage_count));
+INSERT INTO db.sch.t VALUES('bj', 1001, now(), 1, 1),('tj', 1001, now(), 2, 2);
+CREATE USER u;
+GRANT USAGE ON DATABASE db TO u;
+GRANT USAGE ON SCHEMA db.sch TO u;
+GRANT ALL(city, user_id, node, usage_count) ON db.sch.t to u;
+
+userInsecure u
+
+statement ok
+INSERT INTO db.sch.t VALUES('bj', 1003, '2016-01-01', 66) ON CONFLICT(node, usage_count) DO UPDATE SET (city, user_id) = (excluded.city, excluded.user_id);
+
+userInsecure root
+
+statement ok
+REVOKE ALL ON SCHEMA db.sch FROM u;
+REVOKE ALL ON DATABASE db FROM u;
+DROP TABLE db.sch.t;
+DROP USER u;
+DROP SCHEMA db.sch;
+DROP DATABASE db;
+
+#Test 6: JIRA bug number:11293
+userInsecure root
+
+statement ok
+CREATE DATABASE db;
+CREATE SCHEMA db.sch;
+CREATE TABLE db.sch.t(a INT, b INT, c INT, d INT, PRIMARY KEY(a, b));
+INSERT INTO db.sch.t VALUES(1, 1, 1, 1),(2, 2, 2, 2);
+CREATE USER u;
+GRANT USAGE ON DATABASE db TO u;
+GRANT USAGE ON SCHEMA db.sch TO u;
+GRANT ALL(a, b, c) ON db.sch.t to u;
+
+userInsecure u
+
+statement ok
+UPSERT INTO db.sch.t(a, b, c) VALUES(3, 3, 3), (4, 4, 4), (5, 5, 5);
+UPSERT INTO db.sch.t(a, b, c) VALUES(3, 3, 4), (4, 4, 5), (5, 5, 5);
+UPSERT INTO db.sch.t(a, b, c) (SELECT generate_series(0, 5), generate_series(0, 5), generate_series(0, 5));
+
+userInsecure root
+
+statement ok
+REVOKE ALL ON SCHEMA db.sch FROM u;
+REVOKE ALL ON DATABASE db FROM u;
+DROP TABLE db.sch.t;
+DROP USER u;
+DROP SCHEMA db.sch;
+DROP DATABASE db;
+
+#Test 7: JIRA bug number:11288
+userInsecure root
+
+statement ok
+CREATE DATABASE db;
+CREATE SCHEMA db.sch;
+CREATE TABLE db.sch.t(city VARCHAR, user_id INT, node TIMESTAMP, usage_count INT, PRIMARY KEY(city, user_id));
+INSERT INTO db.sch.t VALUES('bj', 1001, now(), 1),('tj', 1001, now(), 2);
+CREATE USER u;
+GRANT USAGE ON DATABASE db TO u;
+GRANT USAGE ON SCHEMA db.sch TO u;
+GRANT ALL(city, user_id, node) ON db.sch.t to u;
+
+userInsecure u
+
+statement error pq: user u does not have SELECT privilege on relation db.sch.t
+INSERT INTO db.sch.t VALUES('bj', 1002, '2016-01-01') ON CONFLICT(city, user_id) DO UPDATE SET node = (db.sch.t.node+excluded.node) WHERE excluded.usage_count is null;
+
+userInsecure root
+
+statement ok
+GRANT SELECT(usage_count) ON db.sch.t TO u;
+
+userInsecure u
+
+statement ok
+INSERT INTO db.sch.t VALUES('bj', 1002, '2016-01-01') ON CONFLICT(city, user_id) DO UPDATE SET node = (db.sch.t.node+excluded.node) WHERE excluded.usage_count is null;
+
+userInsecure root
+
+statement ok
+REVOKE ALL ON SCHEMA db.sch FROM u;
+REVOKE ALL ON DATABASE db FROM u;
+DROP TABLE db.sch.t;
+DROP USER u;
+DROP SCHEMA db.sch;
+DROP DATABASE db;

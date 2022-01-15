@@ -1,0 +1,141 @@
+# LogicTest: local local-opt fakedist fakedist-opt fakedist-metadata
+
+statement ok
+CREATE TABLE test_kv(k INT PRIMARY KEY, v INT, w DECIMAL);
+  CREATE UNIQUE INDEX test_v_idx ON test_kv(v);
+  CREATE INDEX test_v_idx2 ON test_kv(v DESC) STORING(w);
+  CREATE INDEX test_v_idx3 ON test_kv(w) STORING(v);
+  CREATE TABLE test_kvr1(k INT PRIMARY KEY REFERENCES test_kv(k));
+  CREATE TABLE test_kvr2(k INT, v INT UNIQUE REFERENCES test_kv(k));
+  CREATE TABLE test_kvr3(k INT, v INT UNIQUE REFERENCES test_kv(v));
+  CREATE TABLE test_kvi1(k INT PRIMARY KEY) INTERLEAVE IN PARENT test_kv(k);
+  CREATE TABLE test_kvi2(k INT PRIMARY KEY, v INT);
+  CREATE UNIQUE INDEX test_kvi2_idx ON test_kvi2(v) INTERLEAVE IN PARENT test_kv(v);
+  CREATE VIEW test_v1 AS SELECT v FROM test_kv;
+  CREATE VIEW test_v2 AS SELECT v FROM test_v1;
+
+query ITITTBTB colnames
+SELECT * FROM zbdb_internal.table_columns WHERE descriptor_name LIKE 'test_%' ORDER BY descriptor_id, column_id
+----
+descriptor_id  descriptor_name  column_id  column_name  column_type                                                                             nullable  default_expr    hidden
+56             test_kv          1          k            semantic_type:INT width:64 precision:0 visible_type:BIGINT VisibleTypeName:"INT"        false     NULL            false
+56             test_kv          2          v            semantic_type:INT width:64 precision:0 visible_type:BIGINT VisibleTypeName:"INT"        true      NULL            false
+56             test_kv          3          w            semantic_type:DECIMAL width:0 precision:0 visible_type:NONE VisibleTypeName:"DECIMAL"   true      NULL            false
+57             test_kvr1        1          k            semantic_type:INT width:64 precision:0 visible_type:BIGINT VisibleTypeName:"INT"        false     NULL            false
+58             test_kvr2        1          k            semantic_type:INT width:64 precision:0 visible_type:BIGINT VisibleTypeName:"INT"        true      NULL            false
+58             test_kvr2        2          v            semantic_type:INT width:64 precision:0 visible_type:BIGINT VisibleTypeName:"INT"        true      NULL            false
+58             test_kvr2        3          rowid        semantic_type:INT width:0 precision:0 visible_type:NONE VisibleTypeName:"INT"           false     unique_rowid()  true
+59             test_kvr3        1          k            semantic_type:INT width:64 precision:0 visible_type:BIGINT VisibleTypeName:"INT"        true      NULL            false
+59             test_kvr3        2          v            semantic_type:INT width:64 precision:0 visible_type:BIGINT VisibleTypeName:"INT"        true      NULL            false
+59             test_kvr3        3          rowid        semantic_type:INT width:0 precision:0 visible_type:NONE VisibleTypeName:"INT"           false     unique_rowid()  true
+60             test_kvi1        1          k            semantic_type:INT width:64 precision:0 visible_type:BIGINT VisibleTypeName:"INT"        false     NULL            false
+61             test_kvi2        1          k            semantic_type:INT width:64 precision:0 visible_type:BIGINT VisibleTypeName:"INT"        false     NULL            false
+61             test_kvi2        2          v            semantic_type:INT width:64 precision:0 visible_type:BIGINT VisibleTypeName:"INT"        true      NULL            false
+62             test_v1          1          v            semantic_type:INT width:64 precision:0 visible_type:BIGINT VisibleTypeName:"INT"        true      NULL            false
+63             test_v2          1          v            semantic_type:INT width:64 precision:0 visible_type:BIGINT VisibleTypeName:"INT"        true      NULL            false
+
+query ITITTB colnames
+SELECT * FROM zbdb_internal.table_indexes WHERE descriptor_name LIKE 'test_%' ORDER BY descriptor_id, index_id
+----
+descriptor_id  descriptor_name  index_id  index_name       index_type  is_unique
+56             test_kv          1         primary          primary     true
+56             test_kv          2         test_v_idx       secondary   true
+56             test_kv          3         test_v_idx2      secondary   false
+56             test_kv          4         test_v_idx3      secondary   false
+57             test_kvr1        1         primary          primary     true
+58             test_kvr2        1         primary          primary     true
+58             test_kvr2        2         test_kvr2_v_key  secondary   true
+59             test_kvr3        1         primary          primary     true
+59             test_kvr3        2         test_kvr3_v_key  secondary   true
+60             test_kvi1        1         primary          primary     true
+61             test_kvi2        1         primary          primary     true
+61             test_kvi2        2         test_kvi2_idx    secondary   true
+62             test_v1          0         ·                primary     false
+63             test_v2          0         ·                primary     false
+
+query ITITTITTTT colnames
+SELECT * FROM zbdb_internal.index_columns WHERE descriptor_name LIKE 'test_%' ORDER BY descriptor_id, index_id, column_type, column_id
+----
+descriptor_id  descriptor_name  index_id  index_name       column_type  column_id  column_name  column_direction locate_in lease_in
+56             test_kv          1         primary          key          1          k            ASC               ·         ·
+56             test_kv          2         test_v_idx       extra        1          NULL         NULL              ·         ·
+56             test_kv          2         test_v_idx       key          2          v            ASC               ·         ·
+56             test_kv          3         test_v_idx2      extra        1          NULL         NULL              ·         ·
+56             test_kv          3         test_v_idx2      key          2          v            DESC              ·         ·
+56             test_kv          3         test_v_idx2      storing      3          NULL         NULL              ·         ·
+56             test_kv          4         test_v_idx3      composite    3          NULL         NULL              ·         ·
+56             test_kv          4         test_v_idx3      extra        1          NULL         NULL              ·         ·
+56             test_kv          4         test_v_idx3      key          3          w            ASC               ·         ·
+56             test_kv          4         test_v_idx3      storing      2          NULL         NULL              ·         ·
+57             test_kvr1        1         primary          key          1          k            ASC               ·         ·
+58             test_kvr2        1         primary          key          3          rowid        ASC               ·         ·
+58             test_kvr2        2         test_kvr2_v_key  extra        3          NULL         NULL              ·         ·
+58             test_kvr2        2         test_kvr2_v_key  key          2          v            ASC               ·         ·
+59             test_kvr3        1         primary          key          3          rowid        ASC               ·         ·
+59             test_kvr3        2         test_kvr3_v_key  extra        3          NULL         NULL              ·         ·
+59             test_kvr3        2         test_kvr3_v_key  key          2          v            ASC               ·         ·
+60             test_kvi1        1         primary          key          1          k            ASC               ·         ·
+61             test_kvi2        1         primary          key          1          k            ASC               ·         ·
+61             test_kvi2        2         test_kvi2_idx    extra        1          NULL         NULL              ·         ·
+61             test_kvi2        2         test_kvi2_idx    key          2          v            ASC               ·         ·
+
+query ITIIITITT colnames
+SELECT * FROM zbdb_internal.backward_dependencies WHERE descriptor_name LIKE 'test_%' ORDER BY descriptor_id, index_id, dependson_type, dependson_id, dependson_index_id
+----
+descriptor_id  descriptor_name  index_id  column_id  dependson_id  dependson_type  dependson_index_id  dependson_name    dependson_details
+57             test_kvr1        1         NULL       56            fk              1                   fk_k_ref_test_kv  SharedPrefixLen: 1
+58             test_kvr2        2         NULL       56            fk              1                   fk_v_ref_test_kv  SharedPrefixLen: 1
+59             test_kvr3        2         NULL       56            fk              2                   fk_v_ref_test_kv  SharedPrefixLen: 1
+60             test_kvi1        1         NULL       56            interleave      1                   NULL              SharedPrefixLen: 1
+61             test_kvi2        2         NULL       56            interleave      1                   NULL              SharedPrefixLen: 1
+62             test_v1          NULL      NULL       56            view            NULL                NULL              NULL
+63             test_v2          NULL      NULL       62            view            NULL                NULL              NULL
+
+query ITIITITT colnames
+SELECT * FROM zbdb_internal.forward_dependencies WHERE descriptor_name LIKE 'test_%' ORDER BY descriptor_id, index_id, dependedonby_type, dependedonby_id, dependedonby_index_id
+----
+descriptor_id  descriptor_name  index_id  dependedonby_id  dependedonby_type  dependedonby_index_id  dependedonby_name  dependedonby_details
+56             test_kv          NULL      62               view               0                      NULL               Columns: [1 2 3]
+56             test_kv          1         57               fk                 1                      ·                  SharedPrefixLen: 0
+56             test_kv          1         58               fk                 2                      ·                  SharedPrefixLen: 0
+56             test_kv          1         60               interleave         1                      NULL               SharedPrefixLen: 0
+56             test_kv          1         61               interleave         2                      NULL               SharedPrefixLen: 0
+56             test_kv          2         59               fk                 2                      ·                  SharedPrefixLen: 0
+62             test_v1          NULL      63               view               0                      NULL               Columns: [1]
+
+# Checks view dependencies (#17306)
+statement ok
+CREATE TABLE moretest_t(k INT, v INT);
+  CREATE VIEW moretest_v AS SELECT v FROM moretest_t WHERE FALSE
+
+query ITIIITITT colnames
+SELECT * FROM zbdb_internal.backward_dependencies WHERE descriptor_name LIKE 'moretest_%' ORDER BY descriptor_id, index_id, dependson_type, dependson_id, dependson_index_id
+----
+descriptor_id  descriptor_name  index_id  column_id  dependson_id  dependson_type  dependson_index_id  dependson_name  dependson_details
+65             moretest_v       NULL      NULL       64            view            NULL                NULL            NULL
+
+query ITIITITT colnames
+SELECT * FROM zbdb_internal.forward_dependencies WHERE descriptor_name LIKE 'moretest_%' ORDER BY descriptor_id, index_id, dependedonby_type, dependedonby_id, dependedonby_index_id
+----
+descriptor_id  descriptor_name  index_id  dependedonby_id  dependedonby_type  dependedonby_index_id  dependedonby_name  dependedonby_details
+64             moretest_t       NULL      65               view               0                      NULL               Columns: [1 2 3]
+
+# Check sequence dependencies.
+
+statement ok
+CREATE SEQUENCE blog_posts_id_seq
+
+statement ok
+CREATE TABLE blog_posts (id INT PRIMARY KEY DEFAULT nextval('blog_posts_id_seq'), title text)
+
+query ITIIITITT colnames
+SELECT * FROM zbdb_internal.backward_dependencies WHERE descriptor_name LIKE 'blog_posts'
+----
+descriptor_id  descriptor_name  index_id  column_id  dependson_id  dependson_type  dependson_index_id  dependson_name  dependson_details
+67             blog_posts       NULL      1          66            sequence        NULL                NULL            NULL
+
+query ITIITITT colnames
+SELECT * FROM zbdb_internal.forward_dependencies WHERE descriptor_name LIKE 'blog_posts%'
+----
+descriptor_id  descriptor_name    index_id  dependedonby_id  dependedonby_type  dependedonby_index_id  dependedonby_name  dependedonby_details
+66             blog_posts_id_seq  NULL      67               sequence           0                      NULL               Columns: [0]

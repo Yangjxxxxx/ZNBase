@@ -1,0 +1,9 @@
+statement ok
+SET statement_timeout = 1000;
+SELECT pg_sleep(0.8);
+
+statement error query execution canceled due to statement timeout
+BEGIN;UPDATE t SET value = 'Z' WHERE key = 0;
+
+statement ok
+ROLLBACK;

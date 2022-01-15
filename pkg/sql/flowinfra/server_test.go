@@ -1,0 +1,178 @@
+// Copyright 2016 The Cockroach Authors.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+// implied. See the License for the specific language governing
+// permissions and limitations under the License.
+
+package flowinfra
+
+import (
+	"context"
+	"fmt"
+	"io"
+	"testing"
+
+	"github.com/znbasedb/znbase/pkg/base"
+	"github.com/znbasedb/znbase/pkg/gossip"
+	"github.com/znbasedb/znbase/pkg/internal/client"
+	"github.com/znbasedb/znbase/pkg/rpc"
+	"github.com/znbasedb/znbase/pkg/sql/distsqlpb"
+	"github.com/znbasedb/znbase/pkg/sql/distsqlrun/runbase"
+	"github.com/znbasedb/znbase/pkg/sql/sqlbase"
+	"github.com/znbasedb/znbase/pkg/testutils"
+	"github.com/znbasedb/znbase/pkg/testutils/serverutils"
+	"github.com/znbasedb/znbase/pkg/testutils/sqlutils"
+	"github.com/znbasedb/znbase/pkg/util/leaktest"
+)
+
+func TestServer(t *testing.T) {
+	defer leaktest.AfterTest(t)()
+
+	ctx := context.Background()
+	s, sqlDB, kvDB := serverutils.StartServer(t, base.TestServerArgs{})
+	defer s.Stopper().Stop(ctx)
+	conn, err := s.RPCContext().GRPCDialNode(s.ServingAddr(), s.NodeID(), rpc.DefaultClass).Connect(ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	r := sqlutils.MakeSQLRunner(sqlDB)
+
+	r.Exec(t, `CREATE DATABASE test`)
+	r.Exec(t, `CREATE TABLE test.t (a INT PRIMARY KEY, b INT)`)
+	r.Exec(t, `INSERT INTO test.t VALUES (1, 10), (2, 20), (3, 30)`)
+
+	td := sqlbase.GetTableDescriptor(kvDB, "test", "public", "t")
+
+	ts := distsqlpb.TableReaderSpec{
+		Table:    *td,
+		IndexIdx: 0,
+		Reverse:  false,
+		Spans:    []distsqlpb.TableReaderSpan{{Span: td.PrimaryIndexSpan()}},
+	}
+	post := distsqlpb.PostProcessSpec{
+		Filter:        distsqlpb.Expression{Expr: "@1 != 2"}, // a != 2
+		Projection:    true,
+		OutputColumns: []uint32{0, 1}, // a
+	}
+
+	txn := client.NewTxn(ctx, kvDB, s.NodeID(), client.RootTxn)
+	txnCoordMeta := txn.GetTxnCoordMeta(ctx)
+	txnCoordMeta.StripRootToLeaf()
+
+	req := &distsqlpb.SetupFlowRequest{Version: runbase.Version1, TxnCoordMeta: &txnCoordMeta}
+	req.Flow = distsqlpb.FlowSpec{
+		Processors: []distsqlpb.ProcessorSpec{{
+			Core: distsqlpb.ProcessorCoreUnion{TableReader: &ts},
+			Post: post,
+			Output: []distsqlpb.OutputRouterSpec{{
+				Type:    distsqlpb.OutputRouterSpec_PASS_THROUGH,
+				Streams: []distsqlpb.StreamEndpointSpec{{Type: distsqlpb.StreamEndpointSpec_SYNC_RESPONSE}},
+			}},
+		}},
+	}
+
+	distSQLClient := distsqlpb.NewDistSQLClient(conn)
+	stream, err := distSQLClient.RunSyncFlow(ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := stream.Send(&distsqlpb.ConsumerSignal{SetupFlowRequest: req}); err != nil {
+		t.Fatal(err)
+	}
+
+	var decoder StreamDecoder
+	var rows sqlbase.EncDatumRows
+	var metas []distsqlpb.ProducerMetadata
+	for {
+		msg, err := stream.Recv()
+		if err != nil {
+			if err == io.EOF {
+				break
+			}
+			t.Fatal(err)
+		}
+		err = decoder.AddMessage(ctx, msg)
+		if err != nil {
+			t.Fatal(err)
+		}
+		rows, metas = testGetDecodedRows(t, &decoder, rows, metas)
+	}
+	metas = ignoreTxnCoordMeta(metas)
+	if len(metas) != 0 {
+		t.Errorf("unexpected metadata: %v", metas)
+	}
+	str := rows.String(sqlbase.TwoIntCols)
+	expected := "[[1 10] [3 30]]"
+	if str != expected {
+		t.Errorf("invalid results: %s, expected %s'", str, expected)
+	}
+
+	// Verify version handling.
+	t.Run("version", func(t *testing.T) {
+		testCases := []struct {
+			version     distsqlpb.DistSQLVersion
+			expectedErr string
+		}{
+			{
+				version:     runbase.Version + 1,
+				expectedErr: "version mismatch",
+			},
+			{
+				version:     runbase.MinAcceptedVersion - 1,
+				expectedErr: "",
+			},
+			{
+				version:     runbase.MinAcceptedVersion,
+				expectedErr: "",
+			},
+		}
+		for _, tc := range testCases {
+			t.Run(fmt.Sprintf("%d", tc.version), func(t *testing.T) {
+				distSQLClient := distsqlpb.NewDistSQLClient(conn)
+				stream, err := distSQLClient.RunSyncFlow(context.Background())
+				if err != nil {
+					t.Fatal(err)
+				}
+				req.Version = tc.version
+				if err := stream.Send(&distsqlpb.ConsumerSignal{SetupFlowRequest: req}); err != nil {
+					t.Fatal(err)
+				}
+				_, err = stream.Recv()
+				if !testutils.IsError(err, tc.expectedErr) {
+					t.Errorf("expected error '%s', got %v", tc.expectedErr, err)
+				}
+				// In the expectedErr == nil case, we leave a flow hanging; we're not
+				// consuming it. It will get canceled by the draining process.
+			})
+		}
+	})
+}
+
+// Test that a node gossips its DistSQL version information.
+func TestDistSQLServerGossipsVersion(t *testing.T) {
+	defer leaktest.AfterTest(t)()
+
+	s, _, _ := serverutils.StartServer(t, base.TestServerArgs{})
+	defer s.Stopper().Stop(context.TODO())
+
+	var v distsqlpb.DistSQLVersionGossipInfo
+	if err := s.Gossip().GetInfoProto(
+		gossip.MakeDistSQLNodeVersionKey(s.NodeID()), &v,
+	); err != nil {
+		t.Fatal(err)
+	}
+
+	if v.Version != 24 || v.MinAcceptedVersion != 21 {
+		t.Fatalf("node is gossipping the wrong version. Expected: [%d-%d], got [%d-%d",
+			24, 21, v.Version, v.MinAcceptedVersion)
+	}
+}

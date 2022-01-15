@@ -1,0 +1,225 @@
+# LogicTest: local-opt
+
+statement ok
+use defaultdb
+
+#1/
+#以BEFORE为触发时机创建触发器
+statement ok
+CREATE TABLE test(id INT, name STRING);
+
+statement ok
+INSERT INTO test VALUES (1, 'zhangsan'), (2, 'lisi'), (3, 'wangwu'), (4, 'maliu');
+
+statement ok
+CREATE TABLE test_data (num INT);
+
+statement ok
+CREATE PROCEDURE test_proc(a INT) AS $$
+BEGIN
+    INSERT INTO test_data VALUES(a);
+END
+$$ LANGUAGE plpgsql;
+
+statement ok
+CREATE TRIGGER tr1 BEFORE INSERT ON test FOR EACH ROW EXECUTE PROCEDURE test_proc(11);
+
+statement ok
+INSERT INTO test VALUES (5, 'tianqi');
+
+query IT
+SELECT * FROM test;
+----
+   1  zhangsan
+   2  lisi
+   3  wangwu
+   4  maliu
+   5  tianqi
+
+query I
+SELECT * FROM test_data;
+----
+  11
+
+statement ok
+DROP TRIGGER tr1 ON test;
+
+#以AFTER为触发时机创建触发器
+statement ok
+CREATE TRIGGER tr2 AFTER INSERT ON test FOR EACH ROW EXECUTE PROCEDURE test_proc(22);
+
+statement ok
+INSERT INTO test VALUES (6, 'liba');
+
+
+query IT
+SELECT * FROM test;
+----
+   1  zhangsan
+   2  lisi
+   3  wangwu
+   4  maliu
+   5  tianqi
+   6  liba
+
+query I
+SELECT * FROM test_data;
+----
+  11
+  22
+
+statement ok
+drop table test_data;
+
+statement ok
+drop table test;
+
+statement ok
+drop PROCEDURE test_proc(A INT);
+
+#示例2：分别以INSERT、DELETE、UPATE和TRUNCATE为事件创建触发器
+statement ok
+CREATE TABLE test(id INT, name STRING);
+
+statement ok
+INSERT INTO test VALUES (1, 'zhangsan'), (2, 'lisi'), (3, 'wangwu'), (4, 'maliu');
+
+statement ok
+CREATE TABLE test_data (num INT);
+
+statement ok
+CREATE PROCEDURE test_proc(a INT) AS $$
+BEGIN
+    INSERT INTO test_data VALUES(a);
+END
+$$ LANGUAGE plpgsql;
+
+statement ok
+CREATE TRIGGER tr1 BEFORE INSERT ON test FOR EACH ROW EXECUTE PROCEDURE test_proc(11);
+
+statement ok
+CREATE TRIGGER tr2 BEFORE DELETE ON test FOR EACH ROW EXECUTE PROCEDURE test_proc(22);
+
+statement ok
+CREATE TRIGGER tr3 BEFORE UPDATE ON test FOR EACH ROW EXECUTE PROCEDURE test_proc(33);
+
+statement ok
+CREATE TRIGGER tr4 BEFORE TRUNCATE ON test FOR EACH STATEMENT EXECUTE PROCEDURE test_proc(44);
+
+statement ok
+INSERT INTO test VALUES (5, 'tianqi');
+
+query IT
+SELECT * FROM test;
+----
+   1  zhangsan
+   2  lisi
+   3  wangwu
+   4  maliu
+   5  tianqi
+
+query I
+SELECT * FROM test_data;
+----
+  11
+
+statement ok
+DELETE FROM test WHERE id = 1;
+
+query IT
+SELECT * FROM test;
+----
+   2  lisi
+   3  wangwu
+   4  maliu
+   5  tianqi
+
+query I
+SELECT * FROM test_data;
+----
+  11
+  22
+
+statement ok
+UPDATE test SET name='yangyang' WHERE id=2;
+
+query IT
+SELECT * FROM test;
+----
+   2  yangyang
+   3  wangwu
+   4  maliu
+   5  tianqi
+
+query I
+SELECT * FROM test_data;
+----
+  11
+  22
+  33
+
+statement ok
+TRUNCATE test;
+
+query   IT
+SELECT * FROM test;
+----
+
+query   I
+SELECT * FROM test_data;
+----
+  11
+  22
+  33
+  44
+
+statement ok
+drop table test_data;
+
+statement ok
+drop table test;
+
+statement ok
+drop PROCEDURE test_proc(A INT);
+
+#示例3:直接指定语句集创建触发器而不是通过已经创建好的存储过程
+statement ok
+CREATE TABLE test(id INT, name text);
+
+statement ok
+INSERT INTO test VALUES (1, 'zhangsan'), (2, 'lisi'), (3, 'wangwu'), (4, 'maliu');
+
+statement ok
+CREATE TABLE test_data (num INT);
+
+#报错，提示根据内容现行建立的存储过程不存在
+#statement ok
+#CREATE TRIGGER tr1 BEFORE INSERT ON test
+#FOR EACH ROW
+#BEGIN $$
+#INSERT INTO test_data VALUES(789);
+#$$ END;
+
+statement ok
+INSERT INTO test VALUES (5, 'tianqi');
+
+query IT
+SELECT * FROM test;
+----
+   1  zhangsan
+   2  lisi
+   3  wangwu
+   4  maliu
+   5  tianqi
+
+#query I
+#SELECT * FROM test_data;
+#----
+# 789
+
+statement ok
+drop table test_data;
+
+statement ok
+drop table test;
+

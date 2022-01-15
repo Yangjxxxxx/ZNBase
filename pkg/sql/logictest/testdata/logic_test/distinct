@@ -1,0 +1,30 @@
+# LogicTest: local local-opt local-parallel-stmts fakedist fakedist-opt fakedist-metadata fakedist-disk
+
+statement ok
+CREATE TABLE xyz (
+  x INT PRIMARY KEY,
+  y INT,
+  z INT,
+  INDEX foo (z, y)
+)
+
+statement ok
+INSERT INTO xyz VALUES
+  (1, 2, 3),
+  (2, 5, 6),
+  (3, 2, 3),
+  (4, 5, 6),
+  (5, 2, 6),
+  (6, 3, 5),
+  (7, 2, 9)
+
+query II rowsort
+SELECT y, z FROM xyz
+----
+2 3
+5 6
+2 3
+5 6
+2 6
+3 5
+2 9

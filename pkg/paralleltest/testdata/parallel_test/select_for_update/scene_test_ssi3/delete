@@ -1,0 +1,18 @@
+statement ok
+SET statement_timeout = 1000;
+SELECT pg_sleep(0.8);
+
+statement ok
+SET SESSION CHARACTERISTICS AS TRANSACTION ISOLATION LEVEL READ COMMITTED;
+
+statement error query execution canceled due to statement timeout
+BEGIN;DELETE FROM t WHERE key = 0;
+
+statement ok
+ROLLBACK;
+
+statement ok
+BEGIN;DELETE FROM t WHERE key = 0;
+
+statement ok
+COMMIT;

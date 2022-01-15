@@ -1,0 +1,611 @@
+# LogicTest: local-insecure-opt
+
+statement ok
+CREATE TABLE menu(id INT,title VARCHAR,p_id INT)
+
+statement ok
+INSERT INTO menu VALUES (1, '父菜单1',null),(6, '一级菜单6',1),(7, '一级菜单7',1),(8, '一级菜单8',1),(21, '二级菜单21',6),
+(22, '二级菜单22',6),(23, '二级菜单23',7),(24, '二级菜单24',7),(25, '二级菜单25',8)
+
+query ITI colnames
+SELECT * FROM menu START WITH id = 1 CONNECT BY PRIOR id = p_id
+----
+id  title   p_id
+1  父菜单1    NULL
+6  一级菜单6     1
+7  一级菜单7     1
+8  一级菜单8     1
+21  二级菜单21   6
+22  二级菜单22   6
+23  二级菜单23   7
+24  二级菜单24   7
+25  二级菜单25   8
+
+query ITI colnames
+SELECT * FROM menu START WITH id = 1 CONNECT BY PRIOR id < p_id
+----
+id  title   p_id
+1  父菜单1    NULL
+21  二级菜单21   6
+22  二级菜单22   6
+23  二级菜单23   7
+24  二级菜单24   7
+25  二级菜单25   8
+
+query ITI colnames
+SELECT * FROM menu START WITH id = 1 CONNECT BY PRIOR id > p_id
+----
+id  title   p_id
+1  父菜单1    NULL
+
+query ITI colnames
+SELECT * FROM menu START WITH id = 25 CONNECT BY id = PRIOR p_id
+----
+id  title   p_id
+25  二级菜单25   8
+8  一级菜单8     1
+1  父菜单1    NULL
+
+query ITI colnames
+SELECT id,title,p_id FROM menu m where length(m.title) > 5 START WITH m.id = 1 CONNECT BY PRIOR id = p_id ORDER BY id
+----
+  id  title       p_id
+  21  二级菜单21     6
+  22  二级菜单22     6
+  23  二级菜单23     7
+  24  二级菜单24     7
+  25  二级菜单25     8
+
+query ITII colnames
+SELECT id,title,p_id,level FROM menu START WITH id = 1 CONNECT BY PRIOR id = p_id
+----
+id  title   p_id    level
+1  父菜单1    NULL     1
+6  一级菜单6     1     2
+7  一级菜单7     1     2
+8  一级菜单8     1     2
+21  二级菜单21   6     3
+22  二级菜单22   6     3
+23  二级菜单23   7     3
+24  二级菜单24   7     3
+25  二级菜单25   8     3
+
+query ITII colnames
+SELECT *,level FROM menu START WITH id = 1 CONNECT BY NOCYCLE PRIOR id = p_id ORDER BY id
+----
+id  title   p_id    level
+1  父菜单1    NULL     1
+6  一级菜单6     1     2
+7  一级菜单7     1     2
+8  一级菜单8     1     2
+21  二级菜单21   6     3
+22  二级菜单22   6     3
+23  二级菜单23   7     3
+24  二级菜单24   7     3
+25  二级菜单25   8     3
+
+query ITIII colnames
+SELECT id,title,p_id,level,connect_by_root(id) root_id FROM menu START WITH id = 1 CONNECT BY PRIOR id = p_id
+----
+id  title   p_id    level   root_id
+1  父菜单1    NULL     1        1
+6  一级菜单6     1     2        1
+7  一级菜单7     1     2        1
+8  一级菜单8     1     2        1
+21  二级菜单21   6     3        1
+22  二级菜单22   6     3        1
+23  二级菜单23   7     3        1
+24  二级菜单24   7     3        1
+25  二级菜单25   8     3        1
+
+query ITIIIT colnames
+SELECT id,title,p_id,level,connect_by_root(id) root_id,sys_connect_by_path(title,'/')as path FROM menu
+START WITH id = 1 CONNECT BY PRIOR id = p_id
+----
+id  title   p_id    level   root_id   path
+1  父菜单1    NULL     1        1     /父菜单1
+6  一级菜单6     1     2        1     /父菜单1/一级菜单6
+7  一级菜单7     1     2        1     /父菜单1/一级菜单7
+8  一级菜单8     1     2        1     /父菜单1/一级菜单8
+21  二级菜单21   6     3        1     /父菜单1/一级菜单6/二级菜单21
+22  二级菜单22   6     3        1     /父菜单1/一级菜单6/二级菜单22
+23  二级菜单23   7     3        1     /父菜单1/一级菜单7/二级菜单23
+24  二级菜单24   7     3        1     /父菜单1/一级菜单7/二级菜单24
+25  二级菜单25   8     3        1     /父菜单1/一级菜单8/二级菜单25
+
+
+query ITIIITI colnames
+SELECT id,title,p_id,level,connect_by_root(id) root_id,sys_connect_by_path(title,'/')as path,connect_by_isleaf leaf FROM menu START WITH id = 1 CONNECT BY PRIOR id = p_id ORDER BY id
+----
+id  title   p_id    level   root_id   path                       leaf
+1  父菜单1    NULL     1        1     /父菜单1                        0
+6  一级菜单6     1     2        1     /父菜单1/一级菜单6               0
+7  一级菜单7     1     2        1     /父菜单1/一级菜单7               0
+8  一级菜单8     1     2        1     /父菜单1/一级菜单8               0
+21  二级菜单21   6     3        1     /父菜单1/一级菜单6/二级菜单21      1
+22  二级菜单22   6     3        1     /父菜单1/一级菜单6/二级菜单22      1
+23  二级菜单23   7     3        1     /父菜单1/一级菜单7/二级菜单23      1
+24  二级菜单24   7     3        1     /父菜单1/一级菜单7/二级菜单24      1
+25  二级菜单25   8     3        1     /父菜单1/一级菜单8/二级菜单25      1
+
+statement ok
+DELETE FROM menu WHERE id=1
+
+statement ok
+INSERT INTO menu(id, title, p_id) values(1, 'cycle',6)
+
+query error CONNECT_BY_ISCYCLE must use with NOCYCLE
+SELECT id,title,p_id,level,connect_by_root(id) root_id,sys_connect_by_path(title,'/')as path,connect_by_isleaf leaf,connect_by_iscycle iscycle FROM menu
+START WITH id = 1 CONNECT BY PRIOR id = p_id ORDER BY id
+
+query error loop in data
+SELECT id,title,p_id,level,connect_by_root(id) root_id,sys_connect_by_path(title,'/')as path,connect_by_isleaf leaf FROM menu
+START WITH id = 1 CONNECT BY PRIOR id = p_id ORDER BY id
+
+query ITIIITII colnames
+SELECT id,title,p_id,level,connect_by_root(id) root_id,sys_connect_by_path(title,'/')as path,connect_by_isleaf leaf,connect_by_iscycle iscycle FROM menu
+START WITH id = 1 CONNECT BY NOCYCLE PRIOR id = p_id ORDER BY id
+----
+id   title     p_id  level  root_id      path                leaf  iscycle
+1    cycle     6     1      1           /cycle                  0     0
+6   一级菜单6    1     2      1        /cycle/一级菜单6            0     1
+7   一级菜单7    1     2      1        /cycle/一级菜单7            0     0
+8   一级菜单8    1     2      1        /cycle/一级菜单8            0     0
+21  二级菜单21   6     3      1        /cycle/一级菜单6/二级菜单21  1     0
+22  二级菜单22   6     3      1        /cycle/一级菜单6/二级菜单22  1     0
+23  二级菜单23   7     3      1        /cycle/一级菜单7/二级菜单23  1     0
+24  二级菜单24   7     3      1        /cycle/一级菜单7/二级菜单24  1     0
+25  二级菜单25   8     3      1        /cycle/一级菜单8/二级菜单25  1     0
+
+query ITIIITII colnames
+SELECT id,title,p_id,level,connect_by_root(id) root_id,sys_connect_by_path(title,'/')as path,connect_by_isleaf leaf,connect_by_iscycle iscycle FROM menu
+START WITH id = 1 CONNECT BY NOCYCLE PRIOR id = p_id ORDER BY id
+----
+id   title     p_id  level  root_id      path                leaf  iscycle
+1    cycle     6     1      1           /cycle                  0     0
+6   一级菜单6    1     2      1        /cycle/一级菜单6            0     1
+7   一级菜单7    1     2      1        /cycle/一级菜单7            0     0
+8   一级菜单8    1     2      1        /cycle/一级菜单8            0     0
+21  二级菜单21   6     3      1        /cycle/一级菜单6/二级菜单21  1     0
+22  二级菜单22   6     3      1        /cycle/一级菜单6/二级菜单22  1     0
+23  二级菜单23   7     3      1        /cycle/一级菜单7/二级菜单23  1     0
+24  二级菜单24   7     3      1        /cycle/一级菜单7/二级菜单24  1     0
+25  二级菜单25   8     3      1        /cycle/一级菜单8/二级菜单25  1     0
+
+query ITI colnames
+SELECT id,title,p_id FROM (SELECT id,title,p_id,level,connect_by_root(id) root_id,sys_connect_by_path(title,'/')as path,connect_by_isleaf leaf,connect_by_iscycle iscycle FROM menu
+START WITH id = 1 CONNECT BY NOCYCLE PRIOR id = p_id )ORDER BY id
+----
+id   title     p_id
+1    cycle     6
+6   一级菜单6    1
+7   一级菜单7    1
+8   一级菜单8    1
+21  二级菜单21   6
+22  二级菜单22   6
+23  二级菜单23   7
+24  二级菜单24   7
+25  二级菜单25   8
+
+statement ok
+DROP table menu
+
+#test
+statement ok
+DROP TABLE IF EXISTS test
+
+statement ok
+CREATE TABLE test (id1 INT ,id2 INT UNIQUE,id3 INT,PRIMARY KEY(id1,id2) )
+
+query error no data source matches prefix: t
+SELECT t.* FROM test START WITH id1 > 0100 CONNECT BY PRIOR id1 > id3 ORDER BY id1,id2,id3
+
+statement ok
+INSERT INTO  test (id1,id2,id3) VALUES (0000,0001,0100),(0000,0002,NULL),(0000,0003,NULL),(0100,0101,NULL),(0100,0102,0200),
+(0100,0103,NULL),(0200,0201,NULL),(0200,0202,NULL),(0200,0203,0300),(0300,0301,NULL),(0300,0302,NULL),(0300,0303,NULL),(9999,10001,NULL),(9999,10002,NULL),(9999,10003,NULL)
+
+statement count 9
+SELECT t.*,level,sys_connect_by_path('a','b')FROM test t START WITH id1 = 0100 CONNECT BY id1 = PRIOR id3
+
+statement count 6
+SELECT t.*,level,sys_connect_by_path(t.id1,'/') , connect_by_root(id1) ,connect_by_isleaf
+FROM test t START WITH id1 = 0100 CONNECT BY PRIOR id1 = id3 ORDER BY id1
+
+#test
+statement ok
+DROP TABLE IF EXISTS test;
+
+statement ok
+CREATE TABLE test (id1 INT ,id2 INT UNIQUE,id3 INT,PRIMARY KEY(id1,id2) )
+
+statement ok
+INSERT INTO test (id1,id2,id3) VALUES (0000,0001,0100),(0000,0002,NULL),(0000,0003,NULL),(0100,0101,NULL),(0100,0102,0200),(0100,0103,NULL),(0200,0201,NULL),
+(0200,0202,NULL),(0200,0203,0300),(0300,0301,NULL),(0300,0302,NULL),(0300,0303,NULL),(9999,10001,NULL),(9999,10002,NULL),(9999,10003,NULL)
+
+statement count 9
+SELECT t.*,level,sys_connect_by_path(id1,'/') as p1,sys_connect_by_path(id2,'/') as p2,connect_by_root(id3)
+FROM test t START WITH id1 = 0100 CONNECT BY id1 = PRIOR id3 ORDER BY id1
+
+query error "connect_by_root\(\)" invalid number of arguments
+SELECT t.*,level,sys_connect_by_path(id1,id2,'/'),connect_by_root(id1,id2,id3)
+FROM test t START WITH id1 = 0100 CONNECT BY PRIOR id1 = id3 ORDER BY id1
+
+query IIIT colnames
+SELECT t.*,sys_connect_by_path(id1||'aaa','/') FROM test t START WITH id1 = 0100 CONNECT BY PRIOR id1 = id3 ORDER BY id1
+----
+  id1  id2  id3  sys_connect_by_path
+   0    1   100  /100aaa/0aaa
+   0    1   100  /100aaa/0aaa
+   0    1   100  /100aaa/0aaa
+  100  101  NULL /100aaa
+  100  102  200  /100aaa
+  100  103  NULL /100aaa
+
+statement count 6
+SELECT t.*,sys_connect_by_path(id1||id2,'/')||'aaa' FROM test t START WITH id1 = 0100 CONNECT BY PRIOR id1 = id3 ORDER BY id1
+
+statement count 6
+SELECT level||level FROM test t START WITH id1 = 0100 CONNECT BY PRIOR id1 = id3 ORDER BY id1
+
+statement count 6
+SELECT t.*,level||'AAA' FROM test t START WITH id1 = 0100 CONNECT BY PRIOR id1 = id3 ORDER BY id1
+
+statement count 6
+SELECT t.*,level-1 FROM test t START WITH id1 = 0100 CONNECT BY PRIOR id1 = id3 ORDER BY id1
+
+statement count 6
+SELECT t.*,sys_connect_by_path(id1,'/')||'AAA' FROM test t START WITH id1 = 0100 CONNECT BY PRIOR id1 = id3 ORDER BY id1
+
+query IIIIT colnames
+SELECT t.*,level,sys_connect_by_path(id3,'/') FROM test t START WITH id1 = 0100 CONNECT BY id1 = PRIOR id3 ORDER BY id1
+----
+  id1  id2  id3   level  sys_connect_by_path
+  100  101  NULL      1  /
+  100  102   200      1  /200
+  100  103  NULL      1  /
+  200  201  NULL      2  /200/
+  200  202  NULL      2  /200/
+  200  203   300      2  /200/300
+  300  301  NULL      3  /200/300/
+  300  302  NULL      3  /200/300/
+  300  303  NULL      3  /200/300/
+
+statement count 6
+SELECT t.*,level,sys_connect_by_path(id1,'/') FROM test t START WITH id1 = 0100 CONNECT BY PRIOR id1 = id3 ORDER BY id1
+
+statement count 6
+SELECT t.*,level FROM test t START WITH id1 = 0100 CONNECT BY PRIOR id1 = id3 ORDER BY id1
+
+query IIIII colnames
+SELECT t.*,t.id2,t.id3 FROM test t START WITH t.id1 = 0100 CONNECT BY PRIOR t.id1 = t.id3 ORDER BY t.id1,t.id2,t.id3
+----
+  id1   id2  id3   id2  id3
+    0    1   100    1   100
+    0    1   100    1   100
+    0    1   100    1   100
+  100  101  NULL  101  NULL
+  100  102   200  102   200
+  100  103  NULL  103  NULL
+
+query error Function parameters are temporarily not supported in "sys_connect_by_path\(\)" function
+SELECT t.*,id2,id3,level,sys_connect_by_path(length(id3),'/') FROM test t START WITH id1 = 0100 CONNECT BY PRIOR id1 = id3 ORDER BY t.id1,t.id2,t.id3,level
+
+query error Function parameters are temporarily not supported in "sys_connect_by_path\(\)" function
+SELECT t.*,id2,id3,level,sys_connect_by_path(isnull(id3),'/') FROM test t START WITH id1 = 0100 CONNECT BY PRIOR id1 = id3 ORDER BY t.id1,t.id2,t.id3,level
+
+query error Function parameters are temporarily not supported in "connect_by_root\(\)" function
+SELECT t.*,id2,id3,level,connect_by_root(isnull(id3)) FROM test t START WITH id1 = 0100 CONNECT BY PRIOR id1 = id3 ORDER BY t.id1,t.id2,t.id3,level
+
+query error illegal parameter in "sys_connect_by_path\(\)" function
+SELECT t.*,id2,id3,level,sys_connect_by_path(NULL,NULL) FROM test t START WITH id1 = 0100 CONNECT BY PRIOR id1 = id3 ORDER BY t.id1,t.id2,t.id3,level
+
+query IIIIIIT colnames
+SELECT t.*,id2,id3,level,connect_by_root(NULL) FROM test t START WITH id1 = 0100 CONNECT BY PRIOR id1 = id3 ORDER BY t.id1,t.id2,t.id3,level
+----
+   id1  id2  id3   id2  id3   level  connect_by_root
+    0    1   100    1   100      2  Null
+    0    1   100    1   100      2  Null
+    0    1   100    1   100      2  Null
+  100  101  NULL  101  NULL      1  Null
+  100  102   200  102   200      1  Null
+  100  103  NULL  103  NULL      1  Null
+
+query IIIIIIT colnames
+SELECT t.*,id2,id3,level,sys_connect_by_path(level,'/') FROM test t START WITH id1 = 0100 CONNECT BY PRIOR id1 = id3 ORDER BY t.id1,t.id2,t.id3
+----
+   id1  id2  id3   id2  id3   level  sys_connect_by_path
+    0    1   100    1   100      2         /1/2
+    0    1   100    1   100      2         /1/2
+    0    1   100    1   100      2         /1/2
+  100  101  NULL  101  NULL      1         /1
+  100  102   200  102   200      1         /1
+  100  103  NULL  103  NULL      1         /1
+
+query IIIIII colnames
+SELECT t.*,id2,id3,level FROM test t START WITH id1 = 0100 CONNECT BY PRIOR id1 = id3 ORDER BY t.id1,t.id2,t.id3,level limit 2
+----
+  id1  id2  id3  id2  id3  level
+    0    1  100    1  100      2
+    0    1  100    1  100      2
+
+
+#test1
+statement ok
+DROP TABLE IF EXISTS test1
+
+statement ok
+CREATE TABLE test1 (id1 INT ,id2 INT UNIQUE,id3 INT,PRIMARY KEY(id1,id2) )
+
+statement ok
+INSERT INTO  test1 (id1,id2,id3) VALUES   (0000,0001,0100),(0000,0002,NULL),(0000,0003,NULL),(0100,0101,NULL),(0100,0102,0200),(0100,0103,NULL),
+(0200,0201,NULL),(0200,0202,NULL),(0200,0203,0300),(0300,0301,NULL),(0300,0302,NULL),(0300,0303,NULL),(9999,10001,NULL),(9999,10002,NULL),(9999,10003,NULL)
+
+statement count 6
+create table ttt1 as SELECT t1.* FROM test1 t1 START WITH id1 = 0100 CONNECT BY NOCYCLE PRIOR id1 = id3;
+
+statement ok
+DROP TABLE IF EXISTS ttt1
+
+query III colnames
+SELECT t1.* FROM test1 t1 START WITH id1 = 0100 CONNECT BY NOCYCLE PRIOR id1 = id3
+UNION (SELECT t1.* FROM test1 t1 START WITH id1 = 0100 CONNECT BY NOCYCLE PRIOR id1 = id3)
+----
+  id1  id2  id3
+  100  101  NULL
+  100  102   200
+  100  103  NULL
+    0    1   100
+
+query error loop in data
+SELECT t1.* FROM test1 t1 START WITH id1 = 0100 CONNECT BY PRIOR id1 = id1
+
+query III colnames
+SELECT t1.* FROM test1 t1 START WITH id1 = 0100 CONNECT BY NOCYCLE PRIOR id1 = id3
+UNION
+(SELECT t1.* FROM test1 t1 START WITH id1 = 0100 CONNECT BY NOCYCLE PRIOR id1 = id3)
+----
+  id1  id2  id3
+  100  101  NULL
+  100  102   200
+  100  103  NULL
+   0    1   100
+
+statement count 10
+SELECT t.*,sys_connect_by_path(id1,'/'),connect_by_root(id1),connect_by_iscycle
+FROM test t START WITH id1 = 0100 CONNECT BY NOCYCLE id1 < PRIOR id3 ORDER BY id1
+
+#test2
+statement ok
+DROP TABLE IF EXISTS test2
+
+statement ok
+CREATE TABLE test2 (id1 INT ,id2 INT UNIQUE,id3 INT,PRIMARY KEY(id1,id2))
+
+statement ok
+INSERT INTO test2 (id1,id2,id3) VALUES (0000,0001,0100),(0000,0002,NULL),(0000,0003,NULL),(0100,0101,NULL),(0100,0102,0200),(0100,0103,NULL),(0200,0201,NULL),
+(0200,0202,NULL),(0200,0203,0300),(0300,0301,NULL),(0300,0302,NULL),(0300,0303,NULL),(9999,10001,NULL),(9999,10002,NULL),(9999,10003,NULL)
+
+query III colnames
+SELECT t1.* FROM test1 t1 inner join test2 t2 on t1.id1=t2.id3 START WITH t2.id1 = 0100 CONNECT BY NOCYCLE PRIOR t1.id1 = t2.id3
+----
+  id1  id2  id3
+  200  201  NULL
+  200  202  NULL
+  200  203  300
+
+#testt
+statement ok
+DROP TABLE IF EXISTS testt
+
+statement ok
+CREATE TABLE testt (id1 INT ,id2 INT UNIQUE,id3 INT,PRIMARY KEY(id1,id2) )
+
+statement ok
+INSERT INTO testt (id1,id2,id3) VALUES (0000,0001,0100),(0000,0002,NULL),(0000,0003,NULL),(0100,0101,NULL),(0100,0102,0200),(0100,0103,NULL)
+
+statement error column reference "id1" is ambiguous
+SELECT t.*,level,sys_connect_by_path(t.id1,'/'),connect_by_root(t.id1) ,connect_by_isleaf
+FROM test t ,testt tt
+START WITH t.id1 > 0200 AND tt.id2 > 0001
+CONNECT BY PRIOR id1 < id3
+ORDER BY id1,id2,id3;
+
+statement count 30
+SELECT t.*,level,sys_connect_by_path(t.id1,'/'),connect_by_root(t.id1) ,connect_by_isleaf
+FROM test t ,testt tt
+START WITH t.id1 > 0200 AND tt.id2 > 0001
+CONNECT BY PRIOR t.id1 < t.id3
+ORDER BY t.id1,t.id2,t.id3;
+
+#people, employee, company, com_satis, best_com
+statement ok
+DROP TABLE IF EXISTS people
+
+statement ok
+CREATE TABLE people(id INT PRIMARY KEY,name char(12),sex TEXT CHECK(sex in ('男','女')),age INT)
+
+statement ok
+INSERT INTO people VALUES (1,'jack','男',27),(2,'mary','女',22),(3,'rose','女',23),(4,'linda','女',24),(5,'lily','女',35),(6,'david','男',35),(7,'tom','男',30),
+(8,'robin','男',29),(9,'lisa','女',38),(10,'jerry','男',37),(11,'kate','女',26),(12,'maron','男',32)
+
+statement ok
+DROP TABLE IF EXISTS employee
+
+statement ok
+CREATE TABLE employee(id INT,name char(12) PRIMARY KEY,company TEXT,job TEXT,boss TEXT)
+
+statement ok
+INSERT INTO employee VALUES (1,'jack','AK','OS','-'),(2,'mary','AK','OA','jack'),(3,'rose','AK','OB','jack'),(4,'linda','AK','OC','jack'),(5,'lily','BK','OS','-'),
+(6,'david','BK','OA','lily'),(7,'tom','BK','OB','lily'),(8,'robin','BK','OC','lily'),(9,'lisa','CK','OS','-'),(10,'jerry','CK','OA','lisa'),(11,'kate','CK','OB','lisa'),
+(12,'maron','CK','OC','lisa')
+
+statement ok
+DROP TABLE IF EXISTS company
+
+statement ok
+CREATE TABLE company(com_id INT PRIMARY KEY,company TEXT,company_location char(16))
+
+statement ok
+INSERT INTO company VALUES (101,'AK','安徽'),(102,'BK','北京'),(103,'CK','成都')
+
+statement ok
+DROP TABLE IF EXISTS com_satis
+
+statement ok
+CREATE TABLE com_satis(com_id INT PRIMARY KEY,satisfaction char(1))
+
+statement ok
+INSERT INTO com_satis VALUES (101,'S'),(102,'A'),(103,'B')
+
+statement ok
+DROP TABLE IF EXISTS best_com
+
+statement ok
+CREATE TABLE best_com(com_id INT PRIMARY KEY,company TEXT)
+
+statement ok
+INSERT INTO best_com VALUES (101,'AK')
+
+statement count 0
+SELECT p.id,p.name,e.company,e.job,e.boss,c.company_location,co.satisfaction,level,sys_connect_by_path(p.id,'/')
+FROM people p ,employee e ,company c ,com_satis co,best_com be
+WHERE p.id IN(SELECT e.id FROM employee WHERE company IN(SELECT company FROM com_satis))
+START WITH p.id < e.id
+CONNECT BY NOCYCLE e.company > PRIOR be.company
+ORDER BY p.id,level,co.satisfaction;
+
+statement count 44
+create table ttt2 as SELECT p.id FROM people p ,employee e ,company c ,com_satis co,best_com be
+WHERE p.id = e.id AND e.company = c.company AND c.com_id = co.com_id
+START WITH p.id = e.id
+CONNECT BY NOCYCLE PRIOR e.company = be.company
+ORDER BY p.id,level,co.satisfaction
+
+statement ok
+DROP TABLE IF EXISTS ttt2
+
+statement count 44
+SELECT p.id,p.name,e.company,e.job,e.boss,c.company_location,co.satisfaction,level,sys_connect_by_path(p.id||p.name,'/'),
+connect_by_root(e.company),
+connect_by_isleaf ,
+connect_by_iscycle
+FROM people p ,employee e ,company c ,com_satis co,best_com be
+WHERE p.id = e.id AND e.company = c.company AND c.com_id = co.com_id
+START WITH p.id = e.id
+CONNECT BY NOCYCLE PRIOR e.company = be.company
+ORDER BY p.id,level
+
+statement count 44
+SELECT p.id,p.name,e.company,e.job,e.boss,c.company_location,co.satisfaction,level,sys_connect_by_path(p.id||p.name,'/'),
+connect_by_root(e.company),
+connect_by_isleaf ,
+connect_by_iscycle
+FROM best_com be ,people p join employee e on p.id = e.id join company c on e.company = c.company join com_satis co on c.com_id = co.com_id
+START WITH p.id = e.id
+CONNECT BY NOCYCLE PRIOR e.company = be.company
+ORDER BY p.id,level,co.satisfaction
+
+statement count 0
+SELECT p.id,p.name,e.company,e.job,e.boss,c.company_location,co.satisfaction,level,sys_connect_by_path(p.id,'/')
+FROM people p ,employee e ,company c ,com_satis co,best_com be
+WHERE p.id = e.id AND e.company = c.company AND c.com_id = co.com_id AND p.id/2 != 1
+START WITH p.id > e.id
+CONNECT BY NOCYCLE e.company = PRIOR be.company
+ORDER BY id,level
+
+statement count 44
+SELECT p.id,p.name,e.company,e.job,e.boss,c.company_location,co.satisfaction,level,sys_connect_by_path(p.id||p.name,'/'),
+connect_by_root(e.company),
+connect_by_isleaf ,
+connect_by_iscycle
+FROM people p ,employee e ,company c ,com_satis co,best_com be
+WHERE p.id = e.id AND e.company = c.company AND c.com_id = co.com_id
+START WITH p.id = e.id
+CONNECT BY NOCYCLE PRIOR e.company = be.company
+ORDER BY p.id,level;
+
+#tes_recycle
+statement ok
+CREATE TABLE tes_recycle(a INT,b INT);
+
+statement ok
+insert into tes_recycle values(1,1),(1,2),(1,3),(1,4),(2,1),(2,2),(2,3),(2,4),(3,1),(3,2),(3,3),(3,4),(4,1),(4,2),(4,3),(4,4)
+
+statement count 102
+SELECT t.*,level,sys_connect_by_path(a||b||a,'/') ,connect_by_root(b||b||a),connect_by_isleaf ,connect_by_iscycle
+FROM tes_recycle t START WITH a = 2 CONNECT BY NOCYCLE a < PRIOR b ORDER BY a,b;
+
+statement count 64
+SELECT t.*,a,b,level,rowid FROM tes_recycle t START WITH a = 1 CONNECT BY NOCYCLE PRIOR a = b ORDER BY t.a,t.b,level
+
+statement count 26
+SELECT t.*,level,sys_connect_by_path(a||'a','/') connect_by_isleaf ,connect_by_iscycle
+FROM tes_recycle t START WITH b = 2 AND a=2 CONNECT BY NOCYCLE a < PRIOR b ORDER BY a,b;
+
+statement count 26
+SELECT t.*,level,sys_connect_by_path(a||a,'/') ,connect_by_root(b||b),connect_by_isleaf ,connect_by_iscycle
+FROM tes_recycle t START WITH b = 2 AND a=2 CONNECT BY NOCYCLE a < PRIOR b ORDER BY a,b;
+
+query error illegal parameter in "sys_connect_by_path\(\)" function
+SELECT t.*,level,sys_connect_by_path(t.id1,t.id2,'/') FROM test t START WITH id1 = 0100 CONNECT BY id1 = PRIOR id3 ;
+
+query IIIII colnames
+SELECT t.*,level,connect_by_root(a),connect_by_isleaf
+FROM tes_recycle t where level=4 START WITH a = 1 CONNECT BY NOCYCLE PRIOR a = b ORDER BY a,b;
+----
+            a  b  level  connect_by_root  connect_by_isleaf
+            2  3  4      1                1
+            2  3  4      1                1
+            2  3  4      1                1
+            2  3  4      1                1
+            2  4  4      1                1
+            2  4  4      1                1
+            2  4  4      1                1
+            2  4  4      1                1
+            3  2  4      1                1
+            3  2  4      1                1
+            3  2  4      1                1
+            3  2  4      1                1
+            3  4  4      1                1
+            3  4  4      1                1
+            3  4  4      1                1
+            3  4  4      1                1
+            4  2  4      1                1
+            4  2  4      1                1
+            4  2  4      1                1
+            4  2  4      1                1
+            4  3  4      1                1
+            4  3  4      1                1
+            4  3  4      1                1
+            4  3  4      1                1
+
+statement count 64
+SELECT t.*,level,sys_connect_by_path(a,'/') FROM tes_recycle t START WITH a = 1 CONNECT BY NOCYCLE PRIOR a = b ORDER BY a
+
+statement count 16
+SELECT t.*,level,'path'||sys_connect_by_path(a,'/') FROM tes_recycle t WHERE b = 1START WITH a <= 1 CONNECT BY NOCYCLE a = PRIOR b ORDER BY a,b
+
+statement ok
+DROP TABLE IF EXISTS test_start
+
+statement ok
+CREATE TABLE test_start (id1 INT,level CHAR(6),id2 INT)
+
+statement ok
+INSERT INTO test_start VALUES(1,100,5),(2,200,4),(3,300,999),(4,300,999),(5,300,999)
+
+statement ok
+set cluster setting sql.opt.optbuilder.startwith.enabled = true;
+
+query IIIITIII colnames
+SELECT t.*,level,sys_connect_by_path(id1,'/'),connect_by_root(id1),connect_by_isleaf,connect_by_iscycle
+FROM test_start t WHERE level = 1 START WITH id1 > 1 CONNECT BY NOCYCLE PRIOR id1 = id2 ORDER BY t.id1
+----
+  id1  level  id2  level  sys_connect_by_path  connect_by_root  connect_by_isleaf  connect_by_iscycle
+    2      1    4     1       /2                      2                  1                   0
+    3      1  999     1       /3                      3                  1                   0
+    4      1  999     1       /4                      4                  0                   0
+    5      1  999     1       /5                      5                  0                   0
+
+statement ok
+set cluster setting sql.opt.optbuilder.startwith.enabled = false;

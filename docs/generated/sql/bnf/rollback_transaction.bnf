@@ -1,0 +1,5 @@
+rollback_stmt ::=
+	'ROLLBACK' 
+	| 'ROLLBACK'  'TO' 'SAVEPOINT' znbase_restart
+	| 'ROLLBACK' 'TO' 'SAVEPOINT' znbase_restart
+	| 'ROLLBACK' 

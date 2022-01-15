@@ -1,0 +1,11 @@
+statement ok
+SELECT pg_sleep(1);
+
+statement ok
+BEGIN;
+
+statement ok
+UPDATE T SET a = 'u' WHERE a = 'H';
+
+statement ok
+COMMIT;

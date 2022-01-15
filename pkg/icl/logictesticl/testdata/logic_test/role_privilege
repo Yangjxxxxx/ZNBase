@@ -1,0 +1,63 @@
+# LogicTest: local-insecure
+
+statement ok
+create user u1;
+create user u2;
+create user u3;
+
+statement ok
+create role role1;
+
+statement ok
+grant role1 to u1,u2,u3;
+
+query TTT colnames
+show grants on role;
+----
+role_name  member  is_admin
+admin      root    YES
+role1      u1      NO
+role1      u2      NO
+role1      u3      NO
+
+statement ok
+grant role1 to u1 with admin option
+
+query TTT colnames
+show grants on role;
+----
+role_name  member  is_admin
+admin      root    YES
+role1      u1      YES
+role1      u2      NO
+role1      u3      NO
+
+statement error can't revoke or grant role public, all users belong to it
+revoke public from u1;
+
+statement error can't revoke or grant role public, all users belong to it
+grant public to u1;
+
+userInsecure root
+
+statement ok
+GRANT admin TO u1;
+
+userInsecure root
+
+statement ok
+CREATE DATABASE db1;
+
+statement ok
+GRANT USAGE ON DATABASE db1 TO public;
+
+query TTTTT
+SHOW GRANTS ON DATABASE db1;
+----
+db1  admin  admin   CREATE  YES
+db1  admin  admin   DROP    YES
+db1  admin  admin   USAGE   YES
+db1  admin  root    CREATE  YES
+db1  admin  root    DROP    YES
+db1  admin  root    USAGE   YES
+db1  root   public  USAGE   NO

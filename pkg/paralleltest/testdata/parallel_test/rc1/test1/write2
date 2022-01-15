@@ -1,0 +1,16 @@
+statement ok
+SELECT pg_sleep(1);
+
+statement ok
+BEGIN;
+
+statement ok
+UPDATE t SET b=3 WHERE b=5;
+
+statement ok
+SELECT pg_sleep(5);
+
+statement ok
+COMMIT;
+
+

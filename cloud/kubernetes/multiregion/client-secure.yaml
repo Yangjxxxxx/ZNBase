@@ -1,0 +1,27 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: znbasedb-client-secure
+  labels:
+    app: znbasedb-client
+spec:
+  serviceAccountName: znbasedb
+  containers:
+  - name: znbasedb-client
+    image: znbasedb/znbase:v2.1.6
+    imagePullPolicy: IfNotPresent
+    volumeMounts:
+    - name: client-certs
+      mountPath: /znbase-certs
+    # Keep a pod open indefinitely so kubectl exec can be used to get a shell to it
+    # and run znbase client commands, such as znbase sql, znbase node status, etc.
+    command:
+    - sleep
+    - "2147483648" # 2^31
+  # This pod isn't doing anything important, so don't bother waiting to terminate it.
+  terminationGracePeriodSeconds: 0
+  volumes:
+  - name: client-certs
+    secret:
+      secretName: znbasedb.client.root
+      defaultMode: 256

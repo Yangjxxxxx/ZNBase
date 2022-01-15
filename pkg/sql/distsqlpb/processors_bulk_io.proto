@@ -1,0 +1,21 @@
+// Copyright 2019  The Cockroach Authors.
+//
+// Processor definitions for distributed SQL APIs. See
+// docs/RFCS/distributed_sql.md.
+// All the concepts here are "physical plan" concepts.
+
+syntax = "proto2";
+// Beware! This package name must not be changed, even though it doesn't match
+// the Go package name, because it defines the Protobuf message names which
+// can't be changed without breaking backward compatibility.
+package znbase.sql.distsqlrun;
+option go_package = "distsqlpb";
+
+import "sql/sqlbase/structured.proto";
+import "gogoproto/gogo.proto";
+
+// BulkRowWriterSpec is the specification for a processor that consumes rows and
+// writes them to a target table using AddSSTable. It outputs a BulkOpSummary.
+message BulkRowWriterSpec {
+  optional sqlbase.TableDescriptor table = 1 [(gogoproto.nullable) = false];
+}

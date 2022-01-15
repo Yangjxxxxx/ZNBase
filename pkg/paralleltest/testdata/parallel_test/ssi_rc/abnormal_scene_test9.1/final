@@ -1,0 +1,7 @@
+statement ok
+BEGIN;
+
+query TI
+SELECT * FROM T;
+----
+c  4

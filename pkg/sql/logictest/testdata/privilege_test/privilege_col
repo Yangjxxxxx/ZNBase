@@ -1,0 +1,328 @@
+# LogicTest: local-insecure-opt
+
+statement ok
+GRANT USAGE ON DATABASE test TO public;
+
+statement ok
+CREATE TABLE t(id int, name string);
+INSERT INTO t VALUES (11, 'Jack');
+CREATE USER u1;
+CREATE USER u2;
+
+query TTTTTTTT
+SHOW GRANTS ON t FOR u1;
+----
+
+statement ok
+GRANT select(id), insert(id), update(name) ON t TO u1;
+
+query TTTTTTTT
+SHOW GRANTS ON T FOR u1;
+----
+test    public  t   id      root    u1  INSERT  NO
+test    public  t   id      root    u1  SELECT  NO
+test    public  t   name    root    u1  UPDATE  NO
+
+userInsecure u1
+
+query I
+SELECT id FROM t;
+----
+11
+
+statement error pq: user u1 does not have SELECT privilege on relation test.public.t
+SELECT name FROM t;
+
+statement ok
+INSERT INTO t (id) VALUES (21);
+
+query I
+SELECT id FROM t;
+----
+11
+21
+
+statement error pq: user u1 does not have INSERT privilege on relation test.public.t
+INSERT INTO t (name) VALUES (Tom);
+
+statement ok
+UPDATE t SET name = 'Tom' WHERE id = 21;
+
+statement error pq: user u1 does not have UPDATE privilege on relation test.public.t
+UPDATE t SET id = 22 WHERE name = 'Tom';
+
+userInsecure root
+
+query IT
+SELECT * FROM t;
+----
+11  Jack
+21  Tom
+
+statement ok
+REVOKE SELECT (id) ON t FROM u1;
+
+statement ok
+REVOKE INSERT (id) ON t FROM u1;
+
+statement ok
+REVOKE UPDATE (name) ON t FROM u1;
+
+query TTTTTTTT
+SHOW GRANTS ON t FOR u1;
+----
+
+statement ok
+GRANT select(id, name), insert(id) ON t TO u1;
+
+query TTTTTTTT
+SHOW GRANTS ON t FOR u1;
+----
+test    public  t   id      root    u1  INSERT  NO
+test    public  t   id      root    u1  SELECT  NO
+test    public  t   name    root    u1  SELECT  NO
+
+statement error syntax error at or near ","
+GRANT all(id, name), insert(id) ON t TO u1;
+
+statement ok
+REVOKE ALL ON t FROM u1;
+
+query TTTTTTTT
+SHOW GRANTS ON t FOR u1;
+----
+
+statement ok
+GRANT ALL (id) ON t TO u1 WITH GRANT OPTION;
+
+query TTTTTTTT
+SHOW GRANTS ON t FOR u1;
+----
+test    public  t   id  root    u1  INSERT  YES
+test    public  t   id  root    u1  SELECT  YES
+test    public  t   id  root    u1  UPDATE  YES
+
+userInsecure u1
+
+statement ok
+GRANT SELECT (id) ON t TO u2 WITH GRANT OPTION;
+
+query TTTTTTTT
+SHOW GRANTS ON t FOR u2;
+----
+test    public  t   id  u1  u2  SELECT  YES
+
+userInsecure u2
+
+query TTTTTTTT
+SHOW GRANTS ON t FOR u2;
+----
+test    public  t   id  u1  u2  SELECT  YES
+
+statement error pq: privilege has loop
+GRANT SELECT (id) ON T TO u1 WITH GRANT OPTION;
+
+userInsecure root
+
+statement error pq: cannot drop user or role u1: grants still exist on test.public.t
+drop user u1;
+
+statement ok
+REVOKE GRANT OPTION FOR SELECT (id) ON t FROM u1;
+
+query TTTTTTTT
+SHOW GRANTS ON t FOR u1;
+----
+test    public  t   id  root    u1  INSERT  YES
+test    public  t   id  root    u1  SELECT  NO
+test    public  t   id  root    u1  UPDATE  YES
+
+query TTTTTTTT
+SHOW GRANTS ON t FOR u2;
+----
+
+statement ok
+REVOKE ALL (id) ON t FROM u1;
+
+query TTTTTTTT
+SHOW GRANTS ON t FOR u1;
+----
+
+statement ok
+CREATE TABLE t1 (a int, b float, c bool, d string);
+CREATE TABLE t2 (a int, b float, c bool, d string);
+INSERT INTO t1 VALUES (4, 2.4, true, 'abc'), (8, 3.5, false, 'abd'), (4, 4.4, true, 'bac'), (9, 7.5, false, 'cdc'), (2, 3.5, false, 'bcc');
+INSERT INTO t2 VALUES (5, 2.4, true, 'sdf'), (8, 7.4, false, 'brt'), (4, 3.6, true, 'sed');
+GRANT SELECT (a,b) ON t1 TO u1;
+GRANT SELECT (a) ON t2 TO u1;
+GRANT UPDATE (a) ON t2 TO u1;
+GRANT CREATE ON SCHEMA test.public TO u1;
+
+userInsecure u1
+
+statement error pq: user u1 does not have SELECT privilege on relation test.public.t1
+SELECT * FROM t1;
+
+statement error pq: user u1 does not have SELECT privilege on relation test.public.t1
+SELECT a,b FROM t1 ORDER BY c DESC;
+
+query IR
+SELECT a,b FROM t1 ORDER BY b DESC;
+----
+9   7.5
+4   4.4
+8   3.5
+2   3.5
+4   2.4
+
+statement error pq: user u1 does not have SELECT privilege on relation test.public.t1
+SELECT sum(b) FROM t1 GROUP BY c;
+
+statement ok
+SELECT a,sum(b) FROM t1 GROUP BY a;
+
+query IR
+SELECT a,sum(b) FROM t1 GROUP BY a ORDER BY a DESC;
+----
+9   7.5
+8   3.5
+4   6.8
+2   3.5
+
+statement error pq: user u1 does not have SELECT privilege on relation test.public.t1
+SELECT b FROM t1 WHERE c = true;
+
+query R
+SELECT b FROM t1 WHERE a = 4;
+----
+2.4
+4.4
+
+query R
+SELECT b FROM t1 WHERE a > 4 AND a < 9;
+----
+3.5
+
+statement error pq: user u1 does not have SELECT privilege on relation test.public.t2
+SELECT a FROM t2 WHERE b > 3;
+
+statement error pq: user u1 does not have SELECT privilege on relation test.public.t2
+SELECT a FROM t2 WHERE b > 3 AND b < 8;
+
+statement error pq: user u1 does not have SELECT privilege on relation test.public.t2
+SELECT a FROM t2 WHERE b IN (2.4, 3.6, 4.8);
+
+statement error pq: user u1 does not have SELECT privilege on relation test.public.t2
+SELECT a FROM t2 WHERE d LIKE 's%';
+
+query IR
+SELECT a,b FROM t1 WHERE b = (SELECT min(b) FROM t1);
+----
+4   2.4
+
+statement error pq: user u1 does not have SELECT privilege on relation test.public.t2
+SELECT a,b FROM t1 WHERE b = (SELECT min(b) FROM t2);
+
+query IR
+SELECT a,b FROM t1 WHERE a = (SELECT min(a) FROM t2);
+----
+4   2.4
+4   4.4
+
+statement error pq: user u1 does not have SELECT privilege on relation test.public.t1
+SELECT x.d FROM t1 x JOIN t2 y ON x.a = y.a;
+
+statement error pq: user u1 does not have SELECT privilege on relation test.public.t2
+SELECT x.a FROM t1 x JOIN t2 y ON x.b = y.b;
+
+statement error pq: user u1 does not have SELECT privilege on relation test.public.t2
+SELECT x.a,y.b FROM t1 x JOIN t2 y ON x.a = y.a;
+
+query I
+SELECT x.a FROM t1 x JOIN t2 y ON x.a = y.a;
+----
+4
+8
+4
+
+statement error pq: user u1 does not have SELECT privilege on relation test.public.t1
+SELECT sum(a) FROM t1 GROUP BY c HAVING count(b)>1;
+
+statement error pq: user u1 does not have SELECT privilege on relation test.public.t1
+SELECT x.a FROM t1 x JOIN t2 y ON x.c = y.b;
+
+statement error pq: user u1 does not have SELECT privilege on relation test.public.t1
+SELECT x.a FROM t1 x JOIN t2 y ON x.d = y.b;
+
+statement error pq: user u1 does not have SELECT privilege on relation test.public.t2
+UPDATE t2 SET a=a WHERE 1=1 RETURNING b;
+
+statement ok
+create view v1 as select a,b from t1;
+
+statement ok
+create view v2 as select a,c from t1;
+
+userInsecure root
+
+statement ok
+CREATE TABLE t3(id INT PRIMARY KEY);
+CREATE TABLE t4(a INT DEFAULT unique_rowid(),b INT,CONSTRAINT t3 FOREIGN KEY(b) REFERENCES t3(id));
+INSERT INTO t3 VALUES(1), (2), (3), (4), (5);
+GRANT insert(b) ON TABLE t4 TO u1;
+
+userInsecure u1
+
+statement error pq: user u1 does not have REFERENCES privilege on relation test.public.t3
+INSERT INTO t4(b) VALUES(1);
+
+userInsecure root
+
+statement ok
+GRANT REFERENCES ON t3 TO u1;
+
+userInsecure u1
+
+statement error pq: user u1 does not have SELECT privilege on relation test.public.t3
+INSERT INTO t4(b) VALUES(1);
+
+userInsecure root
+
+statement ok
+GRANT SELECT(id) ON t3 TO u1;
+
+userInsecure u1
+
+statement ok
+INSERT INTO t4(b) VALUES(1);
+
+userInsecure root
+
+statement ok
+GRANT insert(id) ON t TO u1;
+
+userInsecure u1
+
+query TTTTTTTT
+SHOW GRANTS ON t FOR u1;
+----
+test    public  t   id  root    u1  INSERT  NO
+
+#statement error pq: user u1 has no privileges on relation test.public.t
+statement ok
+SHOW CREATE TABLE t;
+
+statement ok
+SHOW COLUMNS FROM t;
+
+userInsecure root
+
+query TTBTTTB
+SHOW COLUMNS FROM t;
+----
+id     INT     true   NULL            ·  {}         false
+name   STRING  true   NULL            ·  {}         false
+rowid  INT     false  unique_rowid()  ·  {primary}  true
+
+statement ok
+GRANT select(rowid) ON t TO u1;

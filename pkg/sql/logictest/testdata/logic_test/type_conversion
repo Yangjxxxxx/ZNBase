@@ -1,0 +1,192 @@
+# LogicTest: local local-opt
+
+statement ok
+create table tint4 (i4 int4)
+
+statement ok
+create table tint8 (i8 int8)
+
+statement ok
+create table tfloat (f float)
+
+statement ok
+create table tdecimal (d decimal)
+
+statement ok
+create table tstring (s string);
+
+statement ok
+create table tdate (dd date);
+
+statement ok
+create table ttimestamp (tp timestamp);
+
+statement ok
+create table tbool (b bool);
+
+statement ok
+insert into tstring values(3.5);
+
+statement ok
+insert into tint4 values(3.5);
+
+statement ok
+insert into tint8 select s from tstring;
+
+statement ok
+insert into tfloat select s from tstring;
+
+statement ok
+insert into tdecimal select s from tstring;
+
+statement ok
+insert into tbool select s from tstring;
+
+statement ok
+insert into tbool select f from tfloat;
+
+statement error missing required date fields as type date
+insert into tdate values(2);
+
+statement ok
+insert into tdate values(1122);
+
+statement ok
+insert into tdate values(91122);
+
+statement ok
+insert into tdate values(191122);
+
+statement ok
+insert into tdate values(801122);
+
+statement ok
+insert into tdate values(20191122);
+
+statement ok
+insert into tdate values('20191122');
+
+query T
+select * from tdate;
+----
+2000-11-22 00:00:00 +0000 +0000
+2009-11-22 00:00:00 +0000 +0000
+2019-11-22 00:00:00 +0000 +0000
+1980-11-22 00:00:00 +0000 +0000
+2019-11-22 00:00:00 +0000 +0000
+2019-11-22 00:00:00 +0000 +0000
+
+statement ok
+insert into ttimestamp values(20191122113945);
+
+statement ok
+insert into ttimestamp values('2019-11-22 11:39:45');
+
+statement ok
+insert into tstring values(20191122113945);
+
+statement ok
+insert into tint8 values(20191122113945);
+
+statement ok
+insert into ttimestamp select s from tstring where s = '20191122113945';
+
+statement ok
+insert into ttimestamp select i8 from tint8 where i8 = 20191122113945;
+
+statement ok
+insert into ttimestamp select dd from tdate where dd = 19801122;
+
+query T
+select * from ttimestamp;
+----
+2019-11-22 11:39:45 +0000 +0000
+2019-11-22 11:39:45 +0000 +0000
+2019-11-22 11:39:45 +0000 +0000
+2019-11-22 11:39:45 +0000 +0000
+1980-11-22 00:00:00 +0000 +0000
+
+query T
+select 1 + '2.5';
+----
+3.5
+
+query T
+select '2.5' + true;
+----
+3.5
+
+query T
+select 1.5 + '-2e+3ABC';
+----
+-1998.5
+
+query B
+select 'a' > 1;
+----
+false
+
+query B
+select 'a' > '1';
+----
+true
+
+query R
+select 1 + (select f from tfloat where f = 3.5);
+----
+4.5
+
+query T
+select (select s from tstring where s = '3.5') + (select i8 from tint8 where i8 = 4) + (select dd from tdate where dd = 19801122);
+----
+19801129.5
+
+query T
+select (select s from tstring where s = '3.5') + (select i8 from tint8 where i8 = 4) + (select tp from ttimestamp where tp = 19801122000000);
+----
+19801122000007.5
+
+# query T
+# select i8 from tint8 union select dd from tdate
+# ----
+# 2000-11-22
+# 2009-11-22
+# 2019-11-22
+# 1980-11-22
+# 4
+# 20191122113945
+
+statement ok
+create table co1 (c1 string collate en not null default 'jinan', c2 string, primary key(c1,c2))
+
+statement ok
+alter table co1 alter column c1 set default'tianjin'
+
+statement ok
+insert into co1 values('jiumen', 'aa')
+
+statement ok
+insert into co1 values('beijing', 'bb')
+
+statement ok
+update co1 set c1='wuhan' where c2='aa'
+
+query TT colnames
+select * from co1
+----
+c1       c2
+beijing  bb
+wuhan    aa
+
+statement ok
+update co1 set c2='cc' where c1='beijing'
+
+query TT colnames
+select * from co1
+----
+c1       c2
+beijing  cc
+wuhan    aa
+
+statement ok
+create table t16 as select 0x800000000000000000

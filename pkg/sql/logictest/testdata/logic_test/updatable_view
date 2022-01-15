@@ -1,0 +1,1026 @@
+# LogicTest: local-opt fakedist-opt
+
+# update function test
+statement ok
+create table t1(l1 int,l2 int,l3 int,l4 int);
+create table test(m1 int,m2 int,m3 int,m4 int);
+insert into t1 values(1,2,3,4),(2,3,4,5),(3,4,5,6),(1,2,2,4);
+create view v1(vl1,vl2) as select t2.l1, t2.l2 from t1 as t2 where t2.l2 = 3 and t2.l3 = 3;
+
+statement ok
+update v1 set vl1 = 1 where vl2 = 4
+
+statement error pq: ERROR: cannot use origin table name t1 as alias of view v1
+update v1 set vl1 = 1 from t1 as t2,t2 as t1 where t2.l4 = 4
+
+statement ok
+update v1 set vl1 = 1 where vl2  =4;
+
+statement ok
+update v1 set vl1 = 1 from t1 where t1.l4  =4;
+
+statement ok
+update v1 set vl1 = 1 from t1 as t2 where t2.l4  =4;
+
+statement ok
+update v1 as v2 set vl1 = 1 where v2.vl2 = 4;
+
+
+# Use complex expressions as non-updatable columns
+statement ok
+insert into test values (1,3,5,7),(2,4,6,8);
+create view v2 (m,n) as select m1+m2+1,m4 from test;
+
+query II colnames,rowsort
+select * from v2;
+----
+m n
+5 7
+7 8
+
+statement error pq: ERROR: cannot update into column m of view v2 \nDETAIL:  View columns that are not columns of their base relation are not updatable
+update v2 set m=1 where n=2;
+
+statement ok
+update v2 set n=9 where m = 7;
+
+query II colnames,rowsort
+select * from v2;
+----
+m n
+5 7
+7 9
+
+statement ok
+update v2 set n=10 where m+1 = 8;
+
+query II colnames,rowsort
+select * from v2;
+----
+m n
+5 7
+7 10
+
+statement ok
+update v2 set n=11 where m*2+1 = 15;
+
+query II colnames,rowsort
+select * from v2;
+----
+m n
+5 7
+7 11
+
+statement ok
+update v2 set n=12 where (m*2+1)+n*2 = 37;
+
+query II colnames,rowsort
+select * from v2;
+----
+m n
+5 7
+7 12
+
+
+# funexpr test
+
+query error pq: max\(\): aggregate functions are not allowed in WHERE
+update v2 set n=12 where max(m)>10;
+
+statement ok
+update v2 set n=13 where (select max(m) from v2)>6;
+
+query II colnames,rowsort
+select * from v2;
+----
+m n
+5 13
+7 13
+
+statement ok
+update v2 set n=13 where (select min(m) from v2)>100;
+
+statement ok
+drop view v1;
+
+
+statement ok
+create view v1 (m,n,l,f) as select l1,l2,l3,l4 from t1;
+create table tt (id int, name varchar(20));
+create view vt as select * from tt;
+
+statement ok
+insert into vt values (1,'xiaoming'),(2,'xiaohuang'),(3,'xiaohua');
+
+statement ok
+update vt set name = 'go' where id =3;
+update vt set id = 0 where name is null;
+update vt set id = 0 where name = 'go';
+
+statement ok
+update v1 set (m,n)=(20,30) where (m,n,l,f)=(1,2,2,4);
+
+query II colnames,rowsort
+select m,n from v1;
+----
+m n
+1 2
+2 3
+3 4
+20 30
+
+statement ok
+drop table t1 cascade;
+drop table test cascade;
+
+# join view test (update ... from )
+
+statement ok
+CREATE TABLE abc (a int primary key, b int, c int);
+
+statement ok
+INSERT INTO abc VALUES (1, 20, 300), (2, 30, 400);
+
+statement ok
+create view vabc as select * from abc;
+
+# Updating using self join.
+statement ok
+UPDATE vabc SET b = other.b + 1, c = other.c + 1 FROM vabc AS other WHERE vabc.a = other.a
+
+query III rowsort
+SELECT * FROM vabc
+----
+1  21  301
+2  31  401
+
+# Update only some columns.
+statement ok
+UPDATE vabc SET b = other.b + 1 FROM vabc AS other WHERE vabc.a = other.a
+
+query III rowsort
+SELECT * FROM vabc
+----
+1  22  301
+2  32  401
+
+# Update only some rows.
+statement ok
+UPDATE vabc SET b = other.b + 1 FROM vabc AS other WHERE vabc.a = other.a AND vabc.a = 1
+
+query III rowsort
+SELECT * FROM vabc
+----
+1  23  301
+2  32  401
+
+# Update view from another table.
+statement ok
+CREATE TABLE new_abc (a int, b int, c int)
+
+statement ok
+INSERT INTO new_abc VALUES (1, 2, 3), (2, 3, 4)
+
+statement ok
+UPDATE vabc SET b = new_abc.b, c = new_abc.c FROM new_abc WHERE vabc.a = new_abc.a
+
+query III rowsort
+SELECT * FROM vabc
+----
+1  2  3
+2  3  4
+
+statement ok
+INSERT INTO new_abc VALUES (1, 1, 1)
+
+statement ok
+UPDATE vabc SET b = new_abc.b, c = new_abc.c FROM new_abc WHERE vabc.a = new_abc.a
+
+query III rowsort
+SELECT * FROM vabc
+----
+1  2  3
+2  3  4
+
+# Returning old values.
+query IIIII colnames,rowsort
+UPDATE vabc
+SET
+  b = old.b + 1, c = old.c + 2
+FROM
+  vabc AS old
+WHERE
+  vabc.a = old.a
+RETURNING
+  vabc.a, vabc.b AS new_b, old.b as old_b, vabc.c as new_c, old.c as old_c
+----
+a  new_b  old_b  new_c  old_c
+1  3      2      5      3
+2  4      3      6      4
+
+
+# Check if RETURNING * returns everything
+
+query IIIIII colnames,rowsort
+UPDATE abc SET b = old.b + 1, c = old.c + 2 FROM abc AS old WHERE abc.a = old.a RETURNING *
+----
+a  b  c  a  b  c
+1  4  7  1  3  5
+2  5  8  2  4  6
+
+
+statement ok
+drop table new_abc
+
+statement ok
+CREATE TABLE abc_check (a int primary key, b int, c int, check (a > 0), check (b > 0 AND b < 10))
+
+statement ok
+INSERT INTO abc_check VALUES (1, 2, 3), (2, 3, 4)
+
+statement ok
+create view vabc_check as select * from abc_check
+
+query III colnames,rowsort
+UPDATE vabc_check
+SET
+  b = other.b, c = other.c
+FROM
+  vabc AS other
+WHERE
+  vabc_check.a = other.a
+RETURNING
+  vabc_check.a, vabc_check.b, vabc_check.c
+----
+a  b  c
+1  4  7
+2  5  8
+
+# Update values of table from values expression
+statement ok
+UPDATE vabc SET b = other.b, c = other.c FROM (values (1, 2, 3), (2, 3, 4)) as other ("a", "b", "c") WHERE vabc.a = other.a
+
+query III rowsort
+SELECT * FROM vabc
+----
+1  2  3
+2  3  4
+
+# statement ok
+# drop table abc cascade
+
+# Check if UPDATE ... FROM works with multiple tables.
+statement ok
+CREATE TABLE ab (a INT, b INT)
+
+statement ok
+CREATE TABLE ac (a INT, c INT)
+
+statement ok
+INSERT INTO ab VALUES (1, 200), (2, 300)
+
+statement ok
+INSERT INTO ac VALUES (1, 300), (2, 400)
+
+statement ok
+create view viewab as select * from ab
+
+statement ok
+create view viewac as select * from ac
+
+statement ok
+UPDATE vabc SET b = ab.b, c = ac.c FROM ab, ac WHERE vabc.a = ab.a AND vabc.a = ac.a
+
+query III rowsort
+SELECT * FROM vabc
+----
+1  200  300
+2  300  400
+
+
+# Make sure the FROM clause cannot reference the target table.
+statement error no data source matches prefix: abc
+UPDATE vabc SET a = other.a FROM (SELECT abc.a FROM abc AS x) AS other WHERE vabc.a=other.a
+
+statement error pq: ERROR: missing FROM-clause entry for table abc
+update vabc set b=1 where abc.a>0;
+
+# make sure the column name Will not be confused in different tables
+statement ok
+create table t1 (a int,b int)
+
+
+statement ok
+update vabc set b=2 from t1 where b=t1.b
+
+statement ok
+update vabc set b=2 from abc where b=abc.b
+
+statement ok
+update vabc set b=2 from abc as t1 where b=t1.b
+
+statement error pq: ERROR: cannot use origin table name abc as alias of view vabc
+update vabc set b=2 from t2 as abc where b=t1.b
+
+statement ok
+drop table abc cascade
+
+statement ok
+drop table t1
+
+# add When the where condition appears in the create view
+statement ok
+create table t1 (a int,b int,c int,d int)
+
+statement ok
+insert into t1 values (1,2,3,4),(1,2,5,6)
+
+query IIII rowsort
+SELECT * FROM t1
+----
+1 2 3 4
+1 2 5 6
+
+statement ok
+create view v1 (m,n,l,k) as select * from t1 where c>3 and d>4
+
+statement ok
+update v1 set m = 10 where n>0
+
+query IIII rowsort
+SELECT * FROM v1
+----
+10 2 5 6
+
+
+
+# add delete logictest for updatable view
+
+statement ok
+CREATE TABLE kv (
+  k INT PRIMARY KEY,
+  v INT,
+  UNIQUE INDEX foo (v),
+  INDEX bar (k, v)
+)
+
+statement ok
+CREATE TABLE unindexed (
+  k INT PRIMARY KEY,
+  v INT
+)
+
+
+statement count 4
+INSERT INTO kv VALUES (1, 2), (3, 4), (5, 6), (7, 8)
+
+statement count 4
+INSERT INTO unindexed VALUES (1, 2), (3, 4), (5, 6), (7, 8)
+
+query II rowsort
+SELECT * FROM kv
+----
+1 2
+3 4
+5 6
+7 8
+
+statement ok
+CREATE VIEW kview AS SELECT k,v FROM kv
+
+statement ok
+CREATE VIEW kview2 AS SELECT * FROM kview
+
+statement error pq: feature unsupported
+update kview2 set v=1 where k >0
+
+statement error pq: feature unsupported
+delete from kview2 where k isnull
+
+query II rowsort
+SELECT * FROM kview
+----
+1 2
+3 4
+5 6
+7 8
+
+statement count 2
+DELETE FROM kview WHERE k=3 OR v=6
+
+query II rowsort
+SELECT * FROM kview
+----
+1 2
+7 8
+
+# delete a non-existent value.
+statement count 0
+DELETE FROM kview WHERE k=5
+
+query II
+delete from kview where k =1 returning k,v
+----
+1 2
+
+
+query II
+delete from kview returning k+1,v*2
+----
+8 16
+
+# returning *
+statement error pq: feature unsupported
+delete from kview where k =1 returning *
+
+statement error pq: feature unsupported
+insert into kview values (1) returning *
+
+statement error pq: feature unsupported
+update kview set k=1 where v>0 returning *
+
+
+statement error pq: ERROR: column name nonexistent is not recognized
+DELETE FROM kview WHERE nonexistent = 1
+
+statement ok
+create view viewunindexed as select * from unindexed
+
+statement count 2
+DELETE FROM viewunindexed WHERE k=3 OR v=6
+
+query II rowsort
+SELECT * FROM viewunindexed
+----
+1 2
+7 8
+
+query II
+DELETE FROM viewunindexed RETURNING k, v
+----
+1 2
+7 8
+
+query II
+SELECT * FROM viewunindexed
+----
+
+statement count 4
+INSERT INTO viewunindexed VALUES (1, 2), (3, 4), (5, 6), (7, 8)
+
+
+query II colnames,rowsort
+SELECT k, v FROM viewunindexed
+----
+k v
+1 2
+3 4
+5 6
+7 8
+
+statement count 4
+DELETE FROM viewunindexed
+
+# Delete of range with limit.
+statement count 4
+INSERT INTO viewunindexed VALUES (1, 2), (3, 4), (5, 6), (7, 8)
+
+statement count 1
+DELETE FROM viewunindexed WHERE k >= 4 ORDER BY k LIMIT 1
+
+query II colnames,rowsort
+SELECT k, v FROM viewunindexed
+----
+k v
+1 2
+3 4
+7 8
+
+statement count 3
+DELETE FROM viewunindexed
+
+query II colnames
+SELECT k, v FROM viewunindexed
+----
+k v
+
+statement ok
+CREATE TABLE indexed (id int primary key, value int, other int, index (value))
+
+statement ok
+create view viewindexed as select * from indexed
+
+statement count 0
+DELETE FROM viewindexed WHERE value = 5
+
+# Check DELETE with ORDER BY clause (MySQL extension)
+
+statement ok
+INSERT INTO viewunindexed VALUES (1, 9), (8, 2), (3, 7), (6, 4)
+
+query II
+DELETE FROM viewunindexed WHERE k > 1 AND v < 7 ORDER BY v DESC LIMIT 2 RETURNING v,k
+----
+4  6
+2  8
+
+query II
+DELETE FROM viewunindexed ORDER BY v LIMIT 2 RETURNING k,v
+----
+3  7
+1  9
+
+# Check DELETE with LIMIT clause (MySQL extension)
+
+statement count 4
+INSERT INTO viewunindexed VALUES (1, 2), (3, 4), (5, 6), (7, 8)
+
+query I
+SELECT count(*) FROM [DELETE FROM viewunindexed LIMIT 2 RETURNING v]
+----
+2
+
+query I
+SELECT count(*) FROM [DELETE FROM viewunindexed LIMIT 1 RETURNING v]
+----
+1
+
+query I
+SELECT count(*) FROM [DELETE FROM viewunindexed LIMIT 5 RETURNING v]
+----
+1
+
+statement ok
+DELETE FROM viewunindexed WHERE k > 1 AND v < 7 ORDER BY v DESC LIMIT 2 RETURNING 3;
+
+#test for insert updatable view
+statement ok
+CREATE TABLE insert_t (l1 INT,l2 INT, l3 INT, l4 INT)
+
+statement ok
+CREATE VIEW insert_v(vl1,vl2) AS SELECT insert_t2.l1+1, insert_t2.l4 FROM insert_t AS insert_t2;
+
+statement error pq: ERROR: cannot insert into column vl1 of view insert_v \nDETAIL:  View columns that are not columns of their base relation are not updatable
+INSERT INTO insert_v VALUES(1,2)
+
+statement ok
+INSERT INTO insert_v(vl2) VALUES(2)
+
+query II
+SELECT * FROM insert_v
+----
+NULL 2
+
+# ban insert for mutiple view dune to privilege check
+#statement ok
+#CREATE VIEW insert_vv(vvl1,vvl2) AS SELECT vl1+1,vl2 FROM insert_v
+#
+#statement error pq: ERROR: cannot insert into column vvl1 of view insert_vv \nDETAIL:  View columns that are not columns of their base relation are not updatable
+#INSERT INTO insert_vv VALUES(1,2)
+#
+#statement ok
+#INSERT INTO insert_vv(vvl2) VALUES(1)
+
+statement ok
+CREATE TABLE k (
+  k VARCHAR PRIMARY KEY,
+  v VARCHAR,
+  UNIQUE INDEX a (v),
+  FAMILY (k),
+  FAMILY (v)
+)
+
+statement ok
+CREATE VIEW kv2 AS SELECT * FROM k
+
+statement error INSERT has more expressions than target columns, 3 expressions for 2 targets
+INSERT INTO kv2 VALUES ('a', 'b', 'c')
+
+statement error INSERT has more target columns than expressions, 1 expressions for 2 targets
+INSERT INTO kv2 (k, v) VALUES ('a')
+
+statement error INSERT has more expressions than target columns, 3 expressions for 2 targets
+INSERT INTO kv2 SELECT 'a', 'b', 'c'
+
+statement ok
+CREATE TABLE k1 (
+  int INT PRIMARY KEY,
+  bit BIT,
+  bool BOOLEAN,
+  char CHAR,
+  float FLOAT
+)
+
+statement ok
+create view kv1 as select * from k1
+
+statement error pq: could not parse "a" as type int: strconv.ParseInt: parsing "a": invalid syntax
+insert into kv1(int) values('a')
+
+statement ok
+TRUNCATE TABLE insert_t
+
+# ban insert for mutiple view dune to privilege check
+#statement ok
+#INSERT INTO insert_vv(vvl2) VALUES(2)
+#
+#query II
+#SELECT * FROM insert_vv
+#----
+#NULL 2
+
+statement ok
+CREATE TABLE return_t (a INT DEFAULT 3, b INT)
+
+statement ok
+CREATE VIEW return AS SELECT * FROM return_t
+
+query III
+INSERT INTO return (a) VALUES (default), (8) RETURNING a, 2, a+4
+----
+3 2 7
+8 2 12
+
+query III
+INSERT INTO return (b) VALUES (default), (8) RETURNING a, a+4, b
+----
+3 7 NULL
+3 7 8
+
+# All columns returned if none specified.
+query II
+INSERT INTO return VALUES (default) RETURNING a, b
+----
+3 NULL
+
+# Test column names
+query III colnames
+INSERT INTO return VALUES (default) RETURNING a, b AS c, 4 AS d
+----
+a  c     d
+3  NULL  4
+
+# Return a qualified name
+query I
+INSERT INTO return VALUES (default) RETURNING return.a
+----
+3
+
+# Can fetch rowid
+statement ok
+INSERT INTO return VALUES (default) RETURNING rowid != unique_rowid()
+
+statement ok
+CREATE DATABASE db
+
+statement ok
+CREATE SCHEMA db.sch
+
+statement ok
+CREATE TABLE db.sch.t(a INT)
+
+statement ok
+INSERT INTO db.sch.t VALUES(1),(2)
+
+statement ok
+CREATE VIEW db.sch.v AS SELECT a FROM db.sch.t
+
+statement ok
+ALTER VIEW db.sch.v AS SELECT a FROM db.sch.t
+
+statement ok
+INSERT INTO db.sch.v VALUES(3)
+
+# 8326
+statement ok
+drop view db.sch.v
+
+statement ok
+CREATE VIEW db.sch.v AS SELECT a FROM db.sch.t
+
+statement ok
+INSERT INTO db.sch.v VALUES(null)
+
+statement ok
+INSERT INTO db.sch.v VALUES(null)
+
+statement ok
+DELETE FROM db.sch.t WHERE a is null
+
+statement ok
+ALTER TABLE db.sch.t ALTER COLUMN a SET NOT NULL
+
+statement error pq: null value in column "a" violates not-null constraint
+INSERT INTO db.sch.v VALUES(null)
+
+# 8142
+statement ok
+drop table db.sch.t cascade
+
+statement ok
+CREATE TABLE db.sch.fk(id INT primary key)
+
+statement ok
+INSERT INTO db.sch.fk VALUES(1),(2),(3)
+
+statement ok
+CREATE TABLE db.sch.t(
+a INT,
+b INT,
+c INT,
+d INT,
+CONSTRAINT pk PRIMARY KEY(a),
+CONSTRAINT uk UNIQUE(b),
+CONSTRAINT ck CHECK(c>0),
+CONSTRAINT fk FOREIGN KEY(d) REFERENCES db.sch.fk(id))
+
+statement ok
+CREATE VIEW db.sch.v AS SELECT a c1, b c2, c c3, d c4 FROM db.sch.t
+
+statement ok
+INSERT INTO db.sch.v VALUES(1, 1, 1, 1)
+
+query error pq: failed to satisfy CHECK constraint \(c > 0\)
+INSERT INTO db.sch.v VALUES(2, 2, 0, 1)
+
+statement ok
+ALTER TABLE db.sch.t DISABLE CONSTRAINT ck
+
+statement ok
+INSERT INTO db.sch.v VALUES(2, 2, 0, 1)
+
+statement ok
+drop table db.sch.t cascade
+
+# 8471
+statement ok
+CREATE TABLE db.sch.t(
+a INT PRIMARY KEY,
+b INT)
+
+statement ok
+INSERT INTO db.sch.t VALUES(1,1),(2,2),(3,3),(4,4),(5,5),(10,10)
+
+statement ok
+CREATE VIEW db.sch.v AS SELECT a c1,b c2 FROM db.sch.t WHERE a>=10
+
+statement ok
+DELETE FROM db.sch.v WHERE c1=10
+
+statement ok
+drop table db.sch.t cascade
+
+# 8463
+statement ok
+CREATE TABLE db.sch.t(
+a INT PRIMARY KEY,
+b STRING)
+
+statement ok
+INSERT INTO db.sch.t VALUES(1, 'a'), (2, 'b')
+
+statement ok
+CREATE VIEW db.sch.v AS SELECT a c1,b c2 FROM db.sch.t WHERE a>=10
+
+statement error pq: feature unsupported
+UPSERT INTO db.sch.v VALUES(1, 'test')
+
+statement ok
+create table a (a int, b int)
+
+statement ok
+create view vv1 as select * from a
+
+statement error pq: feature unsupported
+UPSERT INTO v1 VALUES(1, 1)
+
+# 8484 8483
+statement ok
+create table test(t1 int,t2 int,t3 int)
+
+statement ok
+create table ttest(tt1 int,tt2 STRING)
+
+statement ok
+insert into test values(3,10,100),(4,20,200),(5,30,300)
+
+statement ok
+insert into ttest values(1,'a'),(2,'b'),(3,'c'),(4,'d'),(5,'e')
+
+statement ok
+create view v as select * from test
+
+statement ok
+create view vv as select * from ttest
+
+statement ok
+SET sql_safe_updates = false
+
+statement ok
+update vv set tt2='zzz' from v
+
+statement ok
+update vv set tt2='zzz' from v where v.t1=vv.tt1;
+
+# 非法命名 NEWSQL-8477 8478
+statement ok
+CREATE DATABASE "‘数据库""]}'#$%^&*("
+
+statement ok
+CREATE SCHEMA "‘数据库""]}'#$%^&*("."'sdddd~/*&$#@!~"
+
+statement ok
+CREATE TABLE "‘数据库""]}'#$%^&*("."'sdddd~/*&$#@!~"."sdd!!`'"(
+"dsfdasrgg*&'" INT PRIMARY KEY,
+column1 STRING)
+
+statement ok
+INSERT INTO "‘数据库""]}'#$%^&*("."'sdddd~/*&$#@!~"."sdd!!`'" VALUES(1, 'a'),(2, 'b'),(3,'c')
+
+statement ok
+CREATE VIEW "‘数据库""]}'#$%^&*("."'sdddd~/*&$#@!~"."视图!!`'" AS SELECT * FROM "‘数据库""]}'#$%^&*("."'sdddd~/*&$#@!~"."sdd!!`'"
+
+statement ok
+SELECT * FROM "‘数据库""]}'#$%^&*("."'sdddd~/*&$#@!~"."视图!!`'"
+
+statement ok
+INSERT INTO "‘数据库""]}'#$%^&*("."'sdddd~/*&$#@!~"."视图!!`'" VALUES(4, 'test')
+
+statement ok
+UPDATE "‘数据库""]}'#$%^&*("."'sdddd~/*&$#@!~"."视图!!`'" SET "dsfdasrgg*&'" = 5 WHERE "dsfdasrgg*&'" = 4
+
+statement ok
+DELETE FROM "‘数据库""]}'#$%^&*("."'sdddd~/*&$#@!~"."视图!!`'" WHERE "dsfdasrgg*&'" = 5
+
+# alter view
+statement ok
+alter view "‘数据库""]}'#$%^&*("."'sdddd~/*&$#@!~"."视图!!`'" AS SELECT "dsfdasrgg*&'",column1 FROM "‘数据库""]}'#$%^&*("."'sdddd~/*&$#@!~"."sdd!!`'"
+
+statement ok
+SELECT * FROM "‘数据库""]}'#$%^&*("."'sdddd~/*&$#@!~"."视图!!`'"
+
+statement ok
+INSERT INTO "‘数据库""]}'#$%^&*("."'sdddd~/*&$#@!~"."视图!!`'" VALUES(4, 'test')
+
+statement ok
+UPDATE "‘数据库""]}'#$%^&*("."'sdddd~/*&$#@!~"."视图!!`'" SET "dsfdasrgg*&'" = 5 WHERE "dsfdasrgg*&'" = 4
+
+statement ok
+DELETE FROM "‘数据库""]}'#$%^&*("."'sdddd~/*&$#@!~"."视图!!`'" WHERE "dsfdasrgg*&'" = 5
+
+statement ok
+drop database "‘数据库""]}'#$%^&*(" cascade
+
+
+# rowid 8487
+statement ok
+create table tt1(a INT)
+
+statement ok
+INSERT INTO tt1 VALUES(1),(2),(3)
+
+statement ok
+CREATE VIEW v11 AS SELECT *,rowid FROM tt1
+
+statement ok
+insert into v11 values (4,4)
+
+statement ok
+alter view v11 as select rowid from tt1
+
+statement ok
+drop table tt1 cascade
+
+statement ok
+create table ttt(rowid int,a int)
+
+statement ok
+insert into ttt values (1,1),(2,2)
+
+statement ok
+CREATE VIEW v11 AS SELECT *,rowid_1 FROM ttt
+
+statement ok
+insert into v11 values (3,3,1)
+
+statement ok
+alter view v11 as select rowid,rowid_1 from ttt
+
+statement ok
+insert into v11 values (3,3)
+
+statement ok
+drop table ttt cascade
+
+
+# 8493
+statement ok
+create table test_tab1(
+codeid INT,
+prov STRING,
+city STRING,
+country STRING,
+name STRING,
+birth DATE,
+comm STRING)
+
+statement ok
+create table test_tab2(
+codeid INT,
+account_id INT,
+deal_dt DATE,
+deal_type INT,
+deal_money DECIMAL(18,3),
+charge_money DECIMAL(18,3),
+lock_type INT,
+expire_time DATE,
+comms STRING)
+
+statement ok
+create view v12 as select codeid,deal_dt,deal_type,deal_money,charge_money from test_tab2 b
+where b.codeid=2872 and deal_dt>='2019-01-01 00:00:00' and deal_dt < '2019-02-01 00:00:00' order by deal_type
+
+statement ok
+delete from v12 where codeid=2872 and deal_type=43473
+
+statement ok
+drop DATABASE db
+
+statement ok
+CREATE DATABASE db
+
+statement ok
+CREATE SCHEMA db.sch
+
+statement ok
+CREATE TABLE db.sch.t(
+a INT PRIMARY KEY,
+b INT);
+INSERT INTO db.sch.t VALUES(1,1),(2,2),(3,3),(4,4),(5,5),(10,10)
+
+statement ok
+CREATE VIEW db.sch.v AS SELECT a c1,b c2 FROM db.sch.t WHERE a>=10
+
+statement ok
+SET sql_safe_updates = false
+
+statement ok
+update db.sch.v set c1 = 11
+
+statement ok
+DELETE FROM db.sch.v
+
+# NEWSQL 9093 含with为不可更新视图
+statement ok
+CREATE TABLE employees (employee_id serial PRIMARY KEY,full_name VARCHAR NOT NULL, manager_id INT);
+
+statement ok
+INSERT INTO employees (employee_id,full_name,manager_id)VALUES (1, 'Michael', NULL), (2, 'Megan', 1)
+
+statement ok
+drop view v1;
+CREATE VIEW v1 AS WITH RECURSIVE subordinates AS ( SELECT employee_id, manager_id, full_name FROM employees WHERE employee_id = 2 UNION SELECT e.employee_id, e.manager_id, e.full_name FROM employees e INNER JOIN subordinates s ON s.employee_id = e.manager_id) SELECT * FROM subordinates
+
+statement ok
+select * from v1
+
+# NEWSQL 9082 9084 9085
+statement ok
+drop table t1 cascade;
+create table t1(id int,name string);
+drop view v1;
+create view v1 as select * from t1;
+create view v11 as select * from v1;
+
+statement ok
+select * from v11
+
+# select * 和手动指定保持一致
+statement ok
+create view v2 as select id,name from t1;
+
+query TT colnames
+show create view v1
+----
+table_name  create_statement
+v1          CREATE VIEW v1 (id, name) AS SELECT id, name FROM test.public.t1
+
+query TT colnames
+show create view v2
+----
+table_name  create_statement
+v2          CREATE VIEW v2 (id, name) AS SELECT id, name FROM test.public.t1
+
+# NEWSQL-11258
+statement ok
+drop database db cascade;
+CREATE DATABASE db;
+CREATE SCHEMA db.sch;
+CREATE TABLE db.sch.t(id INT, a INT ARRAY, b STRING[]);
+INSERT INTO db.sch.t VALUES (1, ARRAY[10,20,30], ARRAY['sky', 'road', 'car']), (2, ARRAY[11,21,31], ARRAY['rose', 'bike', 'house']);
+CREATE VIEW db.sch.v1 AS SELECT * FROM db.sch.t;
+CREATE VIEW db.sch.v2 AS SELECT id, a c1, b c2 FROM db.sch.t;
+UPDATE db.sch.v1 SET a = array_append(a, 41) WHERE a[3] = 31;
+UPDATE db.sch.v1 SET b = b || 'test' WHERE a[4] = 41;
+UPDATE db.sch.v2 SET c1 = array_append(c1, 41) WHERE c1[3] = 31;
+UPDATE db.sch.v2 SET c2 = c2 || 'test' WHERE c1[4] = 41;

@@ -1,0 +1,7 @@
+# LogicTest: local
+
+query TI colnames
+SELECT * FROM zbdb_internal.feature_usage
+ WHERE feature_name LIKE '%#6583%'
+----
+feature_name                usage_count

@@ -1,0 +1,110 @@
+# LogicTest: local local-opt
+
+# 1 条件隐式类型转换
+query T
+select if(1, 'true', 'false');
+----
+true
+
+query T
+select if(99, 'true', 'false');
+----
+true
+
+query T
+select if(-1, 'true', 'false');
+----
+true
+
+query T
+select if(0, 'true', 'false');
+----
+false
+
+query T
+select if(2.45, 'true', 'false');
+----
+true
+
+query T
+select if(-32.32, 'true', 'false');
+----
+true
+
+query error pq: could not parse "nihao" as type bool: invalid bool value
+select if('nihao', 'true', 'false');
+
+query T
+select if('true', 'true', 'false');
+----
+true
+
+query T
+select if('false', 'true', 'false');
+----
+false
+
+statement error pq: could not parse "" as type bool: invalid bool value
+select if('', 'true', 'false');
+
+
+query T
+select if(date '2019-10-10', 'true', 'false');
+----
+true
+
+query error pq: incompatible IF condition type: interval
+select if(interval '1d2m2s', 'true', 'false');
+
+
+# 2 function parameters
+query R
+select sin(1);
+----
+0.841470984807897
+
+query R
+select sin(1.57);
+----
+0.999999682931835
+
+query R
+select sin('1.57');
+----
+0.999999682931835
+
+query error pq: unknown signature: sin\(time\)
+select sin(time '12:12:12');
+
+query error pq: unknown signature: sin\(varbit\)
+select sin(B'1100');
+
+query error pq: unknown signature: sin\(date\)
+select sin(date '2019-10-10');
+
+
+query T
+select chr(65);
+----
+A
+
+query T
+select chr('65');
+----
+A
+
+query error pq: unknown signature: chr\(string\)
+select chr('65abc');
+
+query error pq: unknown signature: chr\(varbit\)
+select chr(B'1000001');
+
+query B
+select B'100' = decimal'3.14'
+----
+false
+
+query B
+select B'100' = decimal'4'
+----
+true

@@ -1,0 +1,367 @@
+# LogicTest: local local-opt local-parallel-stmts fakedist fakedist-opt fakedist-metadata
+
+statement ok
+use defaultdb
+
+statement ok
+create table a(a int check(a > 0), b int default 1, c int not null)
+
+statement ok
+create table b(d int)inherits(a)
+
+query TTBTTTB colnames
+SHOW COLUMNS FROM b
+----
+column_name  data_type  is_nullable  column_default  generation_expression  indices    is_hidden
+a            INT        true         NULL            ·                      {}         false
+b            INT        true         1               ·                      {}         false
+c            INT        false        NULL            ·                      {}         false
+d            INT        true         NULL            ·                      {}         false
+rowid        INT        false        unique_rowid()  ·                      {primary}  true
+
+statement ok
+alter table a add check(b > 0)
+
+statement ok
+alter table a disable constraint a_check_a
+
+query TTTTB colnames
+SHOW CONSTRAINTS FROM b
+----
+table_name  constraint_name  constraint_type  details                validated
+b           a_check_a        CHECK            CHECK (a > 0) DISABLE  true
+b           a_check_b        CHECK            CHECK (b > 0) ENABLE   true
+
+statement ok
+alter table a alter column a set not null
+
+statement ok
+alter table a alter column c drop not null
+
+statement ok
+alter table a alter column a set default 1
+
+statement ok
+alter table a alter column b drop default
+
+query TTBTTTB colnames
+SHOW COLUMNS FROM b
+----
+column_name  data_type  is_nullable  column_default  generation_expression  indices    is_hidden
+a            INT        false        1               ·                      {}         false
+b            INT        true         NULL            ·                      {}         false
+c            INT        true         NULL            ·                      {}         false
+d            INT        true         NULL            ·                      {}         false
+rowid        INT        false        unique_rowid()  ·                      {primary}  true
+
+statement ok
+alter table a rename column a to a1
+
+statement ok
+alter table a drop column c
+
+statement ok
+alter table a add column add_a int not null default 2 check (add_a > 0)
+
+statement ok
+alter table a drop constraint a_check_a
+
+query TTBTTTB colnames
+SHOW COLUMNS FROM b
+----
+column_name  data_type  is_nullable  column_default  generation_expression  indices    is_hidden
+a1           INT        false        1               ·                      {}         false
+b            INT        true         NULL            ·                      {}         false
+d            INT        true         NULL            ·                      {}         false
+rowid        INT        false        unique_rowid()  ·                      {primary}  true
+add_a        INT        false        2               ·                      {}         false
+
+query TTTTB colnames
+SHOW CONSTRAINTS FROM b
+----
+table_name  constraint_name  constraint_type  details                   validated
+b           a_check_add_a    CHECK            CHECK (add_a > 0) ENABLE  true
+b           a_check_b        CHECK            CHECK (b > 0) ENABLE      true
+
+statement ok
+truncate table b
+
+statement ok
+truncate table a
+
+statement error inherit column a1 can not be dropped
+alter table b drop column a1
+
+statement ok
+alter table b drop column d
+
+statement ok
+alter table a drop column b
+
+statement ok
+alter table a rename constraint a_check_add_a to a_check_add_a1
+
+query TTBTTTB colnames
+SHOW COLUMNS FROM b
+----
+column_name  data_type  is_nullable  column_default  generation_expression  indices    is_hidden
+a1           INT        false        1               ·                      {}         false
+rowid        INT        false        unique_rowid()  ·                      {primary}  true
+add_a        INT        false        2               ·                      {}         false
+
+query TTTTB colnames
+SHOW CONSTRAINTS FROM b
+----
+table_name  constraint_name  constraint_type  details                   validated
+b           a_check_add_a1   CHECK            CHECK (add_a > 0) ENABLE  true
+
+statement error inherited check constraint can not be rename
+alter table b rename constraint a_check_add_a1 to check_add_a
+
+statement error cannot drop table a,because b depend on it
+drop table a
+
+statement ok
+alter table b no inherit a
+
+statement ok
+drop table a
+
+statement ok
+alter table b rename constraint a_check_add_a1 to check_add_a
+
+statement ok
+alter table b drop column a1
+
+statement ok
+drop table b
+
+statement ok
+create table a(a int,b int,c int)
+
+statement ok
+create table b(d int)inherits(a)
+
+statement ok
+create table c(e int)inherits(b)
+
+statement ok
+insert into a values(1,1,1)
+
+statement ok
+insert into b values(2,3,4,5)
+
+statement ok
+insert into c values(3,4,5,6,7)
+
+query I
+SELECT count(*) FROM a
+----
+3
+
+statement ok
+drop table a,b,c
+
+statement ok
+create table a(a int default 1,b int default 2,c int,d int)
+
+statement ok
+create table b(a int default 1,b int default 3,c int default 4,d int)
+
+statement error column "b" inherits conflicting default values
+create table c(b int,c int)inherits(a,b)
+
+statement ok
+create table c(b int default 1,c int)inherits(a,b)
+
+query TTBTTTB colnames
+SHOW COLUMNS FROM c
+----
+column_name  data_type  is_nullable  column_default  generation_expression  indices    is_hidden
+a            INT        true         1               ·                      {}         false
+b            INT        true         1               ·                      {}         false
+c            INT        true         4               ·                      {}         false
+d            INT        true         NULL            ·                      {}         false
+rowid        INT        false        unique_rowid()  ·                      {primary}  true
+
+statement ok
+alter table a add column e int not null default 1
+
+statement ok
+alter table b add column e int default 2
+
+statement ok
+alter table a drop column a
+
+statement ok
+alter table b drop column a
+
+statement ok
+alter table a drop column e
+
+query TTBTTTB colnames
+SHOW COLUMNS FROM c
+----
+column_name  data_type  is_nullable  column_default  generation_expression  indices    is_hidden
+b            INT        true         1               ·                      {}         false
+c            INT        true         4               ·                      {}         false
+d            INT        true         NULL            ·                      {}         false
+rowid        INT        false        unique_rowid()  ·                      {primary}  true
+e            INT        false        2               ·                      {}         false
+
+statement ok
+alter table b rename column e to f
+
+statement error cannot rename inherited column "b"
+alter table a rename column b to z
+
+statement ok
+drop table a,b,c
+
+statement ok
+SET experimental_serial_normalization=sql_sequence
+
+statement ok
+CREATE SEQUENCE seq_1 START WITH 1
+
+statement ok
+CREATE TABLE ctlt1 (a serial, b text)
+
+statement ok
+CREATE TABLE ctlt2() INHERITS(ctlt1)
+
+statement ok
+DROP TABLE IF EXISTS ctlt1, ctlt2
+
+statement ok
+create table a(a int,b int)
+
+statement ok
+create table b()inherits(a)
+
+statement ok
+create table c()inherits(a,b)
+
+statement ok
+alter table a add column c int
+
+statement ok
+alter table b add column d int
+
+statement ok
+alter table a rename column b to e
+
+statement ok
+alter table a drop column a
+
+query TTBTTTB colnames
+SHOW COLUMNS FROM c
+----
+column_name  data_type  is_nullable  column_default  generation_expression  indices    is_hidden
+e            INT        true         NULL            ·                      {}         false
+rowid        INT        false        unique_rowid()  ·                      {primary}  true
+c            INT        true         NULL            ·                      {}         false
+d            INT        true         NULL            ·                      {}         false
+
+statement ok
+drop table a cascade
+
+query IT
+show tables
+----
+
+statement ok
+create table a(a int,b int)
+
+statement ok
+create table b(a int)inherits(a)
+
+statement ok
+create table c()inherits(a,b)
+
+statement ok
+alter table a drop column a
+
+statement ok
+alter table b drop column a
+
+query TTBTTTB colnames
+SHOW COLUMNS FROM c
+----
+column_name  data_type  is_nullable  column_default  generation_expression  indices    is_hidden
+b            INT        true         NULL            ·                      {}         false
+rowid        INT        false        unique_rowid()  ·                      {primary}  true
+
+statement ok
+alter table a add column c int check(c > 0)
+
+statement ok
+alter table a add constraint check_b check(b > 0)
+
+statement ok
+alter table b add constraint check_b check(b > 0)
+
+statement ok
+alter table c add constraint check_b check(b > 0)
+
+statement ok
+alter table b add constraint a_check_c check(c > 0)
+
+statement ok
+alter table c add constraint a_check_c check(c > 0)
+
+statement ok
+alter table a drop constraint check_b
+
+statement ok
+alter table a drop constraint a_check_c
+
+statement ok
+alter table b drop constraint check_b
+
+statement ok
+alter table b drop constraint a_check_c
+
+query TTTTB colnames
+SHOW CONSTRAINTS FROM b
+----
+table_name  constraint_name  constraint_type  details                   validated
+
+
+query TTTTB colnames
+SHOW CONSTRAINTS FROM c
+----
+table_name  constraint_name  constraint_type  details                   validated
+c           a_check_c        CHECK            CHECK (c > 0) ENABLE  true
+c           check_b          CHECK            CHECK (b > 0) ENABLE  true
+
+statement ok
+alter table c drop constraint check_b
+
+statement ok
+alter table c drop constraint a_check_c
+
+statement ok
+drop table a,b,c
+
+statement ok
+create table ctlt1 (a int primary key, b int unique, c int)
+
+statement ok
+create table ctlt11 (a int primary key, b int unique, c int references ctlt1(a))inherits(ctlt1)
+
+query TT colnames
+SHOW CREATE TABLE ctlt11
+----
+table_name           create_statement
+ctlt11                  CREATE TABLE ctlt11 (
+                        a INT NOT NULL,
+                        b INT NULL,
+                        c INT NULL,
+                        CONSTRAINT "primary" PRIMARY KEY (a ASC),
+                        UNIQUE INDEX ctlt11_b_key (b ASC),
+                        CONSTRAINT fk_c_ref_ctlt1 FOREIGN KEY (c) REFERENCES ctlt1 (a),
+                        INDEX ctlt11_auto_index_fk_c_ref_ctlt1 (c ASC),
+                        FAMILY "primary" (a, b, c)
+                    )
+                    Inherits:ctlt1

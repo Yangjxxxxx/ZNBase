@@ -1,0 +1,280 @@
+# LogicTest: local
+# this script is geo-partition feature test
+# locate space name : inpsur TJ CHINA TEST
+
+
+# testCase 0: AlterPartition only with locate
+
+statement ok
+CREATE TABLE test0 (
+    a INT NOT NULL, name STRING NOT NULL,
+    PRIMARY KEY (a ASC, name ASC)) PARTITION BY LIST (a, name) (
+        PARTITION p1 VALUES IN ((10, 'zhangsan')) LOCATE IN ("TJ"),
+        PARTITION p2 VALUES IN ((11, 'lisi')),
+        PARTITION p3 VALUES IN ((12, 'wangwu')) LOCATE IN ("CHINA")
+);
+
+statement ok
+alter partition p1 of table test0 locate in ("");
+
+query TT colnames
+show create table test0
+----
+table_name  create_statement
+test0       CREATE TABLE test0 (
+            a INT NOT NULL,
+            name STRING NOT NULL,
+            CONSTRAINT "primary" PRIMARY KEY (a ASC, name ASC),
+            FAMILY "primary" (a, name)
+            ) PARTITION BY LIST (a, name) (
+                PARTITION p1 VALUES IN ((10, 'zhangsan')),
+                PARTITION p2 VALUES IN ((11, 'lisi')),
+                PARTITION p3 VALUES IN ((12, 'wangwu')) LOCATE IN ("CHINA")
+            )
+
+statement ok
+alter table test0 locate in ("TJ")
+
+query TT colnames
+show create table test0 with cache
+----
+table_name  create_statement
+test0       CREATE TABLE test0 (
+            a INT NOT NULL,
+            name STRING NOT NULL,
+            CONSTRAINT "primary" PRIMARY KEY (a ASC, name ASC) LOCATE IN ("TJ"),
+            FAMILY "primary" (a, name)
+) PARTITION BY LIST (a, name) (
+                    PARTITION p1 VALUES IN ((10, 'zhangsan')) LOCATE IN ("TJ"),
+                    PARTITION p2 VALUES IN ((11, 'lisi')) LOCATE IN ("TJ"),
+                    PARTITION p3 VALUES IN ((12, 'wangwu')) LOCATE IN ("CHINA")
+) LOCATE IN ("TJ")
+
+# testCase 1: AlterPartition with locate as null
+
+statement ok
+CREATE TABLE test1 (
+    a INT NOT NULL, name STRING NOT NULL,
+    PRIMARY KEY (a ASC, name ASC)) PARTITION BY LIST (a, name) (
+        PARTITION p1 VALUES IN ((10, 'zhangsan')) LOCATE IN ("TJ") LEASE IN ("TJ"),
+        PARTITION p2 VALUES IN ((11, 'lisi')),
+        PARTITION p3 VALUES IN ((12, 'wangwu')) LOCATE IN ("CHINA")
+);
+
+statement ok
+alter partition p1 of table test1 locate in ("");
+
+query TT colnames
+show create table test1
+----
+table_name  create_statement
+test1       CREATE TABLE test1 (
+            a INT NOT NULL,
+            name STRING NOT NULL,
+            CONSTRAINT "primary" PRIMARY KEY (a ASC, name ASC),
+            FAMILY "primary" (a, name)
+            ) PARTITION BY LIST (a, name) (
+                PARTITION p1 VALUES IN ((10, 'zhangsan')),
+                PARTITION p2 VALUES IN ((11, 'lisi')),
+                PARTITION p3 VALUES IN ((12, 'wangwu')) LOCATE IN ("CHINA")
+            )
+
+
+# testCase 2: AlterPartition with locate and lease with null
+
+statement ok
+CREATE TABLE test2 (
+    a INT NOT NULL, name STRING NOT NULL,
+    PRIMARY KEY (a ASC, name ASC)) PARTITION BY LIST (a, name) (
+        PARTITION p1 VALUES IN ((10, 'zhangsan')) LOCATE IN ("TJ") LEASE IN ("TJ"),
+        PARTITION p2 VALUES IN ((11, 'lisi')),
+        PARTITION p3 VALUES IN ((12, 'wangwu')) LOCATE IN ("CHINA")
+);
+
+statement ok
+alter partition p1 of table test2 locate in ("") lease in ("");
+
+query TT colnames
+show create table test2
+----
+table_name  create_statement
+test2     CREATE TABLE test2 (
+            a INT NOT NULL,
+            name STRING NOT NULL,
+            CONSTRAINT "primary" PRIMARY KEY (a ASC, name ASC),
+            FAMILY "primary" (a, name)
+            ) PARTITION BY LIST (a, name) (
+                PARTITION p1 VALUES IN ((10, 'zhangsan')),
+                PARTITION p2 VALUES IN ((11, 'lisi')),
+                PARTITION p3 VALUES IN ((12, 'wangwu')) LOCATE IN ("CHINA")
+            )
+
+
+# testCase 3: AlterPartition with locate and lease
+
+statement ok
+CREATE TABLE test3 (
+    a INT NOT NULL, name STRING NOT NULL,
+    PRIMARY KEY (a ASC, name ASC)) PARTITION BY LIST (a, name) (
+        PARTITION p1 VALUES IN ((10, 'zhangsan')) ,
+        PARTITION p2 VALUES IN ((11, 'lisi')),
+        PARTITION p3 VALUES IN ((12, 'wangwu')) LOCATE IN ("CHINA")
+);
+
+statement ok
+alter partition p1 of table test3 locate in ("TJ") lease in ("TJ");
+
+query TT colnames
+show create table test3
+----
+table_name  create_statement
+test3     CREATE TABLE test3 (
+            a INT NOT NULL,
+            name STRING NOT NULL,
+            CONSTRAINT "primary" PRIMARY KEY (a ASC, name ASC),
+            FAMILY "primary" (a, name)
+            ) PARTITION BY LIST (a, name) (
+                PARTITION p1 VALUES IN ((10, 'zhangsan')) LOCATE IN ("TJ") LEASE IN ("TJ"),
+                PARTITION p2 VALUES IN ((11, 'lisi')),
+                PARTITION p3 VALUES IN ((12, 'wangwu')) LOCATE IN ("CHINA")
+            )
+
+
+# testCase 4: AlterTable with locate
+
+statement ok
+CREATE TABLE test4 (a INT PRIMARY KEY, i INT) LOCATE IN (inspur) LEASE IN (inspur);
+
+query TT colnames
+show create table test4
+----
+table_name  create_statement
+test4       CREATE TABLE test4 (
+            a INT NOT NULL,
+            i INT NULL,
+            CONSTRAINT "primary" PRIMARY KEY (a ASC),
+            FAMILY "primary" (a, i)
+            ) LOCATE IN (inspur) LEASE IN (inspur)
+
+query TT colnames
+show create table test4 with cache
+----
+table_name  create_statement
+test4       CREATE TABLE test4 (
+            a INT NOT NULL,
+            i INT NULL,
+            CONSTRAINT "primary" PRIMARY KEY (a ASC) LOCATE IN (inspur) LEASE IN (inspur),
+            FAMILY "primary" (a, i)
+            ) LOCATE IN (inspur) LEASE IN (inspur)
+
+statement ok
+ALTER TABLE test4 LOCATE IN ("");
+
+query TT colnames
+show create table test4
+----
+table_name  create_statement
+test4       CREATE TABLE test4 (
+            a INT NOT NULL,
+            i INT NULL,
+            CONSTRAINT "primary" PRIMARY KEY (a ASC),
+            FAMILY "primary" (a, i)
+            )
+
+
+# testCase 5: AlterPrimaryIndex with locate and lease
+
+statement ok
+CREATE TABLE test5 (a INT PRIMARY KEY, i INT) LOCATE IN (inspur) LEASE IN (inspur);
+
+statement ok
+ALTER INDEX test5@primary LOCATE IN ("TJ") LEASE IN ("TJ");
+
+query TT colnames
+show create table test5 with cache
+----
+table_name  create_statement
+test5       CREATE TABLE test5 (
+            a INT NOT NULL,
+            i INT NULL,
+            CONSTRAINT "primary" PRIMARY KEY (a ASC) LOCATE IN ("TJ") LEASE IN ("TJ"),
+            FAMILY "primary" (a, i)
+            ) LOCATE IN (inspur) LEASE IN (inspur)
+
+statement ok
+ALTER TABLE test5 LOCATE IN ("CHINA")
+
+query TT colnames
+show create table test5 with cache
+----
+table_name  create_statement
+test5       CREATE TABLE test5 (
+            a INT NOT NULL,
+            i INT NULL,
+            CONSTRAINT "primary" PRIMARY KEY (a ASC) LOCATE IN ("TJ") LEASE IN ("TJ"),
+            FAMILY "primary" (a, i)
+            ) LOCATE IN ("CHINA")
+
+
+# testCase 6: AlterIndex with locate and lease
+
+statement ok
+CREATE TABLE test6 (a INT PRIMARY KEY, i INT) LOCATE IN (inspur) LEASE IN (inspur);
+
+statement ok
+CREATE INDEX id ON test6(i)
+
+query TT colnames
+show create table test6 with cache
+----
+table_name create_statement
+test6      CREATE TABLE test6 (
+           a INT NOT NULL,
+           i INT NULL,
+           CONSTRAINT "primary" PRIMARY KEY (a ASC) LOCATE IN (inspur) LEASE IN (inspur),
+           INDEX id (i ASC) LOCATE IN (inspur) LEASE IN (inspur),
+           FAMILY "primary" (a, i)
+           ) LOCATE IN (inspur) LEASE IN (inspur)
+
+statement ok
+ALTER INDEX test6@id LOCATE IN ("TJ") LEASE IN ("TJ")
+
+query TT colnames
+show create table test6 with cache
+----
+table_name create_statement
+test6      CREATE TABLE test6 (
+           a INT NOT NULL,
+           i INT NULL,
+           CONSTRAINT "primary" PRIMARY KEY (a ASC) LOCATE IN (inspur) LEASE IN (inspur),
+           INDEX id (i ASC) LOCATE IN ("TJ") LEASE IN ("TJ"),
+           FAMILY "primary" (a, i)
+           ) LOCATE IN (inspur) LEASE IN (inspur)
+
+statement ok
+ALTER INDEX test6@id PARTITION BY LIST (i) (
+  PARTITION n1 VALUES IN (1, 999)  LOCATE IN ("TJ") LEASE IN ("TJ"),
+  PARTITION n2 VALUES IN (2, 8)  LOCATE IN (inspur) LEASE IN (inspur),
+  PARTITION n3 VALUES IN (3, 7)
+) LOCATE IN ("TEST") LEASE IN ("TEST")
+
+query TT colnames
+show create table test6 with cache
+----
+table_name  create_statement
+test6       CREATE TABLE test6 (
+            a INT NOT NULL,
+            i INT NULL,
+            CONSTRAINT "primary" PRIMARY KEY (a ASC) LOCATE IN (inspur) LEASE IN (inspur),
+            INDEX id (i ASC) PARTITION BY LIST (i) (
+                PARTITION n1 VALUES IN ((1), (999)) LOCATE IN ("TJ") LEASE IN ("TJ"),
+                PARTITION n2 VALUES IN ((2), (8)) LOCATE IN (inspur) LEASE IN (inspur),
+                PARTITION n3 VALUES IN ((3), (7)) LOCATE IN ("TEST") LEASE IN ("TEST")
+            ) LOCATE IN ("TEST") LEASE IN ("TEST"),
+            FAMILY "primary" (a, i)
+            ) LOCATE IN (inspur) LEASE IN (inspur)
+
+# testCase 7: create table with locate and another lease, location "inspur" and "TJ" in one node
+
+statement ok
+CREATE TABLE test7 (a INT PRIMARY KEY, i INT) LOCATE IN (inspur, "TJ") LEASE IN ("CHINA");

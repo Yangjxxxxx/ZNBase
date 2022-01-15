@@ -1,0 +1,14 @@
+statement ok
+BEGIN;
+
+statement ok
+UPDATE t SET value = 'Z' WHERE key = 0;
+
+query IT
+SELECT * FROM t;
+----
+0 Z
+1 B
+
+statement ok
+COMMIT;

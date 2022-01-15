@@ -1,0 +1,11 @@
+statement ok
+BEGIN;
+
+statement ok
+DELETE FROM B WHERE a = 'd';
+
+statement ok
+SELECT pg_sleep(6);
+
+statement ok
+COMMIT;

@@ -1,0 +1,180 @@
+# LogicTest: local
+
+# test for auto commit ddl
+
+statement ok
+set cluster setting kv.transaction.auto_commit_ddl = true;
+
+statement ok
+create table b(a int primary key);
+
+#subtest txn commit when ddl execute ,even txn rollback ,statement before ddl already committed.
+statement ok
+begin;
+
+statement ok
+insert into b values(1);
+
+statement error pq: relation "x" does not exist
+drop table x;
+
+statement ok
+rollback;
+
+statement ok
+begin;
+
+query I
+select * from b
+----
+1
+
+statement ok
+commit;
+
+#subtest txn rollback, all statement rollback when set auto commit ddl false.
+query TT
+show tables;
+----
+b  root
+
+statement ok
+set cluster setting kv.transaction.auto_commit_ddl = false;
+
+statement ok
+begin;
+
+statement ok
+create table a(a int);
+
+statement error pq: relation "x" does not exist
+drop table x;
+
+statement ok
+rollback;
+
+query TT
+show tables;
+----
+b  root
+
+statement ok
+drop table b cascade;
+
+#subtest for ddl err occurred
+statement ok
+set cluster setting kv.transaction.auto_commit_ddl = true;
+
+statement ok
+create table x (a int);
+
+statement ok
+create table y (a int);
+
+statement ok
+create table z (a int);
+
+#implicit no err
+statement ok
+drop table y;
+
+query TT
+show tables;
+----
+x  root
+z  root
+
+#explicit no err
+statement ok
+begin;
+
+statement ok
+drop table z;
+
+statement ok
+commit;
+
+query TT
+show tables;
+----
+x  root
+
+statement ok
+begin;
+
+statement ok
+drop table x;
+
+statement ok
+rollback
+
+query TT
+show tables;
+----
+
+
+#explicit  err
+statement ok
+begin;
+
+statement error pq: relation "ex" does not exist
+drop table ex;
+
+statement ok
+rollback
+
+#implicit err
+statement error pq: relation "im" does not exist
+drop table im;
+
+statement error pq: there is no transaction in progress
+rollback
+
+#subtest autocommit ddl do not support savepoint
+
+statement ok
+create table ir_model (a int, name string);
+
+statement ok
+set cluster setting kv.transaction.auto_commit_ddl = true;
+
+statement ok
+begin;
+
+statement ok
+SAVEPOINT "9343314ed55b11eaaae794c691a8c42f";
+
+statement ok
+ALTER TABLE "ir_model" ALTER COLUMN "name" SET NOT NULL;
+
+statement error pq: savepoint ""9343314ed55b11eaaae794c691a8c42f"" does not exist
+RELEASE SAVEPOINT "9343314ed55b11eaaae794c691a8c42f";
+
+statement ok
+commit;
+
+#subtest autocommit ddl support prepare ddl stmt.
+
+statement ok
+set cluster setting kv.transaction.auto_commit_ddl = true;
+
+statement ok
+DROP TABLE IF EXISTS t CASCADE;
+
+statement ok
+CREATE TABLE t (a INT, b STRING);
+
+statement ok
+BEGIN;
+
+statement ok
+PREPARE p1 AS CREATE TABLE pre(a INT);
+
+statement ok
+INSERT INTO t VALUES(1, 'test');
+
+statement ok
+EXECUTE p1;
+
+statement ok
+COMMIT;

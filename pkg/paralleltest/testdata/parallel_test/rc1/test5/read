@@ -1,0 +1,5 @@
+statement ok
+BEGIN;
+
+statement ok
+COMMIT;

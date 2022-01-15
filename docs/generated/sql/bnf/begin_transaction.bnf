@@ -1,0 +1,21 @@
+begin_stmt ::=
+	'BEGIN' 'TRANSACTION' 'PRIORITY' 'LOW' ( ( ( ',' |  ) ( ( 'PRIORITY' ( 'LOW' | 'NORMAL' | 'HIGH' ) ) | ( 'READ' 'ONLY' | 'READ' 'WRITE' ) | as_of_clause | transaction_name_stmt | ( 'SUPDDL' | 'NOTSUPDDL' ) ) ) )*
+	| 'BEGIN' 'TRANSACTION' 'PRIORITY' 'NORMAL' ( ( ( ',' |  ) ( ( 'PRIORITY' ( 'LOW' | 'NORMAL' | 'HIGH' ) ) | ( 'READ' 'ONLY' | 'READ' 'WRITE' ) | as_of_clause | transaction_name_stmt | ( 'SUPDDL' | 'NOTSUPDDL' ) ) ) )*
+	| 'BEGIN' 'TRANSACTION' 'PRIORITY' 'HIGH' ( ( ( ',' |  ) ( ( 'PRIORITY' ( 'LOW' | 'NORMAL' | 'HIGH' ) ) | ( 'READ' 'ONLY' | 'READ' 'WRITE' ) | as_of_clause | transaction_name_stmt | ( 'SUPDDL' | 'NOTSUPDDL' ) ) ) )*
+	| 'BEGIN' 'TRANSACTION' 'READ' 'ONLY' ( ( ( ',' |  ) ( ( 'PRIORITY' ( 'LOW' | 'NORMAL' | 'HIGH' ) ) | ( 'READ' 'ONLY' | 'READ' 'WRITE' ) | as_of_clause | transaction_name_stmt | ( 'SUPDDL' | 'NOTSUPDDL' ) ) ) )*
+	| 'BEGIN' 'TRANSACTION' 'READ' 'WRITE' ( ( ( ',' |  ) ( ( 'PRIORITY' ( 'LOW' | 'NORMAL' | 'HIGH' ) ) | ( 'READ' 'ONLY' | 'READ' 'WRITE' ) | as_of_clause | transaction_name_stmt | ( 'SUPDDL' | 'NOTSUPDDL' ) ) ) )*
+	| 'BEGIN' 'TRANSACTION' as_of_clause ( ( ( ',' |  ) ( ( 'PRIORITY' ( 'LOW' | 'NORMAL' | 'HIGH' ) ) | ( 'READ' 'ONLY' | 'READ' 'WRITE' ) | as_of_clause | transaction_name_stmt | ( 'SUPDDL' | 'NOTSUPDDL' ) ) ) )*
+	| 'BEGIN' 'TRANSACTION' transaction_name_stmt ( ( ( ',' |  ) ( ( 'PRIORITY' ( 'LOW' | 'NORMAL' | 'HIGH' ) ) | ( 'READ' 'ONLY' | 'READ' 'WRITE' ) | as_of_clause | transaction_name_stmt | ( 'SUPDDL' | 'NOTSUPDDL' ) ) ) )*
+	| 'BEGIN' 'TRANSACTION' 'SUPDDL' ( ( ( ',' |  ) ( ( 'PRIORITY' ( 'LOW' | 'NORMAL' | 'HIGH' ) ) | ( 'READ' 'ONLY' | 'READ' 'WRITE' ) | as_of_clause | transaction_name_stmt | ( 'SUPDDL' | 'NOTSUPDDL' ) ) ) )*
+	| 'BEGIN' 'TRANSACTION' 'NOTSUPDDL' ( ( ( ',' |  ) ( ( 'PRIORITY' ( 'LOW' | 'NORMAL' | 'HIGH' ) ) | ( 'READ' 'ONLY' | 'READ' 'WRITE' ) | as_of_clause | transaction_name_stmt | ( 'SUPDDL' | 'NOTSUPDDL' ) ) ) )*
+	| 'BEGIN' 'TRANSACTION' 
+	| 'BEGIN'  'PRIORITY' 'LOW' ( ( ( ',' |  ) ( ( 'PRIORITY' ( 'LOW' | 'NORMAL' | 'HIGH' ) ) | ( 'READ' 'ONLY' | 'READ' 'WRITE' ) | as_of_clause | transaction_name_stmt | ( 'SUPDDL' | 'NOTSUPDDL' ) ) ) )*
+	| 'BEGIN'  'PRIORITY' 'NORMAL' ( ( ( ',' |  ) ( ( 'PRIORITY' ( 'LOW' | 'NORMAL' | 'HIGH' ) ) | ( 'READ' 'ONLY' | 'READ' 'WRITE' ) | as_of_clause | transaction_name_stmt | ( 'SUPDDL' | 'NOTSUPDDL' ) ) ) )*
+	| 'BEGIN'  'PRIORITY' 'HIGH' ( ( ( ',' |  ) ( ( 'PRIORITY' ( 'LOW' | 'NORMAL' | 'HIGH' ) ) | ( 'READ' 'ONLY' | 'READ' 'WRITE' ) | as_of_clause | transaction_name_stmt | ( 'SUPDDL' | 'NOTSUPDDL' ) ) ) )*
+	| 'BEGIN'  'READ' 'ONLY' ( ( ( ',' |  ) ( ( 'PRIORITY' ( 'LOW' | 'NORMAL' | 'HIGH' ) ) | ( 'READ' 'ONLY' | 'READ' 'WRITE' ) | as_of_clause | transaction_name_stmt | ( 'SUPDDL' | 'NOTSUPDDL' ) ) ) )*
+	| 'BEGIN'  'READ' 'WRITE' ( ( ( ',' |  ) ( ( 'PRIORITY' ( 'LOW' | 'NORMAL' | 'HIGH' ) ) | ( 'READ' 'ONLY' | 'READ' 'WRITE' ) | as_of_clause | transaction_name_stmt | ( 'SUPDDL' | 'NOTSUPDDL' ) ) ) )*
+	| 'BEGIN'  as_of_clause ( ( ( ',' |  ) ( ( 'PRIORITY' ( 'LOW' | 'NORMAL' | 'HIGH' ) ) | ( 'READ' 'ONLY' | 'READ' 'WRITE' ) | as_of_clause | transaction_name_stmt | ( 'SUPDDL' | 'NOTSUPDDL' ) ) ) )*
+	| 'BEGIN'  transaction_name_stmt ( ( ( ',' |  ) ( ( 'PRIORITY' ( 'LOW' | 'NORMAL' | 'HIGH' ) ) | ( 'READ' 'ONLY' | 'READ' 'WRITE' ) | as_of_clause | transaction_name_stmt | ( 'SUPDDL' | 'NOTSUPDDL' ) ) ) )*
+	| 'BEGIN'  'SUPDDL' ( ( ( ',' |  ) ( ( 'PRIORITY' ( 'LOW' | 'NORMAL' | 'HIGH' ) ) | ( 'READ' 'ONLY' | 'READ' 'WRITE' ) | as_of_clause | transaction_name_stmt | ( 'SUPDDL' | 'NOTSUPDDL' ) ) ) )*
+	| 'BEGIN'  'NOTSUPDDL' ( ( ( ',' |  ) ( ( 'PRIORITY' ( 'LOW' | 'NORMAL' | 'HIGH' ) ) | ( 'READ' 'ONLY' | 'READ' 'WRITE' ) | as_of_clause | transaction_name_stmt | ( 'SUPDDL' | 'NOTSUPDDL' ) ) ) )*
+	| 'BEGIN'  

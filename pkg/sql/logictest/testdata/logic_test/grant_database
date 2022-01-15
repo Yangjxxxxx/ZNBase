@@ -1,0 +1,192 @@
+# LogicTest: local local-opt
+
+statement ok
+CREATE DATABASE a
+
+statement ok
+GRANT USAGE ON DATABASE a TO public
+
+query TTTTT colnames
+SHOW GRANTS ON DATABASE a
+----
+database_name  grantor  grantee  privilege_type  grantable
+a              admin    admin    CREATE          YES
+a              admin    admin    DROP            YES
+a              admin    admin    USAGE           YES
+a              admin    root     CREATE          YES
+a              admin    root     DROP            YES
+a              admin    root     USAGE           YES
+a              root     public   USAGE           NO
+
+statement ok
+REVOKE USAGE ON DATABASE a FROM root
+
+statement ok
+REVOKE USAGE ON DATABASE a FROM admin
+
+query TTTTT colnames
+SHOW GRANTS ON DATABASE a
+----
+database_name  grantor  grantee  privilege_type  grantable
+a              admin    admin    CREATE          YES
+a              admin    admin    DROP            YES
+a              admin    admin    USAGE           YES
+a              admin    root     CREATE          YES
+a              admin    root     DROP            YES
+a              admin    root     USAGE           YES
+a              root     public   USAGE           NO
+
+statement ok
+CREATE USER readwrite
+
+statement error pq: user or role "test-user" does not exist
+GRANT ALL ON DATABASE a TO readwrite, "test-user"
+
+statement ok
+INSERT INTO system.users VALUES('test-user','');
+
+statement ok
+GRANT ALL ON DATABASE a TO readwrite, "test-user"
+
+statement error syntax error
+GRANT SELECT,ALL ON DATABASE a TO readwrite
+
+statement error syntax error
+REVOKE SELECT,ALL ON DATABASE a FROM readwrite
+
+query TTTTT
+SHOW GRANTS ON DATABASE a
+----
+a  admin  admin      CREATE  YES
+a  admin  admin      DROP    YES
+a  admin  admin      USAGE   YES
+a  admin  root       CREATE  YES
+a  admin  root       DROP    YES
+a  admin  root       USAGE   YES
+a  root   public     USAGE   NO
+a  root   readwrite  CREATE  NO
+a  root   readwrite  DROP    NO
+a  root   readwrite  USAGE   NO
+a  root   test-user  CREATE  NO
+a  root   test-user  DROP    NO
+a  root   test-user  USAGE   NO
+
+# Create table to inherit DB permissions.
+statement ok
+CREATE TABLE a.t (id INT PRIMARY KEY)
+
+query TTTTTTTT colnames
+SHOW GRANTS ON a.t
+----
+database_name  schema_name  table_name  column_name  grantor  grantee  privilege_type  grantable
+a              public       t           NULL         admin    admin    DELETE          YES
+a              public       t           NULL         admin    admin    DROP            YES
+a              public       t           NULL         admin    admin    INSERT          YES
+a              public       t           NULL         admin    admin    REFERENCES      YES
+a              public       t           NULL         admin    admin    SELECT          YES
+a              public       t           NULL         admin    admin    TRIGGER         YES
+a              public       t           NULL         admin    admin    UPDATE          YES
+a              public       t           NULL         admin    root     DELETE          YES
+a              public       t           NULL         admin    root     DROP            YES
+a              public       t           NULL         admin    root     INSERT          YES
+a              public       t           NULL         admin    root     REFERENCES      YES
+a              public       t           NULL         admin    root     SELECT          YES
+a              public       t           NULL         admin    root     TRIGGER         YES
+a              public       t           NULL         admin    root     UPDATE          YES
+
+query TTTTT
+SHOW GRANTS ON DATABASE a FOR readwrite, "test-user"
+----
+a  root  public     USAGE   NO
+a  root  readwrite  CREATE  NO
+a  root  readwrite  DROP    NO
+a  root  readwrite  USAGE   NO
+a  root  test-user  CREATE  NO
+a  root  test-user  DROP    NO
+a  root  test-user  USAGE   NO
+
+statement ok
+REVOKE DROP, CREATE ON DATABASE a FROM "test-user",readwrite
+
+query TTTTT
+SHOW GRANTS ON DATABASE a
+----
+a  admin  admin      CREATE  YES
+a  admin  admin      DROP    YES
+a  admin  admin      USAGE   YES
+a  admin  root       CREATE  YES
+a  admin  root       DROP    YES
+a  admin  root       USAGE   YES
+a  root   public     USAGE   NO
+a  root   readwrite  USAGE   NO
+a  root   test-user  USAGE   NO
+
+query TTTTT
+SHOW GRANTS ON DATABASE a FOR readwrite, "test-user"
+----
+a  root  public     USAGE  NO
+a  root  readwrite  USAGE  NO
+a  root  test-user  USAGE  NO
+
+statement ok
+REVOKE USAGE ON DATABASE a FROM "test-user"
+
+query TTTTT
+SHOW GRANTS ON DATABASE a
+----
+a  admin  admin      CREATE  YES
+a  admin  admin      DROP    YES
+a  admin  admin      USAGE   YES
+a  admin  root       CREATE  YES
+a  admin  root       DROP    YES
+a  admin  root       USAGE   YES
+a  root   public     USAGE   NO
+a  root   readwrite  USAGE   NO
+
+statement ok
+REVOKE ALL ON DATABASE a FROM "test-user"
+
+query TTTTT
+SHOW GRANTS ON DATABASE a FOR readwrite, "test-user"
+----
+a  root  public     USAGE  NO
+a  root  readwrite  USAGE  NO
+
+statement ok
+REVOKE ALL ON DATABASE a FROM readwrite,"test-user"
+
+query TTTTT
+SHOW GRANTS ON DATABASE a
+----
+a  admin  admin   CREATE  YES
+a  admin  admin   DROP    YES
+a  admin  admin   USAGE   YES
+a  admin  root    CREATE  YES
+a  admin  root    DROP    YES
+a  admin  root    USAGE   YES
+a  root   public  USAGE   NO
+
+query TTTTT
+SHOW GRANTS ON DATABASE a FOR readwrite, "test-user"
+----
+a  root  public  USAGE  NO
+
+# Verify that the table privileges have not changed.
+query TTTTTTTT colnames
+SHOW GRANTS ON a.t
+----
+database_name  schema_name  table_name  column_name  grantor  grantee  privilege_type  grantable
+a              public       t           NULL         admin    admin    DELETE          YES
+a              public       t           NULL         admin    admin    DROP            YES
+a              public       t           NULL         admin    admin    INSERT          YES
+a              public       t           NULL         admin    admin    REFERENCES      YES
+a              public       t           NULL         admin    admin    SELECT          YES
+a              public       t           NULL         admin    admin    TRIGGER         YES
+a              public       t           NULL         admin    admin    UPDATE          YES
+a              public       t           NULL         admin    root     DELETE          YES
+a              public       t           NULL         admin    root     DROP            YES
+a              public       t           NULL         admin    root     INSERT          YES
+a              public       t           NULL         admin    root     REFERENCES      YES
+a              public       t           NULL         admin    root     SELECT          YES
+a              public       t           NULL         admin    root     TRIGGER         YES
+a              public       t           NULL         admin    root     UPDATE          YES

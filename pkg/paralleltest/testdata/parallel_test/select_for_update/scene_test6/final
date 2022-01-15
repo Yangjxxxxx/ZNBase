@@ -1,0 +1,4 @@
+
+query I
+select * from (select (count(o_id)-(max(o_id)-min(o_id)+1)) as diff from new_order group by w_id) where diff!=0;
+----

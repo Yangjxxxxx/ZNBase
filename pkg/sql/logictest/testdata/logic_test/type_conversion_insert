@@ -1,0 +1,904 @@
+# LogicTest: local local-opt
+
+# 239 347
+
+# 数据准备
+statement ok
+create table test_num(int4Col int4, int8Col int8, floatCol float, decimalCol decimal(10, 2));
+
+statement ok
+create table test_datetime(dateCol date, timeCol time, timestampCol timestamp, timestampTZCol timestampTZ);
+
+statement ok
+create table test_bool(boolCol bool);
+
+statement ok
+create table test_string(stringCol string);
+
+
+# TO INT
+statement ok
+insert into test_num(int4Col) values (3.49);
+
+statement ok
+insert into test_num(int4Col) values (3.51);
+
+statement ok
+insert into test_num(int4Col) values (decimal(10, 2) '3.49');
+
+statement ok
+insert into test_num(int4Col) values (decimal(10, 2) '3.51');
+
+statement ok
+insert into test_num(int4Col) values (true);
+
+statement ok
+insert into test_num(int4Col) values (false);
+
+statement ok
+insert into test_num(int4Col) values ('20');
+
+statement ok
+insert into test_num(int4Col) values ('20.49');
+
+statement ok
+insert into test_num(int4Col) values ('20.501');
+
+statement ok
+insert into test_num(int4Col) values (date '20191212');
+
+statement ok
+insert into test_num(int8Col) values (date '20191212');
+
+statement ok
+insert into test_num(int8Col) values (date '1212');
+
+statement error pq: field month value 92 is out of range as type date
+insert into test_num(int8Col) values (date '2019212');
+
+# 应该错误，超过date可接受的整数范围
+statement error pq: missing required time fields as type date
+insert into test_num(int8Col) values (date '201912121');
+
+statement ok
+insert into test_num(int4Col) values (time '121200');
+
+statement ok
+insert into test_num(int4Col) values (time '05:40:00');
+
+statement ok
+insert into test_num(int8Col) values (time '121200');
+
+statement ok
+insert into test_num(int8Col) values (time '05:40:00');
+
+statement error pq: integer out of range for type INT4 \(column "int4col"\)
+insert into test_num(int4Col) values (timestamp '20191212121200');
+
+statement ok
+insert into test_num(int8Col) values (timestamp '20191212121200');
+
+statement error pq: integer out of range for type INT4 \(column "int4col"\)
+insert into test_num(int4Col) values (timestampTZ '20191212121200');
+
+statement ok
+insert into test_num(int8Col) values (timestampTZ '20191212121200');
+
+statement error pq: could not parse "123abc" as type int
+insert into test_num(int8Col) values ('123abc');
+
+query II
+select int4Col, int8Col from test_num;
+----
+3         NULL
+4         NULL
+3         NULL
+4         NULL
+1         NULL
+0         NULL
+20        NULL
+20        NULL
+21        NULL
+20191212  NULL
+NULL      20191212
+NULL      20001212
+121200    NULL
+54000     NULL
+NULL      121200
+NULL      54000
+NULL      20191212121200
+NULL      20191212121200
+
+statement ok
+delete from test_num;
+
+
+# TO FLOAT
+statement ok
+insert into test_num(floatCol) values (2019);
+
+statement ok
+insert into test_num(floatCol) values (decimal(10, 2) '2019.44');
+
+statement ok
+insert into test_num(floatCol) values (true);
+
+statement ok
+insert into test_num(floatCol) values (false);
+
+statement ok
+insert into test_num(floatCol) values ('2019');
+
+statement ok
+insert into test_num(floatCol) values ('2019.44');
+
+statement ok
+insert into test_num(floatCol) values (date '20191212');
+
+statement ok
+insert into test_num(floatCol) values (time '121200');
+
+statement ok
+insert into test_num(floatCol) values (timestamp '20191212121200');
+
+statement ok
+insert into test_num(floatCol) values (timestampTZ '20191212121200');
+
+statement error pq: could not parse "123abc" as type float
+insert into test_num(floatCol) values ('123abc');
+
+query R
+select floatCol from test_num;
+----
+2019
+2019.44
+1
+0
+2019
+2019.44
+2.0191212e+07
+121200
+2.01912121212e+13
+2.01912121212e+13
+
+statement ok
+delete from test_num;
+
+
+# TO DECIMAL
+statement ok
+insert into test_num(decimalCol) values (2019);
+
+# 这里应该报错，超过decimal的表示范围
+statement error pq: type DECIMAL\(10,2\) \(column "decimalcol"\): value with precision 10, scale 2 must round to an absolute value less than 10\^8
+insert into test_num(decimalCol) values (2019121212);
+
+statement ok
+insert into test_num(decimalCol) values (2019.12);
+
+# 应该报错，超过decimal的整数精度
+statement error pq: type DECIMAL\(10,2\) \(column "decimalcol"\): value with precision 10, scale 2 must round to an absolute value less than 10\^8
+insert into test_num(decimalCol) values (2019121212.12);
+
+# 小数超过decimal精度，截断
+statement ok
+insert into test_num(decimalCol) values (2019.1234);
+
+statement ok
+insert into test_num(decimalCol) values (true);
+
+statement ok
+insert into test_num(decimalCol) values (false);
+
+statement ok
+insert into test_num(decimalCol) values (date '20191212');
+
+statement ok
+insert into test_num(decimalCol) values (time '121200');
+
+statement ok
+insert into test_num(decimalCol) values (time '00:54:00');
+
+statement error pq: could not parse "123abc" as type decimal
+insert into test_num(decimalCol) values ('123abc');
+
+statement error pq: type DECIMAL\(10,2\) \(column "decimalcol"\): value with precision 10, scale 2 must round to an absolute value less than 10\^8
+insert into test_num(decimalCol) values (timestamp '20191212121200');
+
+statement error pq: type DECIMAL\(10,2\) \(column "decimalcol"\): value with precision 10, scale 2 must round to an absolute value less than 10\^8
+insert into test_num(decimalCol) values (timestampTZ '20191212121200');
+
+query R
+select decimalCol from test_num;
+----
+2019.00
+2019.12
+2019.12
+1.00
+0.00
+20191212.00
+121200.00
+5400.00
+
+statement ok
+delete from test_num;
+
+
+# TO BOOL
+statement ok
+insert into test_bool(boolCol) values (2019);
+
+statement ok
+insert into test_bool(boolCol) values (0);
+
+statement ok
+insert into test_bool(boolCol) values (-2019);
+
+statement ok
+insert into test_bool(boolCol) values (2019.123);
+
+statement ok
+insert into test_bool(boolCol) values (decimal(10, 2) '2019.23');
+
+statement error pq: could not parse "hello" as type bool: invalid bool value
+insert into test_bool(boolCol) values ('hello');
+
+statement error pq: could not parse "123hello" as type bool: invalid bool value
+insert into test_bool(boolCol) values ('123hello');
+
+statement error pq: could not parse "he123llo" as type bool: invalid bool value
+insert into test_bool(boolCol) values ('he123llo');
+
+statement error pq: could not parse "-123hello" as type bool: invalid bool value
+insert into test_bool(boolCol) values ('-123hello');
+
+statement ok
+insert into test_bool(boolCol) values ('true');
+
+statement error pq: could not parse "truefalse" as type bool: invalid bool value
+insert into test_bool(boolCol) values ('truefalse');
+
+statement ok
+insert into test_bool(boolCol) values ('123');
+
+statement ok
+insert into test_bool(boolCol) values ('0');
+
+# 未知情况，这里不确定情况
+statement ok
+insert into test_bool(boolCol) values ('123.123');
+
+statement ok
+insert into test_bool(boolCol) values (date '20191212');
+
+statement ok
+insert into test_bool(boolCol) values (time '121200');
+
+statement ok
+insert into test_bool(boolCol) values (timestamp '20191212121200');
+
+query B
+select boolCol from test_bool;
+----
+true
+false
+true
+true
+true
+true
+true
+false
+true
+true
+true
+true
+
+statement ok
+delete from test_bool;
+
+
+# TO STRING
+statement ok
+insert into test_string(stringCol) values (2019);
+
+statement ok
+insert into test_string(stringCol) values (0);
+
+statement ok
+insert into test_string(stringCol) values (-2019);
+
+statement ok
+insert into test_string(stringCol) values (2019.123);
+
+statement ok
+insert into test_string(stringCol) values (decimal(10, 2) '2019.23');
+
+statement ok
+insert into test_string(stringCol) values (true);
+
+statement ok
+insert into test_string(stringCol) values (false);
+
+statement ok
+insert into test_string(stringCol) values (date '20191212');
+
+# 这种情况不知道可以不可以，如果有问题，则是date与string的转换函数出现问题，这里要与下面往date插入整数作比较
+statement error pq: field month value 92 is out of range as type date
+insert into test_string(stringCol) values (date '2019212');
+
+statement ok
+insert into test_string(stringCol) values (time '121200');
+
+statement ok
+insert into test_string(stringCol) values (timestamp '20191212121200');
+
+statement ok
+insert into test_string(stringCol) values (timestampTZ '20191212121200');
+
+query T
+select stringCol from test_string;
+----
+2019
+0
+-2019
+2019.123
+2019.23
+true
+false
+2019-12-12
+12:12:00
+2019-12-12 12:12:00
+2019-12-12 12:12:00+00:00
+
+statement ok
+delete from test_string;
+
+
+# TO DATE
+# int convert to date is conditional
+statement ok
+insert into test_datetime(dateCol) values (20191212);
+
+statement error pq: field month value 91 is out of range as type date
+insert into test_datetime(dateCol) values (2019123);
+
+# 没有年份的情况
+statement ok
+insert into test_datetime(dateCol) values (212);
+
+statement ok
+insert into test_datetime(dateCol) values (1212);
+
+statement ok
+insert into test_datetime(dateCol) values (2019.123);
+
+# 应该报错，不支持的数据格式
+statement error pq: missing required time fields as type date
+insert into test_datetime(dateCol) values (2019.1234);
+
+statement ok
+insert into test_datetime(dateCol) values (decimal(10, 3) '2019.123');
+
+# 应该报错，不支持的数据格式
+statement pq: can not convert a float number to type date
+insert into test_datetime(dateCol) values (decimal(10, 3) '2019.1234');
+
+statement error pq: value type bool doesn't match type DATE of column "datecol"
+insert into test_datetime(dateCol) values (true);
+
+statement error pq: value type bool doesn't match type DATE of column "datecol"
+insert into test_datetime(dateCol) values (false);
+
+statement error pq: could not parse "hello" as type date
+insert into test_datetime(dateCol) values ('hello');
+
+statement error pq: could not parse "1hell" as type date
+insert into test_datetime(dateCol) values ('1hell');
+
+statement ok
+insert into test_datetime(dateCol) values ('20190101');
+
+statement ok
+insert into test_datetime(dateCol) values ('0101');
+
+statement ok
+insert into test_datetime(dateCol) values ('101');
+
+statement ok
+insert into test_datetime(dateCol) values ('123');
+
+statement error pq: missing required date fields as type date
+insert into test_datetime(dateCol) values ('0');
+
+statement ok
+insert into test_datetime(dateCol) values (timestamp '20191212121200');
+
+statement error pq: field day value 29 is out of range as type timestamp
+insert into test_datetime(dateCol) values (timestamp '20190229121200');
+
+statement ok
+insert into test_datetime(dateCol) values (timestampTZ '20191212121200');
+
+statement error pq: field day value 29 is out of range as type timestamp
+insert into test_datetime(dateCol) values (timestampTZ '20190229121200');
+
+query T
+select dateCol from test_datetime;
+----
+2019-12-12 00:00:00 +0000 +0000
+2000-02-12 00:00:00 +0000 +0000
+2000-12-12 00:00:00 +0000 +0000
+2019-05-03 00:00:00 +0000 +0000
+2019-05-03 00:00:00 +0000 +0000
+2019-05-03 00:00:00 +0000 +0000
+2019-01-01 00:00:00 +0000 +0000
+2000-01-01 00:00:00 +0000 +0000
+2000-01-01 00:00:00 +0000 +0000
+2000-01-23 00:00:00 +0000 +0000
+2019-12-12 00:00:00 +0000 +0000
+2019-12-12 00:00:00 +0000 +0000
+
+statement ok
+delete from test_datetime;
+
+
+# TO TIME 优先级最低
+statement ok
+insert into test_datetime(timeCol) values (121212);
+
+# 应该报错，超过时间的表示范围了
+statement error pq: could not parse "251212" as type time
+insert into test_datetime(timeCol) values (251212);
+
+# 不确定这个用例的正确性
+statement ok
+insert into test_datetime(timeCol) values (1212);
+
+statement error pq: could not parse "12" as type time
+insert into test_datetime(timeCol) values (12);
+
+# 应该错，与date相似
+statement ok
+insert into test_datetime(timeCol) values (1212.12);
+
+# 应该错，与date相似，不确定
+statement ok
+insert into test_datetime(timeCol) values (decimal(10, 2) '121212.12');
+
+# 应该错，bool类型格式不正确
+statement error pq: value type bool doesn't match type TIME of column "timecol"
+insert into test_datetime(timeCol) values (true);
+
+statement error pq: value type bool doesn't match type TIME of column "timecol"
+insert into test_datetime(timeCol) values (false);
+
+# 这四个全部不确定
+statement ok
+insert into test_datetime(timeCol) values (timestamp '20191212121200');
+
+statement error pq: field day value 29 is out of range as type timestamp
+insert into test_datetime(timeCol) values (timestamp '20190229121200');
+
+statement ok
+insert into test_datetime(timeCol) values (timestampTZ '20191212121200');
+
+query T
+select timeCol from test_datetime;
+----
+0000-01-01 12:12:12 +0000 UTC
+0000-01-01 12:12:00 +0000 UTC
+0000-01-01 12:12:00.12 +0000 UTC
+0000-01-01 12:12:12.12 +0000 UTC
+0000-01-01 12:12:00 +0000 UTC
+0000-01-01 12:12:00 +0000 UTC
+
+statement ok
+delete from test_datetime;
+
+# TO TIMESTAMPTZ
+statement ok
+create table tt_float(f float);
+
+statement ok
+insert into tt_float values (2012.234), (20120101), (20120101.123), (20120102.00), (2012.020), (20120101121212.123);
+
+statement ok
+create table tt_decimal(d decimal);
+
+statement ok
+insert into tt_decimal values (2012.234), (20120101), (20120101.123), (20120102.00), (2012.020), (20120101121212.123);
+
+
+statement ok
+insert into test_datetime(timestampTZCol) values (20191212121212);
+
+# 不确定
+statement ok
+insert into test_datetime(timestampTZCol) values (20191212);
+
+# 应该错，有小数点
+# statement error pq: cannot interpret field: 4612 as type timestamp
+# insert into test_datetime(timestampTZCol) values (1212.12);
+
+# 应该错，与float相似
+statement error pq: cannot interpret field: 461 as type timestamp
+insert into test_datetime(timestampTZCol) values (decimal(10, 2) '121212.12');
+
+statement ok
+insert into test_datetime(timestampTZCol) values ('20191212121212');
+
+statement ok
+insert into test_datetime(timestampTZCol) values ('20191212');
+
+statement error pq: value type bool doesn't match type TIMESTAMPTZ of column "timestamptzcol"
+insert into test_datetime(timestampTZCol) values (true);
+
+statement error pq: value type bool doesn't match type TIMESTAMPTZ of column "timestamptzcol"
+insert into test_datetime(timestampTZCol) values (false);
+
+statement ok
+insert into test_datetime(timestampTZCol) values (date '20191212');
+
+# this test case is relation to the current date, but it works correctly
+# statement ok
+# insert into test_datetime(timestampTZCol) values (time '121200');
+
+statement ok
+insert into test_datetime(timestampTZCol) values (timestamp '20191212121200');
+
+statement ok
+insert into test_datetime(timestampTZCol) values (2019.123);
+
+statement error pq: cannot interpret field: 460 as type timestamp
+insert into test_datetime(timestampTZCol) values (20191212.00);
+
+statement error pq: cannot interpret field: 46123 as type timestamp
+insert into test_datetime(timestampTZCol) values (20191212.123);
+
+statement ok
+insert into test_datetime(timestampTZCol) select f from tt_float where f=2012.234;
+
+statement ok
+insert into test_datetime(timestampTZCol) select f from tt_float where f=20120101;
+
+statement error pq: cannot interpret field: 46123 as type timestamp
+insert into test_datetime(timestampTZCol) select f from tt_float where f=20120101.123;
+
+statement ok
+insert into test_datetime(timestampTZCol) select f from tt_float where f=20120102.00;
+
+statement error pq: cannot interpret field: 462 as type timestamp
+insert into test_datetime(timestampTZCol) select f from tt_float where f=2012.020;
+
+statement ok
+insert into test_datetime(timestampTZCol) select f from tt_float where f>20120101000;
+
+query T
+select timestampTZCol from test_datetime;
+----
+2019-12-12 12:12:12 +0000 UTC
+2019-12-12 00:00:00 +0000 UTC
+2019-12-12 12:12:12 +0000 UTC
+2019-12-12 00:00:00 +0000 UTC
+2019-12-12 00:00:00 +0000 UTC
+2019-12-12 12:12:00 +0000 UTC
+2019-05-03 00:00:00 +0000 UTC
+2012-08-21 00:00:00 +0000 UTC
+2012-01-01 00:00:00 +0000 UTC
+2012-01-02 00:00:00 +0000 UTC
+2012-01-01 12:12:12.12 +0000 UTC
+
+statement ok
+delete from test_datetime where true;
+
+statement ok
+insert into test_datetime(timestampCol) values (timestamp '20191212121200');
+
+statement ok
+insert into test_datetime(timestampCol) values (2019.123);
+
+statement error pq: cannot interpret field: 460 as type timestamp
+insert into test_datetime(timestampCol) values (20191212.00);
+
+statement error pq: cannot interpret field: 46123 as type timestamp
+insert into test_datetime(timestampCol) values (20191212.123);
+
+statement ok
+insert into test_datetime(timestampCol) select d from tt_decimal where d=2012.234;
+
+statement ok
+insert into test_datetime(timestampCol) select d from tt_decimal where d=20120101;
+
+statement error pq: cannot interpret field: 46123 as type timestamp
+insert into test_datetime(timestampCol) select d from tt_decimal where d=20120101.123;
+
+# 20120102.00 对于float来说可以正常插入,因为float在保存时会自动忽略小数部分的.00, 而decimal类型不会.
+# 所以同一个值,float插入成功,decimal失败
+statement error pq: cannot interpret field: 460 as type timestamp
+insert into test_datetime(timestampCol) select d from tt_decimal where d=20120102.00;
+
+# 与上例相似,但是此例decimal成功,float失败
+statement ok
+insert into test_datetime(timestampCol) select d from tt_decimal where d=2012.020;
+
+statement ok
+insert into test_datetime(timestampCol) select d from tt_decimal where d=20120101121212.123;
+
+query T
+select timestampCol from test_datetime;
+----
+2019-12-12 12:12:00 +0000 +0000
+2019-05-03 00:00:00 +0000 +0000
+2012-08-21 00:00:00 +0000 +0000
+2012-01-01 00:00:00 +0000 +0000
+2012-01-20 00:00:00 +0000 +0000
+2012-01-01 12:12:12.123 +0000 +0000
+
+statement ok
+drop table test_datetime;
+
+# bit类型
+statement ok
+create table t_bit(col_bit varbit);
+
+statement ok
+create table t_inet(col_inet INET);
+
+## -- bool
+statement ok
+insert into t_bit values (true);
+
+statement ok
+insert into t_bit values (false);
+
+query O colnames
+select * from t_bit;
+----
+col_bit
+1
+0
+
+## -- bytes
+statement error pq: value type bytes doesn\'t match type VARBIT of column \"col_bit\"
+insert into t_bit values ( b'\141\142\143');
+
+## -- int
+#statement ok
+#insert into t_bit values (-99);
+
+statement ok
+insert into t_bit values (0);
+
+statement ok
+insert into t_bit values (99);
+
+
+
+query O colnames
+select * from t_bit;
+----
+col_bit
+1
+0
+0
+1100011
+
+statement ok
+delete from t_bit;
+
+## -- decimal
+statement ok
+insert into t_bit values (cast(1.01234567890123456789 as decimal));
+
+statement ok
+insert into t_bit values (cast(1.01234567890123456789 as decimal(40, 20)));
+
+statement ok
+insert into t_bit values (cast(-1.01234567890123456789 as decimal));
+
+statement ok
+insert into t_bit values (cast(3254566423.01234567890123456789 as decimal(40, 20)));
+
+query O colnames
+select * from t_bit;
+----
+col_bit
+1
+1
+1111111111111111111111111111111111111111111111111111111111111111
+11000001111111001011111000010111
+
+statement ok
+delete from t_bit;
+
+## -- float
+statement ok
+insert into t_bit values (3.14);
+
+statement ok
+insert into t_bit values (-0.0);
+
+statement ok
+insert into t_bit values (-0.51);
+
+statement ok
+insert into t_bit values (432.012345678901234567890123456789);
+
+query O colnames
+select * from t_bit;
+----
+col_bit
+11
+0
+1111111111111111111111111111111111111111111111111111111111111111
+110110000
+
+statement ok
+delete from t_bit;
+
+## -- inet
+statement ok
+insert into t_inet values ('192.168.0.1'), ('192.168.0.2/10'), ('2001:4f8:3:ba:2e0:81ff:fe22:d1f1/120');
+
+statement error pq: invalid cast: inet -> VARBIT
+insert into t_bit select col_inet from t_inet where col_inet='192.168.0.1';
+
+statement error pq: invalid cast: inet -> VARBIT
+insert into t_bit select col_inet from t_inet where col_inet='2001:4f8:3:ba:2e0:81ff:fe22:d1f1/120';
+
+statement ok
+delete from t_bit;
+
+## -- string
+statement ok
+insert into t_bit values ('10101101');
+
+statement error pq: could not parse string as bit array: \"2\" is not a valid binary digit
+insert into t_bit values ('123456');
+
+query T colnames
+select * from t_bit;
+----
+col_bit
+10101101
+
+statement ok
+drop table t_bit
+
+statement ok
+drop table if exists test_bit
+
+statement ok
+create table test_bit (b20 bit(10))
+
+statement ok
+insert into test_bit values(128)
+
+statement ok
+insert into test_bit values(256)
+
+statement ok
+insert into test_bit values(512)
+
+statement error pq: bit string length 11 does not match type BIT\(10\)
+insert into test_bit values(1024)
+
+query T
+select * from test_bit
+----
+0010000000
+0100000000
+1000000000
+
+statement ok
+drop table test_bit
+
+# #特别的几个用例，int4和int8之间，decimal不同精度之间的转换，以及datetime类型之间的相关转换
+
+statement ok
+create table test_float4(f4_col float4)
+
+statement ok
+insert into test_float4 values (3.4E+38)
+
+statement error pq: float out of range for type FLOAT4 \(column "f4_col"\)
+insert into test_float4 values (3.5E+38)
+
+statement ok
+insert into test_float4 values (3.4028234663852886e+38)
+
+statement error pq: float out of range for type FLOAT4 \(column "f4_col"\)
+insert into test_float4 values (3.4028234663852888e+38)
+
+statement ok
+insert into test_float4 values ('3.4E+38')
+
+statement error pq: float out of range for type FLOAT4 \(column "f4_col"\)
+insert into test_float4 values ('3.5E+38')
+
+statement ok
+insert into test_float4 values ('3.4028234663852886e+38')
+
+statement error pq: float out of range for type FLOAT4 \(column "f4_col"\)
+insert into test_float4 values ('3.4028234663852888e+38')
+
+statement ok
+insert into test_float4 values ('inf')
+
+statement ok
+insert into test_float4 values ('-inf')
+
+statement ok
+insert into test_float4 values ('NaN')
+
+query R colnames
+select * from test_float4
+----
+f4_col
+3.4e+38
+3.40282346638529e+38
+3.4e+38
+3.40282346638529e+38
++Inf
+-Inf
+NaN
+
+statement ok
+drop table test_float4
+
+statement ok
+create table ttz(ttz timestampTZ)
+
+statement ok
+insert into ttz values(int'20120102')
+
+statement ok
+insert into ttz values(serial'20160305')
+
+query T
+select * from ttz
+----
+2012-01-02 00:00:00 +0000 UTC
+2016-03-05 00:00:00 +0000 UTC
+
+statement error pq: could not parse string "Infinity" as timestamp
+insert into ttz values (decimal'inf')
+
+statement ok
+create table tt(tt timestamp)
+
+statement ok
+create table time(t time)
+
+statement ok
+create table date(d date)
+
+statement error pq: could not parse string "Infinity" as timestamp
+insert into tt values (decimal'inf')
+
+statement error pq: could not parse string "-Infinity" as time
+insert into time values (decimal'-inf')
+
+statement error pq: could not parse string "NaN" as date
+insert into date values (decimal'NaN')
+
+statement error pq: could not parse string "\+Inf" as timestamp
+insert into tt values (float'inf')
+
+statement error pq: could not parse string "\-Inf" as time
+insert into time values (float'-inf')
+
+statement error pq: could not parse string "NaN" as date
+insert into date values (float'NaN')
+
+
+statement ok
+drop table tt
+
+statement ok
+drop table time
+
+statement ok
+drop table date
+
+

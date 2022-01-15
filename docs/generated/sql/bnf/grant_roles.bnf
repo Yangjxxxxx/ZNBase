@@ -1,0 +1,7 @@
+grant_stmt ::=
+	
+	|  'WITH' 'GRANT' 'OPTION'
+	| 'GRANT' privilege_cols 'ON' targets 'TO' name_list
+	| 'GRANT' privilege_cols 'ON' targets 'TO' name_list 'WITH' 'GRANT' 'OPTION'
+	'GRANT' ( role_name ) ( ( ',' role_name ) )* 'TO' ( user_name ) ( ( ',' user_name ) )*
+	| 'GRANT' ( role_name ) ( ( ',' role_name ) )* 'TO' ( user_name ) ( ( ',' user_name ) )* 'WITH' 'ADMIN' 'OPTION'

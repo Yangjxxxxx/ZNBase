@@ -1,0 +1,10 @@
+statement ok
+BEGIN;
+SELECT pg_sleep(1);
+
+statement error 相同的键值 a='b' 违反了主键约束 "primary"
+UPDATE T SET a = 'b'  where a = 'H';
+SELECT pg_sleep(4);
+
+statement ok
+ABORT;

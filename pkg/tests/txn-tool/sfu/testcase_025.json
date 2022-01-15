@@ -1,0 +1,119 @@
+{
+    "初始化": [
+        {
+            "cmd": "DROP TABLE IF EXISTS t;",
+            "type": "execute"
+        },
+        {
+            "cmd": "CREATE TABLE t(a INT primary key, b INT);",
+            "type": "execute"
+        },
+        {
+            "cmd": "INSERT INTO t VALUES(1, 11), (2, 22),(3, 33),(4, 44),(5, 55);",
+            "type": "execute"
+        }
+    ],
+    "执行": [
+        {
+            "cmd": "BEGIN;",
+            "conn": "conn1",
+            "type": "execute"
+        },
+        {
+            "cmd": "BEGIN;",
+            "conn": "conn2",
+            "type": "execute"
+        },
+        {
+            "cmd": "BEGIN;",
+            "conn": "conn3",
+            "type": "execute"
+        },
+        {
+            "cmd": "SELECT * FROM t WHERE a=4 for update;",
+            "conn": "conn1",
+            "type": "query",
+            "result": {
+                "header": [
+                    "a",
+                    "b"
+                ],
+                "body": [
+                    [
+                        4,
+                        44
+                    ]
+                ]
+            }
+        },
+        {
+            "cmd": "SELECT * FROM t WHERE a=5 for update;",
+            "conn": "conn2",
+            "type": "query",
+            "result": {
+                "header": [
+                    "a",
+                    "b"
+                ],
+                "body": [
+                    [
+                        5,
+                        55
+                    ]
+                ]
+            }
+        },
+        {
+            "cmd": "SELECT * FROM t WHERE b=66 for update wait 500;",
+            "conn": "conn3",
+            "type": "query",
+            "block": true,
+            "result": {
+                "header": [
+                    "a",
+                    "b"
+                ],
+                "body": [
+                    [
+                        4,
+                        66
+                    ],
+                    [
+                        5,
+                        66
+                    ]
+                ]
+            }
+        },
+        {
+            "cmd": "UPDATE t SET b=66 where a=4;",
+            "conn": "conn1",
+            "type": "execute"
+        },
+        {
+            "cmd": "UPDATE t SET b=66 where a=5;",
+            "conn": "conn2",
+            "type": "execute"
+        },
+        {
+            "cmd": "COMMIT;",
+            "conn": "conn1"
+        },
+        {
+            "cmd": "COMMIT;",
+            "conn": "conn2"
+        },
+        {
+            "cmd": "DELETE FROM t WHERE b=66;",
+            "conn": "conn3",
+            "type": "execute",
+            "result": {
+                "regular": "DELETE 2"
+            }
+        },
+        {
+            "cmd": "COMMIT;",
+            "conn": "conn3"
+        }
+    ]
+}

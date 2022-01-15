@@ -1,0 +1,53 @@
+# LogicTest: local-insecure local-insecure-opt
+
+# view, sequence display distinctly
+
+statement ok
+CREATE TABLE t (a INT PRIMARY KEY, b INT)
+
+statement ok
+INSERT INTO t VALUES (1, 99), (2, 98), (3, 97)
+
+statement ok
+CREATE VIEW v AS SELECT a, b FROM t
+
+query TTTTTTTT colnames
+SHOW GRANTS ON VIEW v;
+----
+database_name  schema_name  view_name  column_name  grantor  grantee  privilege_type  grantable
+test           public       v          NULL         admin    admin    DELETE          YES
+test           public       v          NULL         admin    admin    DROP            YES
+test           public       v          NULL         admin    admin    INSERT          YES
+test           public       v          NULL         admin    admin    REFERENCES      YES
+test           public       v          NULL         admin    admin    SELECT          YES
+test           public       v          NULL         admin    admin    TRIGGER         YES
+test           public       v          NULL         admin    admin    UPDATE          YES
+test           public       v          NULL         admin    root     DELETE          YES
+test           public       v          NULL         admin    root     DROP            YES
+test           public       v          NULL         admin    root     INSERT          YES
+test           public       v          NULL         admin    root     REFERENCES      YES
+test           public       v          NULL         admin    root     SELECT          YES
+test           public       v          NULL         admin    root     TRIGGER         YES
+test           public       v          NULL         admin    root     UPDATE          YES
+
+statement ok
+CREATE USER u
+
+statement error pq: "v" is not a table
+GRANT ALL ON TABLE v TO u
+
+statement error pq: "t" is not a view
+GRANT ALL ON VIEW v, t TO u
+
+statement ok
+GRANT ALL ON VIEW v TO u
+
+statement error pq: relation "s" does not exist
+GRANT ALL ON SEQUENCE s TO u
+
+statement ok
+GRANT ALL ON public.* TO u
+
+# invalid table name
+statement error pq: syntax error: invalid table name: "" at or near "as"
+CREATE VIEW "" as select * from t

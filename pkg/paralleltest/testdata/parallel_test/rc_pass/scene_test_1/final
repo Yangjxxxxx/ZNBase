@@ -1,0 +1,9 @@
+statement ok
+BEGIN;
+
+query II
+SELECT a, b FROM b except select a, sum(c)::int from a group by a;
+----
+
+statement ok
+COMMIT;

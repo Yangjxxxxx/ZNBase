@@ -1,0 +1,11 @@
+statement ok
+CREATE TABLE T (a CHAR primary key,B INT);
+
+statement ok
+INSERT INTO T VALUES('a',1);
+
+statement ok
+INSERT INTO T VALUES('d',4);
+
+statement ok
+INSERT INTO T VALUES('f',7);

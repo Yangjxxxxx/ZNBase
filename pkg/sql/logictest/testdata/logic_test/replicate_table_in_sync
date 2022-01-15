@@ -1,0 +1,78 @@
+# LogicTest: local local-opt
+
+statement ok
+CREATE TABLE t1 (id INT PRIMARY KEY)
+
+statement ok
+ALTER TABLE t1 REPLICATION ENABLE
+
+query T colnames
+SHOW SESSION replicate_tables_in_sync
+----
+replicate_tables_in_sync
+off
+
+statement error pq: PLEASE SET "set session replicate_tables_in_sync='on';\" , WHEN OPERATING REPLICATION TABLE
+INSERT INTO t1 VALUES(1)
+
+statement ok
+SET SESSION replicate_tables_in_sync='on'
+
+# follower read will backward timestamp by 48s
+statement ok
+INSERT INTO t1 VALUES(1)
+
+statement ok
+SET SESSION replicate_tables_in_sync='off'
+
+query I
+SELECT * FROM t1
+
+sleep 48s
+
+query I
+SELECT * FROM t1
+----
+1
+
+# set replicate_tables_in_sysnc='on' follower read will be closed
+statement ok
+SET SESSION replicate_tables_in_sync='on'
+
+statement ok
+INSERT INTO t1 VALUES(2)
+
+query I
+SELECT * FROM t1
+----
+1
+2
+
+# long time transaction throws error
+statement ok
+BEGIN
+
+statement ok
+INSERT INTO t1 VALUES(3)
+
+sleep 48s
+
+statement error pq: replication transaction time out,duration cannot bigger than 48s
+COMMIT
+
+statement ok
+ALTER TABLE t1 REPLICATION DISABLE
+
+statement ok
+SET SESSION replicate_tables_in_sync='off'
+
+# normal table dont have follower read way
+statement ok
+INSERT INTO t1 VALUES(3)
+
+query I
+SELECT * FROM t1
+----
+1
+2
+3

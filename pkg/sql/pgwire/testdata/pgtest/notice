@@ -1,0 +1,32 @@
+# Test notices work as expected by creating a VIEW on a TEMP TABLE.
+
+send
+Parse {"Query": "CREATE TABLE a (a INT NOT NULL, b INT PRIMARY KEY)"}
+Bind
+Execute
+Sync
+----
+
+until
+ReadyForQuery
+----
+{"Type":"ParseComplete"}
+{"Type":"BindComplete"}
+{"Type":"CommandComplete","CommandTag":"CREATE TABLE"}
+{"Type":"ReadyForQuery","TxStatus":"I"}
+
+send
+Parse {"Query": "ALTER TABLE a ALTER PRIMARY KEY USING COLUMNS(a)"}
+Bind
+Execute
+Sync
+----
+
+until
+ReadyForQuery
+----
+{"Type":"ParseComplete"}
+{"Type":"BindComplete"}
+{"Severity":"NOTICE","Code":"00000","Message":"primary key changes spawn async cleanup jobs. Future schema changes on \"a\" may be delayed as these jobs finish","Detail":"","Hint":"","Position":0,"InternalPosition":0,"InternalQuery":"","Where":"","SchemaName":"","TableName":"","ColumnName":"","DataTypeName":"","ConstraintName":"","File":"alter_table_primary.go","Line":378,"Routine":"AlterPrimaryKey","UnknownFields":null}
+{"Type":"CommandComplete","CommandTag":"ALTER TABLE"}
+{"Type":"ReadyForQuery","TxStatus":"I"}

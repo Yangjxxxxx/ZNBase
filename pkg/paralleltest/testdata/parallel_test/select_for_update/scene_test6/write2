@@ -1,0 +1,16 @@
+statement ok
+PREPARE ea AS SELECT next_o_id FROM district WHERE w_id=$1 FOR UPDATE
+
+statement ok
+PREPARE na AS INSERT INTO new_order SELECT w_id, next_o_id FROM district WHERE w_id=$1;
+
+statement ok
+PREPARE eb AS UPDATE district SET next_o_id=next_o_id+1 WHERE w_id=$1;
+
+repeat 200
+statement ok
+BEGIN TRANSACTION ISOLATION LEVEL READ COMMITTED;
+EXECUTE ea(1);
+EXECUTE na(1);
+EXECUTE eb(1);
+COMMIT;

@@ -1,0 +1,17 @@
+statement ok
+BEGIN TRANSACTION ISOLATION LEVEL READ COMMITTED;
+
+statement ok
+INSERT INTO T VALUES (3,3);
+
+statement ok
+INSERT INTO T VALUES (7,7);
+
+statement ok
+SELECT pg_sleep(3);
+
+statement ok
+DELETE FROM t WHERE a=3;
+
+statement ok;
+COMMIT;

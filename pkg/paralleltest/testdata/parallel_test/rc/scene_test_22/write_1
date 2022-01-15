@@ -1,0 +1,21 @@
+statement ok
+SELECT pg_sleep(2);
+
+statement ok
+BEGIN TRANSACTION ISOLATION LEVEL READ COMMITTED;
+
+statement ok
+UPDATE T SET b=4 WHERE a=3;
+
+query II
+SELECT * FROM T ORDER BY a DESC;
+----
+3 4
+2 2
+1 1
+
+statement ok
+SELECT pg_sleep(2);
+
+statement ok
+COMMIT;

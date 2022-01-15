@@ -1,0 +1,133 @@
+{
+    "初始化": [
+        {
+            "cmd": "DROP TABLE IF EXISTS t",
+            "type": "execute"
+        },
+        {
+            "cmd": "CREATE TABLE t(a INT primary key, b INT, c INT, INDEX id (c));",
+            "type": "execute"
+        },
+        {
+            "cmd": "INSERT INTO t VALUES(1, 1, 1), (2, 2, 2),(3, 3, 3);",
+            "type": "execute"
+        }
+    ],
+    "执行": [
+        {
+            "cmd": "BEGIN;",
+            "conn": "conn1",
+            "type": "execute"
+        },
+        {
+            "cmd": "SELECT c FROM t@id where c=1 for update NOWAIT;",
+            "conn": "conn1",
+            "type": "query",
+            "result": {
+                "header": [
+                    "c"
+                ],
+                "body": [
+                    [
+                        1
+                    ]
+                ]
+            }
+        },
+        {
+            "cmd": "SELECT c FROM t@id where c=2 for update NOWAIT;",
+            "conn": "conn2",
+            "type": "query",
+            "result": {
+                "header": [
+                    "c"
+                ],
+                "body": [
+                    [
+                        2
+                    ]
+                ]
+            }
+        },
+        {
+            "cmd": "COMMIT;",
+            "conn": "conn1"
+        },
+        {
+            "cmd": "BEGIN;",
+            "conn": "conn1",
+            "type": "execute"
+        },
+        {
+            "cmd": "SELECT a,c FROM t@id where c=1 for update NOWAIT;",
+            "conn": "conn1",
+            "type": "query",
+            "result": {
+                "header": [
+                    "a",
+                    "c"
+                ],
+                "body": [
+                    [
+                        1,
+                        1
+                    ]
+                ]
+            }
+        },
+        {
+            "cmd": "SELECT a,c FROM t@id where c=2 for update NOWAIT;",
+            "conn": "conn2",
+            "type": "query",
+            "result": {
+                "header": [
+                    "a",
+                    "c"
+                ],
+                "body": [
+                    [
+                        2,
+                        2
+                    ]
+                ]
+            }
+        },
+        {
+            "cmd": "COMMIT;",
+            "conn": "conn1"
+        },
+        {
+            "cmd": "BEGIN;",
+            "conn": "conn1",
+            "type": "execute"
+        },
+        {
+            "cmd": "SELECT * FROM t@id where c=1 for update NOWAIT;",
+            "conn": "conn1",
+            "type": "query",
+            "result": {
+                "header": [
+                    "a",
+                    "b",
+                    "c"
+                ],
+                "body": [
+                    [
+                        1,
+                        1,
+                        1
+                    ]
+                ]
+            }
+        },
+        {
+            "cmd": "SELECT * FROM t@id where c=2 for update NOWAIT;",
+            "conn": "conn2",
+            "type": "query"
+        },
+        {
+            "cmd": "COMMIT;",
+            "conn": "conn1"
+        }
+    ]
+}

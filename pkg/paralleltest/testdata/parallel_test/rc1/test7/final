@@ -1,0 +1,10 @@
+statement ok
+BEGIN;
+
+query II
+select * from t;
+----
+1  1
+
+statement ok
+COMMIT;

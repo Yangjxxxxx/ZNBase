@@ -1,0 +1,305 @@
+# LogicTest: local local-opt
+
+statement ok
+CREATE TABLE f (a INTEGER PRIMARY KEY, b INT) PARTITION BY RANGE (a) (
+    PARTITION p1 VALUES FROM (100) TO (200) LOCATE IN ("TJ"),
+    PARTITION p2 VALUES FROM (200) TO (300) LOCATE IN (inspur)
+) LOCATE IN (inspur);
+
+statement ok
+insert into f values(1, 1),(100, 100),(200, 200);
+
+query TTTIITTITTB
+SELECT * FROM zbdb_internal.partition_views;
+----
+test  public  f  56  1  NULL  p1               1  ( TJ )      ·  false
+test  public  f  56  1  NULL  p2               1  ( inspur )  ·  false
+test  public  f  56  1  NULL  primary_default  1  ·           ·  true
+
+statement ok
+CREATE TABLE g (a INT, b INT, c INT, index (a, b) PARTITION BY LIST (a) (
+    PARTITION p1 VALUES IN (NULL),
+    PARTITION p2 VALUES IN (1),
+    PARTITION p3 VALUES IN (default)
+));
+
+statement ok
+INSERT INTO g VALUES (1, 1, 1), (NULL, 2, 2) ,(3, 3, 3), (1, 2, 1), (NULL, 1, 2);
+
+query III
+SELECT * FROM [partition p1] of g;
+----
+NULL  1  2
+NULL  2  2
+
+query III
+SELECT * FROM [partition p3] of g;
+----
+3  3  3
+
+query TI
+SELECT partition_name, table_rows FROM zbdb_internal.partition_views where table_name = 'g';
+----
+p1  2
+p2  2
+p3  1
+
+query IITTITTTTT
+SELECT * FROM zbdb_internal.partitions order by table_id;
+----
+56  1  NULL  p1  1  ( TJ )      ·  range  a  FROM (100) TO (200)
+56  1  NULL  p2  1  ( inspur )  ·  range  a  FROM (200) TO (300)
+57  2  NULL  p1  1  ·           ·  list   a  IN ((NULL))
+57  2  NULL  p2  1  ·           ·  list   a  IN ((1))
+57  2  NULL  p3  1  ·           ·  list   a  IN ((DEFAULT))
+
+statement ok
+CREATE TABLE h (a INT, b INT, c INT, index (a, b, c) PARTITION BY LIST (a, b) (
+    PARTITION p1 VALUES IN ((NULL, NULL)),
+    PARTITION p2 VALUES IN ((NULL, 2)),
+    PARTITION p3 VALUES IN ((2, NULL)),
+    PARTITION p4 VALUES IN ((2, 2)),
+    PARTITION p5 VALUES IN ((2, default))
+))  LOCATE IN (inspur);
+
+statement ok
+INSERT INTO h VALUES (1, 1, 1), (NULL, NULL, 2), (NULL, 2, 2), (2, NULL, 3),
+(2, 2, 2), (2, 3, 3);
+
+query III
+SELECT * FROM [partition p1] of h;
+----
+NULL NULL 2
+
+query III
+SELECT * FROM [partition p3] of h;
+----
+2 NULL 3
+
+query III
+SELECT * FROM [partition p5] of h;
+----
+2  3  3
+
+statement ok
+CREATE TABLE i (a INT, b INT, c INT, index (a, b) PARTITION BY LIST (a) (
+    PARTITION p1 VALUES IN (1),
+    PARTITION p2 VALUES IN (2)
+));
+
+statement ok
+INSERT INTO i VALUES (1, NULL, NULL), (NULL, 2, 2) ,(3, 3, 3), (1, 2, 1), (NULL, 1, 2);
+
+query III rowsort
+SELECT * FROM [partition i_a_b_idx default] of i;
+----
+NULL 1  2
+NULL 2  2
+3    3  3
+
+query III
+SELECT * FROM [partition p1] of i;
+----
+1  NULL  NULL
+1  2     1
+
+query III
+SELECT * FROM [partition p2] of i;
+----
+
+
+statement ok
+CREATE TABLE j (a INT, b INT, c INT, index (a, b) PARTITION BY RANGE (a) (
+    PARTITION p1 VALUES FROM (MINVALUE) TO (NULL),
+    PARTITION p2 VALUES FROM (NULL) TO (0),
+    PARTITION p3 VALUES FROM  (2) TO (MAXVALUE),
+    PARTITION p4 VALUES FROM (0) TO (1)
+));
+
+statement ok
+INSERT INTO j VALUES (1, NULL, NULL), (NULL, 2, 2), (3, 3, 3), (1, 2, 1), (NULL, 1, 2), (0, 0, 0),
+(-1, -1, -1), (2, NULL, NULL);
+
+query III
+SELECT * FROM [partition p1] of j;
+----
+
+query III rowsort
+SELECT * FROM [partition p2] of j;
+----
+NULL  1  2
+NULL  2  2
+-1  -1  -1
+
+query III rowsort
+SELECT * FROM [partition p3] of j;
+----
+2  NULL  NULL
+3  3     3
+
+query III
+SELECT * FROM [partition p4] of j;
+----
+0  0  0
+
+query III rowsort
+SELECT * FROM [partition j_a_b_idx default] of j;
+----
+1  NULL  NULL
+1  2     1
+
+# multi-line
+statement ok
+CREATE TABLE k (a INT, b INT, c INT, index (a, b, c) PARTITION BY RANGE (a, b, c) (
+    PARTITION p1 VALUES FROM (MINVALUE, MINVALUE, MINVALUE) TO (NULL, NULL, NULL),
+    PARTITION p2 VALUES FROM (NULL, NULL, NULL) TO (NULL, NULL, 3),
+    PARTITION p3 VALUES FROM (NULL, NULL, 3) TO (NULL, 3, NULL),
+    PARTITION p4 VALUES FROM (5, 5, 5) TO (7, 7, NULL)
+));
+
+statement ok
+INSERT INTO k VALUES (NULL, NULL, NULL), (NULL, NULL, 2), (1, NULL, NULL), (NULL, 2, 2),
+(1, 2, 1), (2, NULL, NULL), (6, 6, NULL), (8, 8, 8);
+
+query III
+SELECT * FROM [partition p1] of k;
+----
+
+
+query III
+SELECT * FROM [partition p2] of k;
+----
+NULL  NULL  NULL
+NULL  NULL  2
+
+query III
+SELECT * FROM [partition p3] of k;
+----
+NULL  2     2
+
+query III
+SELECT * FROM [partition p4] of k;
+----
+6  6  NULL
+
+query III rowsort
+SELECT * FROM [partition k_a_b_c_idx default] of k;
+----
+1  NULL  NULL
+1  2     1
+2  NULL  NULL
+8  8     8
+
+statement ok
+CREATE TABLE l (
+         a INT8 NOT NULL,
+         b INT8 NULL,
+         c INT8 NULL,
+         index "p" (a ASC, b, c)
+ PARTITION BY LIST (a) (
+     PARTITION p1 VALUES IN ((1), (2)) PARTITION BY LIST (b) (
+            PARTITION p1_1 VALUES IN ((3), (NULL)) PARTITION BY RANGE (c) (
+                PARTITION p1_1_1 VALUES FROM (NULL) TO (MAXVALUE)
+            ),
+            PARTITION p1_2 VALUES IN ((4))
+       ),
+     PARTITION p2 VALUES IN ((6)) PARTITION BY RANGE (b, c) (
+        PARTITION p2_1 VALUES FROM (MINVALUE, MINVALUE) TO (NULL, NULL),
+        PARTITION p2_2 VALUES FROM (NULL, 3) TO (5, NULL)
+     ),
+     PARTITION p3 VALUES IN ((7), (default))
+));
+
+statement ok
+INSERT INTO l VALUES(1, 3, NULL), (2, 3, 7), (2, 4, NULL), (2, 5, 5), (2, NULL, NULL), (1, NULL, 7),
+(6, NULL, NULL), (6, NULL, 6), (6, 4, 7), (6, 6, 6),
+(7, 1, 1), (8, 6, 3);
+
+query III
+SELECT * FROM [partition p1] of l;
+----
+1  NULL  7
+1  3     NULL
+2  NULL  NULL
+2  3     7
+2  4     NULL
+2  5     5
+
+query III
+SELECT * FROM [partition p1 default] of l;
+----
+2  5  5
+
+query III
+SELECT * FROM [partition p1_1] of l;
+----
+1  NULL  7
+1  3     NULL
+2  NULL  NULL
+2  3     7
+
+query III
+SELECT * FROM [partition p1_1 default] of l;
+----
+
+
+query III
+SELECT * FROM [partition p1_1_1] of l;
+----
+1  NULL  7
+1  3     NULL
+2  NULL  NULL
+2  3     7
+
+query III
+SELECT * FROM [partition p1_2] of l;
+----
+2  4  NULL
+
+query III
+SELECT * FROM [partition p2] of l;
+----
+6  NULL  NULL
+6  NULL  6
+6  4     7
+6  6     6
+
+query III
+SELECT * FROM [partition p2_1] of l;
+----
+
+
+query III
+SELECT * FROM [partition p2_2] of l;
+----
+6  NULL  6
+6  4     7
+
+query III
+SELECT * FROM [partition p2 default] of l;
+----
+6  6  6
+
+query III
+SELECT * FROM [partition p3] of l;
+----
+7  1  1
+8  6  3
+
+query III
+SELECT * FROM [partition p default] of l;
+----
+8  6  3
+
+statement ok
+CREATE TABLE test4 (a INT, b decimal);
+insert into test4(a) values(1);
+CREATE INDEX id ON test4(b);
+
+statement ok
+ALTER INDEX test4@id PARTITION BY RANGE (b) ( PARTITION n1 VALUES FROM (5.333) TO (5.999)) ;
+
+query IF
+SELECT * FROM [PARTITION id default] OF test4;
+----
+1  NULL

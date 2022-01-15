@@ -1,0 +1,14 @@
+statement ok
+SELECT pg_sleep(2);
+
+statement ok
+BEGIN;
+
+statement ok
+SET statement_timeout = 1000;
+
+statement error query execution canceled due to statement timeout
+SELECT * FROM T WHERE a >0 ORDER BY a DESC FOR UPDATE;
+
+statement ok
+COMMIT;

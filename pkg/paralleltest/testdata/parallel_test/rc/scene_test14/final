@@ -1,0 +1,11 @@
+statement ok
+BEGIN TRANSACTION;
+
+query TI
+SELECT * FROM T;
+----
+d  4
+
+statement ok
+COMMIT;
+

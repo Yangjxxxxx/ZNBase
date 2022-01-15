@@ -1,0 +1,11 @@
+statement ok
+BEGIN;
+
+statement ok
+UPDATE A SET ab = DATE '2019-6-1' WHERE ab = DATE '2019-7-1';
+
+statement ok
+SELECT pg_sleep(3);
+
+statement ok
+ABORT;

@@ -1,0 +1,557 @@
+# LogicTest: local local-opt
+
+statement ok
+CREATE TABLE a (a INT, b INT, c INT, PRIMARY KEY (a, b)) PARTITION BY LIST (a) (
+    PARTITION p1 VALUES IN (1),
+    PARTITION p2 VALUES IN (default)
+);
+
+statement ok
+CREATE TABLE b (a INT PRIMARY KEY, b INT, c INT) PARTITION BY LIST (a) (
+    PARTITION p1 VALUES IN (1),
+    PARTITION p2 VALUES IN (2)
+);
+
+statement ok
+CREATE TABLE c (a INT, b INT, c INT,  PRIMARY KEY(a ASC, b)) PARTITION BY RANGE (a) (
+    PARTITION p1 VALUES FROM (1) TO (2),
+    PARTITION p2 VALUES FROM (2) TO (3),
+    PARTITION p5 VALUES FROM (7) TO (9),
+    PARTITION p3 VALUES FROM (minvalue) TO (1),
+    PARTITION p4 VALUES FROM (9) TO (maxvalue)
+);
+
+statement ok
+CREATE TABLE indexes (
+         a INT8 NOT NULL,
+         b INT8 NULL,
+         c INT8 NULL,
+         CONSTRAINT "primary" PRIMARY KEY (a ASC, b, c),
+         INDEX i1 (b ASC) PARTITION BY LIST (b) (
+           PARTITION p11 VALUES IN ((1))
+         ),
+         UNIQUE INDEX i2 (b ASC) PARTITION BY LIST (b) (
+           PARTITION p21 VALUES IN ((1))
+         ),
+         INDEX i3 (b ASC) PARTITION BY LIST (b) (
+           PARTITION p31 VALUES IN ((1))
+         ),
+         UNIQUE INDEX i4 (b ASC) PARTITION BY LIST (b) (
+           PARTITION p41 VALUES IN ((1))
+         ),
+         FAMILY "primary" (a, b)
+) PARTITION BY LIST (a) (
+     PARTITION p1 VALUES IN ((1)) PARTITION BY LIST (b) (
+       PARTITION p1_1 VALUES IN ((3)) PARTITION BY LIST (c) (
+         PARTITION p1_1_1 VALUES IN ((8))
+       ),
+       PARTITION p1_2 VALUES IN ((4))
+     ),
+     PARTITION p2 VALUES IN ((6)) PARTITION BY RANGE (b) (
+       PARTITION p2_1 VALUES FROM (7) TO (9)
+     )
+  )
+
+statement ok
+CREATE TABLE test (
+         a INT8 NOT NULL,
+         b INT8 NULL,
+         c INT8 NULL,
+         CONSTRAINT "primary" PRIMARY KEY (a ASC, b, c)
+) PARTITION BY LIST (a) (
+     PARTITION p1 VALUES IN ((1)) PARTITION BY LIST (b) (
+       PARTITION p1_1 VALUES IN ((3)) PARTITION BY LIST (c) (
+         PARTITION p1_1_1 VALUES IN ((8)),
+         PARTITION p1_1_2 VALUES IN ((default))
+       ),
+       PARTITION p1_2 VALUES IN ((4))
+     ),
+     PARTITION p2 VALUES IN ((6)) PARTITION BY LIST (b) (
+       PARTITION p2_1 VALUES IN (8),
+       PARTITION p2_2 VALUES IN ((default)) PARTITION BY LIST (c) (
+            PARTITION p2_2_1 VALUES IN (7),
+            PARTITION p2_2_2 VALUES IN (default)
+       )
+     ),
+     PARTITION p3 VALUES IN ((default)) PARTITION BY LIST (b) (
+       PARTITION p3_1 VALUES IN (7),
+       PARTITION p3_2 VALUES IN ((default)) PARTITION BY LIST (c) (
+            PARTITION p3_2_1 VALUES IN (7),
+            PARTITION p3_2_2 VALUES IN (default)
+     )
+  )
+);
+
+statement ok
+create table test5(a INT not null, b decimal not null, c INT not null);
+
+statement ok
+INSERT INTO a VALUES (1, 1, 1), (2, 2, 2) ,(3, 3, 3),(1, 2, 1), (2, 1, 2);
+
+statement ok
+INSERT INTO b VALUES (1, 1, 1), (2, 1, 2) ,(3, 3, 3),(4, 2, 1), (5, 1, 2);
+
+statement ok
+INSERT INTO c VALUES (1, 1, 1), (2, 2, 2) ,(2, 3, 3),(4, 4, 2), (2, 5, 5),
+(6, 5, 5), (0, 4, 5), (0, 3, 5), (0, 9, 5), (3, 5, 6), (8, 8, 8), (9, 9, 9), (10, 10, 10);
+
+# p1
+# p1_1, p1_1_1
+# p1_2
+# p2
+# p2_1
+# default
+statement ok
+INSERT INTO indexes VALUES
+(1, 1, 1), (1, 2, 2), (1, 5, 3),
+(1, 3, 8),
+(1, 4, 2),
+(6, 6, 5),
+(6, 7, 1), (6, 8, 2), (6, 9, 4),
+(3, 0, 2);
+
+# p1
+# p1_1_2
+# p1_1_1
+# p1_2
+# p2_1
+# p2_2_1
+# p2_2_2
+# p3_1
+# p3_2_1
+# p3_2_2
+statement ok
+INSERT INTO test VALUES
+(1, 1, 1), (1, 2, 2), (1, 5, 3),
+(1, 3, 7), (1, 3, 9),
+(1, 3, 8),
+(1, 4, 2),
+(6, 8, 5), (6, 8, 6), (6, 8, 2),
+(6, 7, 7),
+(6, 7, 5), (6, 4, 4), (6, 7, 1),
+(3, 7, 2),
+(3, 9, 7),
+(3, 9, 4), (3, 0, 2);
+
+query III
+SELECT * FROM [partition p1] of b where b = 1;
+----
+1  1  1
+
+query III
+SELECT * FROM [partition p2] of c where c > 1;
+----
+2  2  2
+2  3  3
+2  5  5
+
+query III
+SELECT * FROM [partition p3] of c;
+----
+0  3  5
+0  4  5
+0  9  5
+
+query III  colnames
+SELECT * FROM [partition p4] of c;
+----
+a  b  c
+9  9  9
+10 10 10
+
+query III
+SELECT * FROM [partition p2] of a;
+----
+2  1  2
+2  2  2
+3  3  3
+
+statement error partition p3 does not exist
+SELECT * FROM [partition p3] of a;
+
+query III
+SELECT * FROM [partition p41] of indexes;
+----
+1  1  1
+
+query III
+SELECT * FROM [partition p1] of indexes;
+----
+1  1  1
+1  2  2
+1  3  8
+1  4  2
+1  5  3
+
+query III
+SELECT * FROM [partition p1_1_1] of indexes;
+----
+1  3  8
+
+query III
+SELECT * FROM [partition p2_1] of indexes;
+----
+6  7  1
+6  8  2
+
+query III
+SELECT * FROM [partition p1_1_2] of test;
+----
+1  3  7
+1  3  9
+
+query III
+SELECT * FROM [partition p2_2_2] of test;
+----
+6  4  4
+6  7  1
+6  7  5
+
+
+query III
+SELECT * FROM [partition p3_2_2] of test;
+----
+3  0  2
+3  9  4
+
+query III
+SELECT * FROM [partition p3_2 default] of test;
+----
+3  0  2
+3  9  4
+
+query III
+SELECT * FROM [partition p3 default] of test;
+----
+3  0  2
+3  9  4
+3  9  7
+
+query III
+SELECT * FROM [partition primary default] of test;
+----
+3  0  2
+3  7  2
+3  9  4
+3  9  7
+
+query TII colnames
+SELECT partition_name, table_rows, index_id FROM zbdb_internal.partition_views WHERE table_name = 'c';
+----
+partition_name  table_rows  index_id
+p1                       1         1
+p2                       3         1
+p5                       1         1
+p3                       3         1
+p4                       2         1
+primary_default          3         1
+
+statement ok
+CREATE TABLE x (a INT, b INT, c INT, PRIMARY KEY (a, b, c)) PARTITION BY LIST (a, b, c) (
+    PARTITION p1 VALUES IN ((1, 2, 3)),
+    PARTITION p2 VALUES IN ((3, 7, default)),
+    PARTITION p3 VALUES IN ((3, default, default)),
+    PARTITION p4 VALUES IN ((default, default, default))
+);
+
+statement oK
+INSERT INTO x VALUES (3, 5, 8), (1, 2, 3), (2, 9, 7), (3, 7, 1), (3, 8, 1);
+
+query III
+SELECT * FROM [partition p2] of x;
+----
+3  7  1
+
+query III
+SELECT * FROM [partition p3] of x;
+----
+3  5  8
+3  8  1
+
+query III
+SELECT * FROM [partition p1] of x;
+----
+1  2  3
+
+query III
+SELECT * FROM [partition p4] of x;
+----
+2  9  7
+
+query III
+SELECT * FROM [partition primary default] of x;
+----
+2  9  7
+
+query III
+SELECT * FROM [partition primary default] of a;
+----
+2  1  2
+2  2  2
+3  3  3
+
+query III
+SELECT * FROM [partition primary default] of b;
+----
+3  3  3
+4  2  1
+5  1  2
+
+statement ok
+CREATE TABLE d (a INT, b INT, c INT,  PRIMARY KEY(a ASC, b)) PARTITION BY RANGE (a) (
+    PARTITION p1 VALUES FROM (1) TO (2),
+    PARTITION p2 VALUES FROM (2) TO (3),
+    PARTITION p3 VALUES FROM (7) TO (9),
+    PARTITION p4 VALUES FROM (minvalue) TO (1)
+);
+
+statement ok
+INSERT INTO d VALUES (1, 1, 1), (2, 2, 2) ,(2, 3, 3),(4, 4, 2), (2, 5, 5),
+(6, 5, 5), (0, 4, 5), (0, 3, 5), (0, 9, 5), (3, 5, 6), (8, 8, 8), (9, 9, 9);
+
+query III
+SELECT * FROM [partition primary default] of d;
+----
+3  5  6
+4  4  2
+6  5  5
+9  9  9
+
+statement ok
+CREATE TABLE e (a INT, b INT, c INT,  PRIMARY KEY(a ASC, b)) PARTITION BY RANGE (a) (
+    PARTITION p1 VALUES FROM (1) TO (2),
+    PARTITION p2 VALUES FROM (2) TO (3),
+    PARTITION p3 VALUES FROM (7) TO (9)
+);
+
+statement ok
+INSERT INTO e VALUES (1, 1, 1), (2, 2, 2) ,(2, 3, 3),(4, 4, 2), (2, 5, 5),
+(6, 5, 5), (0, 9, 5), (3, 5, 6), (8, 8, 8), (9, 9, 9);
+
+query III
+SELECT * FROM [partition primary default] of e;
+----
+0  9  5
+3  5  6
+4  4  2
+6  5  5
+9  9  9
+
+statement ok
+CREATE TABLE test1 (
+         a INT8 NOT NULL,
+         b INT8 NULL,
+         c INT8 NULL,
+         CONSTRAINT "test1" PRIMARY KEY (a ASC, b, c),
+         INDEX i1__ (a ASC) PARTITION BY LIST (a) (
+           PARTITION p11 VALUES IN ((1)),
+           PARTITION p12 VALUES IN ((default))
+         ),
+         INDEX i2__ (b ASC) PARTITION BY RANGE (b) (
+           PARTITION p21 VALUES FROM  (1) TO (2),
+           PARTITION p22 VALUES FROM (2) TO (3)
+         ),
+         INDEX i3_default (a ASC) PARTITION BY LIST (a) (
+           PARTITION p31 VALUES IN ((1))
+         )
+) PARTITION BY LIST (a) (
+    PARTITION p1 VALUES IN (1),
+    PARTITION p2 VALUES IN (2) PARTITION BY LIST (b) (
+        PARTITION p2_1 VALUES IN (1),
+        PARTITION p2_2 VALUES IN (0),
+        PARTITION p2_2_default VALUES IN (5),
+        PARTITION p2_3 VALUES IN (3) PARTITION BY RANGE (c) (
+            PARTITION p2_3_1 VALUES FROM (1) TO (2),
+            PARTITION p2_3_1_default VALUES FROM (0) TO (1)
+        )
+    )
+);
+
+statement ok
+INSERT INTO test1 VALUES (1, 1, 1), (2, 2, 2) ,(2, 3, 3), (4, 4, 2), (2, 5, 5);
+
+statement error partition "primary" default does not exist
+SELECT * FROM [partition primary default] of test1;
+
+query III
+SELECT * FROM [partition test1 default] of test1;
+----
+4  4  2
+
+query III
+SELECT * FROM [partition i1__ default] of test1;
+----
+2  2  2
+2  3  3
+2  5  5
+4  4  2
+
+
+query III rowsort
+SELECT * FROM [partition i2__ default] of test1;
+----
+2  3  3
+2  5  5
+4  4  2
+
+statement error partition p1 default does not exist
+SELECT * FROM [partition p1 default] of test1;
+
+query III
+SELECT * FROM [partition i3_default default] of test1;
+----
+2  2  2
+2  3  3
+2  5  5
+4  4  2
+
+
+query III
+SELECT * FROM [partition p2 default] of test1;
+----
+2  2  2
+
+query III
+SELECT * FROM [partition p2_2_default] of test1;
+----
+2  5  5
+
+query III
+SELECT * FROM [partition p2_3 default] of test1;
+----
+2  3  3
+
+query III
+SELECT * FROM [partition p2_3_1_default] of test1;
+----
+
+statement ok
+CREATE TABLE test2 (a INT, b INT);
+ALTER TABLE test2 PARTITION BY range(rowid)(partition p1 values from (minvalue) to (maxvalue));
+
+statement ok
+INSERT INTO test2 VALUES (1, 1);
+
+query TII colnames
+SELECT partition_name, table_rows, index_id FROM zbdb_internal.partition_views WHERE table_name = 'test2';
+----
+partition_name  table_rows  index_id
+p1                       1         1
+
+query II
+SELECT * FROM [partition p1] of test2;
+----
+1  1
+
+statement ok
+CREATE TABLE t2 (a INT, b INT, INDEX id (a));
+
+statement ok
+CREATE INDEX id1 ON t2(b);
+
+statement ok
+CREATE INDEX id ON test5(b,c);
+
+statement ok
+ALTER INDEX t2@id PARTITION BY RANGE (a) (
+  PARTITION n1 VALUES FROM (1) TO (100),
+  PARTITION n2 VALUES FROM (100) TO (200),
+  PARTITION n3 VALUES FROM (200) TO (MAXVALUE)
+) ;
+
+statement ok
+ALTER INDEX t2@id1 PARTITION BY RANGE (b) (
+  PARTITION n4 VALUES FROM (1) TO (100),
+  PARTITION n5 VALUES FROM (100) TO (200),
+  PARTITION n6 VALUES FROM (200) TO (300)
+) ;
+
+statement ok
+ALTER INDEX test5@id PARTITION BY LIST(b)(
+  PARTITION id_1 VALUES IN (1,2,3)
+  PARTITION BY LIST(c)(PARTITION p_1 VALUES IN (1,2,3),
+  PARTITION p_2 VALUES IN (default))
+);
+
+statement ok
+insert into t2 values (0, 0);
+
+query TII
+SELECT partition_name, table_rows, index_id FROM zbdb_internal.partition_views WHERE table_name = 't2';
+----
+n1           0  2
+n2           0  2
+n3           0  2
+id_default   1  2
+n4           0  3
+n5           0  3
+n6           0  3
+id1_default  1  3
+
+
+statement ok
+create schema "，‘,'""""“”哈哈";
+set search_path= "，‘,'""""“”哈哈";
+CREATE TABLE a (a INT, b INT, c INT, PRIMARY KEY (a, b)) PARTITION BY LIST (a) (
+    PARTITION p1 VALUES IN (1),
+    PARTITION p2 VALUES IN (2)
+);
+
+query TT
+SHOW SCHEMAS;
+----
+information_schema  root
+pg_catalog          root
+public              root
+zbdb_internal       root
+，‘,'""“”哈哈          root
+
+query TII colnames
+SELECT partition_name, table_rows, index_id FROM zbdb_internal.partition_views where table_name = 'a' order by table_rows ASC;
+----
+partition_name  table_rows  index_id
+p1              0           1
+p2              0           1
+p1              2           1
+p2              3           1
+
+statement ok
+CREATE TABLE b (a INT, b INT, c INT, PRIMARY KEY (a, b)) PARTITION BY LIST (a) (
+    PARTITION "，‘,'""""“”哈哈" VALUES IN (1),
+    PARTITION "，‘,'""""“”哈哈2" VALUES IN (default)
+);
+
+query TII colnames
+SELECT partition_name, table_rows, index_id FROM zbdb_internal.partition_views where table_name = 'b' order by table_rows ASC;
+----
+partition_name   table_rows  index_id
+"，‘,'""""“”哈哈"   0           1
+"，‘,'""""“”哈哈2"  0           1
+p1               1           1
+p2               1           1
+primary_default  3           1
+
+statement ok
+CREATE TABLE 表 (
+ 字段1 INT NOT NULL,
+ 字段2 INT NULL DEFAULT 6,
+ 字段3 STRING NULL DEFAULT '默认值',
+ CONSTRAINT 主键 PRIMARY KEY (字段1 ASC)
+) PARTITION BY LIST (字段1) (
+ PARTITION 分区2 VALUES IN ((DEFAULT)),
+ PARTITION 分区1 VALUES IN ((1), (2), (3))
+);
+insert into 表 values(1);
+insert into 表 values(4);
+
+query IIT
+SELECT * FROM [PARTITION 主键 default] OF 表;
+----
+4  6  默认值
+
+query TTTIITTITTB
+SELECT * FROM zbdb_internal.partition_views WHERE table_name = 'test5';
+----
+test  public  test5  61  2  NULL  id_1   0  ·  ·  false
+test  public  test5  61  2  id_1  p_1  0  ·  ·  false
+test  public  test5  61  2  id_1  p_2  0  ·  ·  false

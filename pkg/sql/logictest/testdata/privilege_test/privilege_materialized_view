@@ -1,0 +1,94 @@
+# LogicTest: local-insecure local-insecure-opt
+
+statement ok
+create user u1;
+create user u2;
+grant usage on database test to public;
+create table t (a int, b int);
+insert into t values (1,2), (2,3), (3,4);
+
+userInsecure u1
+
+statement error pq: user u1 does not have CREATE privilege on schema test.public
+create materialized view v as select a,b from t;
+
+userInsecure root
+
+statement ok
+grant create on schema public to u1;
+
+userInsecure u1
+
+statement error pq: user u1 does not have SELECT privilege on relation test.public.t
+create materialized view v as select a,b from t;
+
+userInsecure root
+
+statement ok
+grant select on t to u1;
+
+userInsecure u1
+
+statement ok
+create materialized view v as select a,b from t;
+
+userInsecure root
+
+statement ok
+insert into t values (4,5);
+
+query II
+select * from v
+----
+1  2
+2  3
+3  4
+
+statement ok
+refresh materialized view v;
+
+statement ok
+insert into t values (4,5);
+
+userInsecure u1
+
+statement ok
+refresh materialized view v;
+
+query II
+select * from v
+----
+1  2
+2  3
+3  4
+4  5
+4  5
+
+userInsecure u2
+
+statement error pq: must be owner of materialized view v
+refresh materialized view v;
+
+statement error pq: user u2 does not have DROP privilege on relation test.public.v
+alter materialized view v rename to vt;
+
+userInsecure root
+
+statement ok
+grant drop on view v to u2;
+grant create on schema public to u2;
+
+userInsecure u2
+
+statement ok
+alter materialized view v rename to vt;
+
+userInsecure root
+
+statement ok
+revoke drop on view vt from u2;
+
+userInsecure u2
+
+statement error pq: user u2 does not have DROP privilege on relation test.public.vt
+drop view vt;

@@ -1,0 +1,15 @@
+statement ok
+CREATE TABLE reptest(a int primary key,b int,c int);
+
+statement ok
+CREATE TABLE reptest2(a int unique ,b int,c int);
+
+statement ok
+insert into reptest select generate_series(1,100),generate_series(1,100),generate_series(1,100);
+
+statement ok
+insert into reptest2 values (100000000,1,99);
+
+statement ok
+alter table reptest2 replication enable;
+

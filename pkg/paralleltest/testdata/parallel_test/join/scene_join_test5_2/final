@@ -1,0 +1,13 @@
+statement ok
+BEGIN;
+
+query TTIBTTRB
+SELECT * FROM A full join B ON A.ab=B.bb ORDER BY A.a, B.a;
+----
+NULL  NULL                             NULL  NULL   a     2019-07-01 00:00:00 +0000 +0000  5.5   true
+NULL  NULL                             NULL  NULL   c     2019-07-01 00:00:00 +0000 +0000  3.3   true
+NULL  NULL                             NULL  NULL   n     2019-05-01 00:00:00 +0000 +0000  1.1   true
+a     2019-08-01 00:00:00 +0000 +0000  5     true   NULL  NULL                             NULL  NULL
+c     2019-08-01 00:00:00 +0000 +0000  3     true   NULL  NULL                             NULL  NULL
+d     2019-06-01 00:00:00 +0000 +0000  2     false  NULL  NULL                             NULL  NULL
+m     2019-06-01 00:00:00 +0000 +0000  1     true   NULL  NULL                             NULL  NULL

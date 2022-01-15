@@ -1,0 +1,10 @@
+{
+  "部署": {
+    "连接": {
+      "conn1": "postgresql://root@localhost:26257/defaultdb",
+      "conn2": "postgresql://root@localhost:26257/defaultdb",
+      "conn3": "postgresql://root@localhost:26257/defaultdb",
+      "conn4": "postgresql://u@localhost:26257/defaultdb"
+    }
+  }
+}

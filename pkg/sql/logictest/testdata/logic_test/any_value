@@ -1,0 +1,21 @@
+# LogicTest: local
+
+statement ok
+drop table if exists test_value cascade;
+
+statement ok
+create table test_value(x int, y string, z int);
+
+statement ok
+insert into test_value values(1,'a',2),(2,'a',3),(3,'b',4),(4,'b',5),(5,'c',6),(6,'c',7);
+
+statement error pq: column "x" must appear in the GROUP BY clause or be used in an aggregate function
+select x,y from test_value group by y;
+
+query IT colnames
+select any_value(x),y from test_value group by y order by y asc;
+----
+any_value y
+        1 a
+        3 b
+        5 c

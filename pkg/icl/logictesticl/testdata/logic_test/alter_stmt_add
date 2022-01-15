@@ -1,0 +1,4205 @@
+# this script is geo-partition feature test
+# locate space name : inpsur TJ CHINA TEST
+
+# case 1 with out locate
+statement ok
+create table test(a int primary key, name string);
+
+statement ok
+alter table test partition by list(a) (partition p1 values in(12) locate in ("TJ"));
+
+query TT colnames
+show create table test;
+----
+table_name  create_statement
+test        CREATE TABLE test (
+            a INT NOT NULL,
+            name STRING NULL,
+            CONSTRAINT "primary" PRIMARY KEY (a ASC),
+            FAMILY "primary" (a, name)
+            ) PARTITION BY LIST (a) (
+               PARTITION p1 VALUES IN ((12)) LOCATE IN ("TJ")
+            )
+
+
+query TT colnames
+show create table test with cache;
+----
+table_name  create_statement
+test        CREATE TABLE test (
+            a INT NOT NULL,
+            name STRING NULL,
+            CONSTRAINT "primary" PRIMARY KEY (a ASC),
+            FAMILY "primary" (a, name)
+            ) PARTITION BY LIST (a) (
+               PARTITION p1 VALUES IN ((12)) LOCATE IN ("TJ")
+            )
+
+# case 2
+
+statement ok
+drop table test;
+create table test(a int primary key, name string) locate in (inspur);
+
+statement ok
+alter table test partition by list (a) (partition p1 values in(12) locate in ("TJ"));
+
+# expect
+query TT colnames
+show create table test;
+----
+table_name  create_statement
+test        CREATE TABLE test (
+            a INT NOT NULL,
+            name STRING NULL,
+            CONSTRAINT "primary" PRIMARY KEY (a ASC),
+            FAMILY "primary" (a, name)
+            ) PARTITION BY LIST (a) (
+            PARTITION p1 VALUES IN ((12)) LOCATE IN ("TJ")
+            ) LOCATE IN (inspur)
+
+query TT colnames
+show create table test with cache;
+----
+table_name  create_statement
+test        CREATE TABLE test (
+            a INT NOT NULL,
+            name STRING NULL,
+            CONSTRAINT "primary" PRIMARY KEY (a ASC) LOCATE IN (inspur),
+            FAMILY "primary" (a, name)
+            ) PARTITION BY LIST (a) (
+            PARTITION p1 VALUES IN ((12)) LOCATE IN ("TJ")
+            ) LOCATE IN (inspur)
+
+# case 3
+
+statement ok
+drop table test;
+create table test(a int, name string, primary key(a, name));
+
+statement error PARTITION p1's value does not match with partition by columns
+alter table test partition by list(a, name) (partition p1 values in(10) locate in ("TJ"));
+
+statement ok
+alter table test partition by list(a, name) (partition p1 values in((10, 'zhangsan')) locate in ("TJ"));
+
+# expect
+query TT colnames
+show create table test;
+----
+table_name create_statement
+test       CREATE TABLE test (
+           a INT NOT NULL,
+           name STRING NOT NULL,
+           CONSTRAINT "primary" PRIMARY KEY (a ASC, name ASC),
+           FAMILY "primary" (a, name)
+           ) PARTITION BY LIST (a, name) (
+              PARTITION p1 VALUES IN ((10, 'zhangsan')) LOCATE IN ("TJ")
+           )
+
+query TT colnames
+show create table test with cache;
+----
+table_name create_statement
+test       CREATE TABLE test (
+           a INT NOT NULL,
+           name STRING NOT NULL,
+           CONSTRAINT "primary" PRIMARY KEY (a ASC, name ASC),
+           FAMILY "primary" (a, name)
+           ) PARTITION BY LIST (a, name) (
+              PARTITION p1 VALUES IN ((10, 'zhangsan')) LOCATE IN ("TJ")
+           )
+
+
+# case 3.1  test parttition
+# case 3.1.1  test serveral partition all with locate in
+
+statement ok
+alter table test partition by list(a, name) (
+        partition p1 values in((10,'zhangsan')) locate in ("TJ"),
+        partition p2 values in((11,'lisi')) locate in (inspur),
+        partition p3 values in ((12,'wangwu')) locate in ("CHINA")
+);
+
+# expect
+query TT colnames
+show create table test;
+----
+table_name  create_statement
+test        CREATE TABLE test (
+            a INT NOT NULL,
+            name STRING NOT NULL,
+            CONSTRAINT "primary" PRIMARY KEY (a ASC, name ASC),
+            FAMILY "primary" (a, name)
+            ) PARTITION BY LIST (a, name) (
+               PARTITION p1 VALUES IN ((10, 'zhangsan')) LOCATE IN ("TJ"),
+               PARTITION p2 VALUES IN ((11, 'lisi')) LOCATE IN (inspur),
+               PARTITION p3 VALUES IN ((12, 'wangwu')) LOCATE IN ("CHINA")
+            )
+
+query TT colnames
+show create table test with cache;
+----
+table_name  create_statement
+test        CREATE TABLE test (
+            a INT NOT NULL,
+            name STRING NOT NULL,
+            CONSTRAINT "primary" PRIMARY KEY (a ASC, name ASC),
+            FAMILY "primary" (a, name)
+            ) PARTITION BY LIST (a, name) (
+               PARTITION p1 VALUES IN ((10, 'zhangsan')) LOCATE IN ("TJ"),
+               PARTITION p2 VALUES IN ((11, 'lisi')) LOCATE IN (inspur),
+               PARTITION p3 VALUES IN ((12, 'wangwu')) LOCATE IN ("CHINA")
+            )
+
+# case 3.1.2  test serveral partition part with locate in
+
+statement ok
+alter table test partition by list(a, name) (
+        partition p1 values in((10,'zhangsan')) locate in ("TJ"),
+        partition p2 values in((11,'lisi')),
+        partition p3 values in ((12,'wangwu')) locate in ("CHINA")
+);
+
+# expect
+query TT colnames
+show create table test;
+----
+table_name  create_statement
+test        CREATE TABLE test (
+            a INT NOT NULL,
+            name STRING NOT NULL,
+            CONSTRAINT "primary" PRIMARY KEY (a ASC, name ASC),
+            FAMILY "primary" (a, name)
+            ) PARTITION BY LIST (a, name) (
+               PARTITION p1 VALUES IN ((10, 'zhangsan')) LOCATE IN ("TJ"),
+               PARTITION p2 VALUES IN ((11, 'lisi')),
+               PARTITION p3 VALUES IN ((12, 'wangwu')) LOCATE IN ("CHINA")
+            )
+
+query TT colnames
+show create table test with cache;
+----
+table_name  create_statement
+test        CREATE TABLE test (
+            a INT NOT NULL,
+            name STRING NOT NULL,
+            CONSTRAINT "primary" PRIMARY KEY (a ASC, name ASC),
+            FAMILY "primary" (a, name)
+            ) PARTITION BY LIST (a, name) (
+               PARTITION p1 VALUES IN ((10, 'zhangsan')) LOCATE IN ("TJ"),
+               PARTITION p2 VALUES IN ((11, 'lisi')),
+               PARTITION p3 VALUES IN ((12, 'wangwu')) LOCATE IN ("CHINA")
+            )
+
+# case 3.1.3  test serveral partition part with ("") locate in
+
+statement ok
+alter table test partition by list(a, name) (
+        partition p1 values in((10,'zhangsan')) locate in (""),
+        partition p2 values in((11,'lisi')),
+        partition p3 values in ((12,'wangwu')) locate in ("CHINA")
+);
+
+# expect
+query TT colnames
+show create table test;
+----
+table_name  create_statement
+test        CREATE TABLE test (
+            a INT NOT NULL,
+            name STRING NOT NULL,
+            CONSTRAINT "primary" PRIMARY KEY (a ASC, name ASC),
+            FAMILY "primary" (a, name)
+            ) PARTITION BY LIST (a, name) (
+               PARTITION p1 VALUES IN ((10, 'zhangsan')),
+               PARTITION p2 VALUES IN ((11, 'lisi')),
+               PARTITION p3 VALUES IN ((12, 'wangwu')) LOCATE IN ("CHINA")
+            )
+
+query TT colnames
+show create table test with cache;
+----
+table_name  create_statement
+test        CREATE TABLE test (
+            a INT NOT NULL,
+            name STRING NOT NULL,
+            CONSTRAINT "primary" PRIMARY KEY (a ASC, name ASC),
+            FAMILY "primary" (a, name)
+            ) PARTITION BY LIST (a, name) (
+               PARTITION p1 VALUES IN ((10, 'zhangsan')),
+               PARTITION p2 VALUES IN ((11, 'lisi')),
+               PARTITION p3 VALUES IN ((12, 'wangwu')) LOCATE IN ("CHINA")
+            )
+
+# case 3.1.4  test serveral partition, some of them have subpartition
+
+statement ok
+alter table test partition by list(a) (
+        partition p1 values in(10) partition by list(name) (
+                partition p11 values in('zhangsan') locate in ("TJ"),
+                partition p12 values in('lisi') locate in ("CHINA")
+        ) locate in ("TEST"),
+        partition p2 values in(20) locate in ("CHINA")
+);
+
+# expect
+query TT colnames
+show create table test;
+----
+table_name  create_statement
+test        CREATE TABLE test (
+            a INT NOT NULL,
+            name STRING NOT NULL,
+            CONSTRAINT "primary" PRIMARY KEY (a ASC, name ASC),
+            FAMILY "primary" (a, name)
+            ) PARTITION BY LIST (a) (
+               PARTITION p1 VALUES IN ((10)) PARTITION BY LIST (name) (
+                 PARTITION p11 VALUES IN (('zhangsan')) LOCATE IN ("TJ"),
+                 PARTITION p12 VALUES IN (('lisi')) LOCATE IN ("CHINA")
+               ) LOCATE IN ("TEST"),
+               PARTITION p2 VALUES IN ((20)) LOCATE IN ("CHINA")
+            )
+
+query TT colnames
+show create table test with cache;
+----
+table_name  create_statement
+test        CREATE TABLE test (
+            a INT NOT NULL,
+            name STRING NOT NULL,
+            CONSTRAINT "primary" PRIMARY KEY (a ASC, name ASC),
+            FAMILY "primary" (a, name)
+            ) PARTITION BY LIST (a) (
+               PARTITION p1 VALUES IN ((10)) PARTITION BY LIST (name) (
+                 PARTITION p11 VALUES IN (('zhangsan')) LOCATE IN ("TJ"),
+                 PARTITION p12 VALUES IN (('lisi')) LOCATE IN ("CHINA")
+               ) LOCATE IN ("TEST"),
+               PARTITION p2 VALUES IN ((20)) LOCATE IN ("CHINA")
+            )
+
+# case 3.1.5  test serveral partition, some of them have subpartition
+
+statement ok
+alter table test partition by list(a) (
+        partition p1 values in(10) partition by list(name) (
+                partition p11 values in('zhangsan') locate in (""),
+                partition p12 values in('lisi') locate in ("CHINA")
+        ) locate in ("TEST"),
+        partition p2 values in(20) locate in ("")
+);
+
+# expect
+query TT colnames
+show create table test;
+----
+table_name  create_statement
+test        CREATE TABLE test (
+            a INT NOT NULL,
+            name STRING NOT NULL,
+            CONSTRAINT "primary" PRIMARY KEY (a ASC, name ASC),
+            FAMILY "primary" (a, name)
+            ) PARTITION BY LIST (a) (
+               PARTITION p1 VALUES IN ((10)) PARTITION BY LIST (name) (
+                 PARTITION p11 VALUES IN (('zhangsan')),
+                 PARTITION p12 VALUES IN (('lisi')) LOCATE IN ("CHINA")
+               ) LOCATE IN ("TEST"),
+               PARTITION p2 VALUES IN ((20))
+            )
+
+query TT colnames
+show create table test with cache;
+----
+table_name  create_statement
+test        CREATE TABLE test (
+            a INT NOT NULL,
+            name STRING NOT NULL,
+            CONSTRAINT "primary" PRIMARY KEY (a ASC, name ASC),
+            FAMILY "primary" (a, name)
+            ) PARTITION BY LIST (a) (
+               PARTITION p1 VALUES IN ((10)) PARTITION BY LIST (name) (
+                 PARTITION p11 VALUES IN (('zhangsan')) LOCATE IN ("TEST"),
+                 PARTITION p12 VALUES IN (('lisi')) LOCATE IN ("CHINA")
+               ) LOCATE IN ("TEST"),
+               PARTITION p2 VALUES IN ((20))
+            )
+
+# case 3.2 create partition error
+
+# case 3.2.1 test key's number diff from partition number - default primary key
+
+statement ok
+drop table test;
+create table test(
+        a int,
+        b int,
+        c int);
+
+statement error declared partition columns \(a\) do not match first 1 columns in index being partitioned \(rowid\)
+alter table test partition by list(a) (
+        partition p1 values in(10) locate in ("TEST")
+);
+
+statement ok
+alter table test partition by list(rowid) (
+        partition p1 values in(10) locate in ("TEST")
+);
+
+# expect
+query TT colnames
+show create table test;
+----
+table_name  create_statement
+test        CREATE TABLE test (
+            a INT NULL,
+            b INT NULL,
+            c INT NULL,
+            FAMILY "primary" (a, b, c, rowid)
+            ) PARTITION BY LIST (rowid) (
+               PARTITION p1 VALUES IN ((10)) LOCATE IN ("TEST")
+            )
+
+query TT colnames
+show create table test with cache;
+----
+table_name  create_statement
+test        CREATE TABLE test (
+            a INT NULL,
+            b INT NULL,
+            c INT NULL,
+            FAMILY "primary" (a, b, c, rowid)
+            ) PARTITION BY LIST (rowid) (
+               PARTITION p1 VALUES IN ((10)) LOCATE IN ("TEST")
+            )
+
+# case 3.2.2 test key's number diff from partition number - one primary key
+
+statement ok
+drop table test;
+create table test(
+        a int,
+        b int,
+        c int,
+        primary key(a));
+
+statement error declared partition columns \(a, b\) exceed the number of columns in index being partitioned \(a\)
+alter table test partition by list(a, b) (
+        partition p1 values in((10,20)) locate in ("TEST")
+);
+
+statement ok
+alter table test partition by list(a) (
+        partition p1 values in(10) locate in ("TEST")
+);
+
+# expect
+query TT colnames
+show create table test;
+----
+table_name  create_statement
+test        CREATE TABLE test (
+            a INT NOT NULL,
+            b INT NULL,
+            c INT NULL,
+            CONSTRAINT "primary" PRIMARY KEY (a ASC),
+            FAMILY "primary" (a, b, c)
+            ) PARTITION BY LIST (a) (
+               PARTITION p1 VALUES IN ((10)) LOCATE IN ("TEST")
+            )
+
+query TT colnames
+show create table test with cache;
+----
+table_name  create_statement
+test        CREATE TABLE test (
+            a INT NOT NULL,
+            b INT NULL,
+            c INT NULL,
+            CONSTRAINT "primary" PRIMARY KEY (a ASC),
+            FAMILY "primary" (a, b, c)
+            ) PARTITION BY LIST (a) (
+               PARTITION p1 VALUES IN ((10)) LOCATE IN ("TEST")
+            )
+
+# case 3.2.3 test key's number diff from partition number - serveral primary key
+
+statement ok
+drop table test;
+create table test(
+        a int,
+        b int,
+        c int,
+        primary key(a, b, c));
+
+statement ok # error declared partition columns \(a, b\) exceed the number of columns in index being partitioned \(a\)
+alter table test partition by list(a) (
+         partition p1 values in(1) locate in ("TEST")
+);
+
+statement ok
+alter table test partition by list(a, b) (
+        partition p1 values in((1,2),(2,3)) locate in ("CHINA")
+);
+
+# expect
+query TT colnames
+show create table test;
+----
+table_name  create_statement
+test        CREATE TABLE test (
+            a INT NOT NULL,
+            b INT NOT NULL,
+            c INT NOT NULL,
+            CONSTRAINT "primary" PRIMARY KEY (a ASC, b ASC, c ASC),
+            FAMILY "primary" (a, b, c)
+            ) PARTITION BY LIST (a, b) (
+               PARTITION p1 VALUES IN ((1, 2), (2, 3)) LOCATE IN ("CHINA")
+            )
+
+query TT colnames
+show create table test with cache;
+----
+table_name  create_statement
+test        CREATE TABLE test (
+            a INT NOT NULL,
+            b INT NOT NULL,
+            c INT NOT NULL,
+            CONSTRAINT "primary" PRIMARY KEY (a ASC, b ASC, c ASC),
+            FAMILY "primary" (a, b, c)
+            ) PARTITION BY LIST (a, b) (
+               PARTITION p1 VALUES IN ((1, 2), (2, 3)) LOCATE IN ("CHINA")
+            )
+
+# case 3.2.4 test alter partition ERROR
+
+statement error declared partition columns \(a, c, b\) do not match first 2 columns in index being partitioned \(a, b\)
+alter table test partition by list(a) (
+        partition p1 values in(1) partition by list(c, b) (
+                partition p11 values in((1,2)) locate in ("TEST"),
+                partition p12 values in((2,3)) locate in ("CHINA")
+        )locate in ("CHINA"),
+        partition p2 values in(2) locate in ("TJ")
+);
+
+statement error declared partition columns \(a, b, a\) do not match first 3 columns in index being partitioned \(a, b, c\)
+alter table test partition by list(a,b) (
+        partition p1 values in ((1,2)) partition by list(a) (
+                partition p11 values in(3) locate in ("TEST"),
+                partition p12 values in(4) locate in ("CHINA")
+        )locate in ("CHINA") ,
+        partition p2 values in((2,3)) locate in ("TJ")
+);
+
+statement ok
+alter table test partition by list(a,b) (
+        partition p1 values in ((1,2)) partition by list(c) (
+                partition p11 values in(3) locate in (inspur),
+                partition p12 values in(4) locate in ("TJ")
+        ) locate in ("TEST"),
+        partition p2 values in ((2,3)) locate in ("CHINA")
+);
+
+# expect
+query TT colnames
+show create table test;
+----
+table_name  create_statement
+test        CREATE TABLE test (
+            a INT NOT NULL,
+            b INT NOT NULL,
+            c INT NOT NULL,
+            CONSTRAINT "primary" PRIMARY KEY (a ASC, b ASC, c ASC),
+            FAMILY "primary" (a, b, c)
+            ) PARTITION BY LIST (a, b) (
+               PARTITION p1 VALUES IN ((1, 2)) PARTITION BY LIST (c) (
+                 PARTITION p11 VALUES IN ((3)) LOCATE IN (inspur),
+                 PARTITION p12 VALUES IN ((4)) LOCATE IN ("TJ")
+               ) LOCATE IN ("TEST"),
+               PARTITION p2 VALUES IN ((2, 3)) LOCATE IN ("CHINA")
+            )
+
+query TT colnames
+show create table test with cache;
+----
+table_name  create_statement
+test        CREATE TABLE test (
+            a INT NOT NULL,
+            b INT NOT NULL,
+            c INT NOT NULL,
+            CONSTRAINT "primary" PRIMARY KEY (a ASC, b ASC, c ASC),
+            FAMILY "primary" (a, b, c)
+            ) PARTITION BY LIST (a, b) (
+               PARTITION p1 VALUES IN ((1, 2)) PARTITION BY LIST (c) (
+                 PARTITION p11 VALUES IN ((3)) LOCATE IN (inspur),
+                 PARTITION p12 VALUES IN ((4)) LOCATE IN ("TJ")
+               ) LOCATE IN ("TEST"),
+               PARTITION p2 VALUES IN ((2, 3)) LOCATE IN ("CHINA")
+            )
+
+# show create table test with cache;
+
+
+
+# case 3.2.5 test using range from partition
+
+statement ok
+alter table test partition by range (a) (
+        partition p1 values from (1) to (2) locate in ("TJ")
+);
+
+# expect
+query TT colnames
+show create table test;
+----
+table_name  create_statement
+test        CREATE TABLE test (
+            a INT NOT NULL,
+            b INT NOT NULL,
+            c INT NOT NULL,
+            CONSTRAINT "primary" PRIMARY KEY (a ASC, b ASC, c ASC),
+            FAMILY "primary" (a, b, c)
+            ) PARTITION BY RANGE (a) (
+               PARTITION p1 VALUES FROM (1) TO (2) LOCATE IN ("TJ")
+            )
+
+query TT colnames
+show create table test with cache;
+----
+table_name  create_statement
+test        CREATE TABLE test (
+            a INT NOT NULL,
+            b INT NOT NULL,
+            c INT NOT NULL,
+            CONSTRAINT "primary" PRIMARY KEY (a ASC, b ASC, c ASC),
+            FAMILY "primary" (a, b, c)
+            ) PARTITION BY RANGE (a) (
+               PARTITION p1 VALUES FROM (1) TO (2) LOCATE IN ("TJ")
+            )
+
+# case 3.2.5.1 test stmt error
+
+statement error declared partition columns \(a, c\) do not match first 2 columns in index being partitioned \(a, b\)
+alter table test partition by range (a,c) (
+        partition p1 values from (1,2) to (3,4) locate in ("TJ")
+);
+
+# expect
+query TT colnames
+show create table test;
+----
+table_name  create_statement
+test        CREATE TABLE test (
+            a INT NOT NULL,
+            b INT NOT NULL,
+            c INT NOT NULL,
+            CONSTRAINT "primary" PRIMARY KEY (a ASC, b ASC, c ASC),
+            FAMILY "primary" (a, b, c)
+            ) PARTITION BY RANGE (a) (
+               PARTITION p1 VALUES FROM (1) TO (2) LOCATE IN ("TJ")
+            )
+
+query TT colnames
+show create table test with cache;
+----
+table_name  create_statement
+test        CREATE TABLE test (
+            a INT NOT NULL,
+            b INT NOT NULL,
+            c INT NOT NULL,
+            CONSTRAINT "primary" PRIMARY KEY (a ASC, b ASC, c ASC),
+            FAMILY "primary" (a, b, c)
+            ) PARTITION BY RANGE (a) (
+               PARTITION p1 VALUES FROM (1) TO (2) LOCATE IN ("TJ")
+            )
+
+# show create table test with cache;
+
+# case 3.2.5.1 test remove partition
+
+statement ok
+alter table test partition by nothing;
+
+# expect
+query TT colnames
+show create table test;
+----
+table_name  create_statement
+test        CREATE TABLE test (
+            a INT NOT NULL,
+            b INT NOT NULL,
+            c INT NOT NULL,
+            CONSTRAINT "primary" PRIMARY KEY (a ASC, b ASC, c ASC),
+            FAMILY "primary" (a, b, c)
+            )
+
+query TT colnames
+show create table test with cache;
+----
+table_name  create_statement
+test        CREATE TABLE test (
+            a INT NOT NULL,
+            b INT NOT NULL,
+            c INT NOT NULL,
+            CONSTRAINT "primary" PRIMARY KEY (a ASC, b ASC, c ASC),
+            FAMILY "primary" (a, b, c)
+            )
+
+# show create table test with cache;
+
+# case 3.2.5.2 test alter table locate information
+
+statement ok
+drop table test;
+create table test(a int);
+
+statement ok
+alter table test locate in ("TJ");
+
+# expect
+query TT colnames
+show create table test;
+----
+table_name  create_statement
+test        CREATE TABLE test (
+            a INT NULL,
+            FAMILY "primary" (a, rowid)
+            ) LOCATE IN ("TJ")
+
+query TT colnames
+show create table test with cache;
+----
+table_name  create_statement
+test        CREATE TABLE test (
+            a INT NULL,
+            FAMILY "primary" (a, rowid)
+            ) LOCATE IN ("TJ")
+
+
+statement ok
+alter table test locate in (inspur);
+
+# expect
+query TT colnames
+show create table test;
+----
+table_name  create_statement
+test        CREATE TABLE test (
+            a INT NULL,
+            FAMILY "primary" (a, rowid)
+            ) LOCATE IN (inspur)
+
+query TT colnames
+show create table test with cache;
+----
+table_name  create_statement
+test        CREATE TABLE test (
+            a INT NULL,
+            FAMILY "primary" (a, rowid)
+            ) LOCATE IN (inspur)
+
+
+# case 3.2.5.2.1 test locate in cmd + partition cmd
+
+statement ok
+alter table test locate in ("TJ"), partition by list(rowid) (
+        partition p1 values in(10) locate in (inspur)
+);
+
+# expect
+query TT colnames
+show create table test;
+----
+table_name  create_statement
+test        CREATE TABLE test (
+            a INT NULL,
+            FAMILY "primary" (a, rowid)
+            ) PARTITION BY LIST (rowid) (
+              PARTITION p1 VALUES IN ((10)) LOCATE IN (inspur)
+            ) LOCATE IN ("TJ")
+
+query TT colnames
+show create table test with cache;
+----
+table_name  create_statement
+test        CREATE TABLE test (
+            a INT NULL,
+            FAMILY "primary" (a, rowid)
+            ) PARTITION BY LIST (rowid) (
+              PARTITION p1 VALUES IN ((10)) LOCATE IN (inspur)
+            ) LOCATE IN ("TJ")
+
+
+
+# case 3.2.5.2.2 test create table with locate space name
+
+statement ok
+drop table test;
+create table test(a int primary key, name string) locate in (inspur);
+
+statement ok
+alter table test partition BY list (a) (
+        partition p1 VALUES IN(12) locate IN ("TJ")
+);
+
+# expect
+query TT colnames
+show create table test;
+----
+table_name  create_statement
+test        CREATE TABLE test (
+            a INT NOT NULL,
+            name STRING NULL,
+            CONSTRAINT "primary" PRIMARY KEY (a ASC),
+            FAMILY "primary" (a, name)
+            ) PARTITION BY LIST (a) (
+              PARTITION p1 VALUES IN ((12)) LOCATE IN ("TJ")
+            ) LOCATE IN (inspur)
+
+query TT colnames
+show create table test with cache;
+----
+table_name  create_statement
+test        CREATE TABLE test (
+            a INT NOT NULL,
+            name STRING NULL,
+            CONSTRAINT "primary" PRIMARY KEY (a ASC) LOCATE IN (inspur),
+            FAMILY "primary" (a, name)
+            ) PARTITION BY LIST (a) (
+              PARTITION p1 VALUES IN ((12)) LOCATE IN ("TJ")
+            ) LOCATE IN (inspur)
+
+
+# case 4 test alter index stmt
+
+statement ok
+drop table test;
+create table test(
+        a int primary key,
+        b int,
+        c int
+) partition by list(a) (partition p1 values in(100) locate in (inspur));
+
+# expect
+query TT colnames
+show create table test;
+----
+table_name  create_statement
+test        CREATE TABLE test (
+            a INT NOT NULL,
+            b INT NULL,
+            c INT NULL,
+            CONSTRAINT "primary" PRIMARY KEY (a ASC),
+            FAMILY "primary" (a, b, c)
+            ) PARTITION BY LIST (a) (
+              PARTITION p1 VALUES IN ((100)) LOCATE IN (inspur)
+            )
+
+query TT colnames
+show create table test with cache;
+----
+table_name  create_statement
+test        CREATE TABLE test (
+            a INT NOT NULL,
+            b INT NULL,
+            c INT NULL,
+            CONSTRAINT "primary" PRIMARY KEY (a ASC),
+            FAMILY "primary" (a, b, c)
+            ) PARTITION BY LIST (a) (
+              PARTITION p1 VALUES IN ((100)) LOCATE IN (inspur)
+            )
+
+
+
+# case 4.1 test alter index stmt
+
+statement ok
+create index idx on test(b) partition by list(b) (
+        partition p11 values in(100) locate in (inspur)
+);
+
+# expect
+query TT colnames
+show create table test;
+----
+table_name  create_statement
+test        CREATE TABLE test (
+            a INT NOT NULL,
+            b INT NULL,
+            c INT NULL,
+            CONSTRAINT "primary" PRIMARY KEY (a ASC),
+            INDEX idx (b ASC) PARTITION BY LIST (b) (
+              PARTITION p11 VALUES IN ((100)) LOCATE IN (inspur)
+            ),
+            FAMILY "primary" (a, b, c)
+            ) PARTITION BY LIST (a) (
+               PARTITION p1 VALUES IN ((100)) LOCATE IN (inspur)
+            )
+
+query TT colnames
+show create table test with cache;
+----
+table_name  create_statement
+test        CREATE TABLE test (
+            a INT NOT NULL,
+            b INT NULL,
+            c INT NULL,
+            CONSTRAINT "primary" PRIMARY KEY (a ASC),
+            INDEX idx (b ASC) PARTITION BY LIST (b) (
+              PARTITION p11 VALUES IN ((100)) LOCATE IN (inspur)
+            ),
+            FAMILY "primary" (a, b, c)
+            ) PARTITION BY LIST (a) (
+               PARTITION p1 VALUES IN ((100)) LOCATE IN (inspur)
+            )
+
+
+
+# case 4.2 test alter index one partition
+
+statement ok
+drop table test;
+create table test(
+        a int primary key,
+        b int,
+        c int
+) partition by list(a) (
+        partition p1 values in(100) locate in (inspur)
+);
+
+statement ok
+create index idx on test (b);
+alter index test@idx locate in (inspur);
+alter index test@idx partition by list(b) (
+        partition p13 values in(100) locate in (inspur)
+);
+
+# expect
+query TT colnames
+show create table test;
+----
+table_name  create_statement
+test        CREATE TABLE test (
+            a INT NOT NULL,
+            b INT NULL,
+            c INT NULL,
+            CONSTRAINT "primary" PRIMARY KEY (a ASC),
+            INDEX idx (b ASC) PARTITION BY LIST (b) (
+              PARTITION p13 VALUES IN ((100)) LOCATE IN (inspur)
+            ) LOCATE IN (inspur),
+            FAMILY "primary" (a, b, c)
+            ) PARTITION BY LIST (a) (
+               PARTITION p1 VALUES IN ((100)) LOCATE IN (inspur)
+            )
+
+query TT colnames
+show create table test with cache;
+----
+table_name  create_statement
+test        CREATE TABLE test (
+            a INT NOT NULL,
+            b INT NULL,
+            c INT NULL,
+            CONSTRAINT "primary" PRIMARY KEY (a ASC),
+            INDEX idx (b ASC) PARTITION BY LIST (b) (
+              PARTITION p13 VALUES IN ((100)) LOCATE IN (inspur)
+            ) LOCATE IN (inspur),
+            FAMILY "primary" (a, b, c)
+            ) PARTITION BY LIST (a) (
+               PARTITION p1 VALUES IN ((100)) LOCATE IN (inspur)
+            )
+
+
+
+# case 4.3 test alter index serveral partition
+
+statement ok
+alter index test@idx partition by list(b) (
+        partition p13 values in(100) locate in (inspur),
+        partition p14 values in(200) locate in ("CHINA")
+);
+
+# expect
+query TT colnames
+show create table test;
+----
+table_name  create_statement
+test        CREATE TABLE test (
+            a INT NOT NULL,
+            b INT NULL,
+            c INT NULL,
+            CONSTRAINT "primary" PRIMARY KEY (a ASC),
+            INDEX idx (b ASC) PARTITION BY LIST (b) (
+              PARTITION p13 VALUES IN ((100)) LOCATE IN (inspur),
+              PARTITION p14 VALUES IN ((200)) LOCATE IN ("CHINA")
+            ) LOCATE IN (inspur),
+            FAMILY "primary" (a, b, c)
+            ) PARTITION BY LIST (a) (
+               PARTITION p1 VALUES IN ((100)) LOCATE IN (inspur)
+            )
+
+query TT colnames
+show create table test with cache;
+----
+table_name  create_statement
+test        CREATE TABLE test (
+            a INT NOT NULL,
+            b INT NULL,
+            c INT NULL,
+            CONSTRAINT "primary" PRIMARY KEY (a ASC),
+            INDEX idx (b ASC) PARTITION BY LIST (b) (
+              PARTITION p13 VALUES IN ((100)) LOCATE IN (inspur),
+              PARTITION p14 VALUES IN ((200)) LOCATE IN ("CHINA")
+            ) LOCATE IN (inspur),
+            FAMILY "primary" (a, b, c)
+            ) PARTITION BY LIST (a) (
+               PARTITION p1 VALUES IN ((100)) LOCATE IN (inspur)
+            )
+
+
+# case 5.1 add column
+
+# case 5.1.1 add one/multiple columns with different name
+
+statement ok
+drop table test;
+create table test (
+   a int,
+   name string
+);
+
+statement ok
+alter table test add column c int;
+
+statement ok
+alter table test add column age int, add column school string;
+
+# expect
+query TT colnames
+show create table test;
+----
+table_name  create_statement
+test        CREATE TABLE test (
+            a INT NULL,
+            name STRING NULL,
+            c INT NULL,
+            age INT NULL,
+            school STRING NULL,
+            FAMILY "primary" (a, name, rowid, c, age, school)
+)
+
+query TT colnames
+show create table test with cache;
+----
+table_name  create_statement
+test        CREATE TABLE test (
+            a INT NULL,
+            name STRING NULL,
+            c INT NULL,
+            age INT NULL,
+            school STRING NULL,
+            FAMILY "primary" (a, name, rowid, c, age, school)
+)
+
+
+# case 5.1.2 add one/multiple columns with existed name in table
+
+statement error duplicate column name: "c"
+alter table test add column c int;
+
+statement error duplicate column name: "age"
+alter table test add column age int, add column school string;
+
+# expect
+query TT colnames
+show create table test;
+----
+table_name  create_statement
+test        CREATE TABLE test (
+            a INT NULL,
+            name STRING NULL,
+            c INT NULL,
+            age INT NULL,
+            school STRING NULL,
+            FAMILY "primary" (a, name, rowid, c, age, school)
+)
+
+query TT colnames
+show create table test with cache;
+----
+table_name  create_statement
+test        CREATE TABLE test (
+            a INT NULL,
+            name STRING NULL,
+            c INT NULL,
+            age INT NULL,
+            school STRING NULL,
+            FAMILY "primary" (a, name, rowid, c, age, school)
+)
+
+
+# case 5.1.3 add serveral columns with some different name and some existed name
+
+statement error duplicate column name: "a"
+alter table test add column company string, add column a int, add column name string;
+
+# expect
+query TT colnames
+show create table test;
+----
+table_name  create_statement
+test        CREATE TABLE test (
+            a INT NULL,
+            name STRING NULL,
+            c INT NULL,
+            age INT NULL,
+            school STRING NULL,
+            FAMILY "primary" (a, name, rowid, c, age, school)
+)
+
+query TT colnames
+show create table test with cache;
+----
+table_name  create_statement
+test        CREATE TABLE test (
+            a INT NULL,
+            name STRING NULL,
+            c INT NULL,
+            age INT NULL,
+            school STRING NULL,
+            FAMILY "primary" (a, name, rowid, c, age, school)
+)
+
+
+# case 5.1.4 add a column with not NULL constraint and a default value
+
+statement ok
+drop table test;
+create table test (
+   a int,
+   name string
+);
+
+statement ok
+alter table test add column b int not null DEFAULT (int '99');
+
+# expect
+query TT colnames
+show create table test;
+----
+table_name  create_statement
+test        CREATE TABLE test (
+            a INT NULL,
+            name STRING NULL,
+            b INT NOT NULL DEFAULT 99::INT8,
+            FAMILY "primary" (a, name, rowid, b)
+)
+
+query TT colnames
+show create table test with cache;
+----
+table_name  create_statement
+test        CREATE TABLE test (
+            a INT NULL,
+            name STRING NULL,
+            b INT NOT NULL DEFAULT 99::INT8,
+            FAMILY "primary" (a, name, rowid, b)
+)
+
+
+# case 5.1.5 add a column with not NULL and unique constraints
+
+statement ok
+alter table test add column c int UNIQUE not null;
+
+# expect
+query TT colnames
+show create table test;
+----
+table_name  create_statement
+test        CREATE TABLE test (
+            a INT NULL,
+            name STRING NULL,
+            b INT NOT NULL DEFAULT 99::INT8,
+            c INT NOT NULL,
+            UNIQUE INDEX test_c_key (c ASC),
+            FAMILY "primary" (a, name, rowid, b, c)
+)
+
+query TT colnames
+show create table test with cache;
+----
+table_name  create_statement
+test        CREATE TABLE test (
+            a INT NULL,
+            name STRING NULL,
+            b INT NOT NULL DEFAULT 99::INT8,
+            c INT NOT NULL,
+            UNIQUE INDEX test_c_key (c ASC),
+            FAMILY "primary" (a, name, rowid, b, c)
+)
+
+
+# case 5.1.6 add a column with collation
+
+statement ok
+alter table test add column english_name string collate en;
+
+# expect
+query TT colnames
+show create table test;
+----
+table_name  create_statement
+test        CREATE TABLE test (
+            a INT NULL,
+            name STRING NULL,
+            b INT NOT NULL DEFAULT 99::INT8,
+            c INT NOT NULL,
+            english_name STRING COLLATE en NULL,
+            UNIQUE INDEX test_c_key (c ASC),
+            FAMILY "primary" (a, name, rowid, b, c, english_name)
+            )
+
+query TT colnames
+show create table test with cache;
+----
+table_name  create_statement
+test        CREATE TABLE test (
+            a INT NULL,
+            name STRING NULL,
+            b INT NOT NULL DEFAULT 99::INT8,
+            c INT NOT NULL,
+            english_name STRING COLLATE en NULL,
+            UNIQUE INDEX test_c_key (c ASC),
+            FAMILY "primary" (a, name, rowid, b, c, english_name)
+            )
+
+
+# case 5.1.7 add a column and assign it to a column family
+
+# case 5.1.7.1 add a column and assign it to a new column family
+
+statement ok
+drop table test;
+create table test(
+   a int
+);
+
+statement ok
+alter table test add column name string create family family_01;
+
+# expect
+query TT colnames
+show create table test;
+----
+table_name  create_statement
+test        CREATE TABLE test (
+            a INT NULL,
+            name STRING NULL,
+            FAMILY "primary" (a, rowid),
+            FAMILY family_01 (name)
+            )
+
+query TT colnames
+show create table test with cache;
+----
+table_name  create_statement
+test        CREATE TABLE test (
+            a INT NULL,
+            name STRING NULL,
+            FAMILY "primary" (a, rowid),
+            FAMILY family_01 (name)
+            )
+
+
+# case 5.1.7.2 add a column and assign it to a existed column family
+
+statement ok
+alter table test add column name2 string family family_01;
+
+# expect
+query TT colnames
+show create table test;
+----
+table_name  create_statement
+test        CREATE TABLE test (
+            a INT NULL,
+            name STRING NULL,
+            name2 STRING NULL,
+            FAMILY "primary" (a, rowid),
+            FAMILY family_01 (name, name2)
+            )
+
+query TT colnames
+show create table test with cache;
+----
+table_name  create_statement
+test        CREATE TABLE test (
+            a INT NULL,
+            name STRING NULL,
+            name2 STRING NULL,
+            FAMILY "primary" (a, rowid),
+            FAMILY family_01 (name, name2)
+            )
+
+
+# case 5.1.7.3 add a column and assign it to a column family if the family not exist, create it
+
+statement ok
+alter table test add column name3 string create if not exists family family_02;
+
+# expect
+query TT colnames
+show create table test;
+----
+table_name  create_statement
+test        CREATE TABLE test (
+            a INT NULL,
+            name STRING NULL,
+            name2 STRING NULL,
+            name3 STRING NULL,
+            FAMILY "primary" (a, rowid),
+            FAMILY family_01 (name, name2),
+            FAMILY family_02 (name3)
+            )
+
+query TT colnames
+show create table test with cache;
+----
+table_name  create_statement
+test        CREATE TABLE test (
+            a INT NULL,
+            name STRING NULL,
+            name2 STRING NULL,
+            name3 STRING NULL,
+            FAMILY "primary" (a, rowid),
+            FAMILY family_01 (name, name2),
+            FAMILY family_02 (name3)
+            )
+
+# case 5.2 add constraints
+
+# case 5.2.1 add check constraints
+
+statement ok
+drop table test;
+create table test(
+   id varchar(18) PRIMARY key,
+   salary int,
+   age int,
+   name string
+);
+
+statement ok
+alter table test add constraint check_age_over_20 check (age > 20);
+
+statement ok
+alter table test add constraint outstanding_staff_check check (age < 40 and salary > 30000);
+
+# expect
+query TT colnames
+show create table test;
+----
+table_name  create_statement
+test        CREATE TABLE test (
+            id VARCHAR(18) NOT NULL,
+            salary INT NULL,
+            age INT NULL,
+            name STRING NULL,
+            CONSTRAINT "primary" PRIMARY KEY (id ASC),
+            FAMILY "primary" (id, salary, age, name),
+            CONSTRAINT check_age_over_20 CHECK (age > 20) ENABLE,
+            CONSTRAINT outstanding_staff_check CHECK ((age < 40) AND (salary > 30000)) ENABLE
+)
+
+query TT colnames
+show create table test with cache;
+----
+table_name  create_statement
+test        CREATE TABLE test (
+            id VARCHAR(18) NOT NULL,
+            salary INT NULL,
+            age INT NULL,
+            name STRING NULL,
+            CONSTRAINT "primary" PRIMARY KEY (id ASC),
+            FAMILY "primary" (id, salary, age, name),
+            CONSTRAINT check_age_over_20 CHECK (age > 20) ENABLE,
+            CONSTRAINT outstanding_staff_check CHECK ((age < 40) AND (salary > 30000)) ENABLE
+)
+
+
+# case 5.2.2 add unique constraints
+
+statement ok
+alter table test add constraint id_name_unique unique (id, name);
+
+# expect
+query TT colnames
+show create table test;
+----
+table_name  create_statement
+test        CREATE TABLE test (
+            id VARCHAR(18) NOT NULL,
+            salary INT NULL,
+            age INT NULL,
+            name STRING NULL,
+            CONSTRAINT "primary" PRIMARY KEY (id ASC),
+            UNIQUE INDEX id_name_unique (id ASC, name ASC),
+            FAMILY "primary" (id, salary, age, name),
+            CONSTRAINT check_age_over_20 CHECK (age > 20) ENABLE,
+            CONSTRAINT outstanding_staff_check CHECK ((age < 40) AND (salary > 30000)) ENABLE
+)
+
+query TT colnames
+show create table test with cache;
+----
+table_name  create_statement
+test        CREATE TABLE test (
+            id VARCHAR(18) NOT NULL,
+            salary INT NULL,
+            age INT NULL,
+            name STRING NULL,
+            CONSTRAINT "primary" PRIMARY KEY (id ASC),
+            UNIQUE INDEX id_name_unique (id ASC, name ASC),
+            FAMILY "primary" (id, salary, age, name),
+            CONSTRAINT check_age_over_20 CHECK (age > 20) ENABLE,
+            CONSTRAINT outstanding_staff_check CHECK ((age < 40) AND (salary > 30000)) ENABLE
+)
+
+
+# case 5.2.3 add foreign key constraints
+
+statement ok
+drop table test;
+create table test_primary (
+   primary_id int primary key,
+   name string,
+   foreign_id int
+);
+create table test_foreign (
+   id int primary key,
+   name string
+);
+
+statement ok
+alter table test_primary add constraint primary_foreign_key foreign key (foreign_id) REFERENCES test_foreign (id);
+
+# expect
+query TT colnames
+show create table test_primary;
+----
+table_name    create_statement
+test_primary  CREATE TABLE test_primary (
+              primary_id INT NOT NULL,
+              name STRING NULL,
+              foreign_id INT NULL,
+              CONSTRAINT "primary" PRIMARY KEY (primary_id ASC),
+              CONSTRAINT primary_foreign_key FOREIGN KEY (foreign_id) REFERENCES test_foreign (id),
+              INDEX test_primary_auto_index_primary_foreign_key (foreign_id ASC),
+              FAMILY "primary" (primary_id, name, foreign_id)
+              )
+
+query TT colnames
+show create table test_primary with cache;
+----
+table_name    create_statement
+test_primary  CREATE TABLE test_primary (
+              primary_id INT NOT NULL,
+              name STRING NULL,
+              foreign_id INT NULL,
+              CONSTRAINT "primary" PRIMARY KEY (primary_id ASC),
+              CONSTRAINT primary_foreign_key FOREIGN KEY (foreign_id) REFERENCES test_foreign (id),
+              INDEX test_primary_auto_index_primary_foreign_key (foreign_id ASC),
+              FAMILY "primary" (primary_id, name, foreign_id)
+              )
+
+
+
+# drop foreign key constraint on test_primary
+
+statement ok
+alter table test_primary drop constraint primary_foreign_key;
+drop table test_foreign;
+drop table test_primary;
+
+
+# possible error
+# case 5.2.4 (may not surport) drop/change primary key
+
+statement ok
+create table test (
+   a int,
+   b int,
+   constraint primarykey_define primary key (a)
+);
+
+# statement ok
+# alter table test drop constraint primarykey_define;
+
+statement error multiple primary keys for table "test" are not allowed
+alter table test add constraint primary_key_constraint primary key (b);
+
+# expect
+query TT colnames
+show create table test;
+----
+table_name  create_statement
+test        CREATE TABLE test (
+            a INT NOT NULL,
+            b INT NULL,
+            CONSTRAINT primarykey_define PRIMARY KEY (a ASC),
+            FAMILY "primary" (a, b)
+            )
+
+query TT colnames
+show create table test with cache;
+----
+table_name  create_statement
+test        CREATE TABLE test (
+            a INT NOT NULL,
+            b INT NULL,
+            CONSTRAINT primarykey_define PRIMARY KEY (a ASC),
+            FAMILY "primary" (a, b)
+            )
+
+
+# case 5.2.5 add some constraints using existed name with same/different condition
+# can only modify constraint through drop and the add constraint
+
+statement ok
+drop table test;
+create table test (
+   a int,
+   b int
+);
+
+statement ok
+alter table test add constraint check_a_range check (a > 10);
+
+statement error constraint "check_a_range" for relation "test" already exists
+alter table test add constraint check_a_range check (a > 10);
+
+statement error constraint "check_a_range" for relation "test" already exists
+alter table test add constraint check_a_range check (a > 20);
+
+# expect
+query TT colnames
+show create table test;
+----
+table_name  create_statement
+test        CREATE TABLE test (
+            a INT NULL,
+            b INT NULL,
+            FAMILY "primary" (a, b, rowid),
+            CONSTRAINT check_a_range CHECK (a > 10) ENABLE
+)
+
+query TT colnames
+show create table test with cache;
+----
+table_name  create_statement
+test        CREATE TABLE test (
+            a INT NULL,
+            b INT NULL,
+            FAMILY "primary" (a, b, rowid),
+            CONSTRAINT check_a_range CHECK (a > 10) ENABLE
+)
+
+
+# case 5.2.6 add constraints with unexisted columns in table
+
+statement error column "c" not found for constraint "c"
+alter table test add constraint check_c_range check (c > 0);
+
+# expect
+query TT colnames
+show create table test;
+----
+table_name  create_statement
+test        CREATE TABLE test (
+            a INT NULL,
+            b INT NULL,
+            FAMILY "primary" (a, b, rowid),
+            CONSTRAINT check_a_range CHECK (a > 10) ENABLE
+)
+
+query TT colnames
+show create table test with cache;
+----
+table_name  create_statement
+test        CREATE TABLE test (
+            a INT NULL,
+            b INT NULL,
+            FAMILY "primary" (a, b, rowid),
+            CONSTRAINT check_a_range CHECK (a > 10) ENABLE
+)
+
+
+# case 5.3 alter column
+
+# case 5.3.1 set a default value
+
+statement ok
+drop table test;
+create table test (
+   id int primary key not null,
+   name string not null,
+   age int,
+   wedding_or_not boolean
+);
+
+statement ok
+alter table test alter column wedding_or_not set default false;
+
+# expect
+query TT colnames
+show create table test;
+----
+table_name  create_statement
+test        CREATE TABLE test (
+            id INT NOT NULL,
+            name STRING NOT NULL,
+            age INT NULL,
+            wedding_or_not BOOLEAN NULL DEFAULT false,
+            CONSTRAINT "primary" PRIMARY KEY (id ASC),
+            FAMILY "primary" (id, name, age, wedding_or_not)
+)
+
+query TT colnames
+show create table test with cache;
+----
+table_name  create_statement
+test        CREATE TABLE test (
+            id INT NOT NULL,
+            name STRING NOT NULL,
+            age INT NULL,
+            wedding_or_not BOOLEAN NULL DEFAULT false,
+            CONSTRAINT "primary" PRIMARY KEY (id ASC),
+            FAMILY "primary" (id, name, age, wedding_or_not)
+)
+
+query TTBTTTB colnames
+show columns from test;
+----
+column_name     data_type  is_nullable  column_default  generation_expression  indices    is_hidden
+id              INT        false        NULL            ·                      {primary}  false
+name            STRING     false        NULL            ·                      {}         false
+age             INT        true         NULL            ·                      {}         false
+wedding_or_not  BOOLEAN    true         false           ·                      {}         false
+
+
+# case 5.3.2 change a default value
+
+statement ok
+alter table test alter column wedding_or_not set default true;
+
+# expect
+query TT colnames
+show create table test;
+----
+table_name  create_statement
+test        CREATE TABLE test (
+            id INT NOT NULL,
+            name STRING NOT NULL,
+            age INT NULL,
+            wedding_or_not BOOLEAN NULL DEFAULT true,
+            CONSTRAINT "primary" PRIMARY KEY (id ASC),
+            FAMILY "primary" (id, name, age, wedding_or_not)
+)
+
+query TT colnames
+show create table test with cache;
+----
+table_name  create_statement
+test        CREATE TABLE test (
+            id INT NOT NULL,
+            name STRING NOT NULL,
+            age INT NULL,
+            wedding_or_not BOOLEAN NULL DEFAULT true,
+            CONSTRAINT "primary" PRIMARY KEY (id ASC),
+            FAMILY "primary" (id, name, age, wedding_or_not)
+)
+
+query TTBTTTB colnames
+show columns from test;
+----
+column_name     data_type  is_nullable  column_default  generation_expression  indices    is_hidden
+id              INT        false        NULL            ·                      {primary}  false
+name            STRING     false        NULL            ·                      {}         false
+age             INT        true         NULL            ·                      {}         false
+wedding_or_not  BOOLEAN    true         true            ·                      {}         false
+
+
+
+# case 5.3.3 remove default/(not null) costraint
+
+statement ok
+alter table test alter column wedding_or_not drop default;
+
+statement ok
+alter table test alter column name drop not null;
+
+# expect
+query TT colnames
+show create table test;
+----
+table_name  create_statement
+test        CREATE TABLE test (
+            id INT NOT NULL,
+            name STRING NULL,
+            age INT NULL,
+            wedding_or_not BOOLEAN NULL,
+            CONSTRAINT "primary" PRIMARY KEY (id ASC),
+            FAMILY "primary" (id, name, age, wedding_or_not)
+            )
+
+query TT colnames
+show create table test with cache;
+----
+table_name  create_statement
+test        CREATE TABLE test (
+            id INT NOT NULL,
+            name STRING NULL,
+            age INT NULL,
+            wedding_or_not BOOLEAN NULL,
+            CONSTRAINT "primary" PRIMARY KEY (id ASC),
+            FAMILY "primary" (id, name, age, wedding_or_not)
+            )
+
+
+# case 5.3.4 convert computed column into regular column
+
+statement ok
+drop table test;
+create table test (
+   id int primary key,
+   first_name string,
+   last_name string,
+   full_name string AS (concat(first_name, ' ', last_name)) stored
+);
+
+statement ok
+insert into test values (1, 'San', 'Zhang'), (2, 'Si', 'Li'), (3, 'Wu', 'Wang');
+
+# expect
+query TTBTTTB colnames
+show columns from test;
+----
+column_name  data_type  is_nullable  column_default  generation_expression               indices    is_hidden
+id           INT       false        NULL            ·                                   {primary}  false
+first_name   STRING     true         NULL            ·                                   {}         false
+last_name    STRING     true         NULL            ·                                   {}         false
+full_name    STRING     true         NULL            concat(first_name, ' ', last_name)  {}         false
+
+query TT colnames
+show create table test with cache;
+----
+table_name  create_statement
+test        CREATE TABLE test (
+            id INT NOT NULL,
+            first_name STRING NULL,
+            last_name STRING NULL,
+            full_name STRING NULL AS (concat(first_name, ' ', last_name)) STORED,
+            CONSTRAINT "primary" PRIMARY KEY (id ASC),
+            FAMILY "primary" (id, first_name, last_name, full_name)
+            )
+
+query ITTT colnames
+select * from test;
+----
+id  first_name  last_name  full_name
+1   San         Zhang      San Zhang
+2   Si          Li         Si Li
+3   Wu          Wang       Wu Wang
+
+statement ok
+alter table test alter column full_name drop stored;
+
+# expect
+query TTBTTTB colnames
+show columns from test;
+----
+column_name  data_type  is_nullable  column_default  generation_expression  indices    is_hidden
+id           INT       false        NULL            ·                      {primary}  false
+first_name   STRING     true         NULL            ·                      {}         false
+last_name    STRING     true         NULL            ·                      {}         false
+full_name    STRING     true         NULL            ·                      {}         false
+
+query TT colnames
+show create table test with cache;
+----
+table_name  create_statement
+test        CREATE TABLE test (
+            id INT NOT NULL,
+            first_name STRING NULL,
+            last_name STRING NULL,
+            full_name STRING NULL,
+            CONSTRAINT "primary" PRIMARY KEY (id ASC),
+            FAMILY "primary" (id, first_name, last_name, full_name)
+            )
+
+
+
+# case 5.3.5 set a column a default value with uncorrect type
+
+statement ok
+alter table test alter column last_name set default 99;
+
+# expect
+query TT colnames
+show create table test;
+----
+table_name  create_statement
+test        CREATE TABLE test (
+            id INT NOT NULL,
+            first_name STRING NULL,
+            last_name STRING NULL DEFAULT 99,
+            full_name STRING NULL,
+            CONSTRAINT "primary" PRIMARY KEY (id ASC),
+            FAMILY "primary" (id, first_name, last_name, full_name)
+            )
+
+query TT colnames
+show create table test with cache;
+----
+table_name  create_statement
+test        CREATE TABLE test (
+            id INT NOT NULL,
+            first_name STRING NULL,
+            last_name STRING NULL DEFAULT 99,
+            full_name STRING NULL,
+            CONSTRAINT "primary" PRIMARY KEY (id ASC),
+            FAMILY "primary" (id, first_name, last_name, full_name)
+            )
+
+
+# case 5.4 alter type
+# case 5.4.1 change the type to a Larger/smaller range in a similar type
+
+statement ok
+drop table test;
+create table test (
+   a decimal(12, 2),
+   b decimal(10, 2),
+   str_a varchar(10),
+   str_b varchar(20)
+);
+
+# case 5.4.1.1 decimal type
+
+statement error unimplemented: type conversion not yet implemented
+alter table test alter a type decimal(10, 2);
+
+statement error unimplemented: type conversion not yet implemented
+alter table test alter a type decimal(10, 3);
+
+statement ok
+alter table test alter b type decimal(12, 3);
+
+# expect
+query TT colnames
+show create table test;
+----
+table_name  create_statement
+test        CREATE TABLE test (
+            a DECIMAL(12,2) NULL,
+            b DECIMAL(12,3) NULL,
+            str_a VARCHAR(10) NULL,
+            str_b VARCHAR(20) NULL,
+            FAMILY "primary" (a, b, str_a, str_b, rowid)
+            )
+
+query TT colnames
+show create table test with cache;
+----
+table_name  create_statement
+test        CREATE TABLE test (
+            a DECIMAL(12,2) NULL,
+            b DECIMAL(12,3) NULL,
+            str_a VARCHAR(10) NULL,
+            str_b VARCHAR(20) NULL,
+            FAMILY "primary" (a, b, str_a, str_b, rowid)
+            )
+
+# case 5.4.1.2 varchar type
+
+statement ok
+alter table test alter str_a type varchar(20);
+
+statement error unimplemented: type conversion not yet implemented
+alter table test alter str_b type varchar(10);
+
+# expect
+query TT colnames
+show create table test;
+----
+table_name  create_statement
+test        CREATE TABLE test (
+            a DECIMAL(12,2) NULL,
+            b DECIMAL(12,3) NULL,
+            str_a VARCHAR(20) NULL,
+            str_b VARCHAR(20) NULL,
+            FAMILY "primary" (a, b, str_a, str_b, rowid)
+            )
+
+
+# case 5.4.2 change the type to a different type
+
+statement ok
+alter table test add column c int;
+
+query TT colnames
+show create table test;
+----
+table_name  create_statement
+test        CREATE TABLE test (
+            a DECIMAL(12,2) NULL,
+            b DECIMAL(12,3) NULL,
+            str_a VARCHAR(20) NULL,
+            str_b VARCHAR(20) NULL,
+            c INT NULL,
+            FAMILY "primary" (a, b, str_a, str_b, rowid, c)
+            )
+
+statement error unimplemented: type conversion not yet implemented
+alter table test alter a type int;
+
+statement ok
+alter table test alter str_b type string;
+
+statement ok
+alter table test add column s string;
+
+statement error unimplemented: type conversion not yet implemented
+alter table test alter s type varchar(20);
+
+# expect
+query TT colnames
+show create table test;
+----
+table_name  create_statement
+test        CREATE TABLE test (
+            a DECIMAL(12,2) NULL,
+            b DECIMAL(12,3) NULL,
+            str_a VARCHAR(20) NULL,
+            str_b STRING NULL,
+            c INT NULL,
+            s STRING NULL,
+            FAMILY "primary" (a, b, str_a, str_b, rowid, c, s)
+            )
+
+
+
+# 5.5 configure zone
+
+# 5.5.1 edit a replication zone
+
+statement ok
+drop table test;
+create table test (
+   a int,
+   name string
+);
+
+statement ok
+ALTER TABLE test CONFIGURE ZONE USING range_min_bytes = 0, range_max_bytes = 90000, gc.ttlseconds = 89999, num_replicas = 4, constraints = '[-region=west]';
+
+# expect
+query TT colnames
+SHOW ZONE CONFIGURATION FOR TABLE test;
+----
+zone_name  config_sql
+test.test  ALTER TABLE test CONFIGURE ZONE USING
+           range_min_bytes = 0,
+           range_max_bytes = 90000,
+           gc.ttlseconds = 89999,
+           num_replicas = 4,
+           constraints = '[-region=west]',
+           lease_preferences = '[]'
+
+
+# 5.5.2 create a replication zone for a table
+
+statement ok
+drop table test;
+create table test (
+   a int,
+   name string
+);
+
+statement ok
+ALTER TABLE test CONFIGURE ZONE USING num_replicas = 5, gc.ttlseconds = 100000;
+
+# expect
+query TT colnames
+SHOW ZONE CONFIGURATION FOR TABLE test;
+----
+zone_name  config_sql
+test.test  ALTER TABLE test CONFIGURE ZONE USING
+           range_min_bytes = 16777216,
+           range_max_bytes = 67108864,
+           gc.ttlseconds = 100000,
+           num_replicas = 5,
+           constraints = '[]',
+           lease_preferences = '[]'
+
+
+# 5.5.3 reset a replication zone
+
+statement ok
+ALTER TABLE test CONFIGURE ZONE USING DEFAULT;
+
+# statement ok
+# CONFIGURE ZONE 1
+
+# expect
+query TT colnames
+SHOW ZONE CONFIGURATION FOR TABLE test;
+----
+zone_name  config_sql
+test.test  ALTER TABLE test CONFIGURE ZONE USING
+           range_min_bytes = 16777216,
+           range_max_bytes = 67108864,
+           gc.ttlseconds = 90000,
+           num_replicas = 3,
+           constraints = '[]',
+           lease_preferences = '[]'
+
+
+
+# 5.6 drop column
+
+statement ok
+ALTER TABLE test drop column name;
+
+# expect
+query TT colnames
+SHOW create table test;
+----
+table_name  create_statement
+test        CREATE TABLE test (
+            a INT NULL,
+            FAMILY "primary" (a, rowid)
+            )
+
+
+statement ok
+ALTER TABLE test drop column a;
+
+# expect
+query TT colnames
+SHOW create table test;
+----
+table_name  create_statement
+test        CREATE TABLE test (,
+            FAMILY "primary" (rowid)
+            )
+
+
+
+# 5.7 rename column
+
+statement ok
+drop table test;
+create table test (
+   a int,
+   b int,
+   name string
+);
+
+statement ok
+alter table test rename column a to a_rename;
+
+statement ok
+alter table test rename column b to age, rename name to second_name;
+
+# expect
+query TT colnames
+SHOW create table test;
+----
+table_name  create_statement
+test        CREATE TABLE test (
+            a_rename INT NULL,
+            age INT NULL,
+            second_name STRING NULL,
+            FAMILY "primary" (a_rename, age, second_name, rowid)
+            )
+
+
+# 5.8 rename constraint
+
+statement ok
+drop table test;
+create table test (
+   a int,
+   age int,
+   name string
+);
+
+statement ok
+alter table test add constraint age_check check (age > 18);
+
+statement ok
+alter table test rename constraint age_check to adult_check;
+
+# expect
+query TT colnames
+SHOW create table test;
+----
+table_name  create_statement
+test        CREATE TABLE test (
+            a INT NULL,
+            age INT NULL,
+            name STRING NULL,
+            FAMILY "primary" (a, age, name, rowid),
+            CONSTRAINT adult_check CHECK (age > 18) ENABLE
+)
+
+
+# 5.9 rename table
+
+statement ok
+drop table test;
+create table test (
+   a int,
+   age int,
+   name string
+);
+
+statement ok
+alter table test rename to hhhha;
+
+# expect
+query TT colnames
+SHOW tables;
+----
+table_name  owner
+hhhha       root
+
+statement ok
+drop table hhhha;
+
+
+# 5.10 change multiple columns types
+
+statement ok
+create table test (
+   a int constraint check_a check(a > 18),
+   old_b int,
+   age int not null,
+   name varchar(20)
+);
+
+# expect
+query TT colnames
+SHOW create table test;
+----
+table_name  create_statement
+test        CREATE TABLE test (
+            a INT NULL,
+            old_b INT NULL,
+            age INT NOT NULL,
+            name VARCHAR(20) NULL,
+            FAMILY "primary" (a, old_b, age, name, rowid),
+            CONSTRAINT check_a CHECK (a > 18) ENABLE
+)
+
+statement ok
+alter table test rename column old_b to new_b, alter column age drop not null, drop constraint check_a, alter name type string;
+
+# expect
+query TT colnames
+SHOW create table test;
+----
+table_name  create_statement
+test        CREATE TABLE test (
+            a INT NULL,
+            new_b INT NULL,
+            age INT NULL,
+            name STRING NULL,
+            FAMILY "primary" (a, new_b, age, name, rowid)
+            )
+
+
+
+
+
+# Restart:
+
+# re: 1. if original table has no partitions, else jump to re: 2
+# re: 1.1 alter partition
+# re: 1.1.1 alter partition on single primary key
+
+statement ok
+drop table test;
+create table test (
+    id int,
+    name string,
+    primary key(id)
+);
+
+# re: 1.1.1.1 alter one partition
+
+statement ok
+alter table test partition by list(id) (
+    partition p1 values in ((10)) locate in ("TJ")
+);
+
+# expect
+query TT colnames
+show create table test;
+----
+table_name  create_statement
+test        CREATE TABLE test (
+            id INT NOT NULL,
+            name STRING NULL,
+            CONSTRAINT "primary" PRIMARY KEY (id ASC),
+            FAMILY "primary" (id, name)
+            ) PARTITION BY LIST (id) (
+               PARTITION p1 VALUES IN ((10)) LOCATE IN ("TJ")
+            )
+
+query TT colnames
+show create table test with cache;
+----
+table_name  create_statement
+test        CREATE TABLE test (
+            id INT NOT NULL,
+            name STRING NULL,
+            CONSTRAINT "primary" PRIMARY KEY (id ASC),
+            FAMILY "primary" (id, name)
+            ) PARTITION BY LIST (id) (
+               PARTITION p1 VALUES IN ((10)) LOCATE IN ("TJ")
+            )
+
+
+# re: 1.1.1.2 alter serveral partitions
+
+statement ok
+alter table test partition by list(id) (
+    partition p2 values in ((20)) locate in ("CHINA"),
+    partition p3 values in ((30)) locate in (""),
+    partition p4 values in ((40)) locate in ("TEST")
+);
+
+# expect
+query TT colnames
+show create table test;
+----
+table_name  create_statement
+test        CREATE TABLE test (
+            id INT NOT NULL,
+            name STRING NULL,
+            CONSTRAINT "primary" PRIMARY KEY (id ASC),
+            FAMILY "primary" (id, name)
+            ) PARTITION BY LIST (id) (
+               PARTITION p2 VALUES IN ((20)) LOCATE IN ("CHINA"),
+               PARTITION p3 VALUES IN ((30)),
+               PARTITION p4 VALUES IN ((40)) LOCATE IN ("TEST")
+            )
+
+query TT colnames
+show create table test with cache;
+----
+table_name  create_statement
+test        CREATE TABLE test (
+            id INT NOT NULL,
+            name STRING NULL,
+            CONSTRAINT "primary" PRIMARY KEY (id ASC),
+            FAMILY "primary" (id, name)
+            ) PARTITION BY LIST (id) (
+               PARTITION p2 VALUES IN ((20)) LOCATE IN ("CHINA"),
+               PARTITION p3 VALUES IN ((30)),
+               PARTITION p4 VALUES IN ((40)) LOCATE IN ("TEST")
+            )
+
+
+# re: 1.1.1.3 alter exist partition
+
+statement ok
+alter table test partition by list(id) (
+    partition p1 values in ((100)) locate in (inspur)
+);
+
+# expect
+query TT colnames
+show create table test;
+----
+table_name  create_statement
+test        CREATE TABLE test (
+            id INT NOT NULL,
+            name STRING NULL,
+            CONSTRAINT "primary" PRIMARY KEY (id ASC),
+            FAMILY "primary" (id, name)
+            ) PARTITION BY LIST (id) (
+               PARTITION p1 VALUES IN ((100)) LOCATE IN (inspur)
+            )
+
+query TT colnames
+show create table test with cache;
+----
+table_name  create_statement
+test        CREATE TABLE test (
+            id INT NOT NULL,
+            name STRING NULL,
+            CONSTRAINT "primary" PRIMARY KEY (id ASC),
+            FAMILY "primary" (id, name)
+            ) PARTITION BY LIST (id) (
+               PARTITION p1 VALUES IN ((100)) LOCATE IN (inspur)
+            )
+
+
+# re: 1.1.1.4 alter partition by nothing
+
+statement ok
+alter table test partition by nothing;
+
+# expect
+query TT colnames
+show create table test;
+----
+table_name  create_statement
+test        CREATE TABLE test (
+            id INT NOT NULL,
+            name STRING NULL,
+            CONSTRAINT "primary" PRIMARY KEY (id ASC),
+            FAMILY "primary" (id, name)
+            )
+
+query TT colnames
+show create table test with cache;
+----
+table_name  create_statement
+test        CREATE TABLE test (
+            id INT NOT NULL,
+            name STRING NULL,
+            CONSTRAINT "primary" PRIMARY KEY (id ASC),
+            FAMILY "primary" (id, name)
+            )
+
+
+#  re: 1.1.2 alter partition on serveral primary keys
+
+statement ok
+drop table test;
+create table test (
+    a int,
+    b int,
+    job string,
+    name string,
+    primary key(a, b, job, name)
+);
+
+# re: 1.1.2.1 alter one partition use all primary keys
+
+statement ok
+alter table test locate in ("CHINA"), partition by list(a, b, job, name) (
+    partition p1 values in ((1, 10, 'student', 'zhangsan'))
+);
+
+# expect
+query TT colnames
+show create table test;
+----
+table_name  create_statement
+test        CREATE TABLE test (
+            a INT NOT NULL,
+            b INT NOT NULL,
+            job STRING NOT NULL,
+            name STRING NOT NULL,
+            CONSTRAINT "primary" PRIMARY KEY (a ASC, b ASC, job ASC, name ASC),
+            FAMILY "primary" (a, b, job, name)
+            ) PARTITION BY LIST (a, b, job, name) (
+               PARTITION p1 VALUES IN ((1, 10, 'student', 'zhangsan'))
+            ) LOCATE IN ("CHINA")
+
+query TT colnames
+show create table test with cache;
+----
+table_name  create_statement
+test        CREATE TABLE test (
+            a INT NOT NULL,
+            b INT NOT NULL,
+            job STRING NOT NULL,
+            name STRING NOT NULL,
+            CONSTRAINT "primary" PRIMARY KEY (a ASC, b ASC, job ASC, name ASC) LOCATE IN ("CHINA"),
+            FAMILY "primary" (a, b, job, name)
+            ) PARTITION BY LIST (a, b, job, name) (
+               PARTITION p1 VALUES IN ((1, 10, 'student', 'zhangsan')) LOCATE IN ("CHINA")
+            ) LOCATE IN ("CHINA")
+
+
+# re: 1.1.2.2 alter one partition use part of primary keys
+
+statement ok
+alter table test locate in ("CHINA"), partition by list(a, b, job) (
+    partition p2 values in ((1, 50, 'worker'))
+);
+
+# expect
+query TT colnames
+show create table test;
+----
+table_name  create_statement
+test        CREATE TABLE test (
+            a INT NOT NULL,
+            b INT NOT NULL,
+            job STRING NOT NULL,
+            name STRING NOT NULL,
+            CONSTRAINT "primary" PRIMARY KEY (a ASC, b ASC, job ASC, name ASC),
+            FAMILY "primary" (a, b, job, name)
+            ) PARTITION BY LIST (a, b, job) (
+               PARTITION p2 VALUES IN ((1, 50, 'worker'))
+            ) LOCATE IN ("CHINA")
+
+query TT colnames
+show create table test with cache;
+----
+table_name  create_statement
+test        CREATE TABLE test (
+            a INT NOT NULL,
+            b INT NOT NULL,
+            job STRING NOT NULL,
+            name STRING NOT NULL,
+            CONSTRAINT "primary" PRIMARY KEY (a ASC, b ASC, job ASC, name ASC) LOCATE IN ("CHINA"),
+            FAMILY "primary" (a, b, job, name)
+            ) PARTITION BY LIST (a, b, job) (
+               PARTITION p2 VALUES IN ((1, 50, 'worker')) LOCATE IN ("CHINA")
+            ) LOCATE IN ("CHINA")
+
+
+# re: 1.1.2.3 alter serveral partition use all primary keys
+
+statement ok
+drop table test;
+create table test (
+    a int,
+    b int,
+    job string,
+    name string,
+    primary key(a, b, job, name)
+);
+
+statement ok
+alter table test locate in ("CHINA"), partition by list(a, b, job, name) (
+    partition p1 values in ((1, 50, 'worker', 'lisi')) locate in ("TJ"),
+    partition p2 values in ((1, 20, 'teacher', 'xiaoming')) locate in (inspur),
+    partition p3 values in ((1, 50, 'leader', 'weiguo')) locate in ("")
+);
+
+# expect
+query TT colnames
+show create table test;
+----
+table_name  create_statement
+test        CREATE TABLE test (
+            a INT NOT NULL,
+            b INT NOT NULL,
+            job STRING NOT NULL,
+            name STRING NOT NULL,
+            CONSTRAINT "primary" PRIMARY KEY (a ASC, b ASC, job ASC, name ASC),
+            FAMILY "primary" (a, b, job, name)
+            ) PARTITION BY LIST (a, b, job, name) (
+               PARTITION p1 VALUES IN ((1, 50, 'worker', 'lisi')) LOCATE IN ("TJ"),
+               PARTITION p2 VALUES IN ((1, 20, 'teacher', 'xiaoming')) LOCATE IN (inspur),
+               PARTITION p3 VALUES IN ((1, 50, 'leader', 'weiguo'))
+            ) LOCATE IN ("CHINA")
+
+query TT colnames
+show create table test with cache;
+----
+table_name  create_statement
+test        CREATE TABLE test (
+            a INT NOT NULL,
+            b INT NOT NULL,
+            job STRING NOT NULL,
+            name STRING NOT NULL,
+            CONSTRAINT "primary" PRIMARY KEY (a ASC, b ASC, job ASC, name ASC) LOCATE IN ("CHINA"),
+            FAMILY "primary" (a, b, job, name)
+            ) PARTITION BY LIST (a, b, job, name) (
+               PARTITION p1 VALUES IN ((1, 50, 'worker', 'lisi')) LOCATE IN ("TJ"),
+               PARTITION p2 VALUES IN ((1, 20, 'teacher', 'xiaoming')) LOCATE IN (inspur),
+               PARTITION p3 VALUES IN ((1, 50, 'leader', 'weiguo')) LOCATE IN ("CHINA")
+            ) LOCATE IN ("CHINA")
+
+
+# re: 1.1.2.4 alter serveral partitions use part of primary keys
+
+statement ok
+alter table test locate in ("CHINA"), partition by list(a, b) (
+    partition p4 values in ((1, 50)),
+    partition p5 values in ((3, 45)) locate in ("TEST")
+);
+
+# expect
+query TT colnames
+show create table test;
+----
+table_name  create_statement
+test        CREATE TABLE test (
+            a INT NOT NULL,
+            b INT NOT NULL,
+            job STRING NOT NULL,
+            name STRING NOT NULL,
+            CONSTRAINT "primary" PRIMARY KEY (a ASC, b ASC, job ASC, name ASC),
+            FAMILY "primary" (a, b, job, name)
+            ) PARTITION BY LIST (a, b) (
+               PARTITION p4 VALUES IN ((1, 50)),
+               PARTITION p5 VALUES IN ((3, 45)) LOCATE IN ("TEST")
+            ) LOCATE IN ("CHINA")
+
+query TT colnames
+show create table test with cache;
+----
+table_name  create_statement
+test        CREATE TABLE test (
+            a INT NOT NULL,
+            b INT NOT NULL,
+            job STRING NOT NULL,
+            name STRING NOT NULL,
+            CONSTRAINT "primary" PRIMARY KEY (a ASC, b ASC, job ASC, name ASC) LOCATE IN ("CHINA"),
+            FAMILY "primary" (a, b, job, name)
+            ) PARTITION BY LIST (a, b) (
+               PARTITION p4 VALUES IN ((1, 50)) LOCATE IN ("CHINA"),
+               PARTITION p5 VALUES IN ((3, 45)) LOCATE IN ("TEST")
+            ) LOCATE IN ("CHINA")
+
+
+# re: 1.1.2.5 alter partition by nothing(has locate in)
+
+statement ok
+alter table test partition by nothing;
+
+# expect
+query TT colnames
+show create table test;
+----
+table_name  create_statement
+test        CREATE TABLE test (
+            a INT NOT NULL,
+            b INT NOT NULL,
+            job STRING NOT NULL,
+            name STRING NOT NULL,
+            CONSTRAINT "primary" PRIMARY KEY (a ASC, b ASC, job ASC, name ASC),
+            FAMILY "primary" (a, b, job, name)
+            ) LOCATE IN ("CHINA")
+
+query TT colnames
+show create table test with cache;
+----
+table_name  create_statement
+test        CREATE TABLE test (
+            a INT NOT NULL,
+            b INT NOT NULL,
+            job STRING NOT NULL,
+            name STRING NOT NULL,
+            CONSTRAINT "primary" PRIMARY KEY (a ASC, b ASC, job ASC, name ASC) LOCATE IN ("CHINA"),
+            FAMILY "primary" (a, b, job, name)
+            ) LOCATE IN ("CHINA")
+
+
+# re: 1.1.2.6 alter partition with subpartitions
+# re: 1.1.2.6.1 one/serveral subpartitions with the same partition rules
+
+statement ok
+drop table test;
+create table test (
+    a int,
+    b int,
+    job string,
+    name string,
+    primary key(a, b, job, name)
+) locate in ("CHINA");
+
+statement ok
+alter table test partition by list(a, b) (
+    partition p1 values in ((1, 30)) partition by list(job)(
+        partition p11 values in('student') locate in ("TJ"),
+        partition p12 values in('teacher') locate in (""),
+        partition p13 values in('manager') locate in ("TEST")
+    )locate in (inspur) 
+);
+
+# expect
+query TT colnames
+show create table test;
+----
+table_name  create_statement
+test        CREATE TABLE test (
+            a INT NOT NULL,
+            b INT NOT NULL,
+            job STRING NOT NULL,
+            name STRING NOT NULL,
+            CONSTRAINT "primary" PRIMARY KEY (a ASC, b ASC, job ASC, name ASC),
+            FAMILY "primary" (a, b, job, name)
+            ) PARTITION BY LIST (a, b) (
+               PARTITION p1 VALUES IN ((1, 30)) PARTITION BY LIST (job) (
+                 PARTITION p11 VALUES IN (('student')) LOCATE IN ("TJ"),
+                 PARTITION p12 VALUES IN (('teacher')),
+                 PARTITION p13 VALUES IN (('manager')) LOCATE IN ("TEST")
+               ) LOCATE IN (inspur)
+            ) LOCATE IN ("CHINA")
+
+query TT colnames
+show create table test with cache;
+----
+table_name  create_statement
+test        CREATE TABLE test (
+            a INT NOT NULL,
+            b INT NOT NULL,
+            job STRING NOT NULL,
+            name STRING NOT NULL,
+            CONSTRAINT "primary" PRIMARY KEY (a ASC, b ASC, job ASC, name ASC) LOCATE IN ("CHINA"),
+            FAMILY "primary" (a, b, job, name)
+            ) PARTITION BY LIST (a, b) (
+               PARTITION p1 VALUES IN ((1, 30)) PARTITION BY LIST (job) (
+                 PARTITION p11 VALUES IN (('student')) LOCATE IN ("TJ"),
+                 PARTITION p12 VALUES IN (('teacher')) LOCATE IN (inspur),
+                 PARTITION p13 VALUES IN (('manager')) LOCATE IN ("TEST")
+               ) LOCATE IN (inspur)
+            ) LOCATE IN ("CHINA")
+
+
+# re: 1.1.2.6.2 serveral subpartitions with different partition rules
+# (eg. partition by list(a)(partition p1 ...partition by list(b), partition p2 ...partition by list(c)))
+
+statement ok
+drop table test;
+create table test (
+    a int,
+    job string,
+    name string,
+    primary key(a, job, name)
+) locate in ("CHINA");
+
+statement ok
+alter table test partition by list(a) (
+    partition p1 values in ((1)) partition by list(job) (
+        partition p11 values in('student') partition by list(name) (
+            partition p111 values in('zhangsan'),
+            partition p112 values in('lisi') locate in ("TEST")
+        )locate in ("TJ") ,
+        partition p12 values in('teacher') locate in ("")
+    )locate in (inspur) ,
+    partition p2 values in(2) locate in ("TJ")
+);
+
+# expect
+query TT colnames
+show create table test;
+----
+table_name  create_statement
+test        CREATE TABLE test (
+            a INT NOT NULL,
+            job STRING NOT NULL,
+            name STRING NOT NULL,
+            CONSTRAINT "primary" PRIMARY KEY (a ASC, job ASC, name ASC),
+            FAMILY "primary" (a, job, name)
+            ) PARTITION BY LIST (a) (
+               PARTITION p1 VALUES IN ((1)) PARTITION BY LIST (job) (
+                 PARTITION p11 VALUES IN (('student')) PARTITION BY LIST (name) (
+                   PARTITION p111 VALUES IN (('zhangsan')),
+                   PARTITION p112 VALUES IN (('lisi')) LOCATE IN ("TEST")
+                 ) LOCATE IN ("TJ"),
+                 PARTITION p12 VALUES IN (('teacher'))
+               ) LOCATE IN (inspur),
+               PARTITION p2 VALUES IN ((2)) LOCATE IN ("TJ")
+            ) LOCATE IN ("CHINA")
+
+query TT colnames
+show create table test with cache;
+----
+table_name  create_statement
+test        CREATE TABLE test (
+            a INT NOT NULL,
+            job STRING NOT NULL,
+            name STRING NOT NULL,
+            CONSTRAINT "primary" PRIMARY KEY (a ASC, job ASC, name ASC) LOCATE IN ("CHINA"),
+            FAMILY "primary" (a, job, name)
+            ) PARTITION BY LIST (a) (
+               PARTITION p1 VALUES IN ((1)) PARTITION BY LIST (job) (
+                 PARTITION p11 VALUES IN (('student')) PARTITION BY LIST (name) (
+                   PARTITION p111 VALUES IN (('zhangsan')) LOCATE IN ("TJ"),
+                   PARTITION p112 VALUES IN (('lisi')) LOCATE IN ("TEST")
+                 ) LOCATE IN ("TJ"),
+                 PARTITION p12 VALUES IN (('teacher')) LOCATE IN (inspur)
+               ) LOCATE IN (inspur),
+               PARTITION p2 VALUES IN ((2)) LOCATE IN ("TJ")
+            ) LOCATE IN ("CHINA")
+
+
+# re: 1.1.2 alter partition by range
+# re: 1.1.2.1 one column
+
+statement ok
+drop table test;
+create table test (
+    a int,
+    age int,
+    job string,
+    name string,
+    primary key(a, age, job, name)
+) locate in ("CHINA");
+
+# re: 1.1.2.1.1 the first column
+
+statement ok
+alter table test partition by range (a) (
+    partition p1 values from (1) to (20) locate in ("TJ")
+);
+
+# expect
+query TT colnames
+show create table test;
+----
+table_name  create_statement
+test        CREATE TABLE test (
+            a INT NOT NULL,
+            age INT NOT NULL,
+            job STRING NOT NULL,
+            name STRING NOT NULL,
+            CONSTRAINT "primary" PRIMARY KEY (a ASC, age ASC, job ASC, name ASC),
+            FAMILY "primary" (a, age, job, name)
+            ) PARTITION BY RANGE (a) (
+               PARTITION p1 VALUES FROM (1) TO (20) LOCATE IN ("TJ")
+            ) LOCATE IN ("CHINA")
+
+query TT colnames
+show create table test with cache;
+----
+table_name  create_statement
+test        CREATE TABLE test (
+            a INT NOT NULL,
+            age INT NOT NULL,
+            job STRING NOT NULL,
+            name STRING NOT NULL,
+            CONSTRAINT "primary" PRIMARY KEY (a ASC, age ASC, job ASC, name ASC) LOCATE IN ("CHINA"),
+            FAMILY "primary" (a, age, job, name)
+            ) PARTITION BY RANGE (a) (
+               PARTITION p1 VALUES FROM (1) TO (20) LOCATE IN ("TJ")
+            ) LOCATE IN ("CHINA")
+
+
+# re: 1.1.2.1.2 other column(not first column)
+
+# error
+statement error declared partition columns \(age\) do not match first 1 columns in index being partitioned \(a\)
+alter table test partition by range(age) (
+    partition p2 values from (50) to (80) locate in (inspur)
+);
+
+# expect
+query TT colnames
+show create table test;
+----
+table_name  create_statement
+test        CREATE TABLE test (
+            a INT NOT NULL,
+            age INT NOT NULL,
+            job STRING NOT NULL,
+            name STRING NOT NULL,
+            CONSTRAINT "primary" PRIMARY KEY (a ASC, age ASC, job ASC, name ASC),
+            FAMILY "primary" (a, age, job, name)
+            ) PARTITION BY RANGE (a) (
+               PARTITION p1 VALUES FROM (1) TO (20) LOCATE IN ("TJ")
+            ) LOCATE IN ("CHINA")
+
+query TT colnames
+show create table test with cache;
+----
+table_name  create_statement
+test        CREATE TABLE test (
+            a INT NOT NULL,
+            age INT NOT NULL,
+            job STRING NOT NULL,
+            name STRING NOT NULL,
+            CONSTRAINT "primary" PRIMARY KEY (a ASC, age ASC, job ASC, name ASC) LOCATE IN ("CHINA"),
+            FAMILY "primary" (a, age, job, name)
+            ) PARTITION BY RANGE (a) (
+               PARTITION p1 VALUES FROM (1) TO (20) LOCATE IN ("TJ")
+            ) LOCATE IN ("CHINA")
+
+
+# re: 1.1.2.2 serveral columns (part of primary keys)
+statement ok
+drop table test;
+create table test (
+    a int,
+    age int,
+    job string,
+    name string,
+    primary key(a, age, job, name)
+);
+
+# re: 1.1.2.2.1 serveral columns according to the order of the primary key order
+
+statement error partitions p1 and p2 overlap
+alter table test locate in ("TEST"), partition by range(a, age) (
+    partition p1 values from (1, 20) to (10, 35) locate in ("TJ"),
+    partition p2 values from (10, 20) to (20, 35) locate in ("")
+);
+
+statement ok
+alter table test locate in ("TEST"), partition by range(a, age) (
+    partition p1 values from (1, 20) to (10, 35) locate in ("TJ"),
+    partition p2 values from (10, 36) to (20, 50) locate in ("")
+);
+
+# expect
+query TT colnames
+show create table test;
+----
+table_name  create_statement
+test        CREATE TABLE test (
+            a INT NOT NULL,
+            age INT NOT NULL,
+            job STRING NOT NULL,
+            name STRING NOT NULL,
+            CONSTRAINT "primary" PRIMARY KEY (a ASC, age ASC, job ASC, name ASC),
+            FAMILY "primary" (a, age, job, name)
+            ) PARTITION BY RANGE (a, age) (
+               PARTITION p1 VALUES FROM (1, 20) TO (10, 35) LOCATE IN ("TJ"),
+               PARTITION p2 VALUES FROM (10, 36) TO (20, 50)
+            ) LOCATE IN ("TEST")
+
+query TT colnames
+show create table test with cache;
+----
+table_name  create_statement
+test        CREATE TABLE test (
+            a INT NOT NULL,
+            age INT NOT NULL,
+            job STRING NOT NULL,
+            name STRING NOT NULL,
+            CONSTRAINT "primary" PRIMARY KEY (a ASC, age ASC, job ASC, name ASC) LOCATE IN ("TEST"),
+            FAMILY "primary" (a, age, job, name)
+            ) PARTITION BY RANGE (a, age) (
+               PARTITION p1 VALUES FROM (1, 20) TO (10, 35) LOCATE IN ("TJ"),
+               PARTITION p2 VALUES FROM (10, 36) TO (20, 50) LOCATE IN ("TEST")
+            ) LOCATE IN ("TEST")
+
+
+# re: 1.1.2.2.2 serveral columns and the order don't match the primary key order
+
+statement ok
+drop table test;
+create table test (
+    a int,
+    age int,
+    job string,
+    name string,
+    primary key(a, age, job, name)
+) locate in ("CHINA");
+
+statement ok
+alter table test partition by range (a) (
+    partition p1 values from (1) to (20) locate in ("TJ")
+);
+
+statement error declared partition columns \(age, a\) do not match first 1 columns in index being partitioned \(a\)
+alter table test locate in ("CHINA"), partition by range(age, a) (
+    partition p3 values from (20, 1) to (35, 10) locate in ("TJ"),
+    partition p4 values from (20, 10) to (35, 20) locate in (inspur)
+);
+
+# expect
+query TT colnames
+show create table test;
+----
+table_name  create_statement
+test        CREATE TABLE test (
+            a INT NOT NULL,
+            age INT NOT NULL,
+            job STRING NOT NULL,
+            name STRING NOT NULL,
+            CONSTRAINT "primary" PRIMARY KEY (a ASC, age ASC, job ASC, name ASC),
+            FAMILY "primary" (a, age, job, name)
+            ) PARTITION BY RANGE (a) (
+               PARTITION p1 VALUES FROM (1) TO (20) LOCATE IN ("TJ")
+            ) LOCATE IN ("CHINA")
+
+query TT colnames
+show create table test with cache;
+----
+table_name  create_statement
+test        CREATE TABLE test (
+            a INT NOT NULL,
+            age INT NOT NULL,
+            job STRING NOT NULL,
+            name STRING NOT NULL,
+            CONSTRAINT "primary" PRIMARY KEY (a ASC, age ASC, job ASC, name ASC) LOCATE IN ("CHINA"),
+            FAMILY "primary" (a, age, job, name)
+            ) PARTITION BY RANGE (a) (
+               PARTITION p1 VALUES FROM (1) TO (20) LOCATE IN ("TJ")
+            ) LOCATE IN ("CHINA")
+
+statement ok
+create table test2 (
+    a int,
+    b int,
+    c int,
+    primary key(a, b, c)
+);
+
+statement error declared partition columns \(a, c\) do not match first 2 columns in index being partitioned \(a, b\)
+alter table test2 locate in ("TEST"), partition by list (a, c) (
+    partition p1 values in ((1, 3), (3, 6)) locate in (inspur)
+);
+
+query TT colnames
+show create table test2;
+----
+table_name  create_statement
+test2       CREATE TABLE test2 (
+            a INT NOT NULL,
+            b INT NOT NULL,
+            c INT NOT NULL,
+            CONSTRAINT "primary" PRIMARY KEY (a ASC, b ASC, c ASC),
+            FAMILY "primary" (a, b, c)
+            )
+
+query TT colnames
+show create table test2 with cache;
+----
+table_name  create_statement
+test2       CREATE TABLE test2 (
+            a INT NOT NULL,
+            b INT NOT NULL,
+            c INT NOT NULL,
+            CONSTRAINT "primary" PRIMARY KEY (a ASC, b ASC, c ASC),
+            FAMILY "primary" (a, b, c)
+            )
+
+
+# re: 1.1.2.2.3 serveral columns and the order match the primary key order but lack part of middle columns
+
+statement ok
+drop table test2;
+
+statement error declared partition columns \(a, name\) do not match first 2 columns in index being partitioned \(a, age\)
+alter table test locate in ("CHINA"),  partition by range(a, name) (
+    partition p5 values from (1, 'A') to (10, 'zzzzzzz') locate in ("TJ"),
+    partition p6 values from (11, 'A') to (20, 'zzzzzzz') locate in (inspur)
+);
+
+# expect
+query TT colnames
+show create table test;
+----
+table_name  create_statement
+test        CREATE TABLE test (
+            a INT NOT NULL,
+            age INT NOT NULL,
+            job STRING NOT NULL,
+            name STRING NOT NULL,
+            CONSTRAINT "primary" PRIMARY KEY (a ASC, age ASC, job ASC, name ASC),
+            FAMILY "primary" (a, age, job, name)
+            ) PARTITION BY RANGE (a) (
+               PARTITION p1 VALUES FROM (1) TO (20) LOCATE IN ("TJ")
+            ) LOCATE IN ("CHINA")
+
+query TT colnames
+show create table test with cache;
+----
+table_name  create_statement
+test        CREATE TABLE test (
+            a INT NOT NULL,
+            age INT NOT NULL,
+            job STRING NOT NULL,
+            name STRING NOT NULL,
+            CONSTRAINT "primary" PRIMARY KEY (a ASC, age ASC, job ASC, name ASC) LOCATE IN ("CHINA"),
+            FAMILY "primary" (a, age, job, name)
+            ) PARTITION BY RANGE (a) (
+               PARTITION p1 VALUES FROM (1) TO (20) LOCATE IN ("TJ")
+            ) LOCATE IN ("CHINA")
+
+
+
+# re: 1.1.3 (possible error) alter partition not on primary key, "neither a or b not primary keys | a is primary key but b is not"
+# like (partitio by list(a)(partition p1 ...partition by list(b)))
+
+statement ok
+drop table test;
+create table test (
+    a int,
+    b int,
+    primary key(a)
+);
+
+# a is primary key but b is not
+# error
+statement error declared partition columns \(a, b\) exceed the number of columns in index being partitioned \(a\)
+alter table test partition by list(a) (
+    partition p1 values in (1) partition by list(b) (
+        partition p11 values in (10, 20, 30) locate in ("TEST")
+    )
+);
+
+# expect
+query TT colnames
+show create table test;
+----
+table_name  create_statement
+test        CREATE TABLE test (
+            a INT NOT NULL,
+            b INT NULL,
+            CONSTRAINT "primary" PRIMARY KEY (a ASC),
+            FAMILY "primary" (a, b)
+)
+
+query TT colnames
+show create table test with cache;
+----
+table_name  create_statement
+test        CREATE TABLE test (
+            a INT NOT NULL,
+            b INT NULL,
+            CONSTRAINT "primary" PRIMARY KEY (a ASC),
+            FAMILY "primary" (a, b)
+)
+
+
+# neither a nor b not primary keys
+statement ok
+drop table test;
+create table test (
+    a int,
+    b int
+);
+
+# error
+statement error declared partition columns \(a\) do not match first 1 columns in index being partitioned \(rowid\)
+alter table test partition by list(a) (
+    partition p1 values in (1) partition by list(b) (
+        partition p11 values in (10, 20, 30) locate in ("TEST")
+    )locate in ("CHINA") 
+);
+
+
+# expect
+query TT colnames
+show create table test;
+----
+table_name  create_statement
+test        CREATE TABLE test (
+            a INT NULL,
+            b INT NULL,
+            FAMILY "primary" (a, b, rowid)
+)
+
+query TT colnames
+show create table test with cache;
+----
+table_name  create_statement
+test        CREATE TABLE test (
+            a INT NULL,
+            b INT NULL,
+            FAMILY "primary" (a, b, rowid)
+)
+
+
+
+# re: 2. original table has partitions
+
+#  re: 2.1 alter column
+
+statement ok
+drop table test;
+create table test (
+    a int,
+    age int,
+    dpt_num int,
+    name varchar(20),
+    primary key(a, age, name, dpt_num)
+);
+
+statement ok
+alter table test partition by list(a, age) (
+    partition p1 values in ((1, 20)) partition by range(name) (
+        partition p11 values from ('A') to ('zzz'),
+        partition p12 values from ('zzzA') to ('zzzzzz') locate in (inspur),
+        partition p13 values from ('zzzzzzA') to ('zzzzzzzzzz') locate in ("TJ")
+    )locate in ("TEST") 
+);
+
+
+# re: 2.1.1 change partitioned columns' name
+
+statement ok
+alter table test rename column a to id;
+
+# expect
+query TT colnames
+show create table test;
+----
+table_name  create_statement
+test        CREATE TABLE test (
+            id INT NOT NULL,
+            age INT NOT NULL,
+            dpt_num INT NOT NULL,
+            name VARCHAR(20) NOT NULL,
+            CONSTRAINT "primary" PRIMARY KEY (id ASC, age ASC, name ASC, dpt_num ASC),
+            FAMILY "primary" (id, age, dpt_num, name)
+            ) PARTITION BY LIST (id, age) (
+               PARTITION p1 VALUES IN ((1, 20)) PARTITION BY RANGE (name) (
+                 PARTITION p11 VALUES FROM ('A') TO ('zzz'),
+                 PARTITION p12 VALUES FROM ('zzzA') TO ('zzzzzz') LOCATE IN (inspur),
+                 PARTITION p13 VALUES FROM ('zzzzzzA') TO ('zzzzzzzzzz') LOCATE IN ("TJ")
+               ) LOCATE IN ("TEST")
+            )
+
+
+query TT colnames
+show create table test with cache;
+----
+table_name  create_statement
+test        CREATE TABLE test (
+            id INT NOT NULL,
+            age INT NOT NULL,
+            dpt_num INT NOT NULL,
+            name VARCHAR(20) NOT NULL,
+            CONSTRAINT "primary" PRIMARY KEY (id ASC, age ASC, name ASC, dpt_num ASC),
+            FAMILY "primary" (id, age, dpt_num, name)
+            ) PARTITION BY LIST (id, age) (
+               PARTITION p1 VALUES IN ((1, 20)) PARTITION BY RANGE (name) (
+                 PARTITION p11 VALUES FROM ('A') TO ('zzz') LOCATE IN ("TEST"),
+                 PARTITION p12 VALUES FROM ('zzzA') TO ('zzzzzz') LOCATE IN (inspur),
+                 PARTITION p13 VALUES FROM ('zzzzzzA') TO ('zzzzzzzzzz') LOCATE IN ("TJ")
+               ) LOCATE IN ("TEST")
+            )
+
+
+
+# re: 2.1.2 modify partitioned columns' type
+
+# error
+statement error unimplemented: type conversion not yet implemented
+alter table test alter id type string;
+
+statement ok
+alter table test alter name type string;
+
+# expect
+query TT colnames
+show create table test;
+----
+table_name  create_statement
+test        CREATE TABLE test (
+            id INT NOT NULL,
+            age INT NOT NULL,
+            dpt_num INT NOT NULL,
+            name STRING NOT NULL,
+            CONSTRAINT "primary" PRIMARY KEY (id ASC, age ASC, name ASC, dpt_num ASC),
+            FAMILY "primary" (id, age, dpt_num, name)
+            ) PARTITION BY LIST (id, age) (
+               PARTITION p1 VALUES IN ((1, 20)) PARTITION BY RANGE (name) (
+                 PARTITION p11 VALUES FROM ('A') TO ('zzz'),
+                 PARTITION p12 VALUES FROM ('zzzA') TO ('zzzzzz') LOCATE IN (inspur),
+                 PARTITION p13 VALUES FROM ('zzzzzzA') TO ('zzzzzzzzzz') LOCATE IN ("TJ")
+               ) LOCATE IN ("TEST")
+            )
+
+query TT colnames
+show create table test with cache;
+----
+table_name  create_statement
+test        CREATE TABLE test (
+            id INT NOT NULL,
+            age INT NOT NULL,
+            dpt_num INT NOT NULL,
+            name STRING NOT NULL,
+            CONSTRAINT "primary" PRIMARY KEY (id ASC, age ASC, name ASC, dpt_num ASC),
+            FAMILY "primary" (id, age, dpt_num, name)
+            ) PARTITION BY LIST (id, age) (
+               PARTITION p1 VALUES IN ((1, 20)) PARTITION BY RANGE (name) (
+                 PARTITION p11 VALUES FROM ('A') TO ('zzz') LOCATE IN ("TEST"),
+                 PARTITION p12 VALUES FROM ('zzzA') TO ('zzzzzz') LOCATE IN (inspur),
+                 PARTITION p13 VALUES FROM ('zzzzzzA') TO ('zzzzzzzzzz') LOCATE IN ("TJ")
+               ) LOCATE IN ("TEST")
+            )
+
+
+# re: 2.1.3 drop partitioned column(s) error
+
+
+statement ok
+drop table test;
+create table test (
+    a int,
+    age int,
+    dpt_num int,
+    name varchar(20),
+    primary key(a, age, name)
+);
+
+
+statement ok
+alter table test partition by list(a, age) (
+    partition p1 values in ((1, 20)) partition by range(name) (
+        partition p11 values from ('A') to ('zzz'),
+        partition p12 values from ('zzzA') to ('zzzzzz') locate in (inspur),
+        partition p13 values from ('zzzzzzA') to ('zzzzzzzzzz') locate in ("TJ")
+    )locate in ("TEST") 
+);
+
+statement ok
+alter table test alter name type string;
+
+# error
+statement error column "a" is referenced by the primary key
+alter table test drop column a;
+
+statement error column "age" is referenced by the primary key
+alter table test drop column age, drop column name;
+
+# expect
+query TT colnames
+show create table test;
+----
+table_name  create_statement
+test        CREATE TABLE test (
+            a INT NOT NULL,
+            age INT NOT NULL,
+            dpt_num INT NULL,
+            name STRING NOT NULL,
+            CONSTRAINT "primary" PRIMARY KEY (a ASC, age ASC, name ASC),
+            FAMILY "primary" (a, age, dpt_num, name)
+            ) PARTITION BY LIST (a, age) (
+               PARTITION p1 VALUES IN ((1, 20)) PARTITION BY RANGE (name) (
+                 PARTITION p11 VALUES FROM ('A') TO ('zzz'),
+                 PARTITION p12 VALUES FROM ('zzzA') TO ('zzzzzz') LOCATE IN (inspur),
+                 PARTITION p13 VALUES FROM ('zzzzzzA') TO ('zzzzzzzzzz') LOCATE IN ("TJ")
+               ) LOCATE IN ("TEST")
+            )
+
+query TT colnames
+show create table test with cache;
+----
+table_name  create_statement
+test        CREATE TABLE test (
+            a INT NOT NULL,
+            age INT NOT NULL,
+            dpt_num INT NULL,
+            name STRING NOT NULL,
+            CONSTRAINT "primary" PRIMARY KEY (a ASC, age ASC, name ASC),
+            FAMILY "primary" (a, age, dpt_num, name)
+            ) PARTITION BY LIST (a, age) (
+               PARTITION p1 VALUES IN ((1, 20)) PARTITION BY RANGE (name) (
+                 PARTITION p11 VALUES FROM ('A') TO ('zzz') LOCATE IN ("TEST"),
+                 PARTITION p12 VALUES FROM ('zzzA') TO ('zzzzzz') LOCATE IN (inspur),
+                 PARTITION p13 VALUES FROM ('zzzzzzA') TO ('zzzzzzzzzz') LOCATE IN ("TJ")
+               ) LOCATE IN ("TEST")
+            )
+
+
+
+
+# alter index
+
+# re: 3. alter index
+# re: 3.1 alter index list-partition
+# re: 3.1.1 just locate in on index
+
+statement ok
+drop table test;
+create table test (
+    a int,
+    b int,
+    name string
+);
+
+statement ok;
+create index idx on test (a, b);
+alter index test@idx locate in (inspur);
+
+# expect
+query TT colnames
+show create table test;
+----
+table_name  create_statement
+test        CREATE TABLE test (
+            a INT NULL,
+            b INT NULL,
+            name STRING NULL,
+            INDEX idx (a ASC, b ASC) LOCATE IN (inspur),
+            FAMILY "primary" (a, b, name, rowid)
+            )
+
+query TT colnames
+show create table test with cache;
+----
+table_name  create_statement
+test        CREATE TABLE test (
+            a INT NULL,
+            b INT NULL,
+            name STRING NULL,
+            INDEX idx (a ASC, b ASC) LOCATE IN (inspur),
+            FAMILY "primary" (a, b, name, rowid)
+            )
+
+# re: 3.1.2 one index, one list-partition not null
+
+statement ok
+drop table test;
+create table test (
+    a int,
+    b int,
+    name string
+);
+
+statement ok;
+create index idx on test (a, b);
+alter index test@idx partition by list (a) (
+    partition p1 values in (1, 2, 3, 4, 5) locate in ("TJ")
+) locate in (inspur);
+
+# expect
+query TT colnames
+show create table test;
+----
+table_name  create_statement
+test        CREATE TABLE test (
+            a INT NULL,
+            b INT NULL,
+            name STRING NULL,
+            INDEX idx (a ASC, b ASC) PARTITION BY LIST (a) (
+              PARTITION p1 VALUES IN ((1), (2), (3), (4), (5)) LOCATE IN ("TJ")
+            ) LOCATE IN (inspur),
+            FAMILY "primary" (a, b, name, rowid)
+            )
+
+query TT colnames
+show create table test with cache;
+----
+table_name  create_statement
+test        CREATE TABLE test (
+            a INT NULL,
+            b INT NULL,
+            name STRING NULL,
+            INDEX idx (a ASC, b ASC) PARTITION BY LIST (a) (
+              PARTITION p1 VALUES IN ((1), (2), (3), (4), (5)) LOCATE IN ("TJ")
+            ) LOCATE IN (inspur),
+            FAMILY "primary" (a, b, name, rowid)
+            )
+
+# re: 3.1.3 one index, one list-partition with ("")
+
+statement ok
+drop table test;
+create table test (
+    a int,
+    b int,
+    name string
+);
+
+statement ok;
+create index idx on test (a, b);
+alter index test@idx partition by list (a) (
+    partition p1 values in (1, 2, 3, 4, 5) locate in ("")
+) locate in (inspur);
+
+# expect
+query TT colnames
+show create table test;
+----
+table_name  create_statement
+test        CREATE TABLE test (
+            a INT NULL,
+            b INT NULL,
+            name STRING NULL,
+            INDEX idx (a ASC, b ASC) PARTITION BY LIST (a) (
+              PARTITION p1 VALUES IN ((1), (2), (3), (4), (5))
+            ) LOCATE IN (inspur),
+            FAMILY "primary" (a, b, name, rowid)
+            )
+
+query TT colnames
+show create table test with cache;
+----
+table_name  create_statement
+test        CREATE TABLE test (
+            a INT NULL,
+            b INT NULL,
+            name STRING NULL,
+            INDEX idx (a ASC, b ASC) PARTITION BY LIST (a) (
+              PARTITION p1 VALUES IN ((1), (2), (3), (4), (5)) LOCATE IN (inspur)
+            ) LOCATE IN (inspur),
+            FAMILY "primary" (a, b, name, rowid)
+            )
+
+# re: 3.1.4 one index, serveral list-partitions in different locate spaces
+
+statement ok
+drop table test;
+create table test (
+    a int,
+    b int,
+    name string
+);
+
+statement ok;
+create index idx on test (a, b);
+alter index test@idx partition by list (a) (
+    partition p1 values in (1, 2, 3, 4, 5) locate in ("TJ"),
+    partition p2 values in (11, 12, 13, 14, 15) locate in ("TEST"),
+    partition p3 values in (21, 22, 23, 24, 25) locate in (inspur)
+) locate in ("CHINA");
+
+# expect
+query TT colnames
+show create table test;
+----
+table_name  create_statement
+test        CREATE TABLE test (
+            a INT NULL,
+            b INT NULL,
+            name STRING NULL,
+            INDEX idx (a ASC, b ASC) PARTITION BY LIST (a) (
+              PARTITION p1 VALUES IN ((1), (2), (3), (4), (5)) LOCATE IN ("TJ"),
+              PARTITION p2 VALUES IN ((11), (12), (13), (14), (15)) LOCATE IN ("TEST"),
+              PARTITION p3 VALUES IN ((21), (22), (23), (24), (25)) LOCATE IN (inspur)
+            ) LOCATE IN ("CHINA"),
+            FAMILY "primary" (a, b, name, rowid)
+            )
+
+query TT colnames
+show create table test with cache;
+----
+table_name  create_statement
+test        CREATE TABLE test (
+            a INT NULL,
+            b INT NULL,
+            name STRING NULL,
+            INDEX idx (a ASC, b ASC) PARTITION BY LIST (a) (
+              PARTITION p1 VALUES IN ((1), (2), (3), (4), (5)) LOCATE IN ("TJ"),
+              PARTITION p2 VALUES IN ((11), (12), (13), (14), (15)) LOCATE IN ("TEST"),
+              PARTITION p3 VALUES IN ((21), (22), (23), (24), (25)) LOCATE IN (inspur)
+            ) LOCATE IN ("CHINA"),
+            FAMILY "primary" (a, b, name, rowid)
+            )
+
+# re: 3.1.5 one index, serveral list-partitions in different locate spaces with the first partition is null locate space
+
+statement ok
+drop table test;
+create table test (
+    a int,
+    b int,
+    name string
+);
+
+statement ok;
+create index idx on test (a, b);
+alter index test@idx partition by list (a) (
+    partition p1 values in (1, 2, 3, 4, 5) locate in (""),
+    partition p2 values in (11, 12, 13, 14, 15) locate in ("TEST")
+) locate in ("CHINA");
+
+# expect
+query TT colnames
+show create table test;
+----
+table_name  create_statement
+test        CREATE TABLE test (
+            a INT NULL,
+            b INT NULL,
+            name STRING NULL,
+            INDEX idx (a ASC, b ASC) PARTITION BY LIST (a) (
+              PARTITION p1 VALUES IN ((1), (2), (3), (4), (5)),
+              PARTITION p2 VALUES IN ((11), (12), (13), (14), (15)) LOCATE IN ("TEST")
+            ) LOCATE IN ("CHINA"),
+            FAMILY "primary" (a, b, name, rowid)
+            )
+
+query TT colnames
+show create table test with cache;
+----
+table_name  create_statement
+test        CREATE TABLE test (
+            a INT NULL,
+            b INT NULL,
+            name STRING NULL,
+            INDEX idx (a ASC, b ASC) PARTITION BY LIST (a) (
+              PARTITION p1 VALUES IN ((1), (2), (3), (4), (5)) LOCATE IN ("CHINA"),
+              PARTITION p2 VALUES IN ((11), (12), (13), (14), (15)) LOCATE IN ("TEST")
+            ) LOCATE IN ("CHINA"),
+            FAMILY "primary" (a, b, name, rowid)
+            )
+
+# re: 3.1.6 one index, serveral list-partitions in different locate spaces with the 2nd partition is null locate space
+
+statement ok
+drop table test;
+create table test (
+    a int,
+    b int,
+    name string
+);
+
+statement ok;
+create index idx on test (a, b);
+alter index test@idx partition by list (a) (
+    partition p1 values in (1, 2, 3, 4, 5) locate in ("TEST"),
+    partition p2 values in (11, 12, 13, 14, 15) locate in ("")
+) locate in ("CHINA");
+
+# expect
+query TT colnames
+show create table test;
+----
+table_name  create_statement
+test        CREATE TABLE test (
+            a INT NULL,
+            b INT NULL,
+            name STRING NULL,
+            INDEX idx (a ASC, b ASC) PARTITION BY LIST (a) (
+              PARTITION p1 VALUES IN ((1), (2), (3), (4), (5)) LOCATE IN ("TEST"),
+              PARTITION p2 VALUES IN ((11), (12), (13), (14), (15))
+            ) LOCATE IN ("CHINA"),
+            FAMILY "primary" (a, b, name, rowid)
+            )
+
+query TT colnames
+show create table test with cache;
+----
+table_name  create_statement
+test        CREATE TABLE test (
+            a INT NULL,
+            b INT NULL,
+            name STRING NULL,
+            INDEX idx (a ASC, b ASC) PARTITION BY LIST (a) (
+              PARTITION p1 VALUES IN ((1), (2), (3), (4), (5)) LOCATE IN ("TEST"),
+              PARTITION p2 VALUES IN ((11), (12), (13), (14), (15)) LOCATE IN ("CHINA")
+            ) LOCATE IN ("CHINA"),
+            FAMILY "primary" (a, b, name, rowid)
+            )
+
+# re: 3.2 alter index range-partition
+# re: 3.2.1 one index, one range-partition not null
+
+statement ok
+drop table test;
+create table test (
+    a int,
+    b int,
+    name string
+);
+
+statement ok;
+create index idx on test (a, b);
+alter index test@idx partition by range (a) (
+    partition p1 values from (1) to (5) locate in ("TJ")
+) locate in (inspur);
+
+# expect
+query TT colnames
+show create table test;
+----
+table_name  create_statement
+test        CREATE TABLE test (
+            a INT NULL,
+            b INT NULL,
+            name STRING NULL,
+            INDEX idx (a ASC, b ASC) PARTITION BY RANGE (a) (
+              PARTITION p1 VALUES FROM (1) TO (5) LOCATE IN ("TJ")
+            ) LOCATE IN (inspur),
+            FAMILY "primary" (a, b, name, rowid)
+            )
+
+query TT colnames
+show create table test with cache;
+----
+table_name  create_statement
+test        CREATE TABLE test (
+            a INT NULL,
+            b INT NULL,
+            name STRING NULL,
+            INDEX idx (a ASC, b ASC) PARTITION BY RANGE (a) (
+              PARTITION p1 VALUES FROM (1) TO (5) LOCATE IN ("TJ")
+            ) LOCATE IN (inspur),
+            FAMILY "primary" (a, b, name, rowid)
+            )
+
+# re: 3.2.2 one index, one range-partition with ("")
+
+statement ok
+drop table test;
+create table test (
+    a int,
+    b int,
+    name string
+);
+
+statement ok;
+create index idx on test (a, b);
+alter index test@idx partition by range (a) (
+    partition p1 values from (1) to (5) locate in ("")
+) locate in (inspur);
+
+# expect
+query TT colnames
+show create table test;
+----
+table_name  create_statement
+test        CREATE TABLE test (
+            a INT NULL,
+            b INT NULL,
+            name STRING NULL,
+            INDEX idx (a ASC, b ASC) PARTITION BY RANGE (a) (
+              PARTITION p1 VALUES FROM (1) TO (5)
+            ) LOCATE IN (inspur),
+            FAMILY "primary" (a, b, name, rowid)
+            )
+
+query TT colnames
+show create table test with cache;
+----
+table_name  create_statement
+test        CREATE TABLE test (
+            a INT NULL,
+            b INT NULL,
+            name STRING NULL,
+            INDEX idx (a ASC, b ASC) PARTITION BY RANGE (a) (
+              PARTITION p1 VALUES FROM (1) TO (5) LOCATE IN (inspur)
+            ) LOCATE IN (inspur),
+            FAMILY "primary" (a, b, name, rowid)
+            )
+
+# re: 3.2.3 one index, serveral range-partitions in different locate spaces
+
+statement ok
+drop table test;
+create table test (
+    a int,
+    b int,
+    name string
+);
+
+statement ok;
+create index idx on test (a, b);
+alter index test@idx partition by range (a) (
+    partition p1 values from (1) to (5) locate in ("TJ"),
+    partition p2 values from (11) to (15) locate in ("TEST"),
+    partition p3 values from (21) to (25) locate in (inspur)
+) locate in ("CHINA");
+
+# expect
+query TT colnames
+show create table test;
+----
+table_name  create_statement
+test        CREATE TABLE test (
+            a INT NULL,
+            b INT NULL,
+            name STRING NULL,
+            INDEX idx (a ASC, b ASC) PARTITION BY RANGE (a) (
+              PARTITION p1 VALUES FROM (1) TO (5) LOCATE IN ("TJ"),
+              PARTITION p2 VALUES FROM (11) TO (15) LOCATE IN ("TEST"),
+              PARTITION p3 VALUES FROM (21) TO (25) LOCATE IN (inspur)
+            ) LOCATE IN ("CHINA"),
+            FAMILY "primary" (a, b, name, rowid)
+            )
+
+query TT colnames
+show create table test with cache;
+----
+table_name  create_statement
+test        CREATE TABLE test (
+            a INT NULL,
+            b INT NULL,
+            name STRING NULL,
+            INDEX idx (a ASC, b ASC) PARTITION BY RANGE (a) (
+              PARTITION p1 VALUES FROM (1) TO (5) LOCATE IN ("TJ"),
+              PARTITION p2 VALUES FROM (11) TO (15) LOCATE IN ("TEST"),
+              PARTITION p3 VALUES FROM (21) TO (25) LOCATE IN (inspur)
+            ) LOCATE IN ("CHINA"),
+            FAMILY "primary" (a, b, name, rowid)
+            )
+
+# re: 3.2.4 one index, serveral range-partitions in different locate spaces with the 1st partition is null locate space
+
+statement ok
+drop table test;
+create table test (
+    a int,
+    b int,
+    name string
+);
+
+statement ok;
+create index idx on test (a, b);
+alter index test@idx partition by range (a) (
+    partition p1 values from (1) to (5) locate in (""),
+    partition p2 values from (11) to (15) locate in ("TEST")
+) locate in ("CHINA");
+
+# expect
+query TT colnames
+show create table test;
+----
+table_name  create_statement
+test        CREATE TABLE test (
+            a INT NULL,
+            b INT NULL,
+            name STRING NULL,
+            INDEX idx (a ASC, b ASC) PARTITION BY RANGE (a) (
+              PARTITION p1 VALUES FROM (1) TO (5),
+              PARTITION p2 VALUES FROM (11) TO (15) LOCATE IN ("TEST")
+            ) LOCATE IN ("CHINA"),
+            FAMILY "primary" (a, b, name, rowid)
+            )
+
+query TT colnames
+show create table test with cache;
+----
+table_name  create_statement
+test        CREATE TABLE test (
+            a INT NULL,
+            b INT NULL,
+            name STRING NULL,
+            INDEX idx (a ASC, b ASC) PARTITION BY RANGE (a) (
+              PARTITION p1 VALUES FROM (1) TO (5) LOCATE IN ("CHINA"),
+              PARTITION p2 VALUES FROM (11) TO (15) LOCATE IN ("TEST")
+            ) LOCATE IN ("CHINA"),
+            FAMILY "primary" (a, b, name, rowid)
+            )
+
+# re: 3.2.5 one index, serveral range-partitions in different locate spaces with the 2nd partition is null locate space
+
+statement ok
+drop table test;
+create table test (
+    a int,
+    b int,
+    name string
+);
+
+statement ok;
+create index idx on test (a, b);
+alter index test@idx partition by range (a) (
+    partition p1 values from (1) to (5) locate in ("TEST"),
+    partition p2 values from (11) to (15) locate in ("")
+) locate in ("CHINA");
+
+# expect
+query TT colnames
+show create table test;
+----
+table_name  create_statement
+test        CREATE TABLE test (
+            a INT NULL,
+            b INT NULL,
+            name STRING NULL,
+            INDEX idx (a ASC, b ASC) PARTITION BY RANGE (a) (
+              PARTITION p1 VALUES FROM (1) TO (5) LOCATE IN ("TEST"),
+              PARTITION p2 VALUES FROM (11) TO (15)
+            ) LOCATE IN ("CHINA"),
+            FAMILY "primary" (a, b, name, rowid)
+            )
+
+query TT colnames
+show create table test with cache;
+----
+table_name  create_statement
+test        CREATE TABLE test (
+            a INT NULL,
+            b INT NULL,
+            name STRING NULL,
+            INDEX idx (a ASC, b ASC) PARTITION BY RANGE (a) (
+              PARTITION p1 VALUES FROM (1) TO (5) LOCATE IN ("TEST"),
+              PARTITION p2 VALUES FROM (11) TO (15) LOCATE IN ("CHINA")
+            ) LOCATE IN ("CHINA"),
+            FAMILY "primary" (a, b, name, rowid)
+            )
+
+
+# re: 3.3 serveral indexs
+# re: 3.3.1 serveral indexs, all just with locate in
+
+statement ok
+drop table test;
+create table test (
+    a int,
+    b int,
+    name string
+);
+
+statement ok;
+create index idx on test (a, b) locate in ("TEST");
+create index idx2 on test (b) locate in ("TJ");
+create index idx3 on test (b, name) locate in ("TJ");
+
+# expect
+query TT colnames
+show create table test;
+----
+table_name  create_statement
+test        CREATE TABLE test (
+            a INT NULL,
+            b INT NULL,
+            name STRING NULL,
+            INDEX idx (a ASC, b ASC) LOCATE IN ("TEST"),
+            INDEX idx2 (b ASC) LOCATE IN ("TJ"),
+            INDEX idx3 (b ASC, name ASC) LOCATE IN ("TJ"),
+            FAMILY "primary" (a, b, name, rowid)
+            )
+
+query TT colnames
+show create table test with cache;
+----
+table_name  create_statement
+test        CREATE TABLE test (
+            a INT NULL,
+            b INT NULL,
+            name STRING NULL,
+            INDEX idx (a ASC, b ASC) LOCATE IN ("TEST"),
+            INDEX idx2 (b ASC) LOCATE IN ("TJ"),
+            INDEX idx3 (b ASC, name ASC) LOCATE IN ("TJ"),
+            FAMILY "primary" (a, b, name, rowid)
+            )
+
+# re: 3.3.2 serveral indexs, some with locate in, some not
+
+statement ok
+drop table test;
+create table test (
+    a int,
+    b int,
+    name string
+);
+
+statement ok;
+create index idx on test (a, b) locate in ("TEST");
+create index idx2 on test (b);
+create index idx3 on test (b, name);
+
+# expect
+query TT colnames
+show create table test;
+----
+table_name  create_statement
+test        CREATE TABLE test (
+            a INT NULL,
+            b INT NULL,
+            name STRING NULL,
+            INDEX idx (a ASC, b ASC) LOCATE IN ("TEST"),
+            INDEX idx2 (b ASC),
+            INDEX idx3 (b ASC, name ASC),
+            FAMILY "primary" (a, b, name, rowid)
+            )
+
+query TT colnames
+show create table test with cache;
+----
+table_name  create_statement
+test        CREATE TABLE test (
+            a INT NULL,
+            b INT NULL,
+            name STRING NULL,
+            INDEX idx (a ASC, b ASC) LOCATE IN ("TEST"),
+            INDEX idx2 (b ASC),
+            INDEX idx3 (b ASC, name ASC),
+            FAMILY "primary" (a, b, name, rowid)
+            )
+
+# re: 3.3.3 serveral indexs, some have partition and some not
+
+statement ok
+drop table test;
+create table test (
+    a int,
+    b int,
+    name string
+);
+
+statement ok
+create index idx on test (a, b) locate in ("TEST");
+create index idx2 on test (name) locate in ("TJ");
+
+query TT colnames
+show create table test;
+----
+table_name  create_statement
+test        CREATE TABLE test (
+            a INT NULL,
+            b INT NULL,
+            name STRING NULL,
+            INDEX idx (a ASC, b ASC) LOCATE IN ("TEST"),
+            INDEX idx2 (name ASC) LOCATE IN ("TJ"),
+            FAMILY "primary" (a, b, name, rowid)
+            )
+
+query TT colnames
+show create table test with cache;
+----
+table_name  create_statement
+test        CREATE TABLE test (
+            a INT NULL,
+            b INT NULL,
+            name STRING NULL,
+            INDEX idx (a ASC, b ASC) LOCATE IN ("TEST"),
+            INDEX idx2 (name ASC) LOCATE IN ("TJ"),
+            FAMILY "primary" (a, b, name, rowid)
+            )
+
+statement ok
+alter index test@idx partition by list (a) (
+    partition p1 values in (1, 2, 3, 4, 5),
+    partition p2 values in (11, 12, 13, 14, 15)
+);
+
+# expect
+query TT colnames
+show create table test;
+----
+table_name  create_statement
+test        CREATE TABLE test (
+            a INT NULL,
+            b INT NULL,
+            name STRING NULL,
+            INDEX idx (a ASC, b ASC) PARTITION BY LIST (a) (
+              PARTITION p1 VALUES IN ((1), (2), (3), (4), (5)),
+              PARTITION p2 VALUES IN ((11), (12), (13), (14), (15))
+            ) LOCATE IN ("TEST"),
+            INDEX idx2 (name ASC) LOCATE IN ("TJ"),
+            FAMILY "primary" (a, b, name, rowid)
+            )
+
+query TT colnames
+show create table test with cache;
+----
+table_name  create_statement
+test        CREATE TABLE test (
+            a INT NULL,
+            b INT NULL,
+            name STRING NULL,
+            INDEX idx (a ASC, b ASC) PARTITION BY LIST (a) (
+              PARTITION p1 VALUES IN ((1), (2), (3), (4), (5)) LOCATE IN ("TEST"),
+              PARTITION p2 VALUES IN ((11), (12), (13), (14), (15)) LOCATE IN ("TEST")
+            ) LOCATE IN ("TEST"),
+            INDEX idx2 (name ASC) LOCATE IN ("TJ"),
+            FAMILY "primary" (a, b, name, rowid)
+            )
+
+statement ok
+alter index test@idx;
+
+query TT colnames
+show create table test;
+----
+table_name  create_statement
+test        CREATE TABLE test (
+            a INT NULL,
+            b INT NULL,
+            name STRING NULL,
+            INDEX idx (a ASC, b ASC) PARTITION BY LIST (a) (
+              PARTITION p1 VALUES IN ((1), (2), (3), (4), (5)),
+              PARTITION p2 VALUES IN ((11), (12), (13), (14), (15))
+            ) LOCATE IN ("TEST"),
+            INDEX idx2 (name ASC) LOCATE IN ("TJ"),
+            FAMILY "primary" (a, b, name, rowid)
+            )
+
+query TT colnames
+show create table test with cache;
+----
+table_name  create_statement
+test        CREATE TABLE test (
+            a INT NULL,
+            b INT NULL,
+            name STRING NULL,
+            INDEX idx (a ASC, b ASC) PARTITION BY LIST (a) (
+              PARTITION p1 VALUES IN ((1), (2), (3), (4), (5)) LOCATE IN ("TEST"),
+              PARTITION p2 VALUES IN ((11), (12), (13), (14), (15)) LOCATE IN ("TEST")
+            ) LOCATE IN ("TEST"),
+            INDEX idx2 (name ASC) LOCATE IN ("TJ"),
+            FAMILY "primary" (a, b, name, rowid)
+            )
+
+# re: 3.3.4 serveral indexs, all have partition
+
+statement ok
+drop table test;
+create table test (
+    a int,
+    b int,
+    name string
+);
+
+statement ok;
+create index idx on test (a, b);
+create index idx2 on test (name);
+
+statement ok
+alter index test@idx partition by range (a) (
+    partition p1 values from (1) to (5) locate in (inspur)
+) locate in ("TEST");
+alter index test@idx2 partition by list (name) (
+    partition p2 values in ('zhangsan', 'lisi') locate in ("TJ"),
+    partition p3 values in ('wangwu', 'msliu') locate in ("")
+) locate in ("TJ");
+
+# expect
+query TT colnames
+show create table test;
+----
+table_name  create_statement
+test        CREATE TABLE test (
+            a INT NULL,
+            b INT NULL,
+            name STRING NULL,
+            INDEX idx (a ASC, b ASC) PARTITION BY RANGE (a) (
+              PARTITION p1 VALUES FROM (1) TO (5) LOCATE IN (inspur)
+            ) LOCATE IN ("TEST"),
+            INDEX idx2 (name ASC) PARTITION BY LIST (name) (
+              PARTITION p2 VALUES IN (('zhangsan'), ('lisi')) LOCATE IN ("TJ"),
+              PARTITION p3 VALUES IN (('wangwu'), ('msliu'))
+            ) LOCATE IN ("TJ"),
+            FAMILY "primary" (a, b, name, rowid)
+)
+
+query TT colnames
+show create table test with cache;
+----
+table_name  create_statement
+test        CREATE TABLE test (
+            a INT NULL,
+            b INT NULL,
+            name STRING NULL,
+            INDEX idx (a ASC, b ASC) PARTITION BY RANGE (a) (
+              PARTITION p1 VALUES FROM (1) TO (5) LOCATE IN (inspur)
+            ) LOCATE IN ("TEST"),
+            INDEX idx2 (name ASC) PARTITION BY LIST (name) (
+              PARTITION p2 VALUES IN (('zhangsan'), ('lisi')) LOCATE IN ("TJ"),
+              PARTITION p3 VALUES IN (('wangwu'), ('msliu')) LOCATE IN ("TJ")
+            ) LOCATE IN ("TJ"),
+            FAMILY "primary" (a, b, name, rowid)
+)
+
+
+# re: 3.4 subpartitions
+
+statement ok
+drop table test;
+create table test (
+    a int,
+    b int,
+    name string
+);
+
+statement ok;
+create index idx on test (a, b);
+
+statement ok
+alter index test@idx partition by list (a) (
+    partition p1 values in (11, 22, 33) partition by range (b) (
+        partition p11 values from (1) to (10) locate in (inspur),
+        partition p12 values from (10) to (20) locate in ("TJ")
+    )locate in ("TEST"),
+    partition p2 values in (15, 25, 35) partition by nothing,
+    partition p3 values in (20, 40, 60) locate in ("TJ")
+);
+
+# expect
+query TT colnames
+show create table test;
+----
+table_name  create_statement
+test        CREATE TABLE test (
+            a INT NULL,
+            b INT NULL,
+            name STRING NULL,
+            INDEX idx (a ASC, b ASC) PARTITION BY LIST (a) (
+              PARTITION p1 VALUES IN ((11), (22), (33)) PARTITION BY RANGE (b) (
+                PARTITION p11 VALUES FROM (1) TO (10) LOCATE IN (inspur),
+                PARTITION p12 VALUES FROM (10) TO (20) LOCATE IN ("TJ")
+              ) LOCATE IN ("TEST"),
+              PARTITION p2 VALUES IN ((15), (25), (35)),
+              PARTITION p3 VALUES IN ((20), (40), (60)) LOCATE IN ("TJ")
+            ),
+            FAMILY "primary" (a, b, name, rowid)
+)
+
+query TT colnames
+show create table test with cache;
+----
+table_name  create_statement
+test        CREATE TABLE test (
+            a INT NULL,
+            b INT NULL,
+            name STRING NULL,
+            INDEX idx (a ASC, b ASC) PARTITION BY LIST (a) (
+              PARTITION p1 VALUES IN ((11), (22), (33)) PARTITION BY RANGE (b) (
+                PARTITION p11 VALUES FROM (1) TO (10) LOCATE IN (inspur),
+                PARTITION p12 VALUES FROM (10) TO (20) LOCATE IN ("TJ")
+              ) LOCATE IN ("TEST"),
+              PARTITION p2 VALUES IN ((15), (25), (35)),
+              PARTITION p3 VALUES IN ((20), (40), (60)) LOCATE IN ("TJ")
+            ),
+            FAMILY "primary" (a, b, name, rowid)
+)
+
+
+# re: 3.5 alter index's partition with nothing
+
+statement ok
+alter index test@idx partition by nothing;
+
+# expect
+query TT colnames
+show create table test;
+----
+table_name  create_statement
+test        CREATE TABLE test (
+            a INT NULL,
+            b INT NULL,
+            name STRING NULL,
+            INDEX idx (a ASC, b ASC),
+            FAMILY "primary" (a, b, name, rowid)
+)
+
+query TT colnames
+show create table test with cache;
+----
+table_name  create_statement
+test        CREATE TABLE test (
+            a INT NULL,
+            b INT NULL,
+            name STRING NULL,
+            INDEX idx (a ASC, b ASC),
+            FAMILY "primary" (a, b, name, rowid)
+)
+
+
+# re: 4. alter partition
+# re: 4.1 alter partition by other locate space
+
+statement ok
+drop table test;
+create table test (
+    a int,
+    b int,
+    name string,
+    primary key (a, b)
+)
+partition by range (a) (
+    partition p1 values from (1) to (10) locate in (""),
+    partition p2 values from (10) to (20) locate in (inspur)
+) locate in ("CHINA");
+
+query TT colnames
+show create table test;
+----
+table_name  create_statement
+test        CREATE TABLE test (
+            a INT NOT NULL,
+            b INT NOT NULL,
+            name STRING NULL,
+            CONSTRAINT "primary" PRIMARY KEY (a ASC, b ASC),
+            FAMILY "primary" (a, b, name)
+            ) PARTITION BY RANGE (a) (
+                                 PARTITION p1 VALUES FROM (1) TO (10),
+                                 PARTITION p2 VALUES FROM (10) TO (20) LOCATE IN (inspur)
+            ) LOCATE IN ("CHINA")
+
+query TT colnames
+show create table test with cache;
+----
+table_name  create_statement
+test        CREATE TABLE test (
+            a INT NOT NULL,
+            b INT NOT NULL,
+            name STRING NULL,
+            CONSTRAINT "primary" PRIMARY KEY (a ASC, b ASC) LOCATE IN ("CHINA"),
+            FAMILY "primary" (a, b, name)
+            ) PARTITION BY RANGE (a) (
+                                 PARTITION p1 VALUES FROM (1) TO (10) LOCATE IN ("CHINA"),
+                                 PARTITION p2 VALUES FROM (10) TO (20) LOCATE IN (inspur)
+            ) LOCATE IN ("CHINA")
+
+statement ok
+alter partition p1 of table test locate in ("TJ");
+alter partition p2 of table test locate in (inspur);
+
+# expect
+query TT colnames
+show create table test;
+----
+table_name  create_statement
+test        CREATE TABLE test (
+            a INT NOT NULL,
+            b INT NOT NULL,
+            name STRING NULL,
+            CONSTRAINT "primary" PRIMARY KEY (a ASC, b ASC),
+            FAMILY "primary" (a, b, name)
+            ) PARTITION BY RANGE (a) (
+                                 PARTITION p1 VALUES FROM (1) TO (10) LOCATE IN ("TJ"),
+                                 PARTITION p2 VALUES FROM (10) TO (20) LOCATE IN (inspur)
+            ) LOCATE IN ("CHINA")
+
+query TT colnames
+show create table test with cache;
+----
+table_name  create_statement
+test        CREATE TABLE test (
+            a INT NOT NULL,
+            b INT NOT NULL,
+            name STRING NULL,
+            CONSTRAINT "primary" PRIMARY KEY (a ASC, b ASC) LOCATE IN ("CHINA"),
+            FAMILY "primary" (a, b, name)
+            ) PARTITION BY RANGE (a) (
+                                 PARTITION p1 VALUES FROM (1) TO (10) LOCATE IN ("TJ"),
+                                 PARTITION p2 VALUES FROM (10) TO (20) LOCATE IN (inspur)
+            ) LOCATE IN ("CHINA")
+
+
+# re: 4.2 alter partition with locate in ("")
+
+statement ok
+alter partition p1 of table test locate in ("");
+
+# expect
+query TT colnames
+show create table test;
+----
+table_name  create_statement
+test        CREATE TABLE test (
+            a INT NOT NULL,
+            b INT NOT NULL,
+            name STRING NULL,
+            CONSTRAINT "primary" PRIMARY KEY (a ASC, b ASC),
+            FAMILY "primary" (a, b, name)
+            ) PARTITION BY RANGE (a) (
+                                 PARTITION p1 VALUES FROM (1) TO (10),
+                                 PARTITION p2 VALUES FROM (10) TO (20) LOCATE IN (inspur)
+            ) LOCATE IN ("CHINA")
+
+query TT colnames
+show create table test with cache;
+----
+table_name  create_statement
+test        CREATE TABLE test (
+            a INT NOT NULL,
+            b INT NOT NULL,
+            name STRING NULL,
+            CONSTRAINT "primary" PRIMARY KEY (a ASC, b ASC) LOCATE IN ("CHINA"),
+            FAMILY "primary" (a, b, name)
+            ) PARTITION BY RANGE (a) (
+                                 PARTITION p1 VALUES FROM (1) TO (10) LOCATE IN ("CHINA"),
+                                 PARTITION p2 VALUES FROM (10) TO (20) LOCATE IN (inspur)
+            ) LOCATE IN ("CHINA")
+
+
+# alter partition
+
+statement ok
+create table test_drop (
+   a int,
+   b int,
+   constraint primarykey_define primary key (a)
+);
+
+statement ok
+alter table test_drop drop constraint primarykey_define;
+
+statement ok
+drop table test_drop;

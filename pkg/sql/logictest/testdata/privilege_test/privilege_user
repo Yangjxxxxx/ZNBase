@@ -1,0 +1,204 @@
+# LogicTest: local-insecure
+
+statement ok
+CREATE USER a;
+CREATE DATABASE d1;
+GRANT CREATE, USAGE ON DATABASE d1 TO a;
+GRANT CREATE ON SCHEMA d1.public TO a;
+
+userInsecure a
+
+statement ok
+USE d1;
+CREATE TABLE a(a INT);
+
+statement ok
+REVOKE GRANT OPTION FOR DROP ON TABLE a FROM a;
+
+userInsecure root
+
+statement ok
+CREATE USER u1;
+CREATE USER u2;
+CREATE DATABASE priv;
+CREATE SCHEMA priv.sch;
+
+statement ok
+REVOKE USAGE ON DATABASE priv FROM public;
+GRANT USAGE ON DATABASE priv TO public;
+GRANT USAGE ON SCHEMA priv.sch TO u1;
+
+statement error cannot drop user or role u1: grants still exist on priv.sch
+DROP USER u1;
+
+statement ok
+REVOKE ALL ON SCHEMA priv.sch FROM u1;
+REVOKE ALL ON DATABASE priv FROM u1;
+
+statement ok
+USE priv;
+
+query TTTTTT colnames
+SELECT * FROM  information_schema.schema_privileges where table_schema = 'sch';
+----
+grantor  grantee  table_catalog  table_schema  privilege_type  is_grantable
+admin    admin    priv           sch           CREATE          YES
+admin    admin    priv           sch           DROP            YES
+admin    admin    priv           sch           USAGE           YES
+admin    root     priv           sch           CREATE          YES
+admin    root     priv           sch           DROP            YES
+admin    root     priv           sch           USAGE           YES
+
+user root
+
+# test inherit
+
+statement ok
+CREATE DATABASE d3;
+CREATE SCHEMA d3.s3;
+CREATE TABLE d3.s3.t(a int);
+CREATE USER u3;
+GRANT USAGE ON DATABASE d3 TO public;
+GRANT USAGE ON SCHEMA d3.s3 TO public;
+
+userInsecure u3
+
+statement error pq: user u3 does not have SELECT privilege on relation d3.s3.t
+SELECT * FROM d3.s3.t;
+
+#test show tables privilege
+
+user root
+
+statement ok
+CREATE DATABASE d4;
+CREATE SCHEMA d4.s4;
+CREATE TABLE d4.s4.t4(a int);
+CREATE USER u4;
+GRANT USAGE ON DATABASE d4 TO public;
+GRANT SELECT ON TABLE d4.s4.t4 TO u4;
+
+userInsecure u4
+
+statement ok
+USE d4;
+
+query TT
+SHOW TABLES;
+----
+
+statement ok
+SET SEARCH_PATH TO s4;
+
+query TT
+SHOW TABLES;
+----
+
+statement error user u4 does not have privileges to access schema d4.s4
+SELECT * FROM t4;
+
+#test cascade deletion1
+
+user root
+
+statement ok
+CREATE DATABASE d5;
+CREATE USER u5;
+GRANT USAGE ON DATABASE d5 TO public;
+GRANT CREATE ON DATABASE d5 TO u5 WITH GRANT OPTION;
+
+userInsecure u5
+
+statement ok
+GRANT CREATE ON DATABASE d5 TO u5;
+
+user root
+
+statement ok
+REVOKE CREATE ON DATABASE d5 FROM u5;
+
+query TTTTT
+SELECT * FROM information_schema.database_privileges WHERE grantee = 'u5';
+----
+
+
+query TTTTT
+SHOW GRANTS ON DATABASE d5;
+----
+d5  admin  admin   CREATE  YES
+d5  admin  admin   DROP    YES
+d5  admin  admin   USAGE   YES
+d5  admin  root    CREATE  YES
+d5  admin  root    DROP    YES
+d5  admin  root    USAGE   YES
+d5  root   public  USAGE   NO
+
+#test cascade deletion2
+
+statement ok
+GRANT CREATE ON DATABASE d5 TO u1 WITH GRANT OPTION;
+
+userInsecure u1
+
+statement ok
+GRANT CREATE ON DATABASE d5 TO u2 WITH GRANT OPTION;
+
+userInsecure u2
+
+statement error privilege has loop
+GRANT CREATE ON DATABASE d5 TO u1 WITH GRANT OPTION;
+
+user root
+
+statement ok
+REVOKE CREATE ON DATABASE d5 FROM u1;
+
+query TTTTT rowsort retry
+SELECT * FROM information_schema.database_privileges;
+----
+admin  admin   priv  CREATE  YES
+admin  admin   priv  DROP    YES
+admin  admin   priv  USAGE   YES
+root   public  priv  USAGE   NO
+admin  root    priv  CREATE  YES
+admin  root    priv  DROP    YES
+admin  root    priv  USAGE   YES
+
+#test cascade deletion3
+
+statement ok
+GRANT CREATE ON DATABASE d5 TO u1 WITH GRANT OPTION;
+GRANT CREATE ON DATABASE d5 TO u2 WITH GRANT OPTION;
+
+userInsecure u1
+
+statement ok
+GRANT CREATE ON DATABASE d5 TO u2 WITH GRANT OPTION;
+
+userInsecure u2
+
+statement error privilege has loop
+GRANT CREATE ON DATABASE d5 TO u1 WITH GRANT OPTION;
+
+user root
+
+statement ok
+REVOKE CREATE ON DATABASE d5 FROM u1;
+
+query TTTTT colnames
+SHOW GRANTS ON DATABASE d5;
+----
+database_name  grantor  grantee  privilege_type  grantable
+d5             admin    admin    CREATE          YES
+d5             admin    admin    DROP            YES
+d5             admin    admin    USAGE           YES
+d5             admin    root     CREATE          YES
+d5             admin    root     DROP            YES
+d5             admin    root     USAGE           YES
+d5             root     public   USAGE           NO
+d5             root     u2       CREATE          YES
+
+#test show grants when user/role not exist
+
+statement error user or role user_not_exist does not exist
+SHOW GRANTS FOR user_not_exist;

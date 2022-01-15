@@ -1,0 +1,274 @@
+# LogicTest: local local-opt local-parallel-stmts fakedist fakedist-opt fakedist-metadata
+
+# set transaction read committed
+statement ok
+BEGIN TRANSACTION
+
+statement ok
+SET TRANSACTION ISOLATION LEVEL READ COMMITTED;COMMIT
+
+statement ok
+BEGIN TRANSACTION ISOLATION LEVEL READ COMMITTED; COMMIT
+
+statement ok
+BEGIN TRANSACTION; SET TRANSACTION ISOLATION LEVEL READ COMMITTED; COMMIT
+
+# set read committed
+statement ok
+BEGIN TRANSACTION;
+
+statement ok
+SET TRANSACTION ISOLATION LEVEL READ COMMITTED
+
+query T
+SHOW TRANSACTION ISOLATION LEVEL
+----
+READ COMMITTED
+
+statement ok
+COMMIT
+
+# set serializable
+statement ok
+BEGIN TRANSACTION;
+
+statement ok
+SET TRANSACTION ISOLATION LEVEL SERIALIZABLE
+
+query T
+SHOW TRANSACTION ISOLATION LEVEL
+----
+SERIALIZABLE
+
+statement ok
+COMMIT
+
+
+# change level from serializable to read committed
+statement ok
+BEGIN TRANSACTION;
+
+query T
+SHOW TRANSACTION ISOLATION LEVEL
+----
+SERIALIZABLE
+
+statement ok
+SET TRANSACTION ISOLATION LEVEL READ COMMITTED
+
+query T
+SHOW TRANSACTION ISOLATION LEVEL
+----
+READ COMMITTED
+
+statement ok
+COMMIT
+
+# test level read committed read and write
+statement ok
+CREATE TABLE T (
+  k VARCHAR PRIMARY KEY,
+  v VARCHAR
+)
+
+statement ok
+BEGIN TRANSACTION
+
+statement ok
+SET TRANSACTION ISOLATION LEVEL READ COMMITTED
+
+statement ok
+INSERT INTO T (k,v) VALUES ('a', 'b')
+
+query TT
+SELECT * FROM T
+----
+a b
+
+statement ok
+COMMIT TRANSACTION
+
+# test level read committed write
+statement ok
+CREATE TABLE Y (
+  k VARCHAR PRIMARY KEY,
+  v VARCHAR
+)
+
+statement ok
+BEGIN TRANSACTION
+
+statement ok
+SET TRANSACTION ISOLATION LEVEL READ COMMITTED
+
+statement ok
+INSERT INTO Y (k,v) VALUES ('a', 'b')
+
+statement ok
+COMMIT
+
+# test isolation level not change with RW (iso level: SSI RW:read only 0802)
+
+statement ok
+BEGIN TRANSACTION
+
+query T
+SHOW TRANSACTION ISOLATION LEVEL
+----
+SERIALIZABLE
+
+statement ok
+SET TRANSACTION READ ONLY
+
+query T
+SHOW TRANSACTION ISOLATION LEVEL
+----
+SERIALIZABLE
+
+statement ok
+COMMIT
+
+# test isolation level not change with RW (iso level: RC RW:read only 0802)
+
+statement ok
+BEGIN TRANSACTION
+
+statement ok
+SET TRANSACTION ISOLATION LEVEL READ COMMITTED
+
+query T
+SHOW TRANSACTION ISOLATION LEVEL
+----
+READ COMMITTED
+
+statement ok
+SET TRANSACTION READ WRITE
+
+query T
+SHOW TRANSACTION ISOLATION LEVEL
+----
+READ COMMITTED
+
+statement ok
+COMMIT
+
+# test isolation level not change with PRI (iso level: SSI PRI:low 0802)
+
+statement ok
+BEGIN TRANSACTION
+
+query T
+SHOW TRANSACTION ISOLATION LEVEL
+----
+SERIALIZABLE
+
+statement ok
+SET TRANSACTION PRIORITY LOW
+
+query T
+SHOW TRANSACTION ISOLATION LEVEL
+----
+SERIALIZABLE
+
+statement ok
+COMMIT
+
+# test isolation level not change with PRI (iso level: RC PRI:high 0802)
+statement ok
+BEGIN TRANSACTION
+
+statement ok
+SET TRANSACTION ISOLATION LEVEL READ COMMITTED
+
+query T
+SHOW TRANSACTION ISOLATION LEVEL
+----
+READ COMMITTED
+
+statement ok
+SET TRANSACTION PRIORITY HIGH
+
+query T
+SHOW TRANSACTION ISOLATION LEVEL
+----
+READ COMMITTED
+
+statement ok
+COMMIT
+
+# test session data default isolation level
+query T
+SHOW DEFAULT_TRANSACTION_ISOLATION
+----
+SERIALIZABLE
+
+statement ok
+SET SESSION CHARACTERISTICS AS TRANSACTION ISOLATION LEVEL READ COMMITTED
+
+query T
+SHOW DEFAULT_TRANSACTION_ISOLATION
+----
+READ COMMITTED
+
+# show transaction isolation level
+statement ok
+BEGIN TRANSACTION
+
+query T
+SHOW TRANSACTION ISOLATION LEVEL
+----
+READ COMMITTED
+
+statement ok
+SET TRANSACTION ISOLATION LEVEL SERIALIZABLE
+
+query T
+SHOW TRANSACTION ISOLATION LEVEL
+----
+SERIALIZABLE
+
+statement ok
+COMMIT TRANSACTION
+
+query T
+SHOW DEFAULT_TRANSACTION_ISOLATION
+----
+READ COMMITTED
+
+statement ok
+SET SESSION DEFAULT_TRANSACTION_ISOLATION='SERIALIZABLE'
+
+query T
+SHOW DEFAULT_TRANSACTION_ISOLATION
+----
+SERIALIZABLE
+
+statement ok
+BEGIN TRANSACTION
+
+query T
+SHOW TRANSACTION ISOLATION LEVEL
+----
+SERIALIZABLE
+
+statement ok
+COMMIT TRANSACTION
+
+statement ok
+SET SESSION DEFAULT_TRANSACTION_ISOLATION='READ COMMITTED'
+
+query T
+SHOW DEFAULT_TRANSACTION_ISOLATION
+----
+READ COMMITTED
+
+statement ok
+BEGIN TRANSACTION
+
+query T
+SHOW TRANSACTION ISOLATION LEVEL
+----
+READ COMMITTED
+
+statement ok
+COMMIT TRANSACTION

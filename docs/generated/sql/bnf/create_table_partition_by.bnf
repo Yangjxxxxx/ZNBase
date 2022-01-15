@@ -1,0 +1,11 @@
+create_table_stmt ::=
+	'CREATE' opt_temp 'TABLE' table_name '(' table_definition ')' opt_inherits  'PARTITION' 'BY' 'LIST' '(' name_list ')' '(' list_partitions ')' opt_locate_in
+	| 'CREATE' opt_temp 'TABLE' table_name '(' table_definition ')' opt_inherits  'PARTITION' 'BY' 'RANGE' '(' name_list ')' '(' range_partitions ')' opt_locate_in
+	| 'CREATE' opt_temp 'TABLE' table_name '(' table_definition ')' opt_inherits  'PARTITION' 'BY' 'HASH' '(' column_name ')' '(' hash_partitions ')' opt_locate_in
+	| 'CREATE' opt_temp 'TABLE' table_name '(' table_definition ')' opt_inherits  'PARTITION' 'BY' 'HASH' '(' column_name ')' '(' hash_partition_quantity ')' opt_locate_in
+	| 'CREATE' opt_temp 'TABLE' table_name '(' table_definition ')' opt_inherits  'PARTITION' 'BY' 'NOTHING' opt_locate_in
+	| 'CREATE' opt_temp 'TABLE' 'IF' 'NOT' 'EXISTS' table_name '(' table_definition ')' opt_inherits  'PARTITION' 'BY' 'LIST' '(' name_list ')' '(' list_partitions ')' opt_locate_in
+	| 'CREATE' opt_temp 'TABLE' 'IF' 'NOT' 'EXISTS' table_name '(' table_definition ')' opt_inherits  'PARTITION' 'BY' 'RANGE' '(' name_list ')' '(' range_partitions ')' opt_locate_in
+	| 'CREATE' opt_temp 'TABLE' 'IF' 'NOT' 'EXISTS' table_name '(' table_definition ')' opt_inherits  'PARTITION' 'BY' 'HASH' '(' column_name ')' '(' hash_partitions ')' opt_locate_in
+	| 'CREATE' opt_temp 'TABLE' 'IF' 'NOT' 'EXISTS' table_name '(' table_definition ')' opt_inherits  'PARTITION' 'BY' 'HASH' '(' column_name ')' '(' hash_partition_quantity ')' opt_locate_in
+	| 'CREATE' opt_temp 'TABLE' 'IF' 'NOT' 'EXISTS' table_name '(' table_definition ')' opt_inherits  'PARTITION' 'BY' 'NOTHING' opt_locate_in

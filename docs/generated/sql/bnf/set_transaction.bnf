@@ -1,0 +1,10 @@
+nonpreparable_set_stmt ::=
+	'SET' 'TRANSACTION' 'PRIORITY' 'LOW' ( ( ( ',' |  ) ( ( 'PRIORITY' ( 'LOW' | 'NORMAL' | 'HIGH' ) ) | ( 'READ' 'ONLY' | 'READ' 'WRITE' ) | as_of_clause | transaction_name_stmt | ( 'SUPDDL' | 'NOTSUPDDL' ) ) ) )*
+	| 'SET' 'TRANSACTION' 'PRIORITY' 'NORMAL' ( ( ( ',' |  ) ( ( 'PRIORITY' ( 'LOW' | 'NORMAL' | 'HIGH' ) ) | ( 'READ' 'ONLY' | 'READ' 'WRITE' ) | as_of_clause | transaction_name_stmt | ( 'SUPDDL' | 'NOTSUPDDL' ) ) ) )*
+	| 'SET' 'TRANSACTION' 'PRIORITY' 'HIGH' ( ( ( ',' |  ) ( ( 'PRIORITY' ( 'LOW' | 'NORMAL' | 'HIGH' ) ) | ( 'READ' 'ONLY' | 'READ' 'WRITE' ) | as_of_clause | transaction_name_stmt | ( 'SUPDDL' | 'NOTSUPDDL' ) ) ) )*
+	| 'SET' 'TRANSACTION' 'READ' 'ONLY' ( ( ( ',' |  ) ( ( 'PRIORITY' ( 'LOW' | 'NORMAL' | 'HIGH' ) ) | ( 'READ' 'ONLY' | 'READ' 'WRITE' ) | as_of_clause | transaction_name_stmt | ( 'SUPDDL' | 'NOTSUPDDL' ) ) ) )*
+	| 'SET' 'TRANSACTION' 'READ' 'WRITE' ( ( ( ',' |  ) ( ( 'PRIORITY' ( 'LOW' | 'NORMAL' | 'HIGH' ) ) | ( 'READ' 'ONLY' | 'READ' 'WRITE' ) | as_of_clause | transaction_name_stmt | ( 'SUPDDL' | 'NOTSUPDDL' ) ) ) )*
+	| 'SET' 'TRANSACTION' as_of_clause ( ( ( ',' |  ) ( ( 'PRIORITY' ( 'LOW' | 'NORMAL' | 'HIGH' ) ) | ( 'READ' 'ONLY' | 'READ' 'WRITE' ) | as_of_clause | transaction_name_stmt | ( 'SUPDDL' | 'NOTSUPDDL' ) ) ) )*
+	| 'SET' 'TRANSACTION' transaction_name_stmt ( ( ( ',' |  ) ( ( 'PRIORITY' ( 'LOW' | 'NORMAL' | 'HIGH' ) ) | ( 'READ' 'ONLY' | 'READ' 'WRITE' ) | as_of_clause | transaction_name_stmt | ( 'SUPDDL' | 'NOTSUPDDL' ) ) ) )*
+	| 'SET' 'TRANSACTION' 'SUPDDL' ( ( ( ',' |  ) ( ( 'PRIORITY' ( 'LOW' | 'NORMAL' | 'HIGH' ) ) | ( 'READ' 'ONLY' | 'READ' 'WRITE' ) | as_of_clause | transaction_name_stmt | ( 'SUPDDL' | 'NOTSUPDDL' ) ) ) )*
+	| 'SET' 'TRANSACTION' 'NOTSUPDDL' ( ( ( ',' |  ) ( ( 'PRIORITY' ( 'LOW' | 'NORMAL' | 'HIGH' ) ) | ( 'READ' 'ONLY' | 'READ' 'WRITE' ) | as_of_clause | transaction_name_stmt | ( 'SUPDDL' | 'NOTSUPDDL' ) ) ) )*

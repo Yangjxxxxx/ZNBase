@@ -1,0 +1,27 @@
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+  name: example-secure
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: loadgen
+    spec:
+      serviceAccountName: znbasedb
+      volumes:
+      - name: client-certs
+        secret:
+          secretName: znbasedb.client.root
+          defaultMode: 256
+      containers:
+      - name: loadgen
+        image: znbasedb/loadgen-kv:0.1
+        imagePullPolicy: IfNotPresent
+        volumeMounts:
+        - name: client-certs
+          mountPath: /znbase-certs
+        command:
+          - "/kv"
+          - "postgres://root@znbasedb-public:26257/kv?sslmode=verify-full&sslcert=/znbase-certs/client.root.crt&sslkey=/znbase-certs/client.root.key&sslrootcert=/znbase-certs/ca.crt"

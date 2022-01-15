@@ -1,0 +1,10 @@
+sleep 4s
+
+statement error pq: PLEASE SET "set session replicate_tables_in_sync='on';\" , WHEN OPERATING REPLICATION TABLE
+alter table reptest2 VALIDATE constraint fk ;
+
+statement ok
+SET SESSION replicate_tables_in_sync='on';
+
+statement ok
+alter table reptest2 add constraint fk foreign key (a) references reptest(a);

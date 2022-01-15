@@ -1,0 +1,17 @@
+create_index_stmt ::=
+	'CREATE' 'UNIQUE' 'INDEX' '...' 'STORING' '(' stored_columns ')' 'INTERLEAVE' 'IN' 'PARENT' parent_table '(' interleave_prefix ')' opt_idx_where opt_locate_in
+	| 'CREATE' 'UNIQUE' 'INDEX' '...'  'INTERLEAVE' 'IN' 'PARENT' parent_table '(' interleave_prefix ')' opt_idx_where opt_locate_in
+	| 'CREATE'  'INDEX' '...' 'STORING' '(' stored_columns ')' 'INTERLEAVE' 'IN' 'PARENT' parent_table '(' interleave_prefix ')' opt_idx_where opt_locate_in
+	| 'CREATE'  'INDEX' '...'  'INTERLEAVE' 'IN' 'PARENT' parent_table '(' interleave_prefix ')' opt_idx_where opt_locate_in
+	| 'CREATE' 'UNIQUE' 'INDEX' '...' 'STORING' '(' stored_columns ')' 'INTERLEAVE' 'IN' 'PARENT' parent_table '(' interleave_prefix ')' 'LOCAL'
+	| 'CREATE' 'UNIQUE' 'INDEX' '...'  'INTERLEAVE' 'IN' 'PARENT' parent_table '(' interleave_prefix ')' 'LOCAL'
+	| 'CREATE'  'INDEX' '...' 'STORING' '(' stored_columns ')' 'INTERLEAVE' 'IN' 'PARENT' parent_table '(' interleave_prefix ')' 'LOCAL'
+	| 'CREATE'  'INDEX' '...'  'INTERLEAVE' 'IN' 'PARENT' parent_table '(' interleave_prefix ')' 'LOCAL'
+	| 'CREATE' 'UNIQUE' 'INDEX' '...' 'STORING' '(' stored_columns ')' 'INTERLEAVE' 'IN' 'PARENT' parent_table '(' interleave_prefix ')' 'LOCAL' '(' opt_partition_list ')'
+	| 'CREATE' 'UNIQUE' 'INDEX' '...'  'INTERLEAVE' 'IN' 'PARENT' parent_table '(' interleave_prefix ')' 'LOCAL' '(' opt_partition_list ')'
+	| 'CREATE'  'INDEX' '...' 'STORING' '(' stored_columns ')' 'INTERLEAVE' 'IN' 'PARENT' parent_table '(' interleave_prefix ')' 'LOCAL' '(' opt_partition_list ')'
+	| 'CREATE'  'INDEX' '...'  'INTERLEAVE' 'IN' 'PARENT' parent_table '(' interleave_prefix ')' 'LOCAL' '(' opt_partition_list ')'
+	| 'CREATE' 'UNIQUE' 'INVERTED' 'INDEX' '...' 'STORING' '(' stored_columns ')' 'INTERLEAVE' 'IN' 'PARENT' parent_table '(' interleave_prefix ')' opt_idx_where opt_locate_in
+	| 'CREATE' 'UNIQUE' 'INVERTED' 'INDEX' '...'  'INTERLEAVE' 'IN' 'PARENT' parent_table '(' interleave_prefix ')' opt_idx_where opt_locate_in
+	| 'CREATE'  'INVERTED' 'INDEX' '...' 'STORING' '(' stored_columns ')' 'INTERLEAVE' 'IN' 'PARENT' parent_table '(' interleave_prefix ')' opt_idx_where opt_locate_in
+	| 'CREATE'  'INVERTED' 'INDEX' '...'  'INTERLEAVE' 'IN' 'PARENT' parent_table '(' interleave_prefix ')' opt_idx_where opt_locate_in

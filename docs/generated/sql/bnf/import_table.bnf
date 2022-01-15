@@ -1,0 +1,58 @@
+load_stmt ::=
+	'LOAD' load_format '(' file_location ')' 'WITH' kv_option_list
+	| 'LOAD' load_format '(' file_location ')' 'WITH' 'OPTIONS' '(' kv_option_list ')'
+	| 'LOAD' load_format '(' file_location ')' 
+	| 'LOAD' 'TABLE' table_name 'FROM' load_format '(' file_location ')' 'WITH' kv_option_list
+	| 'LOAD' 'TABLE' table_name 'FROM' load_format '(' file_location ')' 'WITH' 'OPTIONS' '(' kv_option_list ')'
+	| 'LOAD' 'TABLE' table_name 'FROM' load_format '(' file_location ')' 
+	| 'LOAD' 'TABLE' table_name 'CREATE' 'USING' file_location load_format 'DATA' '(' file_location_list ')' col_conversion_list 'WITH' kv_option_list
+	| 'LOAD' 'TABLE' table_name 'CREATE' 'USING' file_location load_format 'DATA' '(' file_location_list ')' col_conversion_list 'WITH' 'OPTIONS' '(' kv_option_list ')'
+	| 'LOAD' 'TABLE' table_name 'CREATE' 'USING' file_location load_format 'DATA' '(' file_location_list ')' col_conversion_list 
+	| 'LOAD' 'DATABASE' database_name 'CREATE' 'USING' file_location load_format 'DATA' '(' file_location_list ')' 'WITH' kv_option_list
+	| 'LOAD' 'DATABASE' database_name 'CREATE' 'USING' file_location load_format 'DATA' '(' file_location_list ')' 'WITH' 'OPTIONS' '(' kv_option_list ')'
+	| 'LOAD' 'DATABASE' database_name 'CREATE' 'USING' file_location load_format 'DATA' '(' file_location_list ')' 
+	| 'LOAD' 'SCHEMA' schema_name 'CREATE' 'USING' file_location load_format 'DATA' '(' file_location_list ')' 'WITH' kv_option_list
+	| 'LOAD' 'SCHEMA' schema_name 'CREATE' 'USING' file_location load_format 'DATA' '(' file_location_list ')' 'WITH' 'OPTIONS' '(' kv_option_list ')'
+	| 'LOAD' 'SCHEMA' schema_name 'CREATE' 'USING' file_location load_format 'DATA' '(' file_location_list ')' 
+	| 'LOAD' 'TABLE' table_name '(' table_elem_list ')' opt_partition_by opt_locate_in load_format 'DATA' '(' file_location_list ')' col_conversion_list 'WITH' kv_option_list
+	| 'LOAD' 'TABLE' table_name '(' table_elem_list ')' opt_partition_by opt_locate_in load_format 'DATA' '(' file_location_list ')' col_conversion_list 'WITH' 'OPTIONS' '(' kv_option_list ')'
+	| 'LOAD' 'TABLE' table_name '(' table_elem_list ')' opt_partition_by opt_locate_in load_format 'DATA' '(' file_location_list ')' col_conversion_list 
+	| 'LOAD' 'INTO' 'CLUSTER' 'SETTING' load_format 'DATA' '(' file_location_list ')' 'WITH' kv_option_list
+	| 'LOAD' 'INTO' 'CLUSTER' 'SETTING' load_format 'DATA' '(' file_location_list ')' 'WITH' 'OPTIONS' '(' kv_option_list ')'
+	| 'LOAD' 'INTO' 'CLUSTER' 'SETTING' load_format 'DATA' '(' file_location_list ')' 
+	| 'LOAD' 'INTO' table_name '(' insert_column_list ')' load_format 'DATA' '(' file_location_list ')' col_conversion_list 'WITH' kv_option_list
+	| 'LOAD' 'INTO' table_name '(' insert_column_list ')' load_format 'DATA' '(' file_location_list ')' col_conversion_list 'WITH' 'OPTIONS' '(' kv_option_list ')'
+	| 'LOAD' 'INTO' table_name '(' insert_column_list ')' load_format 'DATA' '(' file_location_list ')' col_conversion_list 
+	| 'LOAD' 'INTO' table_name load_format 'DATA' '(' file_location_list ')' col_conversion_list 'WITH' kv_option_list
+	| 'LOAD' 'INTO' table_name load_format 'DATA' '(' file_location_list ')' col_conversion_list 'WITH' 'OPTIONS' '(' kv_option_list ')'
+	| 'LOAD' 'INTO' table_name load_format 'DATA' '(' file_location_list ')' col_conversion_list 
+	| 'LOAD' 'TABLE' table_name 'FROM' file_location_list 'WITH' kv_option_list
+	| 'LOAD' 'TABLE' table_name 'FROM' file_location_list 'WITH' 'OPTIONS' '(' kv_option_list ')'
+	| 'LOAD' 'TABLE' table_name 'FROM' file_location_list 
+	| 'LOAD' 'VIEW' view_name 'FROM' file_location_list 'WITH' kv_option_list
+	| 'LOAD' 'VIEW' view_name 'FROM' file_location_list 'WITH' 'OPTIONS' '(' kv_option_list ')'
+	| 'LOAD' 'VIEW' view_name 'FROM' file_location_list 
+	| 'LOAD' 'SEQUENCE' sequence_name 'FROM' file_location_list 'WITH' kv_option_list
+	| 'LOAD' 'SEQUENCE' sequence_name 'FROM' file_location_list 'WITH' 'OPTIONS' '(' kv_option_list ')'
+	| 'LOAD' 'SEQUENCE' sequence_name 'FROM' file_location_list 
+	| 'LOAD' 'SCHEMA' schema_name 'FROM' file_location_list 'WITH' kv_option_list
+	| 'LOAD' 'SCHEMA' schema_name 'FROM' file_location_list 'WITH' 'OPTIONS' '(' kv_option_list ')'
+	| 'LOAD' 'SCHEMA' schema_name 'FROM' file_location_list 
+	| 'LOAD' 'DATABASE' database_name 'FROM' file_location_list 'WITH' kv_option_list
+	| 'LOAD' 'DATABASE' database_name 'FROM' file_location_list 'WITH' 'OPTIONS' '(' kv_option_list ')'
+	| 'LOAD' 'DATABASE' database_name 'FROM' file_location_list 
+	| 'LOAD' 'TABLE' table_name 'FROM' file_location_list as_of_clause 'WITH' kv_option_list
+	| 'LOAD' 'TABLE' table_name 'FROM' file_location_list as_of_clause 'WITH' 'OPTIONS' '(' kv_option_list ')'
+	| 'LOAD' 'TABLE' table_name 'FROM' file_location_list as_of_clause 
+	| 'LOAD' 'SCHEMA' schema_name 'FROM' file_location_list as_of_clause 'WITH' kv_option_list
+	| 'LOAD' 'SCHEMA' schema_name 'FROM' file_location_list as_of_clause 'WITH' 'OPTIONS' '(' kv_option_list ')'
+	| 'LOAD' 'SCHEMA' schema_name 'FROM' file_location_list as_of_clause 
+	| 'LOAD' 'DATABASE' database_name 'FROM' file_location_list as_of_clause 'WITH' kv_option_list
+	| 'LOAD' 'DATABASE' database_name 'FROM' file_location_list as_of_clause 'WITH' 'OPTIONS' '(' kv_option_list ')'
+	| 'LOAD' 'DATABASE' database_name 'FROM' file_location_list as_of_clause 
+	| 'LOAD' 'CLUSTER' file_location_list 'WITH' kv_option_list
+	| 'LOAD' 'CLUSTER' file_location_list 'WITH' 'OPTIONS' '(' kv_option_list ')'
+	| 'LOAD' 'CLUSTER' file_location_list 
+	| 'LOAD' 'CLUSTER' file_location_list as_of_clause 'WITH' kv_option_list
+	| 'LOAD' 'CLUSTER' file_location_list as_of_clause 'WITH' 'OPTIONS' '(' kv_option_list ')'
+	| 'LOAD' 'CLUSTER' file_location_list as_of_clause 

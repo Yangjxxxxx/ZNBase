@@ -1,0 +1,9 @@
+statement ok
+BEGIN;
+
+statement ok
+INSERT INTO T (a) VALUES (1);
+SELECT pg_sleep(5);
+
+statement ok
+COMMIT;

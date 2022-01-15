@@ -1,0 +1,223 @@
+# LogicTest: local
+
+statement error schema "zbdb_internal" collides with builtin schema's name
+CREATE SCHEMA zbdb_internal;
+
+statement error schema "information_schema" collides with builtin schema's name
+CREATE SCHEMA information_schema;
+
+statement error schema "pg_catalog" collides with builtin schema's name
+CREATE SCHEMA pg_catalog;
+
+statement error schema "public" in database "test" already exists
+CREATE SCHEMA public;
+
+statement error schema "system" collides with builtin schema's name
+CREATE SCHEMA system;
+
+statement ok
+CREATE SCHEMA myschema;
+
+statement error schema "myschema" in database "test" already exists
+CREATE SCHEMA myschema;
+
+statement ok
+CREATE SCHEMA IF NOT EXISTS myschema;
+
+#statement ok
+#CREATE TABLE myschema.mytable(a int);
+
+#statement ok
+#insert into myschema.mytable values(3);
+
+query TT
+SHOW SCHEMAS;
+----
+information_schema  root
+myschema            root
+pg_catalog          root
+public              root
+zbdb_internal       root
+
+#default create table in public
+
+query T
+SHOW SEARCH_PATH;
+----
+public
+
+statement ok
+create table t (a char primary key, b int);
+
+query T
+SHOW SEARCH_PATH;
+----
+public
+
+query TT
+show tables;
+----
+t  root
+
+statement ok
+SET SEARCH_PATH TO myschema;
+
+query T
+SHOW SEARCH_PATH;
+----
+myschema
+
+query TT
+show tables;
+----
+
+#create same name table in different schema
+
+statement ok
+create table t (a char primary key, b int);
+
+query TT
+show tables;
+----
+t  root
+
+# we also can set a search_path which is not exists
+statement ok
+SET SEARCH_PATH TO yourschema;
+
+query T
+SHOW SEARCH_PATH;
+----
+yourschema
+
+statement error current search_path does not match any valid schema
+SHOW TABLES;
+
+statement error cannot create "t" because the target database or schema does not exist
+CREATE TABLE t (a char primary key, b int);
+
+statement ok
+CREATE TABLE myschema.mytable (a char primary key, b int);
+
+statement ok
+CREATE TABLE public.publictable (a char primary key, b int);
+
+query T
+SHOW SEARCH_PATH;
+----
+yourschema
+
+statement ok
+CREATE SCHEMA yourschema;
+
+statement ok
+CREATE TABLE yourtable(a int);
+
+statement ok
+SET SEARCH_PATH TO public;
+
+statement ok
+insert into t values('a',1);
+
+statement ok
+SET SEARCH_PATH TO myschema;
+
+statement ok
+insert into t values('a',1);
+
+statement ok
+insert into public.publictable values('b',2);
+
+statement error relation "myschema.publictable" does not exist
+insert into myschema.publictable values('c',3);
+
+statement error relation "publictable" does not exist
+select * from publictable;
+
+statement error relation "myschema.publictable" does not exist
+drop table myschema.publictable;
+
+statement ok
+drop table if exists myschema.publictable;
+
+statement ok
+insert into myschema.t values('b',2);
+
+query TI
+select * from t;
+----
+a  1
+b  2
+
+statement ok
+insert into myschema.mytable values('b',2);
+
+statement error relation "yourtable" does not exist
+select * from yourtable;
+
+statement ok;
+SET SEARCH_PATH TO public;
+
+statement ok
+CREATE TABLE x(a int);
+
+statement ok
+CREATE SCHEMA x;
+
+statement ok
+DROP TABLE x;
+
+statement ok
+CREATE SCHEMA a;
+
+statement ok
+CREATE SCHEMA "a.a";
+
+statement ok
+CREATE TABLE a(a int);
+
+statement ok
+INSERT INTO a VALUES(1);
+
+statement ok
+CREATE TABLE a.a(b int);
+
+statement ok
+INSERT INTO a.a VALUES(2);
+
+statement error cannot create "a.a.a" because the target database or schema does not exist
+CREATE TABLE a.a.a(c int);
+
+statement ok
+CREATE TABLE "a.a".a(c int);
+
+statement ok
+INSERT INTO "a.a".a VALUES(3);
+
+query TT
+show tables;
+----
+a            root
+publictable  root
+t            root
+
+query I
+SELECT * FROM a;
+----
+1
+
+statement ok
+SET SEARCH_PATH TO a;
+
+query I
+SELECT * FROM a;
+----
+2
+
+statement ok
+SET SEARCH_PATH TO "a.a";
+
+query I
+SELECT * FROM a;
+----
+3

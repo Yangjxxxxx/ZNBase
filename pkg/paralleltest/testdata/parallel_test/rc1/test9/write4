@@ -1,0 +1,8 @@
+statement ok
+SET SESSION DEFAULT_TRANSACTION_ISOLATION='READ COMMITTED';
+
+statement ok
+SELECT pg_sleep(3);
+
+statement ok
+INSERT INTO t VALUES(8, 8);

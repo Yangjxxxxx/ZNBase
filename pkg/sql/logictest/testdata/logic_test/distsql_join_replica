@@ -1,0 +1,108 @@
+# LogicTest: 5node-dist 5node-dist-opt
+
+statement ok
+CREATE TABLE replica_a (id INT, number INT);
+
+statement ok
+INSERT INTO replica_a VALUES (1, 111), (2, 222), (3, 333), (4, 444), (5, 555), (6, 666);
+
+statement ok
+ALTER TABLE replica_a REPLICATION ENABLE;
+
+statement ok
+CREATE TABLE normal_b (id INT, age INT);
+
+statement ok
+INSERT INTO normal_b VALUES (1, 20), (2, 21), (3, 23), (4, 24), (5, 25);
+
+statement ok
+CREATE TABLE replica_c (id INT, name STRING);
+
+statement ok
+INSERT INTO replica_c VALUES (1, 'Aoa'), (2, 'Bob'), (3, 'Coc'), (4, 'Dod');
+
+statement ok
+ALTER TABLE replica_c REPLICATION ENABLE;
+
+statement ok
+CREATE TABLE normal_d (id INT, level STRING);
+
+statement ok
+INSERT INTO normal_d VALUES (1, 'A'), (2, 'B'), (3, 'C'), (4, 'D');
+
+# Need to wait for 48s, it is the copy table for range distribution
+sleep 48s
+
+query IIII
+SELECT * FROM replica_a LEFT OUTER JOIN normal_b ON replica_a.id = normal_b.id;
+----
+1 111 1    20
+2 222 2    21
+3 333 3    23
+4 444 4    24
+5 555 5    25
+6 666 NULL NULL
+
+query IIII
+SELECT * FROM normal_b LEFT OUTER JOIN replica_a ON replica_a.id = normal_b.id;
+----
+1 20 1 111
+2 21 2 222
+3 23 3 333
+4 24 4 444
+5 25 5 555
+
+query IIT
+SELECT replica_a.id, replica_a.number, replica_c.name FROM replica_a JOIN replica_c ON replica_a.id = replica_c.id;
+----
+1 111 Aoa
+2 222 Bob
+3 333 Coc
+4 444 Dod
+
+query IIIIIT
+SELECT * FROM (replica_a LEFT OUTER JOIN normal_b ON replica_a.id = normal_b.id) LEFT OUTER JOIN replica_c ON replica_a.id = replica_c.id;
+----
+1 111 1    20   1    Aoa
+2 222 2    21   2    Bob
+3 333 3    23   3    Coc
+4 444 4    24   4    Dod
+5 555 5    25   NULL NULL
+6 666 NULL NULL NULL NULL
+
+query IIIT
+SELECT * FROM normal_b LEFT OUTER JOIN replica_c ON normal_b.id = replica_c.id;
+----
+1 20 1    Aoa
+2 21 2    Bob
+3 23 3    Coc
+4 24 4    Dod
+5 25 NULL NULL
+
+query IIIIIT
+SELECT * FROM replica_a LEFT OUTER JOIN (normal_b LEFT OUTER JOIN replica_c ON normal_b.id = replica_c.id) ON replica_a.id = replica_c.id;
+----
+1 111 1    20   1    Aoa
+2 222 2    21   2    Bob
+3 333 3    23   3    Coc
+4 444 4    24   4    Dod
+5 555 NULL NULL NULL NULL
+6 666 NULL NULL NULL NULL
+
+query IIIT
+SELECT * FROM (SELECT * FROM replica_a WHERE id < 4) AS a RIGHT OUTER JOIN replica_c ON a.id = replica_c.id;
+----
+1    111  1 Aoa
+2    222  2 Bob
+3    333  3 Coc
+NULL NULL 4 Dod
+
+query IIIIITIT
+SELECT * FROM (replica_a LEFT OUTER JOIN normal_b ON replica_a.id = normal_b.id) LEFT OUTER JOIN (replica_c LEFT OUTER JOIN normal_d ON replica_c.id = normal_d.id) ON replica_a.id = replica_c.id;
+----
+1 111 1    20   1    Aoa  1    A
+2 222 2    21   2    Bob  2    B
+3 333 3    23   3    Coc  3    C
+4 444 4    24   4    Dod  4    D
+5 555 5    25   NULL NULL NULL NULL
+6 666 NULL NULL NULL NULL NULL NULL

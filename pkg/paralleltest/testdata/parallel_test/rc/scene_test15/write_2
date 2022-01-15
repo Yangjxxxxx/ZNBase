@@ -1,0 +1,14 @@
+statement ok
+SELECT pg_sleep(1);
+
+statement ok
+BEGIN TRANSACTION ISOLATION LEVEL READ COMMITTED;
+
+statement ok
+DELETE FROM T WHERE a='d';
+
+statement ok
+SELECT pg_sleep(1);
+
+statement ok
+COMMIT;

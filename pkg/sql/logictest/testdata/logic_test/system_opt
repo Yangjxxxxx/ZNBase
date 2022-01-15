@@ -1,0 +1,557 @@
+# LogicTest: local-opt fakedist-opt
+
+query TT
+SHOW DATABASES
+----
+defaultdb  root
+postgres   root
+system     node
+test       root
+
+query TT
+SHOW TABLES FROM system
+----
+authentication      NULL
+comments            NULL
+descriptor          NULL
+eventlog            NULL
+flashback           NULL
+function_namespace  NULL
+hints               NULL
+jobs                NULL
+lease               NULL
+location            NULL
+locations           NULL
+namespace           NULL
+rangelog            NULL
+role_members        NULL
+scheduled_jobs      NULL
+settings            NULL
+snapshots           NULL
+table_statistics    NULL
+triggers            NULL
+ui                  NULL
+user_options        NULL
+users               NULL
+web_sessions        NULL
+zones               NULL
+
+query ITI rowsort
+SELECT * FROM system.namespace
+----
+0   defaultdb           50
+0   postgres            52
+0   system              1
+0   test                54
+1   authentication      26
+1   comments            24
+1   descriptor          3
+1   eventlog            12
+1   flashback           29
+1   function_namespace  8
+1   hints               31
+1   jobs                15
+1   lease               11
+1   location            7
+1   locations           21
+1   namespace           2
+1   rangelog            13
+1   role_members        23
+1   scheduled_jobs      28
+1   settings            6
+1   snapshots           25
+1   table_statistics    20
+1   triggers            30
+1   ui                  14
+1   user_options        27
+1   users               4
+1   web_sessions        19
+1   zones               5
+50  public              51
+52  public              53
+54  public              55
+
+query I rowsort
+SELECT id FROM system.descriptor
+----
+4
+14
+15
+19
+20
+23
+28
+29
+30
+31
+53
+55
+1
+2
+3
+6
+7
+11
+12
+13
+24
+25
+26
+27
+50
+51
+52
+5
+8
+21
+54
+
+# Verify we can read "protobuf" columns.
+query I
+SELECT length(descriptor) * (id - 1) FROM system.descriptor WHERE id = 1
+----
+0
+
+# Verify format of system tables.
+query TTBTTTB
+SHOW COLUMNS FROM system.namespace
+----
+parentID  INT8    false  NULL  ·  {primary}  false
+name      STRING  false  NULL  ·  {primary}  false
+id        INT8    true   NULL  ·  {}         false
+
+query TTBTTTB
+SHOW COLUMNS FROM system.descriptor
+----
+id          INT8   false  NULL  ·  {primary}  false
+descriptor  BYTES  true   NULL  ·  {}         false
+
+query TTBTTTB
+SHOW COLUMNS FROM system.users
+----
+username        STRING    false  NULL             ·  {primary}  false
+hashedPassword  BYTES     true   NULL             ·  {}         false
+isRole          BOOL      false  false            ·  {}         false
+usersearchpath  STRING[]  false  ARRAY['public']  ·  {}         false
+dbsearchpath    STRING    true   NULL             ·  {}         false
+
+query TTBTTTB
+SHOW COLUMNS FROM system.zones
+----
+id      INT8   false  NULL  ·  {primary}  false
+config  BYTES  true   NULL  ·  {}         false
+
+# geo-partition feature add by gzq
+query TTBTTTB
+SHOW COLUMNS FROM system.location
+----
+id           INT8   false  NULL  ·  {primary}  false
+locationbuf  BYTES  true   NULL  ·  {}         false
+
+query TTBTTTB
+SHOW COLUMNS FROM system.lease
+----
+descID      INT8       false  NULL  ·  {primary}  false
+version     INT8       false  NULL  ·  {primary}  false
+nodeID      INT8       false  NULL  ·  {primary}  false
+expiration  TIMESTAMP  false  NULL  ·  {primary}  false
+
+query TTBTTTB
+SHOW COLUMNS FROM system.eventlog
+----
+timestamp    TIMESTAMP  false  NULL       ·  {primary}  false
+eventType    STRING     false  NULL       ·  {}         false
+targetID     INT8       false  NULL       ·  {}         false
+reportingID  INT8       false  NULL       ·  {}         false
+info         STRING     true   NULL       ·  {}         false
+uniqueID     BYTES      false  uuid_v4()  ·  {primary}  false
+
+query TTBTTTB
+SHOW COLUMNS FROM system.rangelog
+----
+timestamp     TIMESTAMP  false  NULL            ·  {primary}  false
+rangeID       INT8       false  NULL            ·  {}         false
+storeID       INT8       false  NULL            ·  {}         false
+eventType     STRING     false  NULL            ·  {}         false
+otherRangeID  INT8       true   NULL            ·  {}         false
+info          STRING     true   NULL            ·  {}         false
+uniqueID      INT8       false  unique_rowid()  ·  {primary}  false
+
+query TTBTTTB
+SHOW COLUMNS FROM system.ui
+----
+key          STRING     false  NULL  ·  {primary}  false
+value        BYTES      true   NULL  ·  {}         false
+lastUpdated  TIMESTAMP  false  NULL  ·  {}         false
+
+query TTBTTTB
+SHOW COLUMNS FROM system.jobs
+----
+id               INT8       false  unique_rowid()  ·  {primary,jobs_status_created_idx}  false
+status           STRING     false  NULL            ·  {jobs_status_created_idx}          false
+created          TIMESTAMP  false  now()           ·  {jobs_status_created_idx}          false
+payload          BYTES      false  NULL            ·  {}                                 false
+progress         BYTES      true   NULL            ·  {}                                 false
+created_by_type  STRING     true   NULL            ·  {}                                 false
+created_by_id    INT        true   NULL            ·  {}                                 false
+
+query TTBTTTB
+SHOW COLUMNS FROM system.settings
+----
+name         STRING     false  NULL               ·  {primary}  false
+value        STRING     false  NULL               ·  {}         false
+lastUpdated  TIMESTAMP  false  now()              ·  {}         false
+valueType    STRING     true   NULL               ·  {}         false
+
+query TTBTTTB
+SHOW COLUMNS FROM system.role_members
+----
+role     STRING  false  NULL  ·  {primary,role_members_role_idx,role_members_member_idx}  false
+member   STRING  false  NULL  ·  {primary,role_members_role_idx,role_members_member_idx}  false
+isAdmin  BOOL    false  NULL  ·  {}                                                       false
+
+
+# Verify default privileges on system tables.
+query TTTTT
+SHOW GRANTS ON DATABASE system
+----
+system  admin  admin  USAGE  YES
+system  admin  root   USAGE  YES
+
+query TTTTTTTT rowsort
+SHOW GRANTS ON system.*
+----
+system  public  authentication      NULL  admin  admin   DELETE  YES
+system  public  authentication      NULL  admin  admin   INSERT  YES
+system  public  authentication      NULL  admin  admin   SELECT  YES
+system  public  authentication      NULL  admin  admin   UPDATE  YES
+system  public  authentication      NULL  admin  root    DELETE  YES
+system  public  authentication      NULL  admin  root    INSERT  YES
+system  public  authentication      NULL  admin  root    SELECT  YES
+system  public  authentication      NULL  admin  root    UPDATE  YES
+system  public  comments            NULL  admin  admin   DELETE  YES
+system  public  comments            NULL  admin  admin   INSERT  YES
+system  public  comments            NULL  admin  admin   SELECT  YES
+system  public  comments            NULL  admin  admin   UPDATE  YES
+system  public  comments            NULL  admin  public  DELETE  YES
+system  public  comments            NULL  admin  public  INSERT  YES
+system  public  comments            NULL  admin  public  SELECT  YES
+system  public  comments            NULL  admin  public  UPDATE  YES
+system  public  comments            NULL  admin  root    DELETE  YES
+system  public  comments            NULL  admin  root    INSERT  YES
+system  public  comments            NULL  admin  root    SELECT  YES
+system  public  comments            NULL  admin  root    UPDATE  YES
+system  public  descriptor          NULL  admin  admin   SELECT  YES
+system  public  descriptor          NULL  admin  root    SELECT  YES
+system  public  eventlog            NULL  admin  admin   DELETE  YES
+system  public  eventlog            NULL  admin  admin   INSERT  YES
+system  public  eventlog            NULL  admin  admin   SELECT  YES
+system  public  eventlog            NULL  admin  admin   UPDATE  YES
+system  public  eventlog            NULL  admin  root    DELETE  YES
+system  public  eventlog            NULL  admin  root    INSERT  YES
+system  public  eventlog            NULL  admin  root    SELECT  YES
+system  public  eventlog            NULL  admin  root    UPDATE  YES
+system  public  flashback           NULL  admin  admin   DELETE  YES
+system  public  flashback           NULL  admin  admin   INSERT  YES
+system  public  flashback           NULL  admin  admin   SELECT  YES
+system  public  flashback           NULL  admin  admin   UPDATE  YES
+system  public  flashback           NULL  admin  public  DELETE  YES
+system  public  flashback           NULL  admin  public  INSERT  YES
+system  public  flashback           NULL  admin  public  SELECT  YES
+system  public  flashback           NULL  admin  public  UPDATE  YES
+system  public  flashback           NULL  admin  root    DELETE  YES
+system  public  flashback           NULL  admin  root    INSERT  YES
+system  public  flashback           NULL  admin  root    SELECT  YES
+system  public  flashback           NULL  admin  root    UPDATE  YES
+system  public  function_namespace  NULL  admin  admin   SELECT  YES
+system  public  function_namespace  NULL  admin  root    SELECT  YES
+system  public  hints               NULL  admin  admin   DELETE  YES
+system  public  hints               NULL  admin  admin   INSERT  YES
+system  public  hints               NULL  admin  admin   SELECT  YES
+system  public  hints               NULL  admin  admin   UPDATE  YES
+system  public  hints               NULL  admin  root    DELETE  YES
+system  public  hints               NULL  admin  root    INSERT  YES
+system  public  hints               NULL  admin  root    SELECT  YES
+system  public  hints               NULL  admin  root    UPDATE  YES
+system  public  jobs                NULL  admin  admin   DELETE  YES
+system  public  jobs                NULL  admin  admin   INSERT  YES
+system  public  jobs                NULL  admin  admin   SELECT  YES
+system  public  jobs                NULL  admin  admin   UPDATE  YES
+system  public  jobs                NULL  admin  root    DELETE  YES
+system  public  jobs                NULL  admin  root    INSERT  YES
+system  public  jobs                NULL  admin  root    SELECT  YES
+system  public  jobs                NULL  admin  root    UPDATE  YES
+system  public  lease               NULL  admin  admin   DELETE  YES
+system  public  lease               NULL  admin  admin   INSERT  YES
+system  public  lease               NULL  admin  admin   SELECT  YES
+system  public  lease               NULL  admin  admin   UPDATE  YES
+system  public  lease               NULL  admin  root    DELETE  YES
+system  public  lease               NULL  admin  root    INSERT  YES
+system  public  lease               NULL  admin  root    SELECT  YES
+system  public  lease               NULL  admin  root    UPDATE  YES
+system  public  location            NULL  admin  admin   DELETE  YES
+system  public  location            NULL  admin  admin   INSERT  YES
+system  public  location            NULL  admin  admin   SELECT  YES
+system  public  location            NULL  admin  admin   UPDATE  YES
+system  public  location            NULL  admin  root    DELETE  YES
+system  public  location            NULL  admin  root    INSERT  YES
+system  public  location            NULL  admin  root    SELECT  YES
+system  public  location            NULL  admin  root    UPDATE  YES
+system  public  locations           NULL  admin  admin   DELETE  YES
+system  public  locations           NULL  admin  admin   INSERT  YES
+system  public  locations           NULL  admin  admin   SELECT  YES
+system  public  locations           NULL  admin  admin   UPDATE  YES
+system  public  locations           NULL  admin  root    DELETE  YES
+system  public  locations           NULL  admin  root    INSERT  YES
+system  public  locations           NULL  admin  root    SELECT  YES
+system  public  locations           NULL  admin  root    UPDATE  YES
+system  public  namespace           NULL  admin  admin   SELECT  YES
+system  public  namespace           NULL  admin  root    SELECT  YES
+system  public  rangelog            NULL  admin  admin   DELETE  YES
+system  public  rangelog            NULL  admin  admin   INSERT  YES
+system  public  rangelog            NULL  admin  admin   SELECT  YES
+system  public  rangelog            NULL  admin  admin   UPDATE  YES
+system  public  rangelog            NULL  admin  root    DELETE  YES
+system  public  rangelog            NULL  admin  root    INSERT  YES
+system  public  rangelog            NULL  admin  root    SELECT  YES
+system  public  rangelog            NULL  admin  root    UPDATE  YES
+system  public  role_members        NULL  admin  admin   DELETE  YES
+system  public  role_members        NULL  admin  admin   INSERT  YES
+system  public  role_members        NULL  admin  admin   SELECT  YES
+system  public  role_members        NULL  admin  admin   UPDATE  YES
+system  public  role_members        NULL  admin  root    DELETE  YES
+system  public  role_members        NULL  admin  root    INSERT  YES
+system  public  role_members        NULL  admin  root    SELECT  YES
+system  public  role_members        NULL  admin  root    UPDATE  YES
+system  public  scheduled_jobs      NULL  admin  admin   DELETE  YES
+system  public  scheduled_jobs      NULL  admin  admin   INSERT  YES
+system  public  scheduled_jobs      NULL  admin  admin   SELECT  YES
+system  public  scheduled_jobs      NULL  admin  admin   UPDATE  YES
+system  public  scheduled_jobs      NULL  admin  root    DELETE  YES
+system  public  scheduled_jobs      NULL  admin  root    INSERT  YES
+system  public  scheduled_jobs      NULL  admin  root    SELECT  YES
+system  public  scheduled_jobs      NULL  admin  root    UPDATE  YES
+system  public  settings            NULL  admin  admin   DELETE  YES
+system  public  settings            NULL  admin  admin   INSERT  YES
+system  public  settings            NULL  admin  admin   SELECT  YES
+system  public  settings            NULL  admin  admin   UPDATE  YES
+system  public  settings            NULL  admin  root    DELETE  YES
+system  public  settings            NULL  admin  root    INSERT  YES
+system  public  settings            NULL  admin  root    SELECT  YES
+system  public  settings            NULL  admin  root    UPDATE  YES
+system  public  snapshots           NULL  admin  admin   DELETE  YES
+system  public  snapshots           NULL  admin  admin   INSERT  YES
+system  public  snapshots           NULL  admin  admin   SELECT  YES
+system  public  snapshots           NULL  admin  admin   UPDATE  YES
+system  public  snapshots           NULL  admin  public  DELETE  YES
+system  public  snapshots           NULL  admin  public  INSERT  YES
+system  public  snapshots           NULL  admin  public  SELECT  YES
+system  public  snapshots           NULL  admin  public  UPDATE  YES
+system  public  snapshots           NULL  admin  root    DELETE  YES
+system  public  snapshots           NULL  admin  root    INSERT  YES
+system  public  snapshots           NULL  admin  root    SELECT  YES
+system  public  snapshots           NULL  admin  root    UPDATE  YES
+system  public  table_statistics    NULL  admin  admin   DELETE  YES
+system  public  table_statistics    NULL  admin  admin   INSERT  YES
+system  public  table_statistics    NULL  admin  admin   SELECT  YES
+system  public  table_statistics    NULL  admin  admin   UPDATE  YES
+system  public  table_statistics    NULL  admin  root    DELETE  YES
+system  public  table_statistics    NULL  admin  root    INSERT  YES
+system  public  table_statistics    NULL  admin  root    SELECT  YES
+system  public  table_statistics    NULL  admin  root    UPDATE  YES
+system  public  triggers            NULL  admin  admin   DELETE  YES
+system  public  triggers            NULL  admin  admin   INSERT  YES
+system  public  triggers            NULL  admin  admin   SELECT  YES
+system  public  triggers            NULL  admin  admin   UPDATE  YES
+system  public  triggers            NULL  admin  root    DELETE  YES
+system  public  triggers            NULL  admin  root    INSERT  YES
+system  public  triggers            NULL  admin  root    SELECT  YES
+system  public  triggers            NULL  admin  root    UPDATE  YES
+system  public  ui                  NULL  admin  admin   DELETE  YES
+system  public  ui                  NULL  admin  admin   INSERT  YES
+system  public  ui                  NULL  admin  admin   SELECT  YES
+system  public  ui                  NULL  admin  admin   UPDATE  YES
+system  public  ui                  NULL  admin  root    DELETE  YES
+system  public  ui                  NULL  admin  root    INSERT  YES
+system  public  ui                  NULL  admin  root    SELECT  YES
+system  public  ui                  NULL  admin  root    UPDATE  YES
+system  public  user_options        NULL  admin  admin   DELETE  YES
+system  public  user_options        NULL  admin  admin   INSERT  YES
+system  public  user_options        NULL  admin  admin   SELECT  YES
+system  public  user_options        NULL  admin  admin   UPDATE  YES
+system  public  user_options        NULL  admin  root    DELETE  YES
+system  public  user_options        NULL  admin  root    INSERT  YES
+system  public  user_options        NULL  admin  root    SELECT  YES
+system  public  user_options        NULL  admin  root    UPDATE  YES
+system  public  users               NULL  admin  admin   DELETE  YES
+system  public  users               NULL  admin  admin   INSERT  YES
+system  public  users               NULL  admin  admin   SELECT  YES
+system  public  users               NULL  admin  admin   UPDATE  YES
+system  public  users               NULL  admin  root    DELETE  YES
+system  public  users               NULL  admin  root    INSERT  YES
+system  public  users               NULL  admin  root    SELECT  YES
+system  public  users               NULL  admin  root    UPDATE  YES
+system  public  web_sessions        NULL  admin  admin   DELETE  YES
+system  public  web_sessions        NULL  admin  admin   INSERT  YES
+system  public  web_sessions        NULL  admin  admin   SELECT  YES
+system  public  web_sessions        NULL  admin  admin   UPDATE  YES
+system  public  web_sessions        NULL  admin  root    DELETE  YES
+system  public  web_sessions        NULL  admin  root    INSERT  YES
+system  public  web_sessions        NULL  admin  root    SELECT  YES
+system  public  web_sessions        NULL  admin  root    UPDATE  YES
+system  public  zones               NULL  admin  admin   DELETE  YES
+system  public  zones               NULL  admin  admin   INSERT  YES
+system  public  zones               NULL  admin  admin   SELECT  YES
+system  public  zones               NULL  admin  admin   UPDATE  YES
+system  public  zones               NULL  admin  root    DELETE  YES
+system  public  zones               NULL  admin  root    INSERT  YES
+system  public  zones               NULL  admin  root    SELECT  YES
+system  public  zones               NULL  admin  root    UPDATE  YES
+
+statement error user root does not have DROP privilege on database system
+ALTER DATABASE system RENAME TO not_system
+
+statement error user root does not have DROP privilege on database system
+DROP DATABASE system
+
+# Users cannot exceed allowed privileges on system objects.
+statement error user root does not have .* privilege on database system
+GRANT USAGE, CREATE, DROP ON DATABASE system TO testuser
+
+statement error user root does not have CREATE privilege on database system
+GRANT USAGE, CREATE ON DATABASE system TO testuser WITH GRANT OPTION
+
+statement ok
+GRANT USAGE ON DATABASE system TO testuser WITH GRANT OPTION
+
+statement ok
+GRANT ALL ON system.namespace TO testuser
+
+statement error pq: invalid privilege type USAGE for table
+GRANT USAGE, CREATE ON system.namespace TO testuser WITH GRANT OPTION
+
+statement ok
+GRANT SELECT ON system.namespace TO testuser WITH GRANT OPTION
+
+statement ok
+GRANT SELECT ON system.descriptor TO testuser
+
+# Superusers must have exactly the allowed privileges.
+statement ok
+GRANT ALL ON DATABASE system TO root
+
+statement error pq: invalid privilege type DELETE for database
+GRANT DELETE, INSERT ON DATABASE system TO root
+
+statement ok
+GRANT ALL ON system.namespace TO root
+
+statement error user root does not have .* privilege on relation system.public.descriptor
+GRANT DELETE, INSERT ON system.descriptor TO root
+
+statement ok
+GRANT ALL ON system.descriptor TO root
+
+statement ok
+REVOKE USAGE ON DATABASE system FROM root
+
+statement ok
+REVOKE SELECT ON system.namespace FROM root
+
+statement ok
+REVOKE ALL ON system.namespace FROM root
+
+statement ok
+GRANT ALL ON DATABASE system TO admin
+
+statement error pq: invalid privilege type DELETE for database
+GRANT DELETE, INSERT ON DATABASE system TO admin
+
+statement ok
+GRANT ALL ON system.namespace TO admin
+
+statement error user root does not have .* privilege on relation system.public.descriptor
+GRANT DELETE, INSERT ON system.descriptor TO admin
+
+statement ok
+GRANT ALL ON system.descriptor TO admin
+
+statement ok
+REVOKE USAGE ON DATABASE system FROM admin
+
+statement error pq: invalid privilege type USAGE for table
+REVOKE USAGE ON system.namespace FROM admin
+
+statement ok
+REVOKE ALL ON system.namespace FROM admin
+
+# Some tables (we test system.lease here) used to allow multiple privilege sets for
+# backwards compatibility, and superusers were allowed very wide privileges.
+# We make sure this is no longer the case.
+statement ok
+GRANT ALL ON system.lease TO testuser
+
+statement error pq: invalid privilege type CREATE for table
+GRANT CREATE on system.lease to root
+
+statement error pq: invalid privilege type CREATE for table
+GRANT CREATE on system.lease to admin
+
+statement error pq: invalid privilege type CREATE for table
+GRANT CREATE on system.lease to testuser
+
+statement ok
+GRANT ALL ON system.lease TO root
+
+statement ok
+GRANT ALL ON system.lease TO admin
+
+statement ok
+GRANT ALL ON system.lease TO testuser
+
+# NB: the "order by" is necessary or this test is flaky under DistSQL.
+# This is somewhat surprising.
+query T
+SELECT name
+FROM system.settings
+WHERE name != 'sql.defaults.distsql'
+AND name != 'sql.stats.automatic_collection.enabled'
+ORDER BY name
+----
+cluster.secret
+diagnostics.reporting.enabled
+kv.range_merge.queue_enabled
+sql.stats.automatic_collection.min_stale_rows
+trace.debug.enable
+version
+
+statement ok
+INSERT INTO system.settings (name, value) VALUES ('somesetting', 'somevalue')
+
+query TT
+SELECT name, value
+FROM system.settings
+WHERE name NOT IN ('version', 'sql.defaults.distsql', 'cluster.secret',
+  'sql.stats.automatic_collection.enabled')
+ORDER BY name
+----
+diagnostics.reporting.enabled                  true
+kv.range_merge.queue_enabled                   false
+somesetting                                    somevalue
+sql.stats.automatic_collection.min_stale_rows  5
+trace.debug.enable                             false
+
+user testuser
+
+statement error user testuser does not have SELECT privilege on relation system.public.settings
+select name from system.settings
+
+statement error pq: user testuser does not have INSERT privilege on relation system.public.settings
+UPSERT INTO system.settings (name, value) VALUES ('somesetting', 'somevalueother')
+
+user root
+
+query TTB
+SELECT * from system.role_members
+----
+admin  root  true

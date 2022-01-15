@@ -1,0 +1,91 @@
+# LogicTest: local-opt
+
+statement ok
+set cluster setting sql.opt.operator.hashjoiner=off;
+
+statement ok
+set cluster setting sql.opt.operator.tablereader=off;
+
+statement ok
+set cluster setting sql.opt.operator.sorter=off;
+
+statement ok
+set cluster setting sql.distsql.temp_storage.workmem='1b';
+
+statement ok
+set cluster setting sql.distsql.temp_file.experimental=on;
+
+statement ok
+create table t(a int,b int,c int,d int,e int)
+
+statement ok
+insert into t values(1,1,1,1,1),(4,4,4,4,4),(3,3,3,3,3),(9,9,9,9,9),(5,5,5,5,5),(6,6,6,6,6),(2,2,2,2,2),(10,10,10,10,10)
+
+query IIIII
+select * from t order by a
+----
+1   1   1   1   1
+2   2   2   2   2
+3   3   3   3   3
+4   4   4   4   4
+5   5   5   5   5
+6   6   6   6   6
+9   9   9   9   9
+10  10  10  10  10
+
+query IIII
+select b,c,d,e from t order by a
+----
+1   1   1   1
+2   2   2   2
+3   3   3   3
+4   4   4   4
+5   5   5   5
+6   6   6   6
+9   9   9   9
+10  10  10  10
+
+statement ok
+create table tt (a int,b int,c int,d int,e int)
+
+statement ok
+insert into tt values(1,1,1,1,1),(9,9,9,9,9),(5,5,5,5,5),(6,6,6,6,6),(2,2,2,2,2),(3,3,3,3,3),(4,4,4,4,4),(7,7,7,7,7),(8,8,8,8,8)
+
+query IIIIIIIIII
+select * from t join tt on t.a=tt.a
+----
+1  1  1  1  1  1  1  1  1  1
+4  4  4  4  4  4  4  4  4  4
+3  3  3  3  3  3  3  3  3  3
+9  9  9  9  9  9  9  9  9  9
+5  5  5  5  5  5  5  5  5  5
+6  6  6  6  6  6  6  6  6  6
+2  2  2  2  2  2  2  2  2  2
+
+query IIIIIIIIII
+select * from t full outer join tt on t.a=tt.a
+----
+1     1     1     1     1     1     1     1     1     1
+4     4     4     4     4     4     4     4     4     4
+3     3     3     3     3     3     3     3     3     3
+9     9     9     9     9     9     9     9     9     9
+5     5     5     5     5     5     5     5     5     5
+6     6     6     6     6     6     6     6     6     6
+2     2     2     2     2     2     2     2     2     2
+10    10    10    10    10    NULL  NULL  NULL  NULL  NULL
+NULL  NULL  NULL  NULL  NULL  7     7     7     7     7
+NULL  NULL  NULL  NULL  NULL  8     8     8     8     8
+
+query TTT
+EXPLAIN select * from t full outer join tt on t.a=tt.a
+----
+hash-join  ·             ·
+ │         type          full outer
+ │         equality      (a) = (a)
+ │         can parallel  true
+ ├── scan  ·             ·
+ │         table         t@primary
+ │         spans         ALL
+ └── scan  ·             ·
+·          table         tt@primary
+·          spans         ALL

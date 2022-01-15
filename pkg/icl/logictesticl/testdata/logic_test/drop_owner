@@ -1,0 +1,526 @@
+# LogicTest: local-insecure
+
+################
+#Drop Owner Test
+#Test 1: drop database owner u1
+statement ok
+CREATE USER u1;
+
+statement ok
+GRANT admin TO u1;
+
+userInsecure u1
+
+statement ok
+CREATE DATABASE dbt;
+
+userInsecure root
+
+statement error pq: role u1 cannot be dropped because some objects depend on it.*\n.*owner of database dbt.*\n.*owner of schema dbt.public
+DROP USER u1;
+
+statement ok
+DROP DATABASE dbt;
+
+#Test 2: drop schema owner u1
+userInsecure u1
+
+statement ok
+CREATE SCHEMA sch;
+
+userInsecure root
+
+statement error pq: role u1 cannot be dropped because some objects depend on it.*\n.*owner of schema test.sch
+DROP USER u1;
+
+statement ok
+DROP SCHEMA sch;
+DROP USER u1;
+
+#Test 3: drop table owner u1
+userInsecure root
+
+statement ok
+CREATE USER u1;
+GRANT USAGE, CREATE ON DATABASE test to u1;
+GRANT CREATE ON SCHEMA public to u1;
+
+userInsecure u1
+
+statement ok
+CREATE TABLE t (id INT);
+
+userInsecure root
+
+statement error cannot drop user or role u1: grants still exist on test, test.public
+DROP USER u1;
+
+statement ok
+REVOKE USAGE, CREATE ON DATABASE test FROM u1;
+REVOKE CREATE ON SCHEMA public FROM u1;
+
+statement error role u1 cannot be dropped because some objects depend on it.*\n.*owner of table t
+DROP USER u1;
+
+statement ok
+DROP TABLE t;
+DROP USER u1;
+
+###########################
+#Rename database test
+#Test 1:User with only DROP permission cannot rename database
+userInsecure root
+
+statement ok
+CREATE USER u1;
+CREATE DATABASE db1;
+GRANT USAGE ON DATABASE db1 to u1;
+GRANT DROP ON DATABASE db1 to u1;
+
+userInsecure u1
+
+statement error pq: only users with the admin role are allowed to ALTER DATABASE ... RENAME
+ALTER DATABASE db1 RENAME TO db111;
+
+#Test 2:User with ADMIN role and DROP permission can rename normal database
+userInsecure root
+
+statement ok
+GRANT admin to u1;
+
+userInsecure u1
+
+statement ok
+ALTER DATABASE db1 RENAME TO db2;
+
+#Test 3:User with ADMIN role and DROP permission cannot rename system database
+statement error user u1 does not have DROP privilege on database system
+ALTER DATABASE system RENAME TO db1;
+
+userInsecure root
+
+statement error user root does not have DROP privilege on database system
+GRANT DROP ON DATABASE system TO u1;
+
+statement ok
+DROP DATABASE db2;
+DROP USER u1;
+
+
+##################################
+#Root revoke owner privileges test, nothing changed
+userInsecure root
+
+statement ok
+CREATE USER u1;
+GRANT USAGE, CREATE ON DATABASE test TO u1;
+GRANT CREATE ON SCHEMA public TO u1;
+
+userInsecure u1
+
+statement ok
+CREATE TABLE t (id int, name string);
+INSERT INTO t VALUES (1, 'A');
+
+query IT
+SELECT * FROM t;
+----
+1 A
+
+userInsecure root
+
+statement ok
+REVOKE SELECT, DROP ON TABLE t FROM u1;
+
+userInsecure u1
+
+query IT
+SELECT * FROM t;
+----
+1 A
+
+statement ok
+DROP TABLE t;
+
+userInsecure root
+
+statement ok
+REVOKE USAGE, CREATE ON DATABASE test FROM u1;
+REVOKE CREATE ON SCHEMA public FROM u1;
+DROP USER u1;
+
+#######################################################################
+#Alter DROP privilege to a user, check if this user can ALTER an object
+#Test 1: alter schema rename db1.sch to another database db2.sch
+userInsecure root
+
+statement ok
+CREATE USER u1;
+CREATE DATABASE db1;
+CREATE DATABASE db2;
+GRANT USAGE,CREATE ON DATABASE db1 TO u1;
+GRANT CREATE ON SCHEMA db1.public TO u1;
+USE db1;
+CREATE SCHEMA sch;
+GRANT DROP ON SCHEMA sch to u1;
+
+userInsecure u1
+
+statement ok
+USE db1;
+ALTER SCHEMA sch RENAME TO sch1;
+
+statement error user u1 does not have CREATE privilege on database db2
+ALTER SCHEMA sch1 RENAME TO db2.sch;
+
+userInsecure root
+
+statement ok
+GRANT CREATE ON DATABASE db2 TO u1;
+
+userInsecure u1
+
+statement ok
+ALTER SCHEMA sch1 RENAME TO db2.sch;
+
+userInsecure root
+
+statement ok
+USE db2;
+DROP SCHEMA sch;
+
+
+#Test 2: alter table owner's table t
+statement ok
+USE db1;
+CREATE TABLE t (id INT);
+GRANT DROP ON TABLE t TO u1;
+
+userInsecure u1
+
+statement ok
+ALTER TABLE t ADD COLUMN name STRING;
+ALTER TABLE t ADD CONSTRAINT ID_UNIQUE UNIQUE (id);
+
+#Test 3: alter view owner's view v
+userInsecure root
+
+statement ok
+INSERT INTO t VALUES (1, 'A');
+CREATE VIEW v AS SELECT * FROM t;
+GRANT DROP ON VIEW v TO u1;
+
+userInsecure u1
+
+statement ok
+ALTER VIEW v RENAME TO v1;
+DROP VIEW v1;
+
+#Test 4: alter sequence owner's sequence seq
+userInsecure root
+
+statement ok
+CREATE SEQUENCE seq;
+GRANT DROP ON SEQUENCE seq TO u1;
+
+userInsecure u1
+
+statement ok
+ALTER SEQUENCE seq INCREMENT 2;
+DROP SEQUENCE seq;
+
+userInsecure root
+
+statement ok
+REVOKE USAGE,CREATE ON DATABASE db1 FROM u1;
+REVOKE CREATE ON SCHEMA db1.public FROM u1;
+DROP TABLE t;
+REVOKE ALL ON DATABASE db2 FROM u1;
+DROP USER u1;
+DROP DATABASE db1;
+DROP DATABASE db2;
+
+#################################################
+#Check if owner have DROP privilege on its object
+#Test 1: alter schema rename db1.sch to another database db2.sch
+userInsecure root
+
+statement ok
+CREATE USER u1;
+CREATE DATABASE db1;
+CREATE DATABASE db2;
+GRANT USAGE,CREATE ON DATABASE db1 TO u1;
+
+
+userInsecure u1
+
+statement ok
+USE db1;
+CREATE SCHEMA sch;
+ALTER SCHEMA sch RENAME TO sch1;
+
+statement error user u1 does not have CREATE privilege on database db2
+ALTER SCHEMA sch1 RENAME TO db2.sch;
+
+userInsecure root
+
+statement ok
+GRANT CREATE ON DATABASE db2 TO u1;
+
+userInsecure u1
+
+statement ok
+ALTER SCHEMA sch1 RENAME TO db2.sch;
+
+userInsecure root
+
+statement ok
+USE db2;
+DROP SCHEMA sch;
+
+statement error cannot drop user or role u1: grants still exist on db1, db2
+DROP USER u1;
+
+#Test 2: alter table owner's table t
+statement ok
+GRANT CREATE ON SCHEMA db1.public TO u1;
+USE db1;
+
+userInsecure u1
+
+statement ok
+CREATE TABLE t (id INT);
+ALTER TABLE t ADD COLUMN name STRING;
+ALTER TABLE t ADD CONSTRAINT ID_UNIQUE UNIQUE (id);
+
+#Test 3: alter view owner's view v
+statement ok
+INSERT INTO t VALUES (1, 'A');
+CREATE VIEW v AS SELECT * FROM t;
+ALTER VIEW v RENAME TO v1;
+DROP VIEW v1;
+
+#Test 4: alter sequence owner's sequence seq
+statement ok
+CREATE SEQUENCE seq;
+ALTER SEQUENCE seq INCREMENT 2;
+DROP SEQUENCE seq;
+
+userInsecure root
+
+statement ok
+REVOKE CREATE, USAGE ON DATABASE db1 FROM u1;
+REVOKE CREATE, USAGE ON DATABASE db2 FROM u1;
+REVOKE CREATE ON SCHEMA db1.public FROM u1;
+DROP TABLE db1.public.t;
+DROP USER u1;
+
+
+#################################################
+#Drop user u where this user is an owner of sequence/view/table/schema/database
+#Test 1: Owner of database
+userInsecure root
+
+statement ok
+USE test;
+CREATE USER u;
+GRANT admin TO u;
+
+userInsecure u
+
+statement ok
+USE test;
+CREATE DATABASE du;
+
+userInsecure root
+
+statement error pq: role u cannot be dropped because some objects depend on it.*\n.*owner of database du.*\n.*owner of schema du.public
+DROP USER u;
+
+statement ok
+DROP DATABASE du;
+REVOKE admin FROM u;
+DROP USER u;
+
+#Test 2: Owner of schema
+userInsecure root
+
+statement ok
+CREATE USER u;
+GRANT CREATE, USAGE ON DATABASE test TO u;
+
+userInsecure u
+
+statement ok
+CREATE SCHEMA schu;
+
+userInsecure root
+
+statement ok
+REVOKE CREATE, USAGE ON DATABASE test FROM u;
+
+statement error pq: role u cannot be dropped because some objects depend on it.*\n.*owner of schema test.schu
+DROP USER u;
+
+statement ok
+DROP SCHEMA test.schu;
+DROP USER u;
+
+#Test 3: Owner of table
+userInsecure root
+
+statement ok
+CREATE USER u;
+GRANT USAGE ON DATABASE test TO u;
+GRANT CREATE ON SCHEMA public TO u;
+
+userInsecure u
+
+statement ok
+CREATE TABLE tu (a INT, b INT);
+
+userInsecure root
+
+statement ok
+REVOKE USAGE ON DATABASE test FROM u;
+REVOKE CREATE ON SCHEMA public FROM u;
+
+statement error pq: role u cannot be dropped because some objects depend on it.*\n.*owner of table test.public.tu
+DROP USER u;
+
+statement ok
+DROP TABLE tu;
+DROP USER u;
+
+#Test 4: Owner of sequence
+userInsecure root
+
+statement ok
+CREATE USER u;
+GRANT USAGE ON DATABASE test TO u;
+GRANT CREATE ON SCHEMA public TO u;
+
+userInsecure u
+
+statement ok
+CREATE SEQUENCE sequ;
+
+userInsecure root
+
+statement ok
+REVOKE USAGE ON DATABASE test FROM u;
+REVOKE CREATE ON SCHEMA public FROM u;
+
+statement error pq: role u cannot be dropped because some objects depend on it.*\n.*owner of sequence test.public.sequ
+DROP USER u;
+
+statement ok
+DROP SEQUENCE sequ;
+DROP USER u;
+
+#Test 5: Owner of view
+userInsecure root
+
+statement ok
+CREATE USER u;
+GRANT USAGE ON DATABASE test TO u;
+GRANT CREATE ON SCHEMA public TO u;
+CREATE TABLE t (a INT, b INT);
+
+userInsecure u
+
+statement ok
+CREATE VIEW vu AS SELECT * FROM t;
+
+userInsecure root
+
+statement ok
+REVOKE USAGE ON DATABASE test FROM u;
+REVOKE CREATE ON SCHEMA public FROM u;
+
+statement error pq: role u cannot be dropped because some objects depend on it.*\n.*owner of view test.public.vu
+DROP USER u;
+
+statement ok
+DROP VIEW vu;
+DROP USER u;
+
+#Test 6 of drop_owner: Owner of function/procedure
+#Function test in dropFuncOwner, because of UDR not supported in this directory
+
+
+#lsytest for drop owner
+#drop user u1 who is owner of a view
+user root
+
+statement ok
+CREATE DATABASE d1;
+CREATE TABLE d1.t1 (id INT, name String);
+CREATE USER u1;
+GRANT USAGE ON DATABASE d1 TO u1;
+GRANT SELECT(name) ON d1.t1 TO u1;
+GRANT insert(name) ON d1.t1 TO u1;
+GRANT CREATE  ON SCHEMA d1.public TO u1;
+
+userInsecure u1
+statement ok
+CREATE VIEW d1.v1 (name) AS SELECT name FROM d1.t1;
+
+user root
+statement ok
+REVOKE ALL ON DATABASE d1 FROM u1;
+REVOKE ALL ON SCHEMA d1.public FROM u1;
+REVOKE ALL ON  d1.public.t1 FROM u1;
+
+statement error pq: role u1 cannot be dropped.*?\nowner of view d1.public.v1
+DROP USER u1;
+
+statement ok
+DROP VIEW d1.public.v1;
+DROP USER u1;
+
+#drop user who is owner of a table
+user root
+statement ok
+CREATE USER u1;
+GRANT USAGE ON DATABASE d1 TO u1;
+GRANT CREATE  ON SCHEMA d1.public TO u1;
+
+userInsecure u1
+statement ok
+CREATE TABLE d1.t2 (id INT, name String);
+
+user root
+statement ok
+REVOKE USAGE ON DATABASE d1 FROM u1;
+REVOKE CREATE  ON SCHEMA d1.public FROM u1;
+
+statement error pq: role u1 cannot be dropped.*?\nowner of table d1.public.t2
+DROP USER u1;
+
+statement ok
+DROP TABLE d1.public.t2;
+DROP USER u1;
+
+#drop user who is owner of a sequence
+user root
+statement ok
+CREATE USER u1;
+GRANT USAGE ON DATABASE d1 TO u1;
+GRANT CREATE  ON SCHEMA d1.public TO u1;
+
+userInsecure u1
+statement ok
+CREATE SEQUENCE d1.s1;
+
+user root
+statement ok
+REVOKE USAGE ON DATABASE d1 FROM u1;
+REVOKE CREATE  ON SCHEMA d1.public FROM u1;
+
+statement error pq: role u1 cannot be dropped.*?\nowner of sequence d1.public.s1
+DROP USER u1;
+
+statement ok
+DROP SEQUENCE d1.public.s1;
+DROP USER u1;

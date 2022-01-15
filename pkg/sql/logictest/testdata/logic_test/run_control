@@ -1,0 +1,101 @@
+# LogicTest: local local-opt local-parallel-stmts fakedist fakedist-opt fakedist-metadata
+
+query error job with ID 1 does not exist
+PAUSE JOB 1
+
+query error job with ID 0 does not exist
+PAUSE JOB 'foo'
+
+query error job with ID 0 does not exist
+CANCEL JOBS SELECT 'foo'
+
+query error pq: too many columns in CANCEL JOBS data
+CANCEL JOBS VALUES (1,2)
+
+query error pq: job with ID 1 does not exist
+CANCEL JOB 1::OID
+
+statement ok count 0
+PAUSE JOB (SELECT id FROM system.jobs LIMIT 0)
+
+statement ok count 0
+PAUSE JOBS SELECT id FROM system.jobs LIMIT 0
+
+query error job with ID 0 does not exist
+PAUSE JOBS SELECT 'foo'
+
+query error pq: too many columns in PAUSE JOBS data
+PAUSE JOBS VALUES (1,2)
+
+query error job with ID 1 does not exist
+RESUME JOB 1
+
+query error job with ID 0 does not exist
+RESUME JOB 'foo'
+
+query error job with ID 0 does not exist
+RESUME JOBS SELECT 'foo'
+
+query error pq: too many columns in RESUME JOBS data
+RESUME JOBS VALUES (1,2)
+
+statement ok count 0
+RESUME JOB (SELECT id FROM system.jobs LIMIT 0)
+
+statement ok count 0
+RESUME JOBS SELECT id FROM system.jobs LIMIT 0
+
+query error job with ID 1 does not exist
+CANCEL JOB 1
+
+query error job with ID 0 does not exist
+CANCEL JOB 'foo'
+
+statement ok count 0
+CANCEL JOB (SELECT id FROM system.jobs LIMIT 0)
+
+statement ok count 0
+CANCEL JOBS SELECT id FROM system.jobs LIMIT 0
+
+query error pq: invalid query ID '1': could not decode 1 as hex: encoding/hex: odd length hex string
+CANCEL QUERY 1
+
+query error pq: too many columns in CANCEL QUERIES data
+CANCEL QUERIES VALUES (1,2)
+
+query error odd length hex string
+CANCEL QUERY 'f54'
+
+query error not found
+CANCEL QUERY '14d2355b9cccbca50000000000000001'
+
+query error pq: invalid session ID '1': could not decode 1 as hex: encoding/hex: odd length hex string
+CANCEL SESSION 1
+
+query error pq: too many columns in CANCEL SESSIONS data
+CANCEL SESSIONS VALUES (1,2)
+
+query error odd length hex string
+CANCEL SESSION 'f54'
+
+query error not found
+CANCEL SESSION '14d2355b9cccbca50000000000000001'
+
+statement ok count 0
+CANCEL SESSION (SELECT 'a' LIMIT 0)
+
+statement ok count 0
+CANCEL SESSIONS SELECT 'a' LIMIT 0
+
+# Regression test for #25842
+query error odd length hex string
+CANCEL SESSION 'aaa'::NAME
+
+query error odd length hex string
+CANCEL QUERY 'aaa'::NAME
+
+query error not found
+QUERY LOCKSTAT '14d2355b9cccbca50000000000000001'
+
+query error not found
+QUERY LOCKSTAT ''

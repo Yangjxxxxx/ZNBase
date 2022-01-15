@@ -1,0 +1,327 @@
+# LogicTest: local-insecure
+# ------------------------------------------------------------------------------
+# grant with grant options tests.
+# ------------------------------------------------------------------------------
+
+statement ok
+grant usage on database test to public;
+
+statement ok
+create user user1;
+
+statement ok
+create schema ss1;
+
+statement ok
+create database dd2;
+
+statement ok
+create table ss1.tt1(a int);
+
+statement ok
+SET search_path=ss1;
+
+query TT
+SHOW TABLES;
+----
+tt1  root
+
+statement ok
+grant create,usage on database dd2 to user1;
+grant drop on schema ss1 to user1;
+grant drop,select,insert on table ss1.tt1 to user1;
+
+userInsecure user1
+
+query TTTTTT colnames
+ select * from information_schema.schema_privileges where grantee='user1';
+----
+grantor  grantee  table_catalog  table_schema  privilege_type  is_grantable
+root     user1    test           ss1           DROP            NO
+
+statement error database "nodatabase" does not exist
+alter schema ss1 rename to noDatabase.ss2;
+
+statement error schema "noschema" doesn't exist
+alter schema noSchema rename to dd2.ss2;
+
+statement ok
+alter schema ss1 rename to ss1;
+
+query TTTTTT colnames
+ select * from information_schema.schema_privileges where grantee='user1';
+----
+grantor  grantee  table_catalog  table_schema  privilege_type  is_grantable
+root     user1    test           ss1           DROP            NO
+
+statement ok
+alter schema ss1 rename to dd2.ss2;
+
+query TT
+SHOW SCHEMAS;
+----
+information_schema  root
+pg_catalog          root
+public              root
+zbdb_internal       root
+
+statement ok
+set database = dd2;
+
+query TT
+SHOW SCHEMAS;
+----
+information_schema  root
+pg_catalog          root
+public              root
+ss2                 root
+zbdb_internal       root
+
+statement ok
+set search_path=ss2;
+
+query TT
+SHOW TABLES;
+----
+tt1  root
+
+query TTTTTT colnames
+ select * from information_schema.schema_privileges where grantee='user1' order by table_schema, privilege_type;
+----
+grantor  grantee  table_catalog  table_schema        privilege_type  is_grantable
+root     user1    dd2            information_schema  CREATE          NO
+root     user1    dd2            information_schema  USAGE           NO
+root     user1    dd2            pg_catalog          CREATE          NO
+root     user1    dd2            pg_catalog          USAGE           NO
+root     user1    dd2            ss2                 DROP            NO
+root     user1    dd2            zbdb_internal       CREATE          NO
+root     user1    dd2            zbdb_internal       USAGE           NO
+
+query TTTTTTTTT colnames
+ select * from information_schema.table_privileges where grantee='user1' order by privilege_type;
+----
+grantor  grantee  table_catalog  table_schema  table_name  table_type  privilege_type  is_grantable  with_hierarchy
+root     user1    dd2            ss2           tt1         BASE TABLE  DROP            NO            NO
+root     user1    dd2            ss2           tt1         BASE TABLE  INSERT          NO            NO
+root     user1    dd2            ss2           tt1         BASE TABLE  SELECT          NO            YES
+
+userInsecure root
+
+statement ok
+grant usage on schema dd2.ss2 to user1
+
+userInsecure user1
+
+statement ok
+insert into tt1 values(2333);
+
+query I
+select * from tt1;
+----
+2333
+
+userInsecure root
+
+statement ok
+set database=defaultdb;
+
+statement ok
+create schema sc1;
+
+statement ok
+create table sc1.t1(a int)
+
+statement ok
+alter schema sc1 rename to sc2
+
+query TT
+SHOW SCHEMAS;
+----
+information_schema  root
+pg_catalog          root
+public              root
+sc2                 root
+zbdb_internal       root
+
+statement ok
+set search_path=sc2;
+
+statement ok
+insert into t1 values(2333);
+
+query I
+select * from t1;
+----
+2333
+
+query TT
+SHOW TABLES;
+----
+t1  root
+
+statement ok
+create database d1;
+
+statement ok
+create database d2;
+
+statement ok
+create schema d1.s1;
+
+statement ok
+create table d1.s1.t1(a int);
+
+statement ok
+alter schema d1.s1 rename to d2.s2;
+
+statement ok
+set database=d1;
+
+query TT
+SHOW SCHEMAS;
+----
+information_schema  root
+pg_catalog          root
+public              root
+zbdb_internal       root
+
+statement ok
+set database=d2;
+
+query TT
+SHOW SCHEMAS;
+----
+information_schema  root
+pg_catalog          root
+public              root
+s2                  root
+zbdb_internal       root
+
+statement ok
+CREATE database da;
+
+statement ok
+CREATE SCHEMA da.sa;
+
+statement ok
+CREATE database db;
+
+statement ok
+CREATE SCHEMA db.sa;
+
+statement ok
+ALTER SCHEMA da.sa RENAME TO da.sa;
+
+statement error schema "system" collides with builtin schema's name
+ALTER SCHEMA da.sa RENAME TO system;
+
+statement error schema "zbdb_internal" collides with builtin schema's name
+ALTER SCHEMA da.sa RENAME TO zbdb_internal;
+
+statement error schema "information_schema" collides with builtin schema's name
+ALTER SCHEMA da.sa RENAME TO information_schema;
+
+statement error schema "pg_catalog" collides with builtin schema's name
+ALTER SCHEMA da.sa RENAME TO pg_catalog;
+
+statement error schema "public" in database "d2" already exists
+ALTER SCHEMA da.sa RENAME TO public;
+
+statement ok
+ALTER SCHEMA da.sa RENAME TO da.sb;
+
+statement error schema "sa" doesn't exist
+ALTER SCHEMA da.sa RENAME TO da.sb;
+
+statement ok
+ALTER SCHEMA IF EXISTS da.sa RENAME TO da.sb;
+
+statement ok
+CREATE SCHEMA da.sa;
+
+statement error schema "sb" in database "da" already exists
+ALTER SCHEMA da.sa RENAME TO da.sb;
+
+statement ok
+ALTER SCHEMA IF EXISTS da.s1 RENAME TO da.sb;
+
+statement ok
+SET SEARCH_PATH TO nonexist;
+
+query T
+SHOW SEARCH_PATH
+----
+nonexist
+
+statement error current search_path does not match any valid schema
+SHOW TABLES;
+
+statement ok
+CREATE SCHEMA da.nonexist;
+
+statement ok
+create database dc;
+
+statement ok
+ALTER SCHEMA da.nonexist RENAME TO dc.nonexist;
+
+statement ok
+set database = dc;
+
+statement ok
+SET SEARCH_PATH TO nonexist;
+
+query TT
+SHOW TABLES;
+----
+
+statement ok
+CREATE TABLE t(a char primary key,b int);
+
+statement ok
+insert into t values('a',123);
+
+query TI
+select * from t;
+----
+a  123
+
+query TT
+SHOW TABLES;
+----
+t  root
+
+statement ok
+ALTER SCHEMA nonexist RENAME TO theschema;
+
+query TT
+SHOW SCHEMAS;
+----
+information_schema  root
+pg_catalog          root
+public              root
+theschema           root
+zbdb_internal       root
+
+statement ok
+CREATE SCHEMA da.nonexist;
+
+statement ok
+ALTER SCHEMA IF EXISTS da.nonexist RENAME TO da.myschema;
+
+statement ok
+set database=da;
+
+query TT
+SHOW SCHEMAS;
+----
+information_schema  root
+myschema            root
+pg_catalog          root
+public              root
+sa                  root
+sb                  root
+zbdb_internal       root
+
+statement ok
+create table myschema.tt(a int);

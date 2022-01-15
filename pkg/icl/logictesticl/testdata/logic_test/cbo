@@ -1,0 +1,223 @@
+# LogicTest: 5node-dist-opt
+
+# Ensure that cost-based-optimizer uses an index with locatespace that most
+# closely matches the gateway's locality. Use "retry" option, since it can take
+# a bit of time for gossip to refresh the locate.
+
+statement ok
+CREATE TABLE t (
+    k INT PRIMARY KEY,
+    v STRING,
+    INDEX secondary (k) STORING (v),
+    INDEX tertiary (k) STORING (v)
+);
+
+# ------------------------------------------------------------------------------
+# Put table in dc2 and secondary index in dc1 so that the gateway matches the
+# secondary index rather the primary index.
+# ------------------------------------------------------------------------------
+
+statement ok
+ALTER TABLE t LOCATE IN ("Dongli2")
+
+statement ok
+ALTER INDEX t@secondary LOCATE IN ("Dongli1")
+
+query TTT
+EXPLAIN SELECT * FROM t WHERE k=10
+----
+scan  ·      ·
+·     table  t@secondary
+·     spans  /10-/11
+
+# ------------------------------------------------------------------------------
+# Move secondary to dc3 and put tertiary in dc1 and ensure that gateway matches
+# tertiary instead of secondary. Regression for #35546.
+# ------------------------------------------------------------------------------
+
+statement ok
+ALTER INDEX t@secondary LOCATE IN ("Dongli3")
+
+statement ok
+ALTER INDEX t@tertiary LOCATE IN ("Dongli1")
+
+query TTT retry
+EXPLAIN SELECT * FROM t WHERE k=10
+----
+scan  ·      ·
+·     table  t@tertiary
+·     spans  /10-/11
+
+# ------------------------------------------------------------------------------
+# Swap secondary and tertiary localities and ensure invalidation occurs.
+# Regression for #35546.
+# ------------------------------------------------------------------------------
+
+statement ok
+ALTER INDEX t@secondary LOCATE IN ("Dongli1")
+
+statement ok
+ALTER INDEX t@tertiary LOCATE IN ("Dongli3")
+
+query TTT
+EXPLAIN SELECT * FROM t WHERE k=10
+----
+scan  ·      ·
+·     table  t@secondary
+·     spans  /10-/11
+
+# ------------------------------------------------------------------------------
+# Swap location of primary and secondary indexes and ensure that primary index
+# is used instead.
+# ------------------------------------------------------------------------------
+
+statement ok
+ALTER TABLE t LOCATE IN ("Dongli1")
+
+statement ok
+ALTER INDEX t@secondary LOCATE IN ("Dongli2")
+
+query TTT
+EXPLAIN SELECT * FROM t WHERE k=10
+----
+scan  ·      ·
+·     table  t@primary
+·     spans  /10-/10/#
+
+# ------------------------------------------------------------------------------
+# Use PREPARE to make sure that the prepared plan is invalidated when the
+# secondary index's constraints change.
+# ------------------------------------------------------------------------------
+
+statement
+PREPARE p AS SELECT tree, field, description FROM [EXPLAIN SELECT k, v FROM t WHERE k=10]
+
+query TTT
+EXECUTE p
+----
+scan  ·      ·
+·     table  t@primary
+·     spans  /10-/10/#
+
+statement ok
+ALTER TABLE t LOCATE IN ("Dongli2")
+
+statement ok
+ALTER INDEX t@secondary LOCATE IN ("Dongli1")
+
+query TTT
+EXECUTE p
+----
+scan  ·      ·
+·     table  t@secondary
+·     spans  /10-/11
+
+statement ok
+DEALLOCATE p
+
+# ------------------------------------------------------------------------------
+# Put table lease preference in dc2 and secondary index lease preference in dc1
+# so that the gateway matches the secondary index rather the primary index.
+# ------------------------------------------------------------------------------
+
+
+
+query TTT
+EXPLAIN SELECT * FROM t WHERE k=10
+----
+scan  ·      ·
+·     table  t@secondary
+·     spans  /10-/11
+
+# ------------------------------------------------------------------------------
+# Move secondary lease preference to dc3 and put tertiary lease preference in
+# dc1 and ensure that gateway matches tertiary.
+# ------------------------------------------------------------------------------
+
+
+
+query TTT
+EXPLAIN SELECT * FROM t WHERE k=10
+----
+scan  ·      ·
+·     table  t@secondary
+·     spans  /10-/11
+
+# ------------------------------------------------------------------------------
+# Ensure that an index constrained to a region is preferred over an index that
+# merely has a lease preference in that region (since lease preferences can
+# move, whereas constraints are fixed).
+# ------------------------------------------------------------------------------
+
+
+
+statement ok
+ALTER INDEX t@secondary LOCATE IN ("Dongli1")
+
+
+
+query TTT
+EXPLAIN SELECT * FROM t WHERE k=10
+----
+scan  ·      ·
+·     table  t@secondary
+·     spans  /10-/11
+
+# ------------------------------------------------------------------------------
+# Use PREPARE to make sure that the prepared plan is invalidated when the
+# secondary index's lease preferences change.
+# ------------------------------------------------------------------------------
+
+statement ok
+PREPARE p AS SELECT tree, field, description FROM [EXPLAIN SELECT k, v FROM t WHERE k=10]
+
+query TTT
+EXECUTE p
+----
+scan  ·      ·
+·     table  t@secondary
+·     spans  /10-/11
+
+
+statement ok
+DEALLOCATE p
+
+
+# ------------------------------------------------------------------------------
+# Regression for issue #36642. Optimizer picked wrong index when the index had
+# constraints / lease preferences, but the table had no zone config.
+# ------------------------------------------------------------------------------
+
+statement ok
+CREATE TABLE t36642 (
+    k INT PRIMARY KEY,
+    v STRING,
+    INDEX secondary (k) STORING (v),
+    INDEX tertiary (k) STORING (v)
+);
+
+
+
+
+# ------------------------------------------------------------------------------
+# Regression for issue #36644. Allow matching constraints for leading locality
+# tiers to be omitted.
+# ------------------------------------------------------------------------------
+
+statement ok
+CREATE TABLE t36644 (
+    k INT PRIMARY KEY,
+    v STRING,
+    INDEX secondary (k) STORING (v),
+    INDEX tertiary (k) STORING (v)
+);
+
+
+
+
+# ------------------------------------------------------------------------------
+# Regression test for #36348; place this at the bottom of this file.
+# ------------------------------------------------------------------------------
+
+statement ok
+DROP INDEX t@secondary

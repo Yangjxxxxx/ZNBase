@@ -1,0 +1,565 @@
+# LogicTest: local-insecure local-insecure-opt
+# sequence
+
+#test show sequences
+statement ok
+GRANT USAGE ON DATABASE test TO public;
+
+statement ok
+CREATE SEQUENCE s;
+
+query TTT
+SHOW SEQUENCES;
+----
+public  s  root
+
+statement ok
+CREATE SCHEMA sch;
+CREATE SEQUENCE sch.seq;
+SET SEARCH_PATH = sch;
+
+query TTT
+SHOW SEQUENCES;
+----
+public  s    root
+sch     seq  root
+
+statement ok
+CREATE DATABASE usertest;
+CREATE USER user1;
+CREATE USER user2;
+
+statement ok
+GRANT USAGE ON DATABASE usertest TO public;
+
+#test root create sequence
+query TTTTTTTT colnames
+SHOW GRANTS ON SEQUENCE seq;
+----
+database_name  schema_name  sequence_name  column_name  grantor  grantee  privilege_type  grantable
+test           sch          seq            NULL         admin    admin    DROP            YES
+test           sch          seq            NULL         admin    admin    SELECT          YES
+test           sch          seq            NULL         admin    admin    UPDATE          YES
+test           sch          seq            NULL         admin    admin    USAGE           YES
+test           sch          seq            NULL         admin    root     DROP            YES
+test           sch          seq            NULL         admin    root     SELECT          YES
+test           sch          seq            NULL         admin    root     UPDATE          YES
+test           sch          seq            NULL         admin    root     USAGE           YES
+
+statement ok
+CREATE TABLE t1(id int primary key DEFAULT nextval('seq'), name string);
+
+statement ok
+INSERT INTO t1 (name) VALUES('321');
+
+query IIB colnames
+SELECT * FROM seq;
+----
+last_value  log_cnt  is_called
+1           0        true
+
+statement ok
+GRANT SELECT ON SEQUENCE seq TO user1 WITH GRANT OPTION;
+GRANT USAGE ON SCHEMA sch TO user1 WITH GRANT OPTION;
+
+userInsecure user1
+
+statement error user user1 does not have SELECT privilege on relation test.public.s
+SELECT * FROM s;
+
+statement ok
+SET SEARCH_PATH = sch;
+
+query IIB colnames
+SELECT * FROM test.sch.seq;
+----
+last_value  log_cnt  is_called
+1           0        true
+
+statement ok
+GRANT SELECT ON SEQUENCE seq TO user2;
+
+query TTTTTTTT
+SHOW GRANTS ON SEQUENCE seq;
+----
+test  sch  seq  NULL  root   user1  SELECT  YES
+test  sch  seq  NULL  user1  user2  SELECT  NO
+
+userInsecure root
+
+query TTTTTTTT
+SHOW GRANTS ON SEQUENCE test.sch.seq;
+----
+test  sch  seq  NULL  admin  admin  DROP    YES
+test  sch  seq  NULL  admin  admin  SELECT  YES
+test  sch  seq  NULL  admin  admin  UPDATE  YES
+test  sch  seq  NULL  admin  admin  USAGE   YES
+test  sch  seq  NULL  admin  root   DROP    YES
+test  sch  seq  NULL  admin  root   SELECT  YES
+test  sch  seq  NULL  admin  root   UPDATE  YES
+test  sch  seq  NULL  admin  root   USAGE   YES
+test  sch  seq  NULL  root   user1  SELECT  YES
+test  sch  seq  NULL  user1  user2  SELECT  NO
+
+#test user1 create sequence
+
+statement ok
+GRANT CREATE ON SCHEMA test.sch TO user1 WITH GRANT OPTION;
+
+userInsecure user1
+
+statement ok
+SET SEARCH_PATH = sch
+
+statement ok
+CREATE SEQUENCE s1 ;
+
+#test drop sequence
+
+userInsecure root
+
+statement ok
+GRANT DROP ON TABLE test.sch.t1 TO user1;
+
+statement ok
+INSERT INTO test.sch.t1 VALUES(3, 'AA');
+
+query IIB
+SELECT * FROM test.sch.seq;
+----
+1  0  true
+
+userInsecure user1
+
+statement ok
+SET SEARCH_PATH = sch;
+
+statement ok
+DROP TABLE t1;
+
+userInsecure root
+
+statement ok
+SET SEARCH_PATH = sch;
+
+query TTT
+show sequences;
+----
+public  s    root
+sch     s1   user1
+sch     seq  root
+
+query IIB
+SELECT * FROM test.sch.seq;
+----
+1  0  true
+
+statement ok
+CREATE TABLE t1(id int primary key DEFAULT nextval('seq'), name string);
+
+statement ok
+INSERT INTO t1 (name) VALUES('321');
+
+query IIB
+SELECT * FROM test.sch.seq;
+----
+2  0  true
+
+query TTTTTTTT
+SHOW GRANTS ON t1;
+----
+test  sch  t1  NULL  admin  admin  DELETE      YES
+test  sch  t1  NULL  admin  admin  DROP        YES
+test  sch  t1  NULL  admin  admin  INSERT      YES
+test  sch  t1  NULL  admin  admin  REFERENCES  YES
+test  sch  t1  NULL  admin  admin  SELECT      YES
+test  sch  t1  NULL  admin  admin  TRIGGER     YES
+test  sch  t1  NULL  admin  admin  UPDATE      YES
+test  sch  t1  NULL  admin  root   DELETE      YES
+test  sch  t1  NULL  admin  root   DROP        YES
+test  sch  t1  NULL  admin  root   INSERT      YES
+test  sch  t1  NULL  admin  root   REFERENCES  YES
+test  sch  t1  NULL  admin  root   SELECT      YES
+test  sch  t1  NULL  admin  root   TRIGGER     YES
+test  sch  t1  NULL  admin  root   UPDATE      YES
+
+statement ok
+GRANT DROP ON TABLE test.sch.t1 TO user1;
+
+userInsecure user1
+
+statement ok
+SET SEARCH_PATH = sch;
+DROP TABLE t1 CASCADE;
+
+userInsecure root
+
+statement ok
+SET SEARCH_PATH = sch;
+
+query TTT
+show sequences;
+----
+public  s    root
+sch     s1   user1
+sch     seq  root
+
+statement ok
+GRANT DROP ON SEQUENCE test.sch.seq TO user1;
+
+userInsecure user1
+
+statement ok
+DROP SEQUENCE test.sch.seq CASCADE;
+
+#teste  user sequence /create/alter/drop
+
+userInsecure root
+
+statement ok
+CREATE DATABASE newtest;
+CREATE SCHEMA newtest.sc;
+GRANT USAGE ON DATABASE newtest TO public;
+GRANT CREATE ON SCHEMA usertest.public TO user1;
+
+userInsecure user1
+
+statement ok
+USE usertest;
+SET SEARCH_PATH = public;
+
+statement error user user1 does not have CREATE privilege on schema test.public
+CREATE SEQUENCE test.public.ss;
+
+statement ok
+CREATE SEQUENCE userseq;
+CREATE SEQUENCE u;
+
+statement ok
+CREATE TABLE usert(id int primary key DEFAULT nextval('userseq'), name string);
+
+statement ok
+INSERT INTO usert (name) VALUES('321');
+
+query IIB
+SELECT * FROM userseq;
+----
+1  0  true
+
+statement error cannot rename relation "userseq" because relation "usert" depends on it
+ALTER SEQUENCE userseq RENAME TO newtest.sc.useq;
+
+statement error cannot drop sequence userseq because other objects depend on it
+DROP SEQUENCE userseq;
+
+statement error user user1 does not have CREATE privilege on schema newtest.sc
+ALTER SEQUENCE u RENAME TO newtest.sc.useq;
+
+userInsecure root
+
+statement ok
+GRANT CREATE ON SCHEMA newtest.sc TO user1;
+GRANT USAGE ON SCHEMA newtest.sc TO user1;
+DROP TABLE usertest.public.usert;
+
+userInsecure user1
+
+statement ok
+USE usertest;
+ALTER SEQUENCE u RENAME TO newtest.sc.useq;
+ALTER SEQUENCE userseq RENAME TO newtest.sc.qq;
+
+query IIB
+SELECT * FROM newtest.sc.qq;
+----
+1  0  true
+
+query IIB
+SELECT * FROM newtest.sc.useq;
+----
+0  0  true
+
+statement ok
+DROP SEQUENCE newtest.sc.useq;
+
+userInsecure root
+
+statement ok
+REVOKE DROP ON SEQUENCE newtest.sc.qq FROM USER1;
+
+userInsecure user1
+
+statement ok
+USE usertest;
+
+# owner's privilege cannot be revoked
+statement ok
+DROP SEQUENCE newtest.sc.qq;
+
+userInsecure root
+
+statement ok
+USE test;
+DROP DATABASE usertest CASCADE;
+DROP DATABASE newtest CASCADE;
+
+# test create/alter/drop table with sequence
+
+statement ok
+CREATE USER u2;
+CREATE DATABASE test1;
+CREATE SCHEMA test1.sch1;
+CREATE SEQUENCE test1.sch1.seq1;
+CREATE SEQUENCE test1.sch1.seq2;
+GRANT USAGE ON DATABASE test1 TO public;
+GRANT CREATE ON SCHEMA test1.sch1 TO u2;
+
+query TTTTTTTT
+SHOW GRANTS ON SEQUENCE test1.sch1.seq1;
+----
+test1  sch1  seq1  NULL  admin  admin  DROP    YES
+test1  sch1  seq1  NULL  admin  admin  SELECT  YES
+test1  sch1  seq1  NULL  admin  admin  UPDATE  YES
+test1  sch1  seq1  NULL  admin  admin  USAGE   YES
+test1  sch1  seq1  NULL  admin  root   DROP    YES
+test1  sch1  seq1  NULL  admin  root   SELECT  YES
+test1  sch1  seq1  NULL  admin  root   UPDATE  YES
+test1  sch1  seq1  NULL  admin  root   USAGE   YES
+
+statement ok
+GRANT ALL ON SEQUENCE test1.sch1.seq1 TO u2;
+
+query TTTTTTTT
+SHOW GRANTS ON SEQUENCE test1.sch1.seq1;
+----
+test1  sch1  seq1  NULL  admin  admin  DROP    YES
+test1  sch1  seq1  NULL  admin  admin  SELECT  YES
+test1  sch1  seq1  NULL  admin  admin  UPDATE  YES
+test1  sch1  seq1  NULL  admin  admin  USAGE   YES
+test1  sch1  seq1  NULL  admin  root   DROP    YES
+test1  sch1  seq1  NULL  admin  root   SELECT  YES
+test1  sch1  seq1  NULL  admin  root   UPDATE  YES
+test1  sch1  seq1  NULL  admin  root   USAGE   YES
+test1  sch1  seq1  NULL  root   u2     DROP    NO
+test1  sch1  seq1  NULL  root   u2     SELECT  NO
+test1  sch1  seq1  NULL  root   u2     UPDATE  NO
+test1  sch1  seq1  NULL  root   u2     USAGE   NO
+
+statement ok
+REVOKE ALL ON SEQUENCE test1.sch1.seq1 FROM u2;
+
+query TTTTTTTT
+SHOW GRANTS ON SEQUENCE test1.sch1.seq1;
+----
+test1  sch1  seq1  NULL  admin  admin  DROP    YES
+test1  sch1  seq1  NULL  admin  admin  SELECT  YES
+test1  sch1  seq1  NULL  admin  admin  UPDATE  YES
+test1  sch1  seq1  NULL  admin  admin  USAGE   YES
+test1  sch1  seq1  NULL  admin  root   DROP    YES
+test1  sch1  seq1  NULL  admin  root   SELECT  YES
+test1  sch1  seq1  NULL  admin  root   UPDATE  YES
+test1  sch1  seq1  NULL  admin  root   USAGE   YES
+
+userInsecure u2
+
+statement error user u2 does not have USAGE privilege on relation test1.sch1.seq1
+USE test1;
+SET SEARCH_PATH = 'sch1';
+CREATE TABLE t1(id int primary key DEFAULT nextval('seq1'), name string);
+
+userInsecure root
+
+statement ok
+GRANT USAGE ON SEQUENCE test1.sch1.seq1 TO u2;
+GRANT USAGE ON SCHEMA test1.sch1 TO u2;
+
+userInsecure u2
+
+statement ok
+USE test1;
+SET SEARCH_PATH = 'sch1';
+CREATE TABLE t1(id int primary key DEFAULT nextval('seq1'), name string);
+
+query TTTTTTTT
+SHOW GRANTS ON SEQUENCE seq1;
+----
+test1  sch1  seq1  NULL  root  u2  USAGE  NO
+
+statement ok
+INSERT INTO t1 (name) VALUES('321');
+
+userInsecure root
+
+statement ok
+REVOKE USAGE ON SEQUENCE test1.sch1.seq1 FROM u2;
+REVOKE ALL ON TABLE test1.sch1.t1 FROM u2;
+GRANT DROP ON TABLE test1.sch1.t1 TO u2;
+
+userInsecure u2
+
+statement error user u2 does not have USAGE privilege on relation test1.sch1.seq2
+ALTER TABLE test1.sch1.t1 ADD COLUMN idq int primary key DEFAULT nextval('seq2');
+
+statement ok
+DROP TABLE test1.sch1.t1;
+
+userInsecure root
+
+statement ok
+DROP SEQUENCE test1.sch1.seq2;
+GRANT USAGE ON SEQUENCE test1.sch1.seq1 TO u2;
+
+query TTT
+USE test1;
+SET SEARCH_PATH = 'sch1';
+SHOW SEQUENCES;
+----
+sch1  seq1  root
+
+query IIB
+SELECT * FROM test1.sch1.seq1;
+----
+1  0  true
+
+statement ok
+REVOKE ALL ON SEQUENCE test1.sch1.seq1 FROM u2;
+
+userInsecure u2
+
+statement error user u2 does not have UPDATE privilege on relation test1.sch1.seq1
+USE test1;
+SET SEARCH_PATH = 'sch1';
+SELECT setval('seq1', 20, false);
+
+statement error user u2 does not have UPDATE privilege on relation test1.sch1.seq1
+SELECT nextval('seq1');
+
+statement error user u2 does not have SELECT privilege on relation test1.sch1.seq1
+SELECT currval('seq1');
+
+userInsecure root
+
+statement ok
+GRANT USAGE ON SEQUENCE test1.sch1.seq1 TO u2;
+
+userInsecure u2
+
+statement error user u2 does not have UPDATE privilege on relation test1.sch1.seq1
+USE test1;
+SET SEARCH_PATH = 'sch1';
+SELECT setval('seq1', 20, false);
+
+query I
+SELECT nextval('seq1');
+----
+2
+
+query I
+SELECT currval('seq1');
+----
+2
+
+userInsecure root
+
+statement ok
+REVOKE USAGE ON SEQUENCE test1.sch1.seq1 FROM u2;
+GRANT UPDATE ON SEQUENCE test1.sch1.seq1 TO u2;
+
+userInsecure u2
+
+query I
+USE test1;
+SET SEARCH_PATH = 'sch1';
+SELECT setval('seq1', 20, false);
+----
+20
+
+query I
+SELECT nextval('seq1');
+----
+20
+
+statement error user u2 does not have SELECT privilege on relation test1.sch1.seq1
+SELECT currval('seq1');
+
+userInsecure root
+
+statement ok
+REVOKE UPDATE ON SEQUENCE test1.sch1.seq1 FROM u2;
+GRANT SELECT ON SEQUENCE test1.sch1.seq1 TO u2;
+
+userInsecure u2
+
+query I
+SELECT currval('seq1');
+----
+20
+
+#test create table with currval/nextval
+
+userInsecure root
+
+statement ok
+CREATE DATABASE c;
+CREATE SCHEMA c.s;
+CREATE SEQUENCE c.s.seq;
+GRANT USAGE ON DATABASE c TO public;
+GRANT CREATE ON SCHEMA c.s TO u2;
+
+userInsecure u2
+
+statement ok
+SET DATABASE = c;
+SET SEARCH_PATH TO s;
+
+statement error user u2 does not have USAGE privilege on relation c.s.seq
+CREATE TABLE t1(id int primary key DEFAULT nextval('seq'), name string);
+
+statement error user u2 does not have USAGE privilege on relation c.s.seq
+CREATE TABLE t2(id int primary key DEFAULT currval('seq'), name string);
+
+userInsecure root
+
+statement ok
+GRANT USAGE ON SEQUENCE c.s.seq TO u2;
+
+userInsecure u2
+
+statement ok
+CREATE TABLE t1(id int primary key DEFAULT nextval('seq'), name string);
+
+statement ok
+CREATE TABLE t2(id int primary key DEFAULT currval('seq'), name string);
+
+# test alter sequence increment
+
+userInsecure root
+
+statement ok
+REVOKE CREATE ON SCHEMA c.s FROM u2;
+REVOKE ALL ON SEQUENCE c.s.seq FROM u2;
+
+userInsecure u2
+
+statement error pq: user u2 does not have DROP privilege on relation c.s.seq
+ALTER SEQUENCE c.s.seq INCREMENT 2;
+
+userInsecure root
+
+statement ok
+GRANT CREATE ON SCHEMA c.s TO u2;
+
+userInsecure u2
+
+statement error user u2 does not have DROP privilege on relation c.s.seq
+ALTER SEQUENCE c.s.seq INCREMENT 2;
+
+userInsecure root
+
+statement ok
+GRANT DROP ON SEQUENCE c.s.seq TO u2;
+
+userInsecure u2
+
+statement ok
+ALTER SEQUENCE c.s.seq INCREMENT 2;

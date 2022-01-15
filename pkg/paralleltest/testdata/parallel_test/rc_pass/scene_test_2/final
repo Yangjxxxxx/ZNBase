@@ -1,0 +1,15 @@
+statement ok
+BEGIN TRANSACTION ISOLATION LEVEL READ COMMITTED;
+
+query III
+SELECT * FROM T;
+----
+0  0  0
+1  1  1
+2  2  2
+3  3  3
+10 10 10
+
+statement ok
+COMMIT;
+

@@ -1,0 +1,61 @@
+@startuml
+!includeurl https://raw.githubusercontent.com/xuanye/plantuml-style-c4/master/core.puml
+skinparam defaultFontName Monaco
+
+[->rowCountNode: startExec
+activate rowCountNode
+    rowCountNode->upsertNode:BatchedNext
+    activate upsertNode
+            loop forever
+                note right
+                // Now consume/accumulate the rows for this batch
+                end note
+                upsertNode->rowSourceToPlanNode:next
+                activate upsertNode
+                    loop forver
+                    rowSourceToPlanNode->mergeJoiner: Next
+                        activate mergeJoiner
+                            mergeJoiner->mergeJoiner:nextRow
+                            mergeJoiner->mergeJoiner:ProcessRowHelper
+                            mergeJoiner->ProcOutputHelper:ProcessRow
+                            activate ProcOutputHelper
+                            alt len(renderExprs) != 0
+                                loop renderExprs
+                                    ProcOutputHelper->Expr:eval
+                                    note right
+                                    // Expr eval import
+                                    end note
+                                        activate Expr
+                                        return datum
+                                    ProcOutputHelper->sqlbase:saveEncodeDatums
+                                        activate sqlbase
+                                        return Row
+                                    ProcOutputHelper->ProcOutputHelper: setOutPutRow[i]
+                                end
+                            else 
+                                loop outPutCols
+                                    ProcOutputHelper->ProcOutputHelper: setOutPutRow[i]
+                                end
+                            end
+                            return outRow
+                        return EncDatumRow
+                        rowSourceToPlanNode->rowSourceToPlanNode: saveEncodeDatums
+                    end
+                return next(bool)
+                upsertNode->upsertNode:processSourceRow
+                    activate upsertNode
+                        upsertNode->upsertNode: GenerateInsertRow
+                        activate upsertNode
+                        return Datums
+                        upsertNode->optTableUpserter: row 
+                            activate optTableUpserter
+                                optTableUpserter->optTableUpserter: updateConflictingRow
+                                   return error
+                    deactivate upsertNode
+            deactivate rowSourceToPlanNode
+        end
+    deactivate upsertNode
+deactivate rowCountNode
+[<-rowCountNode: error
+
+@enduml

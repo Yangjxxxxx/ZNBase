@@ -1,0 +1,200 @@
+# LogicTest: local local-opt local-parallel-stmts fakedist fakedist-opt fakedist-metadata
+
+#TZ_OFFSET()
+query T
+SELECT tz_offset(SESSIONTIMEZONE)
+----
++00:00
+
+query TT
+select tz_offset('US/Eastern'),tz_offset('US/Mountain')
+----
+ -04:00    -06:00
+
+query T
+SELECT tz_offset(DBTIMEZONE)
+----
++08:00
+
+#LAST_VALUE()
+statement ok
+create table test (id int, name string, salary int);
+
+statement ok
+insert into test values (1,'Tom',120),(2,'Ellen',240),(2,'Joe',80),(3,'Erick',1300),(3,'Secooler',800),(3,null,2800),(3,null,10)
+
+query ITIT
+select ID, name, salary,
+LAST_VALUE(name) OVER (partition by ID order by salary ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING) as highest_sal_name
+from test order by ID,salary, name;
+----
+   1  Tom       120   Tom
+   2  Joe       80    Ellen
+   2  Ellen     240   Ellen
+   3  NULL      10    NULL
+   3  Secooler  800   NULL
+   3  Erick     1300  NULL
+   3  NULL      2800  NULL
+
+query ITIT
+select ID, name, salary,
+LAST_VALUE(name ignore nulls) OVER (partition by ID order by salary ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING) as highest_sal_name
+from test order by ID,salary, name;
+----
+   1  Tom       120   Tom
+   2  Joe       80    Ellen
+   2  Ellen     240   Ellen
+   3  NULL      10    Erick
+   3  Secooler  800   Erick
+   3  Erick     1300  Erick
+   3  NULL      2800  Erick
+
+query ITIT
+select ID, name, salary,
+LAST_VALUE(name)ignore nulls OVER (partition by ID order by salary ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING) as highest_sal_name
+from test order by ID,salary, name;
+----
+   1  Tom       120   Tom
+   2  Joe       80    Ellen
+   2  Ellen     240   Ellen
+   3  NULL      10    Erick
+   3  Secooler  800   Erick
+   3  Erick     1300  Erick
+   3  NULL      2800  Erick
+
+#FIRST_VALUE()
+query ITIT
+select ID, name, salary,
+FIRST_VALUE(name) OVER (partition by ID order by salary ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING) as highest_sal_name
+from test order by ID,salary, name;
+----
+   1  Tom       120   Tom
+   2  Joe       80    Joe
+   2  Ellen     240   Joe
+   3  NULL      10    NULL
+   3  Secooler  800   NULL
+   3  Erick     1300  NULL
+   3  NULL      2800  NULL
+
+query ITIT
+select ID, name, salary,
+FIRST_VALUE(name ignore nulls) OVER (partition by ID order by salary ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING) as highest_sal_name
+from test order by ID,salary, name;
+----
+   1  Tom       120   Tom
+   2  Joe       80    Joe
+   2  Ellen     240   Joe
+   3  NULL      10    Secooler
+   3  Secooler  800   Secooler
+   3  Erick     1300  Secooler
+   3  NULL      2800  Secooler
+
+query ITIT
+select ID, name, salary,
+FIRST_VALUE(name)ignore nulls OVER (partition by ID order by salary ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING) as highest_sal_name
+from test order by ID,salary, name;
+----
+   1  Tom       120   Tom
+   2  Joe       80    Joe
+   2  Ellen     240   Joe
+   3  NULL      10    Secooler
+   3  Secooler  800   Secooler
+   3  Erick     1300  Secooler
+   3  NULL      2800  Secooler
+
+#ISNULL()
+query IIII
+SELECT isnull(null), isnull('test'), isnull(123.456), isnull('10:00');
+----
+1 0 0 0
+
+#LOCALTIMESTAMP
+statement count 1
+select local_timestamp
+
+#LAST_DAY()
+query T
+select last_day(to_date('1999.11.29','yyyy.mm.dd'));
+----
+1999-11-30 00:00:00 +0000 +0000
+
+query T
+select last_day(to_timestamp('2012-08-24 00:00:00' ,'yyyy-mm-dd HH-MI-SS'));
+----
+2012-08-31 00:00:00 +0000 +0000
+
+statement ok
+create table m(d date)
+
+statement ok
+insert into m values(to_date('2022-2-2','yyyy-mm-dd')),(to_date('2012-1-9','yyyy-mm-dd')),(to_date('2019-11-5','yyyy-mm-dd')),(to_date('2022-5-1','yyyy-mm-dd'))
+
+query T
+select last_day(d) from m order by d
+----
+  2012-01-31 00:00:00 +0000 +0000
+  2019-11-30 00:00:00 +0000 +0000
+  2022-02-28 00:00:00 +0000 +0000
+  2022-05-31 00:00:00 +0000 +0000
+
+#ADD_MONTHS()
+query T
+select add_months(d, 1) from m order by d;
+----
+  2012-02-09 00:00:00 +0000 +0000
+  2019-12-05 00:00:00 +0000 +0000
+  2022-03-02 00:00:00 +0000 +0000
+  2022-06-01 00:00:00 +0000 +0000
+
+#TRIM()
+statement ok
+create table t(ming string)
+
+statement ok
+insert into t values('vvaaalllaaavv'),(' qwerewq '),('  nb nb nb  ')
+
+query T
+select trim(both 'v' from ming) from t order by ming
+----
+    nb nb nb
+   qwerewq
+  aaalllaaa
+
+query T
+select trim(LEADING  'v' from ming) from t order by ming
+----
+    nb nb nb
+   qwerewq
+  aaalllaaavv
+
+query T
+select trim(TRAILING 'v' from ming) from t order by ming
+----
+    nb nb nb
+   qwerewq
+  vvaaalllaaa
+
+query T
+select trim(TRAILING '' from ming) from t order by ming;
+----
+  NULL
+  NULL
+  NULL
+
+query T
+select trim(ming) from t order by ming;
+----
+  nb nb nb
+  qwerewq
+  vvaaalllaaavv
+
+#REMAINDER()
+query R
+select remainder(11.3,2);
+----
+-0.7
+
+query R
+select remainder(11.6,2);
+----
+-0.4

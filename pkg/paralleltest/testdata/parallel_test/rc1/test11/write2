@@ -1,0 +1,25 @@
+statement ok
+SELECT pg_sleep(1);
+
+statement ok
+PREPARE ea AS UPDATE a SET c=c+$1 WHERE a=$2 AND b=$3;
+
+statement ok
+PREPARE eb AS UPDATE b SET b=b+$1 WHERE a=$2;
+
+statement ok
+BEGIN TRANSACTION ISOLATION LEVEL READ COMMITTED;
+
+statement ok
+EXECUTE ea(2, 1, 2);
+
+statement ok
+EXECUTE eb(2, 1);
+
+query II
+select * from b;
+----
+1  3
+
+statement ok
+COMMIT;

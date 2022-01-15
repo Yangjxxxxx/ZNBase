@@ -1,0 +1,8 @@
+statement ok
+CREATE TABLE t(a INT PRIMARY KEY);
+
+statement ok
+INSERT INTO t VALUES (1);
+
+statement ok
+ALTER TABLE t REPLICATION ENABLE

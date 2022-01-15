@@ -1,0 +1,31 @@
+statement ok
+BEGIN;
+SET TRANSACTION ISOLATION LEVEL READ COMMITTED;
+
+statement ok
+SELECT pg_sleep(1);
+
+statement ok
+SELECT pg_sleep(3);
+
+query TTIBTTRB
+SELECT * FROM A right join B ON A.ab=B.bb ORDER BY B.a,A.a;
+----
+d     2019-07-01 00:00:00 +0000 +0000  2     false  a  2019-07-01 00:00:00 +0000 +0000  5.5  true
+d     2019-07-01 00:00:00 +0000 +0000  2     false  c  2019-07-01 00:00:00 +0000 +0000  3.3  true
+m     2019-06-01 00:00:00 +0000 +0000  1     true   d  2019-06-01 00:00:00 +0000 +0000  2.2  false
+NULL  NULL                             NULL  NULL   n  2019-05-01 00:00:00 +0000 +0000  1.1  true
+
+statement ok
+SELECT pg_sleep(3);
+
+query TTIBTTRB
+SELECT * FROM A right join B ON A.ab=B.bb ORDER BY B.a,A.a;
+----
+d     2019-07-01 00:00:00 +0000 +0000  2     false  a  2019-07-01 00:00:00 +0000 +0000  5.5  true
+d     2019-07-01 00:00:00 +0000 +0000  2     false  c  2019-07-01 00:00:00 +0000 +0000  3.3  true
+m     2019-06-01 00:00:00 +0000 +0000  1     true   d  2019-06-01 00:00:00 +0000 +0000  2.2  false
+m     2019-06-01 00:00:00 +0000 +0000  1     true   n  2019-06-01 00:00:00 +0000 +0000  1.1  true
+
+statement ok
+COMMIT;

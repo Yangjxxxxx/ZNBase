@@ -1,0 +1,2178 @@
+# LogicTest: local-opt
+
+statement ok
+use defaultdb
+
+## 数据准备
+statement ok
+set sql_safe_updates = false;
+
+statement ok
+create table test (id int, age int);
+
+statement ok
+insert into test values(1, 23), (2, 34), (3, 45);
+
+statement ok
+create table test_data(result int);
+
+
+# case 1 一般 procedure
+
+## case 1.1 创建及修改 procedure
+
+### case 1.1.1 创建无参 procedure
+statement ok
+create procedure test_proc() as $$
+BEGIN
+    insert into test values(123, 321);
+END
+$$ language plpgsql;
+
+statement ok
+call test_proc();
+
+query II colnames
+select * from test;
+----
+ id age
+  1  23
+  2  34
+  3  45
+123  321
+
+statement ok
+delete from test where age=321;
+
+### case 1.1.2 创建一个参数的 procedure
+statement ok
+create procedure test_proc(age int) as $$
+BEGIN
+    insert into test values(998, age);
+END
+$$ language plpgsql;
+
+statement ok
+call test_proc(11);
+
+query II colnames
+select * from test;
+----
+  id age
+   1  23
+   2  34
+   3  45
+ 998  11
+
+statement ok
+delete from test where age=11;
+
+### case 1.1.3 创建两个参数的 procedure
+statement ok
+create procedure test_proc(id int, age int) as $$
+BEGIN
+    insert into test values(id, age);
+END
+$$ language plpgsql;
+
+statement ok
+call test_proc(123, 321);
+
+query II colnames
+select * from test;
+----
+ id age
+  1  23
+  2  34
+  3  45
+123  321
+
+statement ok
+delete from test where age=321;
+
+
+## case 1.2 将一个参数的procedure修改为按列添加
+statement ok
+create or replace procedure test_proc(age int) as $$
+BEGIN
+    insert into test(age) values(age);
+END
+$$ language plpgsql;
+
+statement ok
+call test_proc(1234);
+
+query II colnames
+select * from test;
+----
+id   age
+ 1    23
+ 2    34
+ 3    45
+ NULL 1234
+
+statement ok
+delete from test where age=1234;
+
+
+## case 1.3 删除 procedure
+## case 1.3.1 删除无参procedure
+statement ok
+drop procedure test_proc();
+
+## case 1.3.2 删除一个参数的procedure
+statement ok
+drop procedure test_proc(int);
+
+#query T colnames
+#select proname from system.function_namespace where funcname like 'test_proc' and proargtypes=array[23];
+#----
+#proname
+
+
+## case 2 游标
+## case 2.1 游标创建
+statement ok
+create or replace procedure pg_count(a int)
+as $$
+DECLARE
+    result      int;
+    cursor1 CURSOR for select id from test;
+BEGIN
+    open cursor1;
+    loop
+        fetch cursor1 into result;
+        exit when not found;
+        insert into test_data values (result);
+    end loop;
+    close cursor1;
+END
+$$ LANGUAGE plpgsql;
+
+statement ok
+call pg_count(1);
+
+query I colnames
+select * from test_data;
+----
+result
+1
+2
+3
+
+## case 2.2 修改游标所在行
+statement ok
+delete from test;
+
+statement ok
+insert into test values (1,23), (2, 34), (3,45);
+
+statement ok
+create or replace procedure modify_cursor(c int)
+as $$
+declare
+    cursor10 CURSOR is select * from test;
+    a int;
+    b int;
+BEGIN
+    open cursor10;
+    loop
+        fetch cursor10 into a, b;
+        exit when not found;
+        if a=c then
+            UPDATE test set age=100 where current of cursor10;
+        end if;
+    end loop;
+    close cursor10;
+END
+$$ language plpgsql;
+
+statement ok
+call modify_cursor(1);
+
+query II colnames
+select * from test;
+----
+id   age
+ 1    100
+ 2    34
+ 3    45
+
+## case 2.3 删除游标所在行
+statement ok
+create or replace procedure delete_cursor(c int)
+as $$
+declare
+    cursor10 CURSOR is select * from test;
+    a int;
+    b int;
+BEGIN
+    open cursor10;
+    loop
+        fetch cursor10 into a, b;
+        exit when not found;
+        if a=c then
+            delete from test where current of cursor10;
+        end if;
+    end loop;
+    close cursor10;
+END
+$$ language plpgsql;
+
+statement ok
+delete from test;
+
+statement ok
+insert into test values(1, 23), (2, 34), (3, 45);
+
+statement ok
+call delete_cursor(3);
+
+query II colnames
+select * from test;
+----
+id   age
+ 1    23
+ 2    34
+
+
+## case 2.4 动态sql
+statement ok
+delete from test;
+
+statement ok
+insert into test values(1, 23), (2, 34), (3, 45);
+
+
+# 创建成功, call失败
+# statement ok
+# create procedure dynamic_sql(num int) as $$
+# begin
+#     execute 'insert into test values ('|| num ||','|| num || ')';
+# end
+# $$ language plpgsql;
+
+
+# statement ok
+# call dunamic_sql(998);
+#
+# query II colnames
+# select * from test;
+# ----
+# id   age
+#  1    23
+#  2    34
+#  3    45
+#  998  998
+#
+# statement ok
+# delete from test where age=998;
+
+
+# statement ok
+# create or replace procedure dynamic_sql(num int) as $$
+# declare
+#     res int;
+# begin
+#     execute format('select age from test where id=$1') into res using num;
+#     insert into test_data values(res);
+# end
+# $$ language plpgsql;
+#
+# statement ok
+# call dynamic_sql(3);
+#
+# query I colnames
+# select * from test_data;
+# ----
+# result
+# 1
+# 2
+# 3
+# 45
+#
+# statement ok
+# delete from test_data where result=45;
+
+statement ok
+create or replace procedure p001(a int)
+as $$
+BEGIN
+    execute 'insert into test_data values ($1)' using $1;
+END;
+$$ language plpgsql;
+
+statement ok
+call p001(998);
+
+query I colnames
+select * from test_data;
+----
+result
+1
+2
+3
+998
+
+statement ok
+drop procedure test_proc(int, int);
+
+statement ok
+drop procedure modify_cursor(int);
+
+statement ok
+drop procedure delete_cursor(int);
+
+statement ok
+drop procedure p001(int);
+
+statement ok
+drop procedure pg_count(int);
+
+
+
+# case 3 触发器
+#
+## 创建触发器对应的存储过程
+## PG里面必须是function，因为需要返回值为trigger，而且不能有参数
+## create or replace function test_func22() returns trigger as $$
+## begin
+## insert into test_data values (998);
+## return NULL;
+## end
+## $$ language plpgsql;
+
+# 在ZNBase里面直接使用procedure作为trigger的关联函数
+# statement ok
+# delete from test_data where true;
+#
+# statement ok
+# create or replace procedure test_proc22(a int) as $$
+# begin
+#     insert into test_data values (998);
+# end
+# $$ language plpgsql;
+#
+# # case 3.1 创建触发器
+# # case 3.1.1 创建一般触发器
+# statement ok
+# create trigger test_trigger22 after insert on test for each row execute procedure test_func22(1);
+#
+# statement ok
+# insert into test values (5, 55);
+#
+# query I colnames
+# select * from test_data;
+# ----
+# result
+# 998
+#
+# statement ok
+# delete from test where age=55;
+#
+# statement ok
+# delete from test_data where true;
+#
+# # case 3.1.2 创建存储过程带游标的触发器
+# statement ok
+# create trigger test_trigger23 after insert on test for each row execute procedure pg_count(1);
+#
+# statement ok
+# insert into test values (5, 55);
+#
+# query I colnames
+# select * from test_data;
+# ----
+# result
+# 1
+# 2
+# 3
+#
+# statement ok
+# delete from test where age=55;
+#
+# statement ok
+# delete from test_data where true;
+#
+# # case 3.1.3 创建存储过程中可修改游标所在行的触发器
+# statement ok
+# create trigger test_trigger24 after insert on test for each row execute procedure modify_cursor(3);
+#
+# statement ok
+# insert into test values (5, 55);
+#
+# query II colnames
+# select * from test;
+# ----
+# id   age
+#  1    23
+#  2    34
+#  3    100
+#  5    55
+#
+# statement ok
+# delete from test where age>40;
+#
+# statement ok
+# insert into test values (3, 45);
+#
+# # case 3.1.4 创建存储过程中可删除游标所在行的触发器
+# statement ok
+# create trigger test_trigger25 after insert on test for each row execute procedure delete_cursor(3);
+#
+# statement ok
+# insert into test values (5, 55);
+#
+# query II colnames
+# select * from test;
+# ----
+# id   age
+#  1    23
+#  2    34
+#  5    55
+#
+# statement ok
+# delete from test where age>40;
+#
+# statement ok
+# insert into test values (3, 45);
+#
+# # case 3.1.5 创建存储过程中可执行动态sql的触发器
+# statement ok
+# create trigger test_trigger26 after delete on test for each row execute procedure dynamic_sql(998);
+#
+# statement ok
+# delete from test where id=3;
+#
+# query II colnames
+# select * from test;
+# ----
+# id   age
+#  1    23
+#  2    34
+#  998  998
+#
+# statement ok
+# delete from test where age>40;
+#
+# statement ok
+# insert into test values (3, 45);
+#
+#
+# # case 3.2 删除触发器
+# statement ok
+# drop trigger test_trigger22 on test;
+# ## TODO
+#
+# # case 3.3 查看触发器
+# statement ok
+# select * from system.procedures;
+#
+
+
+# case 4
+# case 4.1 declare data type
+# p3 SERIAL;
+statement ok
+CREATE OR REPLACE PROCEDURE pg_count()
+AS $$
+DECLARE
+    p1 BIT;
+    p2 INT8;
+    p4 CHARACTER;
+BEGIN
+    insert into test values(1);
+END
+$$ LANGUAGE plpgsql;
+
+statement ok
+call pg_count();
+
+# case 4.2 declare 不合法内容
+statement error pq: ZNBase PLSQL ERMSG: missing data type declaration at or near ";"
+CREATE OR REPLACE PROCEDURE TEST_PROC() AS $$
+DECLARE
+    p1 BIT;
+    sdf;
+BEGIN
+    insert into test values (1);
+END
+$$ LANGUAGE plpgsql;
+
+# case 4.3 truncate
+statement ok
+create table test_truncate(a int);
+
+statement ok
+insert into test_truncate values (1), (3), (5);
+
+query I colnames
+select * from test_truncate;
+----
+a
+1
+3
+5
+
+statement ok
+truncate test_truncate;
+
+query I colnames
+select * from test_truncate;
+----
+a
+
+# case 4.4 0和NULL区别
+statement ok
+create table test1(a int,b int);
+
+statement ok
+insert into test1 values (1);
+
+query II colnames
+select * from test1;
+----
+a  b
+1  NULL
+
+statement ok
+CREATE OR REPLACE PROCEDURE test_proc1() as $$
+BEGIN
+insert into test1 values(1);
+END
+$$ language plpgsql;
+
+statement ok
+call test_proc1();
+
+query II colnames
+select * from test1;
+----
+a  b
+1  NULL
+1  NULL
+
+# case 4.5 cursor status
+statement ok
+create or replace procedure pg_count(a int)
+as $$
+DECLARE
+    result int;
+    cursor1 CURSOR for select id from test;
+BEGIN
+    open cursor1;
+    loop
+        fetch cursor1 into result;
+        exit when not found;
+        insert into test_data values (result);
+    end loop;
+END
+$$ LANGUAGE plpgsql;
+
+statement ok
+call pg_count(1);
+
+statement ok
+call pg_count(2);
+
+# case 4.6 case when
+statement ok
+CREATE OR REPLACE PROCEDURE test_proc() as $$
+DECLARE
+    x int;
+BEGIN
+    x=1;
+    CASE x
+        WHEN 1, 2 THEN
+            insert into test values(1);
+        ELSE
+            insert into test values(2);
+    END CASE;
+END
+$$ language plpgsql;
+
+statement ok
+call test_proc();
+
+# case 4.7 循环结构的预期
+# case 4.7.1 LOOP
+statement ok
+drop table test;
+
+statement ok
+create table test(a int);
+
+statement ok
+CREATE OR REPLACE PROCEDURE test_proc() as $$
+DECLARE
+    count int;
+BEGIN
+    count=1;
+    LOOP
+        insert into test values(count);
+        IF count > 5 THEN
+            EXIT;
+        END IF;
+        count=count+1;
+    END LOOP;
+END
+$$ language plpgsql;
+
+# statement ok
+# truncate test;
+#
+# query I colnames
+# select count(*) from test;
+# ----
+# count
+# 0
+#
+# statement ok
+# call test_proc();
+#
+# query I colnames
+# select count(*) from test;
+# ----
+# count
+# 6
+#
+# query I colnames
+# select * from test;
+# ----
+# a
+# 1
+# 2
+# 3
+# 4
+# 5
+# 6
+#
+# statement ok
+# delete from test;
+
+# # case 4.7.2 WHILE
+# statement ok
+# CREATE OR REPLACE PROCEDURE test_proc() as $$
+# DECLARE
+#     var int;
+# BEGIN
+#     var=10;
+#     WHILE var > 0 AND var < 100 LOOP
+#         var=var+20;
+#         insert into test values(var);
+#     END LOOP;
+# END
+# $$ language plpgsql;
+#
+# statement ok
+# truncate test;
+#
+# statement ok
+# call test_proc();
+#
+# query I colnames
+# select * from test;
+# ----
+# a
+# 30
+# 50
+# 70
+# 90
+# 110
+#
+# statement ok
+# delete from test;
+#
+# # case 4.8 RAISE(PG也不在客户端打印提示信息)
+# # statement ok
+# # CREATE OR REPLACE PROCEDURE test_proc() as $$
+# # DECLARE
+# #     x int;
+# #     y int;
+# # BEGIN
+# #     x := x + 1;
+# #     y := x / 0;
+# #     EXCEPTION
+# #         WHEN division_by_zero THEN
+# #             RAISE NOTICE 'caught division_by_zero';
+# #     END;
+# # $$ language plpgsql;
+# #
+# # statement ok
+# # call test_proc();
+#
+# # case 4.9 division (SIGPANIC before)
+# statement ok
+# CREATE OR REPLACE PROCEDURE test_proc() as $$
+# DECLARE
+#     var int;
+# BEGIN
+#     var=100/10;
+#     insert into test values(var);
+# END
+# $$ language plpgsql;
+#
+# statement ok
+# call test_proc();
+#
+# query I colnames
+# select * from test;
+# ----
+# a
+# 10
+#
+# statement ok
+# delete from test;
+#
+# # case 4.10 +,-,*,mod,pow
+# statement ok
+# CREATE OR REPLACE PROCEDURE test_proc() as $$
+# DECLARE
+#     var int;
+# BEGIN
+#     var=10;
+#     insert into test values(var);
+#     var=10+10;
+#     insert into test values(var);
+#     var=10*10;
+#     insert into test values(var);
+#     var=20-10;
+#     insert into test values(var);
+#     var=3%2;
+#     insert into test values(var);
+#     var=3^2;
+#     insert into test values(var);
+# END
+# $$ language plpgsql;
+#
+# statement ok
+# call test_proc();
+#
+# query I colnames
+# select * from test;
+# ----
+# a
+# 10
+# 20
+# 100
+# 10
+# 1
+# 9
+#
+# statement ok
+# delete from test;
+#
+# # case 4.11 type conversion
+# statement ok
+# CREATE OR REPLACE PROCEDURE test_proc() as $$
+# DECLARE
+#     var int;
+# BEGIN
+#     var := 0.003;
+#     insert into test values(var);
+#     var = 'test';
+#     insert into test values(var);
+#     var = '';
+#     insert into test values(var);
+# END
+# $$ language plpgsql;
+#
+# statement error pq: ZNBase PLSQL ERMSG: XXOOO: assign the value cannot parse "" as decimal
+# call test_proc();
+#
+# query I colnames
+# select * from test;
+# ----
+# a
+#
+# statement ok
+# delete from test;
+#
+# # case 4.12 comparison lead to SIGPANIC
+# # case 4.12.1 !=
+# statement ok
+# CREATE OR REPLACE PROCEDURE test_proc(c INT) AS $$
+# BEGIN
+#     IF c!=1 THEN
+#         INSERT INTO test_data VALUES (1111);
+#     END IF;
+# END
+# $$ LANGUAGE plpgsql;
+#
+# statement ok
+# call test_proc(9);
+#
+# query I colnames
+# select * from test;
+# ----
+# a
+#
+# statement ok
+# delete from test;
+#
+# # case 4.12.2 <>
+# statement ok
+# delete from test_data;
+#
+# statement ok
+# CREATE OR REPLACE PROCEDURE test_proc(c INT) AS $$
+# BEGIN
+#     IF c<>33 THEN
+#         INSERT INTO test_data VALUES (1111);
+#     ELSE
+#         INSERT INTO test_data VALUES (2222);
+#     END IF;
+# END
+# $$ LANGUAGE plpgsql;
+#
+# statement ok
+# call test_proc(9);
+#
+# query I colnames
+# select * from test_data;
+# ----
+# result
+# 1111
+#
+# statement ok
+# delete from test_data;
+#
+# # case 4.12.3 change all comparison operator to ==
+# statement ok
+# CREATE OR REPLACE PROCEDURE test_proc(c INT) AS $$
+# BEGIN
+#     IF c>=20 and c<25 THEN
+#         INSERT INTO test_data VALUES (1111);
+#     ELSE
+#         INSERT INTO test_data VALUES (2222);
+#     END IF;
+# END
+# $$ LANGUAGE plpgsql;
+#
+# statement ok
+# call test_proc(20);
+#
+# query I colnames
+# select * from test_data;
+# ----
+# result
+# 1111
+#
+# statement ok
+# call test_proc(23);
+#
+# query I colnames
+# select * from test_data;
+# ----
+# result
+# 1111
+# 1111
+#
+# statement ok
+# call test_proc(28);
+#
+# query I colnames
+# select * from test_data;
+# ----
+# result
+# 1111
+# 1111
+# 2222
+#
+# statement ok
+# delete from test_data;
+#
+# # case 4.13 without LANGUAGE plpgsql
+# statement ok
+# CREATE OR REPLACE PROCEDURE test_proc() AS $$
+# BEGIN
+#     NULL;
+# END
+# $$ ;
+#
+# # case 4.14 transaction key words
+# statement error pq: procedure does not support transaction
+# CREATE OR REPLACE PROCEDURE test_proc()
+# LANGUAGE plpgsql
+# AS $$
+# BEGIN
+#     INSERT INTO test VALUES (1,2);
+#     COMMIT;
+#     INSERT INTO test VALUES (3,4);
+#     ROLLBACK;
+# END
+# $$ ;
+#
+#
+# # case 4.14 NULL value
+# # case 4.14.1 insert or update NULL
+# statement ok
+# create table test_001(a int, b int);
+#
+# statement ok
+# create or replace procedure test_proc() as $$
+# BEGIN
+#     insert into test_001 values(NULL,1);
+#     update test_001 set b=NULL;
+# END
+# $$ LANGUAGE plpgsql;
+#
+# statement ok
+# call test_proc();
+#
+# query II colnames
+# select * from test_001;
+# ----
+# a     b
+# NULL  NULL
+#
+# statement ok
+# delete from test_001;
+#
+# # case 4.14.2 where NULL
+# statement ok
+# insert into test_001 values (NULL, 1);
+#
+# statement ok
+# create or replace procedure test_proc() as $$
+# BEGIN
+#     insert into test_001 values(1,2);
+#     update test_001 set b=3 where a is NULL;
+# END
+# $$ LANGUAGE plpgsql;
+#
+# statement ok
+# call test_proc();
+#
+# query II colnames
+# select * from test_001;
+# ----
+# a     b
+# NULL  3
+# 1     2
+#
+# statement ok
+# drop table test_001;
+#
+# # case 4.14.3 select NULL
+# statement ok
+# create table test_curs(id int);
+#
+# statement ok
+# insert into test_curs values(1),(2),(NULL),(NULL);
+#
+# statement ok
+# create table test_cursor(a int);
+#
+# statement ok
+# create or replace procedure test_proc2()
+# as $$
+# DECLARE
+#     result int;
+#     cursor1 CURSOR for select id from test_curs;
+# BEGIN
+#     open cursor1;
+#     loop
+#         fetch cursor1 into result;
+#         exit when not found;
+#         insert into test_cursor values (result);
+#     end loop;
+#     close cursor1;
+# END
+# $$ LANGUAGE plpgsql;
+#
+# statement ok
+# call test_proc2();
+#
+# query I colnames
+# select * from test_cursor;
+# ----
+# a
+# 1
+# 2
+# NULL
+# NULL
+#
+# statement ok
+# delete from test;
+#
+#
+# # case 4.15 ROLLBACK
+# statement ok
+# drop table test;
+#
+# statement ok
+# create table test(a int,b int);
+#
+# statement ok
+# CREATE OR REPLACE PROCEDURE pg_count() AS $$
+# BEGIN
+#     insert into test values(1,2);
+#     insert into test values(1,2,3);
+# END
+# $$ LANGUAGE plpgsql;
+#
+# statement error pq: ZNBase PLSQL ERMSG: 42601:INSERT has more expressions than target columns, 3 expressions for 2 targets
+# call pg_count();
+#
+# query II colnames
+# select * from test;
+# ----
+# a   b
+#
+#
+# statement ok
+# drop table test;
+#
+# statement ok
+# CREATE OR REPLACE PROCEDURE pg_count() AS $$
+# BEGIN
+#     create table a(a int);
+#     create table a(a int);
+# END
+# $$ LANGUAGE plpgsql;
+#
+# statement error pq: ZNBase PLSQL ERMSG: 42P07:relation "a" already exists
+# call pg_count();
+#
+# query T colnames
+# show tables;
+# ----
+# table_name
+# test1
+# test_curs
+# test_cursor
+# test_data
+# test_truncate
+#
+# statement ok
+# drop table if exists a;
+#
+# statement ok
+# drop table test_truncate;
+#
+# statement ok
+# drop table test_curs;
+#
+# statement ok
+# drop table test_cursor;
+#
+# # case 4.16.1 LOOP
+# # statement ok
+# # create table test(a int);
+# #
+# # statement ok
+# # CREATE OR REPLACE PROCEDURE test_proc2() as $$
+# # BEGIN
+# #     LOOP
+# #         insert into test values(1);
+# #     END LOOP;
+# # END
+# # $$ language plpgsql;
+# #
+# # statement ok
+# # call test_proc2();
+# #
+# # query I colnames
+# # select count(*) from test;
+# # ----
+# #
+# # statement ok
+# # delete from test;
+# #
+# # # case 4.16.2 WHILE
+# # statement ok
+# # CREATE OR REPLACE PROCEDURE test_proc() as $$
+# # BEGIN
+# #     WHILE NOT done LOOP
+# #         insert into test values(1);
+# #     END LOOP;
+# # END
+# # $$ language plpgsql;
+# #
+# # statement ok
+# # call test_proc();
+# #
+# # query I colnames
+# # select count(*) from test;
+# # ----
+# #
+# #
+# # statement ok
+# # create table test(a int);
+# #
+# # statement ok
+# # CREATE OR REPLACE PROCEDURE test_proc() as $$
+# # BEGIN
+# #     WHILE 1 LOOP
+# #         insert into test values(1);
+# #     END LOOP;
+# # END
+# # $$ language plpgsql;
+# #
+# # statement ok
+# # call test_proc();
+# #
+# # query I colnames
+# # select count(*) from test;
+# # ----
+# #
+# #
+# # case 4.17 don't support calling procedure in procedure
+# statement ok
+# create table test(a int);
+#
+# statement ok
+# CREATE OR REPLACE PROCEDURE test_proc() as $$
+# BEGIN
+#     insert into test values(1);
+# END
+# $$ language plpgsql;
+#
+# statement ok
+# CREATE OR REPLACE PROCEDURE test_proc2() as $$
+# BEGIN
+#     call test_proc();
+# END
+# $$ language plpgsql;
+#
+# statement ok
+# call test_proc2();
+#
+# query I
+# select * from test
+# ----
+# 1
+#
+# statement ok
+# delete from test;
+#
+# # case 4.18 dynamic sql
+# statement ok
+# create or replace procedure proc1(a int) as $$
+# BEGIN
+#     execute 'insert into test_data values($1)' using $1;
+# END;
+# $$ language plpgsql;
+#
+# statement ok
+# call proc1(110);
+#
+# query I colnames
+# select * from test_data;
+# ----
+# result
+# 110
+#
+# statement ok
+# delete from test_data;
+#
+#
+# # case 4.19 support buildin functions
+# statement ok
+# CREATE OR REPLACE PROCEDURE test_proc() AS $$
+# BEGIN
+#     insert into test values(abs(-100));
+# END
+# $$ LANGUAGE plpgsql;
+#
+# statement ok
+# call test_proc();
+#
+# query I colnames
+# select * from test;
+# ----
+# a
+# 100
+#
+#
+# # case 4.20 DML key words
+# # case 4.20.1 like
+# statement ok
+# create table test2(a int,b varchar);
+#
+# statement ok
+# insert into test2 values(1,'znbasedb');
+#
+# statement ok
+# CREATE OR REPLACE PROCEDURE test_proc() AS $$
+# BEGIN
+#     update test2 set a=2 where b like '%db';
+# END
+# $$ LANGUAGE plpgsql;
+#
+# statement ok
+# call test_proc();
+#
+# query IT colnames
+# select * from test2;
+# ----
+# a   b
+# 2   znbasedb
+#
+# statement ok
+# delete from test2;
+#
+# # case 4.20.2 similar to
+# statement ok
+# insert into test2 values(1,'znbase');
+#
+# statement ok
+# CREATE OR REPLACE PROCEDURE test_proc() AS $$
+# BEGIN
+#     update test2 set a=2 where b SIMILAR TO 'znbase';
+# END
+# $$ LANGUAGE plpgsql;
+#
+# statement ok
+# call test_proc();
+#
+# query IT colnames
+# select * from test2;
+# ----
+# a   b
+# 2   znbase
+#
+# statement ok
+# delete from test2;
+#
+# # case 4.20.3 NULLIF
+# statement ok
+# CREATE OR REPLACE PROCEDURE test_proc() AS $$
+# BEGIN
+#     insert into test2 values(NULLIF(1,0),NULLIF('a','a'));
+# END
+# $$ LANGUAGE plpgsql;
+#
+# statement ok
+# call test_proc();
+#
+# query IT colnames
+# select * from test2;
+# ----
+# a   b
+# 1   NULL
+#
+#
+# statement ok
+# delete from test2;
+#
+# # case 4.20.4 GREATEST/LEAST
+# statement ok
+# CREATE OR REPLACE PROCEDURE test_proc() AS $$
+# BEGIN
+#     insert into test2 values(greatest(1,2,3,4,5));
+#     insert into test2 values(least(1,2,3,4,5));
+# END
+# $$ LANGUAGE plpgsql;
+#
+# statement ok
+# call test_proc();
+#
+# query IT colnames
+# select * from test2;
+# ----
+# a   b
+# 5   NULL
+# 1   NULL
+#
+# # case 4.20.5 EXISTS
+# statement ok
+# CREATE OR REPLACE PROCEDURE test_proc() AS $$
+# BEGIN
+#     update test2 set a=2 where EXISTS(select a from test);
+# END
+# $$ LANGUAGE plpgsql;
+#
+# statement ok
+# call test_proc();
+#
+# query IT colnames
+# select * from test2;
+# ----
+# a   b
+# 2   NULL
+# 2   NULL
+#
+# statement ok
+# delete from test2;
+#
+# # case 4.20.6 NOT IN
+# statement ok
+# drop table if exists test;
+#
+# statement ok
+# create table test(a int);
+#
+# statement ok
+# insert into test values (1), (2), (4), (6);
+#
+# statement ok
+# CREATE OR REPLACE PROCEDURE test_proc() AS $$
+# BEGIN
+#     update test set a=2 where a NOT IN (1,2,3);
+# END
+# $$ LANGUAGE plpgsql;
+#
+# statement ok
+# call test_proc();
+#
+# query I colnames
+# select * from test;
+# ----
+# a
+# 1
+# 2
+# 2
+# 2
+#
+# statement ok
+# delete from test;
+#
+# # case 4.20.7 some/all/any
+# statement ok
+# insert into test values (1), (2), (4), (6);
+#
+# statement ok
+# CREATE OR REPLACE PROCEDURE test_proc() AS $$
+# BEGIN
+# update test set a=2 where a>any('{1,2,3}'::int[]);
+# update test set a=2 where a>some(select a from test);
+# update test set a=2 where a>all('{1,2,3}'::int[]);
+# END
+# $$ LANGUAGE plpgsql;
+#
+# statement ok
+# call test_proc();
+#
+# query I colnames
+# select * from test;
+# ----
+# a
+# 1
+# 2
+# 2
+# 2
+#
+# statement ok
+# delete from test;
+#
+# # case 4.20.8 insert on conflict
+# # statement ok
+# # drop table test;
+# #
+# # statement ok
+# # create table test(a int primary key,b int);
+# #
+# # statement ok
+# # CREATE OR REPLACE PROCEDURE test_proc() AS $$
+# # BEGIN
+# #     INSERT INTO test(a) VALUES(1) ON CONFLICT(a) DO UPDATE SET a=2;
+# # END
+# # $$ LANGUAGE plpgsql;
+# #
+# # statement ok
+# # call test_proc();
+# #
+# # query II colnames
+# # select * from test;
+# # ----
+# #
+# #
+# # statement ok
+# # call test_proc();
+# #
+# # query II colnames
+# # select * from test;
+# # ----
+# #
+# #
+# # statement ok
+# # delete from test;
+#
+#
+# # case 4.21 字符转义
+# # 1. 单引号双写： 'Peter''s Name'
+# # 2. E和"\"：    E'Peter\'s Name'
+# # case 4.21.1
+# statement ok
+# drop table test;
+#
+# statement ok
+# create table test(a string);
+#
+# statement ok
+# CREATE OR REPLACE PROCEDURE test_proc() AS $$
+# BEGIN
+#     insert into test values('Peter''s Name');
+# END
+# $$ LANGUAGE plpgsql;
+#
+# statement ok
+# call test_proc();
+#
+# query T colnames
+# select * from test;
+# ----
+# a
+# Peter's Name
+#
+# statement ok
+# delete from test;
+#
+# # case 4.21.2
+# statement ok
+# CREATE OR REPLACE PROCEDURE test_proc() AS $$
+# BEGIN
+#     insert into test values(E'Peter\'s Name');
+# END
+# $$ LANGUAGE plpgsql;
+#
+# statement ok
+# call test_proc();
+#
+# query T colnames
+# select * from test;
+# ----
+# a
+# Peter's Name
+#
+# statement ok
+# delete from test;
+#
+#
+# # case 4.22 constant format
+# # case 4.22.1 数字：省略小数点前的0、科学计数法、16进制
+# statement ok
+# drop table test2;
+#
+# statement ok
+# create table test2(a decimal(10,2));
+#
+# statement ok
+# CREATE OR REPLACE PROCEDURE test_proc() AS $$
+# BEGIN
+#     insert into test2 values(-.01);
+#     insert into test2 values(50e6);
+# END
+# $$ LANGUAGE plpgsql;
+#
+# statement ok
+# call test_proc();
+#
+# query T colnames
+# select * from test2;
+# ----
+# a
+# -0.01
+# 50000000.00
+#
+# statement ok
+# drop table test2;
+#
+# # case 4.22.2 BIT
+# statement ok
+# create table test3(a BIT);
+#
+# statement ok
+# CREATE OR REPLACE PROCEDURE test_proc() AS $$
+# BEGIN
+#     insert into test3 values(B'1');
+# END
+# $$ LANGUAGE plpgsql;
+#
+# statement ok
+# call test_proc();
+#
+# query O colnames
+# select * from test3;
+# ----
+# a
+# 1
+#
+# statement ok
+# drop table test3;
+#
+# # case 4.22.3 string/text
+# # statement ok
+# # create table test4(a varchar);
+# #
+# # statement ok
+# # CREATE OR REPLACE PROCEDURE test_proc() AS $$
+# # BEGIN
+# #     insert into test4 values(b'hello,\x32world');
+# # END
+# # $$ LANGUAGE plpgsql;
+# #
+# # # pg 报错，不支持
+# # statement error pq: Error Happen when execute procedure: \"h\" is not a valid binary digit
+# # call test_proc();
+# #
+# # query T colnames
+# # select * from test4;
+# # ----
+# #
+# #
+# # statement ok
+# # drop table test4;
+#
+# # case 4.22.4 类型转换
+# statement ok
+# drop table test;
+#
+# statement ok
+# create table test(str varchar);
+#
+# statement ok
+# CREATE OR REPLACE PROCEDURE test_proc() AS $$
+# BEGIN
+#     insert into test values('TRUE'::varchar);
+#     insert into test values(CAST('FALSE' AS varchar));
+# END
+# $$ LANGUAGE plpgsql;
+#
+# statement ok
+# call test_proc();
+#
+# query T colnames
+# select * from test;
+# ----
+# str
+# TRUE
+# FALSE
+#
+# statement ok
+# delete from test;
+#
+# # case 4.22.5 数组ARRAY
+# # statement ok
+# # create table test5(a int array);
+# #
+# # statement ok
+# # CREATE OR REPLACE PROCEDURE test_proc() AS $$
+# # BEGIN
+# #     insert into test5 values(ARRAY[1,2,3]);
+# # END
+# # $$ LANGUAGE plpgsql;
+# #
+# # statement ok
+# # call test_proc();
+# #
+# # query O colnames
+# # select * from test5;
+# # ----
+# # a
+# # {1,2,3}
+#
+# statement ok
+# drop table if exists test5;
+#
+# statement ok
+# drop table if exists test;
+#
+# statement ok
+# drop table if exists test_data;
+#
+# statement ok
+# drop table if exists test1;
+#
+#
+# # case 4.24 权限问题
+#
+# statement ok
+# drop procedure pg_count(int);
+#
+# statement ok
+# drop procedure pg_count();
+#
+# statement ok
+# drop procedure proc1(int);
+#
+# statement ok
+# drop procedure test_proc2();
+#
+# statement ok
+# drop procedure test_proc(int);
+#
+# # 5. 创建、删除、更改表定义
+# ## 5.1 创建表
+# statement ok
+# CREATE OR REPLACE PROCEDURE test_proc() AS $$
+# BEGIN
+#     CREATE TABLE test1(a INT, b STRING);
+#     CREATE TABLE test1(c DECIMAL(8,2));
+# END
+# $$ LANGUAGE plpgsql;
+#
+# statement error pq: ZNBase PLSQL ERMSG: 42P07:relation "test1" already exists
+# CALL test_proc();
+#
+# statement ok
+# CREATE OR REPLACE PROCEDURE test_proc() AS $$
+# BEGIN
+#     CREATE TABLE test2(a INT, b STRING);
+#     CREATE TABLE test3(c DECIMAL(8,2));
+# END
+# $$ LANGUAGE plpgsql;
+#
+# statement ok
+# CALL test_proc();
+#
+# query T colnames
+# SHOW TABLES;
+# ----
+# table_name
+# test2
+# test3
+#
+# ## 5.2 更改表定义
+# # statement ok
+# # CREATE OR REPLACE PROCEDURE test_proc()
+# # AS $$
+# # BEGIN
+# #     ALTER TABLE test2 ADD d VARCHAR;
+# #     ALTER TABLE test2 ALTER COLUMN c TYPE DECIMAL(10,2);
+# # END
+# # $$ LANGUAGE plpgsql;
+# #
+# # statement ok
+# # CALL test_proc();
+# #
+# # query TT colnames
+# # SHOW CREATE TABLE test2;
+# # ----
+# # table_name      create_statement
+# # test2           CREATE TABLE test2 (
+# #                     c DECIMAL(10,2) NULL,
+# #                     d VARCHAR NULL,
+# #                     FAMILY "primary" (c, rowid, d)
+# #                 )
+#
+#
+# ## 5.3 删除表定义
+# statement ok
+# CREATE OR REPLACE PROCEDURE test_proc()
+# AS $$
+# BEGIN
+#     DROP TABLE test2;
+#     DROP TABLE test3;
+# END
+# $$ LANGUAGE plpgsql;
+#
+# statement ok
+# CALL test_proc();
+#
+# query T colnames
+# SHOW tables;
+# ----
+# table_name
+#
+# statement ok
+# DROP TABLE IF EXISTS test1;
+#
+# statement ok
+# DROP TABLE IF EXISTS test2;
+#
+# statement ok
+# DROP TABLE IF EXISTS test3;
+#
+#
+#
+# # 6. 增删改查
+# ## 6.1 增
+# statement ok
+# CREATE TABLE test(a INT, b string);
+#
+# statement ok
+# CREATE OR REPLACE PROCEDURE test_proc() AS $$
+# begin
+#     insert INTO test values (1, 'zhangsan'), (2, 'lisi'), (3, 'wangwu');
+# end
+# $$ language plpgsql;
+#
+# statement ok
+# CALL test_proc();
+#
+# query IT colnames
+# SELECT * FROM test;
+# ----
+# a  b
+# 1  zhangsan
+# 2  lisi
+# 3  wangwu
+#
+# statement ok
+# delete FROM test;
+#
+#
+#
+# ## 6.2 删
+# statement ok
+# insert INTO test values (1, 'zhangsan'), (2, 'lisi'), (3, 'wangwu');
+#
+# statement ok
+# CREATE OR REPLACE PROCEDURE test_proc() AS $$
+# begin
+#     delete FROM test where b='lisi' or a=3;
+# end
+# $$ language plpgsql;
+#
+# statement ok
+# CALL test_proc();
+#
+# query IT colnames
+# SELECT * FROM test;
+# ----
+# a  b
+# 1  zhangsan
+#
+# statement ok
+# delete FROM test;
+#
+#
+# ## 6.3 改
+# statement ok
+# insert INTO test values (1, 'zhangsan'), (2, 'lisi'), (3, 'wangwu');
+#
+# statement ok
+# CREATE OR REPLACE PROCEDURE test_proc() AS $$
+# begin
+#     update test set b='maliu' where a=1;
+#     update test set a=4 where b='lisi';
+# end
+# $$ language plpgsql;
+#
+# statement ok
+# CALL test_proc();
+#
+# query IT colnames
+# SELECT * FROM test;
+# ----
+# a  b
+# 1  maliu
+# 4  lisi
+# 3  wangwu
+#
+# statement ok
+# delete FROM test;
+#
+#
+# ## 6.4 查
+# statement ok
+# CREATE TABLE test3new(a string);
+#
+# statement ok
+# CREATE TABLE test4new(count INT, aa string);
+#
+# statement ok
+# insert INTO test3new values ('jiayou'), ('wuhan');
+#
+# statement ok
+# CREATE OR REPLACE PROCEDURE test_proc() AS $$
+# DECLARE
+#     count INT;
+#     word text;
+# begin
+#     SELECT count(*) INTO count FROM test3new;
+#     insert INTO test4new(count) values (count);
+#     SELECT a INTO word FROM test3new where a like 'wu%';
+#     insert INTO test4new(aa) values (word);
+# end
+# $$ language plpgsql;
+#
+# statement ok
+# CALL test_proc();
+#
+# query IT colnames
+# SELECT * FROM test4new;
+# ----
+# count   aa
+# 2       NULL
+# NULL    wuhan
+#
+#
+# statement ok
+# DROP TABLE test3new;
+#
+# statement ok
+# DROP TABLE test4new;
+#
+#
+# # 7. 内置函数
+# # statement ok
+# # CREATE TABLE test_data(ff FLOAT);
+# #
+# # STATEMENT ok
+# # CREATE OR REPLACE PROCEDURE test_proc() AS $$
+# # DECLARE
+# #     result FLOAT;
+# # BEGIN
+# #     SELECT pi() INTO result;
+# #     INSERT INTO test_data values (result);
+# #     SELECT sin(1.5708) INTO result;
+# #     INSERT INTO test_data values (result);
+# #     SELECT log(100) INTO result;
+# #     INSERT INTO test_data values (result);
+# # END
+# # $$ language plpgsql;
+# #
+# # STATEMENT ok
+# # CALL test_proc();
+# #
+# # query R colnames
+# # SELECT * FROM test_data;
+# # ----
+# #          ff
+# #   3.141592653589793
+# #  0.9999999999932537
+# #                   2
+# #
+# # statement ok
+# # CREATE OR REPLACE PROCEDURE test_proc() AS $$
+# # begin
+# #     CREATE TABLE test_data1 AS SELECT pi();
+# #     CREATE TABLE test_data2 AS SELECT sin(1.5708);
+# #     CREATE TABLE test_data3 AS SELECT log(100.0);
+# # end
+# # $$ language plpgsql;
+# #
+# # statement ok
+# # CALL test_proc();
+# #
+# # query R colnames
+# # SELECT * FROM test_data1;
+# # ----
+# # pi
+# # 3.14159265358979
+# #
+# # query R colnames
+# # SELECT * FROM test_data2;
+# # ----
+# # sin
+# # 0.999999999993254
+# #
+# # query R colnames
+# # SELECT * FROM test_data3;
+# # ----
+# # log
+# # 2.0000000000000000000
+# #
+# # statement ok
+# # DROP TABLE IF EXISTS test_data1;
+# #
+# # statement ok
+# # DROP TABLE IF EXISTS test_data2;
+# #
+# # statement ok
+# # DROP TABLE IF EXISTS test_data3;
+# #
+# # statement ok
+# # delete FROM test_data;
+# #
+# #
+# # statement ok
+# # CREATE TABLE test_string (t string);
+# #
+# # statement ok
+# # CREATE OR REPLACE PROCEDURE test_proc() AS $$
+# # DECLARE
+# #     t text;
+# # begin
+# #     SELECT reverse('nihao') INTO t;
+# #     INSERT INTO test_string VALUES (t);
+# # end
+# # $$ language plpgsql;
+# #
+# # statement ok
+# # CALL test_proc();
+# #
+# # query T colnames
+# # SELECT * FROM test_string;
+# # ----
+# # t
+# # oahin
+# #
+# # statement ok
+# # DROP TABLE IF EXISTS test_string;
+# #
+# statement ok
+# CREATE TABLE test_int2(b INT);
+#
+# statement ok
+# CREATE TABLE test_int(a INT);
+#
+# statement ok
+# insert INTO test_int values (1), (5), (9), (6);
+#
+# statement ok
+# CREATE OR REPLACE PROCEDURE test_proc() AS $$
+# DECLARE
+#     result INT;
+#     cursor1 CURSOR FOR SELECT * FROM test_int WHERE a BETWEEN 2 AND 7;
+# BEGIN
+#     OPEN cursor1;
+#     LOOP
+#         FETCH cursor1 INTO result;
+#         EXIT WHEN NOT FOUND;
+#         INSERT INTO test_int2 VALUES (result);
+#     END LOOP;
+# END
+# $$ language plpgsql;
+#
+# statement ok
+# CALL test_proc();
+#
+# query I colnames
+# SELECT * FROM test_int2;
+# ----
+# b
+# 5
+# 6
+#
+# statement ok
+# DROP TABLE IF EXISTS test_int;
+#
+# statement ok
+# DROP TABLE IF EXISTS test_int2;
+#
+#
+# # 8. 多表连接查询
+# ## 8.1 pg系统表和pg系统表连接
+# # statement ok
+# # CREATE OR REPLACE PROCEDURE test_proc() AS $$
+# # begin
+# #     CREATE TABLE test_join AS SELECT castsource, typname, typinput FROM pg_cast INNER JOIN pg_type ON pg_cast.castsource=pg_type.oid LIMIT 2;
+# # end
+# # $$ language plpgsql;
+# #
+# # statement ok
+# # CALL test_proc();
+# #
+# # query ITT colnames
+# # SELECT * FROM test_join;
+# # ----
+# # castsource  typname typinput
+# #
+# #
+# # statement ok
+# # DROP TABLE IF EXISTS test_join;
+# #
+#
+# ## 8.2 znbase系统表和znbase系统表连接
+# statement ok
+# CREATE OR REPLACE PROCEDURE test_proc() AS $$
+# BEGIN
+#     CREATE TABLE test_join AS SELECT table_id, name, zone_name FROM zbdb_internal.tables INNER JOIN zbdb_internal.zones ON table_id=zone_id;
+# END
+# $$ LANGUAGE plpgsql;
+#
+# statement ok
+# CALL test_proc();
+#
+# query ITT colnames
+# SELECT * FROM test_join;
+# ----
+# table_id  name  zone_name
+# 15        jobs  system.jobs
+#
+# statement ok
+# DROP TABLE IF EXISTS test_join;
+#
+#
+# ## 8.3 pg系统表和znbase系统表连接
+# statement ok
+# CREATE OR REPLACE PROCEDURE test_proc() AS $$
+# BEGIN
+#     CREATE TABLE test_join AS SELECT oid, typname, name FROM pg_type INNER JOIN zbdb_internal.tables ON cast(oid AS INT)=table_id LIMIT 10;
+# END
+# $$ LANGUAGE plpgsql;
+#
+# statement ok
+# CALL test_proc();
+#
+# query OTT colnames
+# SELECT * FROM test_join;
+# ----
+# oid  typname  name
+# 19   name     web_sessions
+# 20   int8     table_statistics
+# 21   int2     locations
+# 23   int4     role_members
+# 24   regproc  comments
+# 25   text     snapshots
+# 26   oid      authentication
+#
+# statement ok
+# DROP TABLE IF EXISTS test_join;
+#
+#
+# ## 8.4 pg系统表和znbase普通表连接
+# statement ok
+# insert INTO test values (16, 'jia'), (17, 'you'), (18, 'wu'), (19, 'han');
+#
+# statement ok
+# CREATE OR REPLACE PROCEDURE test_proc() AS $$
+# BEGIN
+#     CREATE TABLE test_join AS SELECT oid, typname, b AS "jiayouwuhan" FROM pg_type INNER JOIN test ON cast(oid AS INT)=a LIMIT 10;
+# END
+# $$ LANGUAGE plpgsql;
+#
+# statement ok
+# CALL test_proc();
+#
+# query OTT colnames
+# SELECT * FROM test_join ORDER BY oid ASC;
+# ----
+# oid  typname  jiayouwuhan
+# 16   bool     jia
+# 17   bytea    you
+# 18   char     wu
+# 19   name     han
+#
+# statement ok
+# DROP TABLE IF EXISTS test_join;
+#
+#
+# # 9. 操作符的计算正确性检查（目前float类型的计算结果有错，很可能是PG编解码float类型时产生的问题）
+# statement ok
+# CREATE TABLE test_int(descr string, a INT);
+#
+# statement ok
+# CREATE TABLE test_bool(descr string, b BOOLEAN);
+#
+# statement ok
+# CREATE TABLE test_float(descr string, f FLOAT);
+#
+# statement ok
+# CREATE OR REPLACE PROCEDURE test_proc() AS $$
+# DECLARE
+#     result_int INT;
+#     result_bool BOOLEAN;
+#     result_float FLOAT;
+# BEGIN
+#     result_float := 1+2;
+#     INSERT INTO test_float values ('1+2', result_float);
+#     result_float := 100-1;
+#     INSERT INTO test_float values ('100-1', result_float);
+#     result_float := 111*6;
+#     INSERT INTO test_float values ('111*6', result_float);
+#     result_float := 1/3;
+#     INSERT INTO test_float values ('1/3', result_float);
+#     result_float := 3.3^2;
+#     INSERT INTO test_float values ('3.3^2', result_float);
+#     result_float := 4^0.5;
+#     INSERT INTO test_float values ('4^0.5', result_float);
+#     result_int := 32%7;
+#     INSERT INTO test_int values ('32%7', result_int);
+#     result_bool := (22>21);
+#     INSERT INTO test_bool values ('22>21', result_bool);
+#     result_bool := (22=21);
+#     INSERT INTO test_bool values ('22==21', result_bool);
+#     result_bool := (22<21);
+#     INSERT INTO test_bool values ('22<21', result_bool);
+#     SELECT (22<=23 AND 23 <=24) INTO result_bool;
+#     INSERT INTO test_bool values ('22<=23 AND 23 <=24', result_bool);
+#     SELECT (23 BETWEEN 22 AND 24) INTO result_bool;
+#     INSERT INTO test_bool values ('23 BETWEEN 22 AND 24', result_bool);
+# END
+# $$ LANGUAGE plpgsql;
+#
+# statement ok
+# CALL test_proc();
+#
+# query TI colnames
+# SELECT * FROM test_int;
+# ----
+# descr  a
+# 32%7   4
+#
+# # query TR colnames
+# # SELECT * FROM test_float;
+# # ----
+#
+#
+# query TB colnames
+# SELECT * FROM test_bool;
+# ----
+# descr                 b
+# 22>21                 true
+# 22==21                false
+# 22<21                 false
+# 22<=23 AND 23 <=24    true
+# 23 BETWEEN 22 AND 24  true
+#
+# statement ok
+# DROP TABLE IF EXISTS test_int;
+#
+# statement ok
+# DROP TABLE IF EXISTS test_bool;
+#
+# statement ok
+# DROP TABLE IF EXISTS test_float;
+#
+#
+# # 10. 存储过程内部进行存储过程重命名
+# statement ok
+# drop procedure test_proc();
+#
+# statement ok
+# CREATE OR REPLACE PROCEDURE test_proc1() AS $$
+# BEGIN
+#     CREATE TABLE test1(a INT, b STRING);
+#     CREATE TABLE test2(c DECIMAL(8,2));
+# END
+# $$ LANGUAGE plpgsql;
+#
+# statement ok
+# CREATE OR REPLACE PROCEDURE test_proc1() AS $$
+# BEGIN
+#     NULL;
+# END
+# $$ LANGUAGE plpgsql;
+#
+#
+# statement ok
+# CREATE OR REPLACE PROCEDURE test_proc2() AS $$
+# BEGIN
+#      ALTER PROCEDURE test_proc1() RENAME TO test_proc11;
+# END
+# $$ LANGUAGE plpgsql;
+#
+# statement ok
+# CALL test_proc2();
+#
+# statement ok
+# CREATE OR REPLACE PROCEDURE test_proc3() AS $$
+# BEGIN
+#     ALTER PROCEDURE test_proc3() RENAME TO test_proc33;
+# END
+# $$ LANGUAGE plpgsql;
+#
+# statement ok
+# CALL test_proc3();
+#
+#
+# statement ok
+# DROP PROCEDURE test_proc11();
+#
+# statement ok
+# DROP PROCEDURE test_proc2();
+#
+# statement ok
+# DROP PROCEDURE test_proc33();
+#
+#
+# #create trigger trig1_test after insert on tritest for each statement begin $$ insert into tritest2 values (10086); $$ end;
+# #insert into tritest values (1)
+# #query I colnames
+# #select * from tritest2
+# #----
+# #a
+# #10086
+# #query I colnames
+# #select * from tritest
+# #----
+# #a
+# #1
+#
+#

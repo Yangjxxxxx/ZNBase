@@ -1,0 +1,1976 @@
+# LogicTest: local local-opt
+
+statement ok
+create table tint4 (i4 int4)
+
+statement ok
+create table tint8 (i8 int8)
+
+statement ok
+create table tfloat (f float)
+
+statement ok
+create table tdecimal (d decimal)
+
+statement ok
+create table tstring (s string);
+
+statement ok
+create table tdate (dd date);
+
+statement ok
+create table ttimestamp (tp timestamp);
+
+statement ok
+create table tbool (b bool);
+
+statement ok
+create table t_bit(bb varbit);
+
+statement ok
+insert into tint4 values(2);
+
+statement ok
+insert into tint8 values(3);
+
+statement ok
+insert into tfloat values(2.5);
+
+statement ok
+insert into tdecimal values(3.2);
+
+statement ok
+insert into tstring values('123');
+
+statement ok
+insert into tstring values('123A');
+
+statement ok
+insert into tstring values('ABC');
+
+statement ok
+insert into tdate values(20191216);
+
+statement ok
+insert into ttimestamp values(20191216104520);
+
+statement ok
+insert into tbool values(true);
+
+statement ok
+insert into t_bit values(B'1100');
+
+# Constant
+
+query T
+select 1 + '3.5'
+----
+4.5
+
+query B
+select 1 > '3.5'
+----
+false
+
+query I
+select 1 + true
+----
+2
+
+query B
+select 2 > 1.9
+----
+true
+
+query B
+select 2 < 2.01
+----
+true
+
+query B
+select 2 = true
+----
+false
+
+query R
+select 2.5 + true
+----
+3.5
+
+query B
+select 2.5 >= true
+----
+true
+
+query T
+select 2.5 + '+1e2AB'
+----
+102.5
+
+query B
+select 22.3 > '+2.22e1E2'
+----
+true
+
+# Resolvable
+
+query I
+select 2 + (select b from tbool)
+----
+3
+
+query B
+select 2 = (select b from tbool)
+----
+false
+
+query R
+select 2 + (select f from tfloat)
+----
+4.5
+
+query B
+select 2 < (select f from tfloat)
+----
+true
+
+query R
+select 2 + (select d from tdecimal)
+----
+5.2
+
+query B
+select 2 = (select d from tdecimal)
+----
+false
+
+# query B
+# select 3.3 >= (select d from tdecimal)
+# ----
+# true
+
+query T
+select 2 + (select s from tstring where s = 'ABC')
+----
+2
+
+query B
+select 123 = (select s from tstring where s = '123')
+----
+true
+
+
+query T
+select 2 + (select dd from tdate)
+----
+2019-12-18 00:00:00 +0000 +0000
+
+query B
+select 20191216 = (select dd from tdate)
+----
+true
+
+query R
+select 2 + (select tp from ttimestamp)
+----
+20191216104522
+
+query B
+select 20191216104520 = (select tp from ttimestamp)
+----
+true
+
+query R
+select 2.5 + (select b from tbool)
+----
+3.5
+
+query B
+select 2.5 != (select b from tbool)
+----
+true
+
+query T
+select 2.5 + (select s from tstring where s = '123A')
+----
+125.5
+
+query B
+select 123.0 = (select s from tstring where s = '123')
+----
+true
+
+query R
+select 2.5 + (select dd from tdate)
+----
+20191218.5
+
+query B
+select 20191216.0 = (select dd from tdate)
+----
+true
+
+query B
+select 20191216.1 = (select dd from tdate)
+----
+false
+
+query R
+select 2.5 + (select tp from ttimestamp)
+----
+20191216104522.5
+
+query B
+select 20191216104520.0 = (select tp from ttimestamp)
+----
+true
+
+query B
+select 20191216104520.1 = (select tp from ttimestamp)
+----
+false
+
+query error pq: could not parse "123" as type bool: invalid bool value
+select (select s from tstring where s = '123') = true
+
+query R
+select (select s from tstring where s = '123') + true
+----
+124
+
+query B
+select true = 'true'
+----
+true
+
+query B
+select 'true' = true
+----
+true
+
+query error pq: could not parse "123" as type bool: invalid bool value
+select '123' = true
+
+query B
+select 'on' = true
+----
+true
+
+query B
+select 'yes' = true
+----
+true
+
+query B
+select '1.00000000' = true
+----
+true
+
+query error pq: could not parse "1.000000001" as type bool: invalid bool value
+select '1.000000001' = true
+
+query B
+select false = 'false'
+----
+true
+
+query B
+select false = '0.00000'
+----
+true
+
+query error pq: could not parse "0.00001" as type bool: invalid bool value
+select false = '0.00001'
+
+query B
+select (select dd from tdate) = true
+----
+false
+
+query T
+select (select dd from tdate) + true
+----
+2019-12-17 00:00:00 +0000 +0000
+
+query B
+select (select tp from ttimestamp) = false
+----
+false
+
+query R
+select (select tp from ttimestamp) + (select b from tbool)
+----
+20191216104521
+
+query B
+select (select dd from tdate) = '20191216'
+----
+true
+
+query B
+select (select dd from tdate) = '2019-12-16'
+----
+true
+
+query error pq: unsupported binary operator: <date> \+ <string>
+select (select dd from tdate) + (select s from tstring where s = '123A')
+
+query B
+select (select tp from ttimestamp) = '20191216104520'
+----
+true
+
+query B
+select (select tp from ttimestamp) = '20191216 104520'
+----
+true
+
+query B
+select (select tp from ttimestamp) = '2019-12-16 10:45:20'
+----
+true
+
+query error unsupported binary operator: <timestamp> \+ <string>
+select (select tp from ttimestamp) + (select s from tstring where s = '123A')
+
+statement ok
+insert into ttimestamp values(20191216);
+
+query T
+select tp from ttimestamp where tp = '20191216'
+----
+2019-12-16 00:00:00 +0000 +0000
+
+query T
+select tp from ttimestamp where tp = 20191216000000
+----
+2019-12-16 00:00:00 +0000 +0000
+
+query T
+select tp from ttimestamp where tp = '20191216000000'
+----
+2019-12-16 00:00:00 +0000 +0000
+
+query T
+select tp from ttimestamp where tp = 20191216000000
+----
+2019-12-16 00:00:00 +0000 +0000
+
+query B
+select (select tp from ttimestamp where tp = '20191216') = (select dd from tdate)
+----
+true
+
+query T
+select 'abc' || (select s from tstring where s = '123A')
+----
+abc123A
+
+query R
+select i8+3.14 from tint8;
+----
+6.14
+
+
+#### BitArray
+query R
+select bb+3.14 from t_bit;
+----
+15.14
+
+## add self-test
+
+# 1.1 加法
+query O
+select B'1101'+B'111';
+----
+10100
+
+
+query I
+select B'1101'+3;
+----
+16
+
+query R
+select B'1101'+4.51;
+----
+17.51
+
+query R
+select 4.49+B'1101';
+----
+17.49
+
+query R
+select B'11'+cast(8.12 as decimal(3, 2));
+----
+11.12
+
+query O
+select B'1100'+'1010';
+----
+1022
+
+query O
+select B'1100'+'123';
+----
+135
+
+
+query O
+select B'1100'+'abc';
+----
+12
+
+query R
+select time'12:12:12'+B'110'
+----
+121218
+
+query R
+select B'110'+time'12:12:12'
+----
+121218
+
+# 1.2 加法 through indexedvar
+query O
+select bb+B'11' from t_bit;
+----
+1111
+
+query I
+select bb+100 from t_bit;
+----
+112
+
+query R
+select bb+3.14 from t_bit;
+----
+15.14
+
+query R
+select bb+'123' from t_bit;
+----
+135
+
+query R
+select i8+3.14 from tint8;
+----
+6.14
+
+# 2.1 减法
+query O
+select B'1101'-B'1111';
+----
+1111111111111111111111111111111111111111111111111111111111111110
+
+query I
+select B'1101'-3;
+----
+10
+
+query R
+select B'1101'-4.51;
+----
+8.49
+
+query R
+select 4.49-B'1101';
+----
+-8.51
+
+query R
+select B'11'-cast(8.12 as decimal(3, 2));
+----
+-5.12
+
+query R
+select B'1100'-'1010';
+----
+-998
+
+query R
+select B'1100'-'123';
+----
+-111
+
+query R
+select B'1100'-'abc';
+----
+12
+
+# 2.2 减法 through indexedvar
+query O colnames
+select bb-B'11' from t_bit;
+----
+?column?
+1001
+
+query I
+select bb-100 from t_bit;
+----
+-88
+
+query R
+select bb-3.14 from t_bit;
+----
+8.86
+
+query R
+select bb-'123' from t_bit;
+----
+-111
+
+# 3.1 乘法
+query O
+select B'1101'*B'101';
+----
+1000001
+
+query I
+select B'1101'*3;
+----
+39
+
+query R
+select B'1101'*4.51;
+----
+58.63
+
+query R
+select B'11'*cast(8.12 as decimal(3, 2));
+----
+24.36
+
+query R
+select B'1100'*'1010';
+----
+12120
+
+query R
+select B'1100'*'123';
+----
+1476
+
+query R
+select B'1100'*'abc';
+----
+0
+
+# 3.2 乘法 through indexedvar
+query O
+select bb*B'11' from t_bit;
+----
+100100
+
+query I
+select bb*100 from t_bit;
+----
+1200
+
+query R
+select bb*3.14 from t_bit;
+----
+37.68
+
+
+query R
+select bb*'123' from t_bit;
+----
+1476
+
+# 4.1 除法
+query O
+select B'1101'/B'101';
+----
+2.6
+
+query R
+select B'1101'/3;
+----
+4.3333333333333333333
+
+query R
+select B'1101'/4.51;
+----
+2.8824833702882483370
+
+query R
+select B'11'/cast(8.12 as decimal(3, 2));
+----
+0.36945812807881773399
+
+query R
+select B'1100'/'1010';
+----
+0.011881188118811881188
+
+query R
+select B'1100'/'123';
+----
+0.097560975609756097561
+
+query error pq: division by zero
+select B'1100'/'abc';
+
+# 4.2 除法 through indexedvar
+query R
+select bb/B'11' from t_bit;
+----
+4
+
+query R
+select bb/100 from t_bit;
+----
+0.12
+
+query R
+select bb/3.14 from t_bit;
+----
+3.8216560509554140127
+
+query R
+select bb/'123' from t_bit;
+----
+0.097560975609756097561
+
+# 5.1 模运算
+query O
+select B'1101'%B'1010';
+----
+11
+
+query I
+select B'1101'%3;
+----
+1
+
+query R
+select B'1101'%4.51;
+----
+3.98
+
+query R
+select B'11'%cast(8.12 as decimal(3, 2));
+----
+3.00
+
+query R
+select B'1100'%'1010';
+----
+12
+
+query R
+select B'1100'%'123';
+----
+12
+
+query error pq: zero modulus
+select B'1100'%'abc';
+
+# 5.2 模运算 through indexedvar
+query O
+select bb%B'111' from t_bit;
+----
+101
+
+query I
+select bb%100 from t_bit;
+----
+12
+
+query R
+select bb%3.14 from t_bit;
+----
+2.58
+
+query R
+select bb%'123' from t_bit;
+----
+12
+
+# 6 比较
+query B
+select B'110'>0;
+----
+true
+
+query B
+select B'110'>1;
+----
+true
+
+query B
+select B'110'>-1;
+----
+true
+
+query B
+select B'110'>-100;
+----
+true
+
+query B
+select B'110'>1.11;
+----
+true
+
+query B
+select B'110'> 95.49999999999999;
+----
+false
+
+query B
+select B'110'> 95.499999999999999;
+----
+false
+
+query B
+select B'110' > -0.4999999999999999;
+----
+true
+
+query B
+select B'110' > -0.49999999999999999;
+----
+true
+
+query B
+select B'110' > B'111';
+----
+false
+
+query B
+select B'110' > B'11';
+----
+true
+
+query B
+select B'110' = B'110';
+----
+true
+
+query B
+select B'110' = '110';
+----
+true
+
+query error pq: could not parse string as bit array: "2" is not a valid binary digit
+select B'110' = '123';
+
+query B
+select B'110' = 6;
+----
+true
+
+query B
+select B'110' = 6.5;
+----
+false
+
+query B
+select B'110' = 6.49;
+----
+false
+
+query B
+select B'110' = 5.5;
+----
+false
+
+query B
+select B'110' = 5.49;
+----
+false
+
+
+# test case add
+query R
+select date'2016-01-01' * 2
+----
+40320202
+
+query R
+select date'2016-01-01' / 2
+----
+10080050.5
+
+query T
+select date'2016-01-01' + 2
+----
+2016-01-03 00:00:00 +0000 +0000
+
+query T
+select date'2016-01-01' - 2
+----
+2015-12-30 00:00:00 +0000 +0000
+
+query R
+select date'2016-01-01' % 2
+----
+1
+
+query R
+select date'2016-01-01' * 2.12
+----
+42739414.12
+
+query R
+select date'2016-01-01' / 2.12
+----
+9509481.6037735849057
+
+query R
+select date'2016-01-01' + 2.12
+----
+20160103.12
+
+query R
+select date'2016-01-01' % 2.12
+----
+1.28
+
+query R
+select date'2016-01-01' - 2.12
+----
+20160098.88
+
+query B
+select date'2016-01-01' = 2.12
+----
+false
+
+query R
+select time'12:12:12' * 2
+----
+242424
+
+query R
+select time'12:12:12' / 2
+----
+60606
+
+query R
+select time'12:12:12' + 2
+----
+121214
+
+query R
+select time'12:12:12' - 2
+----
+121210
+
+query R
+select time'12:12:12' % 2
+----
+0
+
+query R
+select time'12:12:12' * 2.12
+----
+256969.44
+
+query R
+select time'12:12:12' / 2.12
+----
+57175.471698113207547
+
+query R
+select 2.12 / time'12:12:12'
+----
+0.000017490017490017490017
+
+query R
+select time'12:12:12' + 2.12
+----
+121214.12
+
+query R
+select time'12:12:12' - 2.12
+----
+121209.88
+
+query R
+select time'12:12:12' % 2.12
+----
+1.00
+
+query R
+select time'12:00' * B'100'
+----
+480000
+
+query R
+select time'12:00' / B'100'
+----
+30000
+
+query R
+select time'12:00' % B'100'
+----
+0
+
+
+# between bool and time related type
+query R
+select time'12:12:12' + true
+----
+121213
+
+query R
+select time'12:12:12' - false
+----
+121212
+
+query R
+select time'12:12:12' * true
+----
+121212
+
+query error pq: division by zero
+select time'12:12:12' / false
+
+query R
+select time'12:12:12' % true
+----
+0
+
+query R
+select true + time'12:12:12'
+----
+121213
+
+query R
+select false - time'12:12:12'
+----
+-121212
+
+query R
+select true * time'12:12:12'
+----
+121212
+
+query R
+select false / time'12:12:12'
+----
+0
+
+query R
+select true % time'12:12:12'
+----
+1
+
+query T
+select date'2016-01-01' + true
+----
+2016-01-02 00:00:00 +0000 +0000
+
+query R
+select date'2016-01-01' + 3.14
+----
+20160104.14
+
+query T
+select date'2016-01-01' - false
+----
+2016-01-01 00:00:00 +0000 +0000
+
+query R
+select date'2016-01-01' * true
+----
+20160101
+
+query error pq: division by zero
+select date'2016-01-01' / false
+
+query R
+select date'2016-01-01' % true
+----
+0
+
+query T
+select true + date'2016-01-01'
+----
+2016-01-02 00:00:00 +0000 +0000
+
+query R
+select false - date'2016-01-01'
+----
+-20160101
+
+query R
+select true * date'2016-01-01'
+----
+20160101
+
+query R
+select false / date'2016-01-01'
+----
+0
+
+query R
+select true % date'2016-01-01'
+----
+1
+
+
+
+# timestamp单独考虑，timestamp的加法重载只有一个。 尽量在不影响原有重载的情况下进行修改
+
+query T
+select timestamp'2016-01-25 10:10:10.55555' + 1
+----
+20160125101011.55555
+
+query T
+select timestamp'2016-01-25 10:10:10.55555' + true
+----
+20160125101011.55555
+
+query T
+select timestamp'2016-01-25 10:10:10.55555' * true
+----
+20160125101010.55555
+
+query T
+select timestamp'2016-01-25 10:10:10.55555' / true
+----
+20160125101010.55555
+
+query R
+select timestamp'2016-01-25 10:10:10.555555' + date'2016-03-26'
+----
+20160145261336.555555
+
+query T
+select timestamp'2016-01-25 10:10:10.555555' - date'2016-01-25'
+----
+10:10:10.555555
+
+query T
+select timestamp'2016-01-25 10:10:10.55555' + time'12:00'
+----
+2016-01-25 22:10:10.55555 +0000 +0000
+
+query T
+select timestamp'2016-01-25 10:10:10.55555' - time'12:00'
+----
+2016-01-24 22:10:10.55555 +0000 +0000
+
+query T
+select timestamptz'2016-01-25 10:10:10.55555-05:00' - time'12:00'
+----
+2016-01-25 03:10:10.55555 +0000 UTC
+
+query T
+select timestamp'2016-01-25 10:10:10.55555' / time'12:00'
+----
+168001042.50842129625
+
+query T
+select time'12:00' / timestamp'2016-01-25 10:10:10.55555'
+----
+5.9523440156621263089E-9
+
+query T
+select timestamp'2016-01-25 10:10:10.55555' % time'12:00'
+----
+61010.55555
+
+query T
+select time'12:00' % timestamp'2016-01-25 10:10:10.55555'
+----
+120000.00000
+
+
+query R
+select date'2016-03-26' * time'12:12:00'
+----
+2443431511200
+
+
+query R
+select time'12:12:00' * date'2016-03-26'
+----
+2443431511200
+
+query R
+select date'2016-03-26' / time'12:12:00'
+----
+166.33932343234323432
+
+
+query R
+select time'12:12:00' / date'2016-03-26'
+----
+0.0060118075471597036675
+
+query R
+select date'2016-03-26' % time'12:12:00'
+----
+41126
+
+
+query R
+select time'12:12:00' % date'2016-03-26'
+----
+121200
+
+
+query error pq: unsupported binary operator: <string> / <date>
+select '1' / date '2016-01-01'
+
+
+
+query B
+select true = 'true'
+----
+true
+
+query B
+select true = 'yes'
+----
+true
+
+query B
+select true = 'on'
+----
+true
+
+query B
+select true = 'false'
+----
+false
+
+query B
+select true = 'no'
+----
+false
+
+query B
+select true = 'off'
+----
+false
+
+query B
+select 1.23 = time'12:12:12'
+----
+false
+
+query B
+select time'12:12:12' = 1.23
+----
+false
+
+query B
+select 1.23e+5 = date'2016-12-12'
+----
+false
+
+query B
+select date'2016-12-12' = 1.23e+5
+----
+false
+
+query B
+select 1.23e+5 = timestamp'2016-12-12T10:10:10.555555'
+----
+false
+
+query B
+select timestamp'2016-12-12T10:10:10.555555' = 1.23e+5
+----
+false
+
+query B
+select timestamp'2016-12-12T10:10:10.555555' = 1.2e-5
+----
+false
+
+query T
+select date'2016-01-01' + time'12:00:00'
+----
+2016-01-01 12:00:00 +0000 +0000
+
+query T
+select time'12:00:00' + date'2016-01-01'
+----
+2016-01-01 12:00:00 +0000 +0000
+
+query T
+select date'2016-01-01' - time'12:00:00'
+----
+2015-12-31 12:00:00 +0000 +0000
+
+query R
+select time'12:00:00' - date'2016-01-01'
+----
+-20040101
+
+query R
+select timestamp'2017-01-01 12:00:00' - date'2016-01-01'
+----
+8796:00:00
+
+query R
+select timestamp'2016-01-01 12:00:00' - date'2016-01-01'
+----
+12:00:00
+
+query R
+select timestampTZ'2016-01-01 12:00:00+06:00' - date'2016-01-01'
+----
+06:00:00
+
+query R
+select timestamp'2016-06-01 12:00:00' - timestamp'2016-01-01 12:00:00'
+----
+3648:00:00
+
+query R
+select timestampTZ'2016-06-01 12:00:00' - timestampTZ'2016-01-01 12:00:00'
+----
+3648:00:00
+
+query R
+select timestamp'2017-01-01 12:00:00' - timestampTZ'2016-06-01 06:00:00+05:00'
+----
+5147:00:00
+
+query R
+select timestampTZ'2016-06-01 06:00:00' - timestamp'2017-01-01 12:00:00'
+----
+-5142:00:00
+
+
+query R
+select time'12:00:00' - time'06:30:00'
+----
+05:30:00
+
+query R
+select time'12:00:00' + time'16:30:00'
+----
+28:30:00
+
+query B
+select date'2016-01-01' = time'12:00:00'
+----
+false
+
+query B
+select date'2016-01-01' > time'12:00:00'
+----
+true
+
+query B
+select time'12:00:00' = date'2016-01-01'
+----
+false
+
+query B
+select timestamp '2016-03-26 12:12:12' = date '2016-01-24'
+----
+false
+
+query B
+select date '2016-01-24' = timestamp '2016-03-26 12:12:12'
+----
+false
+
+
+query B
+select timestamp '2016-03-26' = date '2016-03-26'
+----
+true
+
+query B
+select date '2016-03-26' = timestamp '2016-03-26'
+----
+true
+
+query B
+select timestamp '2016-03-26 12:12:12' = time '12:00'
+----
+false
+
+query B
+select time '12:00' = timestamp '2016-03-26 12:12:12'
+----
+false
+
+query B
+select time '12:00' = B'100'
+----
+false
+
+query B
+select timestamp '2016-03-26 12:12:12' = B'100'
+----
+false
+
+
+
+# concat
+query T
+select 2 || B'1000'
+----
+21000
+
+query T
+select B'1000' || 2
+----
+10002
+
+query T
+select true || B'100'
+----
+true100
+
+query T
+select true || B'100'
+----
+true100
+
+query T
+select date'2016-01-01' || time'12:12:12'
+----
+2016-01-0112:12:12
+
+query T
+select time'12:12:12' || date'2016-01-01'
+----
+12:12:122016-01-01
+
+query T
+select timestamp '2016-03-26 12:12:12' || date '2016-01-24'
+----
+2016-03-26 12:12:122016-01-24
+
+query T
+select timestamp '2016-03-26 12:12:12' || time '12:00'
+----
+2016-03-26 12:12:1212:00:00
+
+
+
+# pow
+query R
+select 2 ^ '1.123'
+----
+2.1779940306722127797
+
+query R
+select '1.23' ^ 2
+----
+1.5129
+
+query R
+select date '2016-01-01' ^ 2
+----
+406429672330201
+
+query error pq: exponent out of range
+select 2 ^ date '2016-01-01'
+
+query R
+select time '12:12:12' ^ 2
+----
+14692348944
+
+query error pq: overflow
+select 2 ^ time '12:12:12'
+
+query R
+select time '12:12:12' ^ 1.23
+----
+1789621.1723657906191
+
+query error pq: overflow
+select 1.23 ^ time '12:12:12'
+
+query R
+select decimal'1.23' ^ '2.01'
+----
+1.5160351613631018824
+
+query R
+select '2.01' ^ decimal'1.23'
+----
+2.3601040525928855724
+
+
+# 04-28 add
+
+query R
+select '10' ^ true
+----
+10
+
+query R
+select true ^ '10'
+----
+1
+
+query R
+select true ^ date'2019-01-01'
+----
+1
+
+query R
+select date'2019-01-01' ^ true
+----
+20190101
+
+query R
+select true ^ time'121212'
+----
+1
+
+query R
+select time'121212' ^ true
+----
+121212
+
+query R
+select true ^ timestamp'2019-01-01 11:11:11'
+----
+1
+
+query R
+select timestamp'2019-01-01 11:11:11' ^ true
+----
+20190101111111
+
+query R
+select '2' ^ B'100'
+----
+16
+
+query R
+select B'100' ^ '2'
+----
+16
+
+query I
+select date'2019-01-01' ^ B'10'
+----
+407640178390201
+
+query R
+select time'10:10:10' ^ B'10'
+----
+10203020100
+
+query error pq: exponent out of range
+select date'2019-01-01' ^ time'12:12:12'
+
+query error pq: exponent out of range
+select timestamp'2019-01-01 10:10:10.123' ^ time'12:12:12'
+
+query B
+select date'2019-01-01' != 1
+----
+true
+
+query B
+select date'2019-01-01' != 1.123
+----
+true
+
+query B
+select date'2019-01-01' != 1.2e+5
+----
+true
+
+query B
+select 1 != date'2019-01-01'
+----
+true
+
+query B
+select 1.123 != date'2019-01-01'
+----
+true
+
+query B
+select 1.2e+5 != date'2019-01-01'
+----
+true
+
+query B
+select time'12:00:00' != 1
+----
+true
+
+query B
+select time'12:00:00' != 1.123
+----
+true
+
+query B
+select time'12:00:00' != decimal'1.23'
+----
+true
+
+query B
+select 1 != time'12:00:00'
+----
+true
+
+query B
+select 1.123 != time'12:00:00'
+----
+true
+
+query B
+select timestamp'2019-01-01T10:10:10' != 1
+----
+true
+
+query B
+select timestamp'2019-01-01T10:10:10' != 1.123
+----
+true
+
+query B
+select 1 != timestamp'2019-01-01T10:10:10'
+----
+true
+
+query B
+select 1.123 != timestamp'2019-01-01T10:10:10'
+----
+true
+
+query B
+select decimal'1.23' != false
+----
+true
+
+query B
+select decimal'1.23' != true
+----
+true
+
+query B
+select decimal'-inf' != false
+----
+true
+
+query B
+select decimal'-inf' != true
+----
+true
+
+query B
+select date'2019-02-05' != time'12:23:34'
+----
+true
+
+query B
+select time'12:23:34' != date'2019-02-05'
+----
+true
+
+query B
+select timestamp'2019-02-05 10:10:00' != time'12:23:34'
+----
+true
+
+query B
+select time'12:23:34' != timestamp'2019-02-05 10:10:00'
+----
+true
+
+query B
+select time'12:00:00' != B'10000'
+----
+true
+
+query B
+select date'2019-01-02' > 1
+----
+true
+
+query B
+select decimal'1.23' = time'12:12:01'
+----
+false
+
+query B
+select decimal'1.23' > time'12:12:01'
+----
+false
+
+query B
+select B'100' = decimal'1.23'
+----
+false
+
+query B
+select '20160101' = date '2016-01-01'
+----
+true
+
+query B
+select time'121212'>decimal'-inf'
+----
+true
+
+query B
+select decimal'-inf' > time'12:12:12'
+----
+false
+
+query B
+select  time'12:12:12' > decimal'inf'
+----
+false
+
+query B
+select time'12:00:00' != decimal'1.23';
+----
+true
+
+query B
+select date'2016-01-01' != decimal'1.23';
+----
+true
+
+query B
+select  '-1111111111111111111111111111111' > decimal'NaN'
+----
+true
+
+query B
+select  '1111111111111111111111111111111' > decimal'NaN'
+----
+true
+
+query B
+select  date'2019-01-01' > decimal'NaN'
+----
+true
+
+query B
+select b = decimal'3.14' from tbool
+----
+false
+
+query B
+select b = float'3.14' from tbool
+----
+false
+
+query R
+select decimal'-inf' + B'100'
+----
+-Infinity
+
+query R
+select decimal'+inf' + B'100'
+----
+Infinity
+
+query R
+select B'100' + decimal'-inf'
+----
+-Infinity
+
+query R
+select B'100' + decimal'+inf'
+----
+Infinity
+
+query R
+select decimal'+inf' / B'100'
+----
+Infinity
+
+query R
+select decimal'+inf' // B'100'
+----
+Infinity
+
+query error pq: division by zero
+select decimal'+inf' / false
+
+query error pq: division by zero
+select decimal'+inf' // false
+
+query error pq: invalid operation
+select decimal'+inf' % B'100'
+
+
+query error pq: invalid operation
+select decimal'-inf' + decimal'inf'
+
+query R
+select timestamp'2019-01-01' + decimal'+inf'
+----
+Infinity
+
+query R
+select timestamp'2019-01-01' + decimal'-inf'
+----
+-Infinity
+
+query R
+select timestampTZ'2019-01-01 12:13:14.12345' + decimal'+inf'
+----
+Infinity
+
+query R
+select timestampTZ'2019-01-01 12:13:14.12345' + decimal'-inf'
+----
+-Infinity
+
+query R
+select 2 ^ decimal'+inf'
+----
+Infinity
+
+query R
+select 2 ^ decimal'-inf'
+----
+0
+
+query R
+select 1 ^ decimal'+inf'
+----
+1
+
+query R
+select 0.99999 ^ decimal'+inf'
+----
+0
+
+query R
+select -0.99 ^ decimal'+inf'
+----
+0
+
+query error pq: invalid operation
+select -0.99 ^ decimal'-inf'
+
+query error pq: invalid operation
+select -1 ^ decimal'+inf'
+
+query error pq: invalid operation
+select -99 ^ decimal'+inf'
+
+query R
+select -99 ^ decimal'-inf'
+----
+0
+
+query B
+select '2020-10-10' = date'2020-10-10'
+----
+true
+
+query B
+select '2020-10-10 10:10:10' = date'2020-10-10'
+----
+true
+
+query B
+select date'2020-10-10' = '2020-10-10'
+----
+true
+
+query error pq: unsupported comparison operator: <date> = <string>
+select date'2020-10-10' = '10:11:12'
+
+query B
+select '10:11:12' = time'10:11:12'
+----
+true
+
+query B
+select time'10:11:12' = '10:11:12'
+----
+true
+
+query B
+select '99:59:59' = interval'99:59:59'
+----
+true
+
+query B
+select interval'99:59:59' = '99:59:59'
+----
+true
+
+query B
+select '2020-10-10 01:01:01' = timestamp'2020-10-10 01:01:01'
+----
+true
+
+query B
+select timestamp'2020-10-10 01:01:01' = '2020-10-10 01:01:01'
+----
+true
+
+query B
+select timestamp'2020-10-10 01:01:01' = '2020-10-10'
+----
+false
+
+query B
+select timestamp'2020-10-10 0:0:0' = '2020-10-10'
+----
+true
+
+query B
+select timestamp'2020-10-10 00:00:00' = '20201010'
+----
+true
+
+query B
+select timestamp'2020-10-10 00:00:00' = '20201010000000'
+----
+true
+
+query B
+select '2020-10-10 01:01:01' = timestampTZ'2020-10-10 01:01:01'
+----
+true
+
+query B
+select timestampTZ'2020-10-10 01:01:01' = '2020-10-10 01:01:01'
+----
+true
+
+query B
+select '2020-10-10' < date'2020-10-10'
+----
+false
+
+query B
+select date'2020-10-10' < '2020-10-10'
+----
+false
+
+query B
+select '10:11:12' < time'10:11:12'
+----
+false
+
+query B
+select time'10:11:12' < '10:11:12'
+----
+false
+
+query B
+select '99:59:59' < interval'99:59:59'
+----
+false
+
+query B
+select interval'99:59:59' < '99:59:59'
+----
+false
+
+query B
+select '2020-10-10 01:01:01' < timestamp'2020-10-10 01:01:01'
+----
+false
+
+query B
+select timestamp'2020-10-10 01:01:01' < '2020-10-10 01:01:01'
+----
+false
+
+query B
+select '2020-10-10 01:01:01' < timestampTZ'2020-10-10 01:01:01'
+----
+false
+
+query B
+select timestampTZ'2020-10-10 01:01:01' < '2020-10-10 01:01:01'
+----
+false
+
+query B
+select '2020-10-10' <= date'2020-10-10'
+----
+true
+
+query B
+select date'2020-10-10' <= '2020-10-10'
+----
+true
+
+query B
+select '10:11:12' <= time'10:11:12'
+----
+true
+
+query B
+select time'10:11:12' <= '10:11:12'
+----
+true
+
+query B
+select '99:59:59' <= interval'99:59:59'
+----
+true
+
+query B
+select interval'99:59:59' <= '99:59:59'
+----
+true
+
+query B
+select '2020-10-10 01:01:01' <= timestamp'2020-10-10 01:01:01'
+----
+true
+
+query B
+select timestamp'2020-10-10 01:01:01' <= '2020-10-10 01:01:01'
+----
+true
+
+query B
+select '2020-10-10 01:01:01' <= timestampTZ'2020-10-10 01:01:01'
+----
+true
+
+query B
+select timestampTZ'2020-10-10 01:01:01' <= '2020-10-10 01:01:01'
+----
+true
+
+query I
+select 1 - date'20160101'
+----
+-20160100
+
+query R
+select 1 - time'121212'
+----
+-121211
+
+# jira-9488
+statement ok
+create table t1(a timestamptz,b timestamptz)
+
+statement ok
+insert into t1 values('2020-01-01','2000-01-01')
+
+query TT
+select * from t1 where a>date_format(b,'%Y-%m-%d')
+----
+2020-01-01 00:00:00 +0000 UTC  2000-01-01 00:00:00 +0000 UTC
+
+query TT
+select * from t1 where a>'2000-01-01';
+----
+2020-01-01 00:00:00 +0000 UTC  2000-01-01 00:00:00 +0000 UTC
+
+# clean data
+statement ok
+drop table t1

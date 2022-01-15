@@ -1,0 +1,80 @@
+{
+    "初始化": [
+        {
+            "cmd": "DROP TABLE IF EXISTS t;",
+            "type": "execute"
+        },
+        {
+            "cmd": "CREATE TABLE t(a INT primary key, b INT, c INT, INDEX id (c));",
+            "type": "execute"
+        },
+        {
+            "cmd": "INSERT INTO t VALUES(1, 1, 1), (2, 2, 2),(3, 3, 3);",
+            "type": "execute"
+        }
+    ],
+    "执行": [
+        {
+            "cmd": "BEGIN;",
+            "conn": "conn1",
+            "type": "execute",
+            "result": {
+                "regular": "BEG.*"
+            }
+        },
+        {
+            "cmd": "SELECT * FROM t for update;",
+            "conn": "conn1",
+            "type": "query",
+            "result": {
+                "header": [
+                    "a",
+                    "b",
+                    "c"
+                ],
+                "body": [
+                    [
+                        1,
+                        1,
+                        1
+                    ],
+                    [
+                        2,
+                        2,
+                        2
+                    ],
+                    [
+                        3,
+                        3,
+                        3
+                    ]
+                ]
+            }
+        },
+        {
+            "cmd": "SELECT * FROM t for update wait 0;",
+            "conn": "conn2",
+            "type": "query",
+            "block": false,
+            "error": "could not obtain lock on row \\(a\\)=\\(1\\) in t@primary"
+        },
+        {
+            "cmd": "SELECT * FROM t for update WAIT 9223372036854775808;",
+            "conn": "conn2",
+            "type": "query",
+            "block": false,
+            "error": "syntax error.*"
+        },
+        {
+            "cmd": "SELECT * FROM t for update WAIT 1.1;",
+            "conn": "conn2",
+            "type": "query",
+            "block": false,
+            "error": "syntax error.*"
+        },
+        {
+            "cmd": "COMMIT;",
+            "conn": "conn1"
+        }
+    ]
+}

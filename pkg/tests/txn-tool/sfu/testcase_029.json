@@ -1,0 +1,132 @@
+{
+    "部署": {
+        "delay_time": 1
+    },
+    "初始化": [
+        {
+            "cmd": "DROP TABLE IF EXISTS t;",
+            "type": "execute"
+        },
+        {
+            "cmd": "CREATE TABLE t(a INT primary key, b INT, index id(b));",
+            "type": "execute"
+        },
+        {
+            "cmd": "INSERT INTO t VALUES(1, 11), (2, 22),(3, 33),(4, 44),(5, 55);",
+            "type": "execute"
+        }
+    ],
+    "执行": [
+        {
+            "cmd": "BEGIN;",
+            "conn": "conn1",
+            "type": "execute"
+        },
+        {
+            "cmd": "BEGIN;",
+            "conn": "conn2",
+            "type": "execute"
+        },
+        {
+            "cmd": "SELECT * FROM t for update;",
+            "conn": "conn1",
+            "type": "query",
+            "result": {
+                "header": [
+                    "a",
+                    "b"
+                ],
+                "body": [
+                    [
+                        1,
+                        11
+                    ],
+                    [
+                        2,
+                        22
+                    ],
+                    [
+                        3,
+                        33
+                    ],
+                    [
+                        4,
+                        44
+                    ],
+                    [
+                        5,
+                        55
+                    ]
+                ]
+            }
+        },
+        {
+            "cmd": "SELECT * FROM t WHERE a=1 for update;",
+            "conn": "conn2",
+            "type": "query",
+            "block": true,
+            "result": {
+                "header": [
+                    "a",
+                    "b"
+                ],
+                "body": [
+                    [
+                        1,
+                        11
+                    ]
+                ]
+            }
+        },
+        {
+            "cmd": "BEGIN PRIORITY HIGH;",
+            "conn": "conn3",
+            "type": "execute"
+        },
+        {
+            "cmd": "SELECT * FROM t WHERE a=2 for update;",
+            "conn": "conn3",
+            "type": "query",
+            "result": {
+                "header": [
+                    "a",
+                    "b"
+                ],
+                "body": [
+                    [
+                        2,
+                        22
+                    ]
+                ]
+            }
+        },
+        {
+            "cmd": "UPDATE t SET b=b+1 WHERE a=4;",
+            "conn": "conn1",
+            "type": "execute",
+            "error": "restart transaction.*"
+        },
+        {
+            "cmd": "UPDATE t SET b=b+1 WHERE a=1;",
+            "conn": "conn2",
+            "type": "execute"
+        },
+        {
+            "cmd": "UPDATE t SET b=b+1 WHERE a=2;",
+            "conn": "conn3",
+            "type": "execute"
+        },
+        {
+            "cmd": "ROLLBACK;",
+            "conn": "conn1"
+        },
+        {
+            "cmd": "COMMIT;",
+            "conn": "conn2"
+        },
+        {
+            "cmd": "COMMIT;",
+            "conn": "conn3"
+        }
+    ]
+}

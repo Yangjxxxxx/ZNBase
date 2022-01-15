@@ -1,0 +1,45 @@
+exec-ddl
+CREATE TABLE kv (
+  k INT PRIMARY KEY,
+  v INT,
+  w INT,
+  s STRING
+)
+----
+TABLE kv
+ ├── k int not null
+ ├── v int
+ ├── w int
+ ├── s string
+ └── INDEX primary
+      └── k int not null
+
+build
+SELECT avg(k) OVER (PARTITION BY v) FROM kv ORDER BY 1
+----
+sort
+ ├── columns: avg:5(decimal)
+ ├── ordering: +5
+ └── project
+      ├── columns: avg:5(decimal)
+      └── window partition=(2)
+           ├── columns: k:1(int!null) v:2(int) w:3(int) s:4(string) avg:5(decimal) avg_1_arg1:6(int)
+           ├── project
+           │    ├── columns: avg_1_arg1:6(int) k:1(int!null) v:2(int) w:3(int) s:4(string)
+           │    ├── scan kv
+           │    │    └── columns: k:1(int!null) v:2(int) w:3(int) s:4(string)
+           │    └── projections
+           │         └── variable: k [type=int]
+           └── windows
+                └── avg [type=decimal]
+                     └── variable: avg_1_arg1 [type=int]
+
+build
+SELECT avg(avg(k) OVER ()) FROM kv ORDER BY 1
+----
+error: avg(): avg(): window functions are not allowed in aggregate
+
+build
+SELECT * FROM kv GROUP BY v, count(w) OVER ()
+----
+error: count(): window functions are not allowed in GROUP BY

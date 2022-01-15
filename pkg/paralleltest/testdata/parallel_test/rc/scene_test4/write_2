@@ -1,0 +1,14 @@
+statement ok
+SELECT pg_sleep(1);
+
+statement ok
+BEGIN TRANSACTION ISOLATION LEVEL READ COMMITTED;
+
+statement error 相同的键值 a='b' 违反了主键约束 "primary"
+INSERT INTO T VALUES('b',5);
+
+statement error current transaction is aborted, commands ignored until end of transaction block
+SELECT pg_sleep(1);
+
+statement ok
+COMMIT;

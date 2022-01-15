@@ -1,0 +1,82 @@
+{
+    "初始化": [
+        {
+            "cmd": "DROP TABLE IF EXISTS t;",
+            "type": "execute"
+        },
+        {
+            "cmd": "CREATE TABLE t(a INT primary key, b INT, index id(b));",
+            "type": "execute"
+        },
+        {
+            "cmd": "INSERT INTO t VALUES(1, 11), (2, 22),(3, 33),(4, 44),(5, 55);",
+            "type": "execute"
+        }
+    ],
+    "执行": [
+        {
+            "cmd": "BEGIN;",
+            "conn": "conn1",
+            "type": "execute"
+        },
+        {
+            "cmd": "BEGIN PRIORITY HIGH;",
+            "conn": "conn2",
+            "type": "execute"
+        },
+        {
+            "cmd": "SELECT * FROM t WHERE a=5 for update;",
+            "conn": "conn1",
+            "type": "query",
+            "result": {
+                "header": [
+                    "a",
+                    "b"
+                ],
+                "body": [
+                    [
+                        5,
+                        55
+                    ]
+                ]
+            }
+        },
+        {
+            "cmd": "SELECT * FROM t@id WHERE b=55 for update;",
+            "conn": "conn2",
+            "type": "query",
+            "result": {
+                "header": [
+                    "a",
+                    "b"
+                ],
+                "body": [
+                    [
+                        5,
+                        55
+                    ]
+                ]
+            }
+        },
+        {
+            "cmd": "UPDATE t SET b=66 where a=5;",
+            "conn": "conn1",
+            "type": "execute",
+            "block": true,
+            "error": "restart transaction.*"
+        },
+        {
+            "cmd": "UPDATE t SET a=6 where b=55;",
+            "conn": "conn2",
+            "type": "execute"
+        },
+        {
+            "cmd": "ROLLBACK;",
+            "conn": "conn1"
+        },
+        {
+            "cmd": "ROLLBACK;",
+            "conn": "conn2"
+        }
+    ]
+}

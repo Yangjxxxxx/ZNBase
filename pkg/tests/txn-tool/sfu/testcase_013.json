@@ -1,0 +1,122 @@
+{
+    "初始化": [
+        {
+            "cmd": "DROP TABLE IF EXISTS t1 CASCADE",
+            "type": "execute"
+        },
+        {
+            "cmd": "DROP TABLE IF EXISTS t2 CASCADE",
+            "type": "execute"
+        },
+        {
+            "cmd": "CREATE TABLE t1(a INT, b INT, c INT, primary key(a, b));",
+            "type": "execute"
+        },
+        {
+            "cmd": "INSERT INTO t1 VALUES(1, 1, 1),(2, 2, 2),(3, 3, 3);",
+            "type": "execute"
+        },
+        {
+            "cmd": "CREATE TABLE t2(a INT primary key, b INT);",
+            "type": "execute"
+        },
+        {
+            "cmd": "INSERT INTO t2 VALUES(1, 1),(2, 2),(3, 3);",
+            "type": "execute"
+        }
+    ],
+    "执行": [
+        {
+            "cmd": "BEGIN;",
+            "conn": "conn1",
+            "type": "execute",
+            "result": {
+                "regular": "BEG.*"
+            }
+        },
+        {
+            "cmd": "BEGIN;",
+            "conn": "conn2",
+            "type": "execute",
+            "result": {
+                "regular": "BEG.*"
+            }
+        },
+        {
+            "cmd": "SELECT * FROM t1 for update nowait;",
+            "conn": "conn1",
+            "type": "query",
+            "result": {
+                "header": [
+                    "a",
+                    "b",
+                    "c"
+                ],
+                "body": [
+                    [
+                        1,
+                        1,
+                        1
+                    ],
+                    [
+                        2,
+                        2,
+                        2
+                    ],
+                    [
+                        3,
+                        3,
+                        3
+                    ]
+                ]
+            }
+        },
+        {
+            "cmd": "SELECT * FROM t2 for update nowait;",
+            "conn": "conn2",
+            "type": "query",
+            "result": {
+                "header": [
+                    "a",
+                    "b"
+                ],
+                "body": [
+                    [
+                        1,
+                        1
+                    ],
+                    [
+                        2,
+                        2
+                    ],
+                    [
+                        3,
+                        3
+                    ]
+                ]
+            }
+        },
+        {
+            "cmd": "SELECT * FROM t2 for update nowait;",
+            "conn": "conn1",
+            "type": "query",
+            "block": false,
+            "error": "could not obtain lock on row \\(a\\)=\\(1\\) in t2@primary"
+        },
+        {
+            "cmd": "SELECT * FROM t1 for update nowait;",
+            "conn": "conn2",
+            "type": "query",
+            "block": false,
+            "error": "could not obtain lock on row \\(a,b\\)=\\(1,1\\) in t1@primary"
+        },
+        {
+            "cmd": "COMMIT;",
+            "conn": "conn1"
+        },
+        {
+            "cmd": "COMMIT;",
+            "conn": "conn2"
+        }
+    ]
+}

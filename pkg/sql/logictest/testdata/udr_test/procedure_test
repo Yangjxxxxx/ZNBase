@@ -1,0 +1,823 @@
+# LogicTest: local-opt
+
+# use defaultdb, for test
+statement ok
+use defaultdb
+
+
+#---测试内容--#
+statement ok
+CREATE OR REPLACE PROCEDURE test_proc() AS $$
+BEGIN
+NULL;
+END
+$$ LANGUAGE plpgsql;
+
+# 2
+statement error pq: ZNBase PLSQL ERMSG: unrecognized exception condition "notice"
+create or replace procedure testloop5()
+as $$
+declare
+v_arr int[]:= array[1,2,3,4,5];
+i int;
+begin
+foreach i in array v_arr loop
+raise notice 'count is %',i;
+end loop;
+End;
+$$ language plpgsql;
+
+
+statement ok
+create table getreturn(id int);
+
+statement ok
+CREATE OR REPLACE procedure getreturn(in_col1 int)
+as $$
+BEGIN
+  if in_col1 > 0 then
+   insert into getreturn values(in_col1);
+  else
+   insert into getreturn values(0);
+  end if;
+END;
+$$ LANGUAGE PLPGSQL;
+
+
+statement ok
+call getreturn(2);
+call getreturn(-2);
+
+query I
+select * from getreturn;
+----
+2
+0
+
+statement ok
+drop table getreturn;
+
+# 3
+statement ok
+CREATE OR REPLACE PROCEDURE simple_loop_when(x int)
+AS $$
+DECLARE i INTEGER := 0;
+BEGIN
+ LOOP
+  i := i + 1;
+  EXIT simple_loop_when WHEN (i >= x);
+ END LOOP;
+END;
+$$ LANGUAGE plpgsql;
+
+statement ok
+call simple_loop_when(2);
+
+# 4
+statement ok
+create table proc1(a INT ARRAY);
+
+statement ok
+CREATE OR REPLACE procedure proc1(a int ARRAY)
+as $$
+BEGIN
+execute 'insert into proc1 values($1)' using a;
+END;
+$$ language plpgsql;
+
+statement ok
+call proc1(array[1,2,3]);
+
+query O
+select * from proc1;
+----
+{1,2,3}
+
+#5
+statement ok
+drop table proc1;
+
+statement ok
+create table proc1(a STRING ARRAY);
+
+statement ok
+CREATE OR REPLACE procedure proc1(a STRING ARRAY)
+as $$
+BEGIN
+execute 'insert into proc1 values($1)' using a;
+END;
+$$ language plpgsql;
+
+statement ok
+call proc1(array['a','b','c']);
+
+query O
+select * from proc1;
+----
+{a,b,c}
+
+# 6
+statement ok
+CREATE TABLE t111(
+sepal_length REAL,
+sepal_width REAL,
+petal_length REAL,
+petal_width REAL,
+species varchar(20)
+);
+CREATE TABLE iris(
+sepal_length REAL,
+sepal_width REAL,
+petal_length REAL,
+petal_width REAL,
+species varchar(20)
+);
+insert into iris values(5.1,3.5,1.4,0.2,'Iris-setosa');
+
+query RRRRT
+select * from iris;
+----
+5.1 3.5 1.4 0.2 Iris-setosa
+
+statement ok
+create or replace procedure proc1()
+as $$
+DECLARE
+result real;
+result1 real;
+result2 real;
+result3 real;
+result4 varchar;
+Cursor2 CURSOR for select * from iris where species = 'Iris-setosa';
+BEGIN
+open cursor2;
+loop
+fetch cursor2 into result, result1,result2,result3,result4 ;
+exit when not found;
+insert into t111 values (result, result1,result2,result3,result4 );
+end loop;
+close cursor2;
+END
+$$ LANGUAGE plpgsql;
+
+statement ok
+call proc1();
+
+query RRRRT
+select * from t111 limit 1;
+----
+5.1 3.5 1.4 0.2 Iris-setosa
+
+statement ok
+drop table iris,t111;
+
+# 7
+statement ok
+create table test_main(id int, value varchar(20));
+Insert into test_main(id,value) values (1, 'ONE');
+Insert into test_main(id,value) values (2, 'TWO');
+Insert into test_main(id,value) values (3, 'THREE');
+CREATE TABLE log_table(value varchar(20));
+
+statement ok
+CREATE OR REPLACE PROCEDURE Test_Cursor() AS
+$$
+DECLARE
+  c_test_main CURSOR FOR
+    SELECT id, value FROM test_main;
+  v_id    INT;
+  v_value VARCHAR(10);
+BEGIN
+  OPEN c_test_main;
+  FETCH c_test_main INTO v_id, v_value;
+  while found loop
+    INSERT INTO log_table VALUES (v_value);
+    FETCH c_test_main INTO v_id, v_value;
+  end loop;
+  CLOSE c_test_main;
+END;
+$$
+LANGUAGE plpgsql;
+
+statement ok
+call Test_Cursor();
+
+query T
+select * from log_table;
+----
+ONE
+TWO
+THREE
+
+# 8
+statement ok
+CREATE OR REPLACE procedure TestCursor2() AS $$
+DECLARE
+  c_test_main CURSOR FOR
+    SELECT id, value FROM test_main;
+  v_id    INT;
+  v_value VARCHAR(10);
+BEGIN
+  OPEN c_test_main;
+  LOOP
+    FETCH c_test_main INTO v_id, v_value;
+    Exit when NOT found;
+    INSERT INTO log_table VALUES (v_value);
+  END LOOP;
+  CLOSE c_test_main;
+END;
+$$
+LANGUAGE plpgsql;
+
+statement ok
+call Test_Cursor();
+
+query T
+select * from log_table;
+----
+ONE
+TWO
+THREE
+ONE
+TWO
+THREE
+
+statement ok
+drop table log_table,test_main;
+
+
+# 9
+statement ok
+create table sum1(value int);
+
+statement ok
+CREATE procedure sum1() AS $$
+DECLARE
+  counter  int;
+BEGIN
+  FOR counter IN 1..6 BY 2 LOOP
+    insert into sum1 values(counter);
+  END LOOP;
+END;
+$$ LANGUAGE plpgsql;
+
+statement ok
+call sum1();
+
+query I
+select * from sum1;
+----
+1
+3
+5
+
+
+# NEWSQL-5381 call procedure which not exists
+statement error pq: No function/procedure matches the given name and argument types.
+CALL nonexistent();
+
+
+# jira 5578 about record type assign
+statement ok
+DROP TABLE IF EXISTS test;
+
+statement ok
+CREATE TABLE test(id INT PRIMARY KEY , eng TEXT unique ,che BOOL NOT NULL);
+
+statement ok
+INSERT INTO test VALUES
+(1,'aaa',TRUE),(2,'bbb',FALSE),(3,'ccc',TRUE),
+(4,'ddd',FALSE),(5,'eee',TRUE),(6,'fff',FALSE);
+
+statement ok
+DROP TABLE IF EXISTS test1;
+
+statement ok
+CREATE TABLE test1(id string);
+
+statement ok
+create or replace procedure fun_cur(x int,y TEXT,z bool)
+as $$
+DECLARE
+    result RECORD;
+    cursor1 CURSOR for select id from test where id%x=1 and eng<=y and che=z;
+DECLARE
+BEGIN
+    open cursor1;
+    loop
+        fetch cursor1 into result;
+        exit when not found;
+        insert into test1 values (result);
+    end loop;
+    close cursor1;
+END
+$$ LANGUAGE plpgsql;
+
+statement ok
+CALL fun_cur(2,'uuu',TRUE);
+
+query T
+select * from test1
+----
+(1)
+(3)
+(5)
+
+statement ok
+drop table test
+
+statement ok
+drop table test1
+
+statement ok
+drop procedure fun_cur(int, text, bool)
+
+# jira-6404 入参为BOOL/BOOLEAN类型，正常数据无法输入
+statement ok
+drop PROCEDURE if exists proc_in_type17(BOOL);
+
+statement ok
+CREATE OR REPLACE PROCEDURE proc_in_type17(INOUT p BOOL) AS $$
+DECLARE
+    a ALIAS FOR $1;
+BEGIN
+    select * from (select a) c into p;
+END;
+$$ LANGUAGE plpgsql;
+
+query B
+CALL proc_in_type17('0')
+----
+false
+
+query B
+CALL proc_in_type17('011')
+----
+true
+
+#修复含inout string参数的存储过程重复创建报错bug
+statement ok
+create or replace procedure pp(inout ss string)
+as $$
+begin
+ss = NULL || 1;
+end
+$$ language plpgsql;
+
+statement ok
+create or replace procedure pp(inout ss string)
+as $$
+begin
+ss = NULL || 1;
+end
+$$ language plpgsql;
+
+statement ok
+drop procedure pp(string);
+
+#NEWSQL-8832【测试环境】【NEWSQL】【UDR】存储过程中调用序列不应改变序列值
+statement ok
+drop PROCEDURE if exists test_seq2() ;
+
+statement ok
+create or replace PROCEDURE test_seq2()
+as $$
+declare res text;
+begin
+drop sequence if exists udr_seq cascade;
+create sequence udr_seq increment by 1 minvalue 1 no maxvalue start with 1;
+end;
+$$ language plpgsql;
+
+statement ok
+call test_seq2();
+
+query I
+select nextval('udr_seq');
+----
+1
+
+statement ok
+drop sequence if exists udr_seq cascade;
+
+statement ok
+drop PROCEDURE if exists test_seq2() ;
+
+#NEWSQL-8760【测试环境】【NEWSQL数据库】【UDR】存储过程下初始值不对，应该为空 NULL
+statement ok
+DROP PROCEDURE IF EXISTS prc_declare();
+
+statement ok
+DROP TABLE IF EXISTS prc_declare;
+
+statement ok
+create or replace PROCEDURE prc_declare()
+as $$
+declare
+counts integer;
+begin
+CREATE TABLE prc_declare AS SELECT counts;
+end;
+$$ language plpgsql;
+
+statement ok
+CALL prc_declare();
+
+query I
+SELECT * FROM prc_declare;
+----
+NULL
+
+statement ok
+DROP TABLE prc_declare;
+
+statement ok
+DROP PROCEDURE prc_declare();
+
+#NEWSQL-8844  测试环境】【NEWSQL】【UDR】UDR中入参为CHARACTER(5),时无法修改UDR内容
+statement ok
+DROP PROCEDURE if exists proc_in_type30(INOUT p CHARACTER(5));
+
+statement ok
+CREATE OR REPLACE PROCEDURE proc_in_type30(INOUT p CHARACTER(5))
+AS $$
+DECLARE a ALIAS FOR $1;
+BEGIN select * from (select a) c into p;
+END;
+$$ LANGUAGE plpgsql;
+
+statement ok
+CREATE OR REPLACE PROCEDURE proc_in_type30(INOUT p CHARACTER(5))
+AS $$
+DECLARE a ALIAS FOR $1;
+BEGIN select * from (select a) c into p;
+END;
+$$ LANGUAGE plpgsql;
+
+statement ok
+DROP PROCEDURE proc_in_type30(INOUT p CHARACTER(5));
+
+statement ok
+CREATE OR REPLACE PROCEDURE proc_in_type30(INOUT p CHAR(5))
+AS $$
+DECLARE a ALIAS FOR $1;
+BEGIN select * from (select a) c into p;
+END;
+$$ LANGUAGE plpgsql;
+
+statement ok
+CREATE OR REPLACE PROCEDURE proc_in_type30(INOUT p CHAR(5))
+AS $$
+DECLARE a ALIAS FOR $1;
+BEGIN select * from (select a) c into p;
+END;
+$$ LANGUAGE plpgsql;
+
+statement ok
+DROP PROCEDURE proc_in_type30(INOUT p CHARACTER(5));
+
+statement ok
+drop table if exists test;
+
+statement ok
+create table test(a int);
+
+statement ok
+create or replace procedure test_rename() as $$
+DECLARE
+BEGIN
+    insert into test values (1);
+END
+$$ LANGUAGE plpgsql;
+
+statement ok
+call test_rename()
+
+statement ok
+create or replace procedure test_rename(a int) as $$
+DECLARE
+BEGIN
+    insert into test values (2);
+END
+$$ LANGUAGE plpgsql;
+
+statement ok
+call test_rename()
+
+statement ok
+call test_rename(1)
+
+query I
+select * from test
+----
+1
+1
+2
+
+statement ok
+create or replace procedure test_rename(a int,b int) as $$
+DECLARE
+BEGIN
+    insert into test values (3);
+END
+$$ LANGUAGE plpgsql;
+
+statement ok
+call test_rename()
+
+statement ok
+call test_rename(1)
+
+query I
+select * from test
+----
+1
+1
+2
+1
+2
+
+statement ok
+alter procedure test_rename(int) rename to test_rename1 ;
+
+statement error pq: No function/procedure matches the given name and argument types.
+call test_rename(1)
+
+statement ok
+call test_rename1(3)
+
+statement ok
+call test_rename(3,3)
+
+query I
+select * from test
+----
+1
+1
+2
+1
+2
+2
+3
+
+statement ok
+alter procedure test_rename(int,int) rename to test_rename1 ;
+
+statement error pq: No function/procedure matches the given name and argument types.
+call test_rename(3,3)
+
+statement ok
+call test_rename1(3,3)
+
+statement ok
+create or replace procedure test_rename(a int) as $$
+DECLARE
+BEGIN
+    insert into test values (4);
+END
+$$ LANGUAGE plpgsql;
+
+statement ok
+call test_rename(3)
+
+query I
+select * from test
+----
+1
+1
+2
+1
+2
+2
+3
+3
+4
+
+statement error pq: new procedure name existed,please change the new name and retry.
+alter procedure test_rename1(int) rename to test_rename ;
+
+statement ok
+alter procedure test_rename1(int,int) rename to test_rename ;
+
+statement ok
+call test_rename(3,3)
+
+query I
+select * from test
+----
+1
+1
+2
+1
+2
+2
+3
+3
+4
+3
+
+statement ok
+drop table test ;
+
+statement ok
+drop procedure test_rename();
+
+statement ok
+drop procedure test_rename(int);
+
+statement ok
+drop procedure test_rename(int,int);
+
+statement ok
+drop procedure test_rename1(int);
+
+#NEWSQL-8809【测试环境】【NEWSQL数据库】【UDR】命令行中创建udr调用概率性宕机输出堆栈
+statement ok
+DROP PROCEDURE IF EXISTS prc_declare();
+
+statement ok
+DROP TABLE IF EXISTS prc_declare;
+
+statement ok
+create or replace PROCEDURE prc_declare()
+as $$
+declare
+ INTEGER INTEGER = 9223372036854775807;
+begin
+ CREATE TABLE prc_declare AS SELECT INTEGER ;
+end;
+$$ language plpgsql;
+
+statement ok
+CALL prc_declare();
+
+query I
+SELECT *from prc_declare;
+----
+9223372036854775807
+
+statement ok
+DROP PROCEDURE IF EXISTS prc_declare();
+
+statement ok
+DROP TABLE IF EXISTS prc_declare;
+
+#NEWSQL-8772【测试环境】【NEWSQL数据库】【UDR】建立存储过程声明BIT类型变量不赋值插入非空表，不报错数据库宕机无堆栈
+statement ok
+CREATE TABLE notnull_tab(a BIT NOT NULL);
+
+statement ok
+create or replace PROCEDURE prc_declare()
+as $$
+declare
+ BIT BIT ;
+begin
+ INSERT INTO notnull_tab VALUES (BIT);
+end;
+$$ language plpgsql;
+
+statement error pq: ZNBase PLSQL ERMSG: 23502:null value in column "a" violates not-null constraint
+call prc_declare();
+
+statement ok
+DROP PROCEDURE IF EXISTS prc_declare();
+
+statement ok
+DROP TABLE IF EXISTS notnull_tab;
+
+statement ok
+CREATE TABLE notnull_tab(a char NOT NULL);
+
+statement ok
+create or replace PROCEDURE prc_declare()
+as $$
+declare
+ char char ;
+begin
+ INSERT INTO notnull_tab VALUES (char);
+end;
+$$ language plpgsql;
+
+statement error pq: ZNBase PLSQL ERMSG: 23502:null value in column "a" violates not-null constraint
+call prc_declare();
+
+statement ok
+DROP PROCEDURE IF EXISTS prc_declare();
+
+statement ok
+DROP TABLE IF EXISTS notnull_tab;
+
+statement ok
+CREATE TABLE notnull_tab(a bytea NOT NULL);
+
+statement ok
+create or replace PROCEDURE prc_declare()
+as $$
+declare
+ bytea bytea ;
+begin
+ INSERT INTO notnull_tab VALUES (bytea);
+end;
+$$ language plpgsql;
+
+statement error pq: ZNBase PLSQL ERMSG: 23502:null value in column "a" violates not-null constraint
+call prc_declare();
+
+statement ok
+DROP PROCEDURE IF EXISTS prc_declare();
+
+statement ok
+DROP TABLE IF EXISTS notnull_tab;
+
+#NEWSQL-9035【测试环境】【NEWSQL数据库】【UDR】非法命名：UDR
+statement ok
+create database "‘数据库""]}'#$%^&*(";
+
+statement ok
+create schema "‘数据库""]}'#$%^&*("."'sdddd~/*&$#@!~";
+
+statement ok
+create table "‘数据库""]}'#$%^&*("."'sdddd~/*&$#@!~"."sdd!!`'"("dsfdasrgg*&'" INT);
+
+statement ok
+CREATE OR REPLACE PROCEDURE "‘数据库""]}'#$%^&*("."'sdddd~/*&$#@!~"."proc'"(a INT, b VARCHAR)
+AS $$
+begin
+INSERT INTO "‘数据库""]}'#$%^&*("."'sdddd~/*&$#@!~"."sdd!!`'" VALUES(1);
+end
+$$ language plpgsql;
+
+statement ok
+DROP database IF EXISTS "‘数据库""]}'#$%^&*(";
+
+statement ok
+DROP schema  IF EXISTS "'sdddd~/*&$#@!~";
+
+statement ok
+DROP TABLE IF EXISTS "‘数据库""]}'#$%^&*("."'sdddd~/*&$#@!~"."sdd!!`'";
+
+statement ok
+DROP PROCEDURE IF EXISTS "proc'"(a INT, b VARCHAR);
+
+#NEWSQL-8843【测试环境】【NEWSQL】【UDR】UDR中断入参为BIT(3），VARBIT(3)时接受输入长度判断不正确
+#对于VARBIT类型，该值不能大于指定的最大宽度:
+statement ok
+drop PROCEDURE if exists pr2(INOUT p VARBIT(3));
+
+statement ok
+CREATE OR REPLACE PROCEDURE pr2(INOUT p VARBIT(3))
+AS $$
+DECLARE a ALIAS FOR $1;
+BEGIN select * from (select a) c into p;
+END;
+$$ LANGUAGE plpgsql;
+
+query O
+CALL pr2('0');
+----
+0
+
+query O
+CALL pr2('011');
+----
+011
+
+query O
+CALL pr2('1');
+----
+1
+
+query error  pq: bit string length 4 too large for type VARBIT\(3\)
+CALL pr2('1010');
+
+statement ok
+drop PROCEDURE if exists pr2(INOUT p VARBIT(3));
+
+#对于BIT和BIT(N)类型，值的宽度大小必须完全匹配
+statement ok
+drop PROCEDURE if exists proc_in_type20(INOUT p BIT(3));
+
+statement ok
+CREATE OR REPLACE PROCEDURE proc_in_type20(INOUT p BIT(3))
+AS $$
+DECLARE a ALIAS FOR $1;
+BEGIN select * from (select a) c into p;
+END;
+$$ LANGUAGE plpgsql;
+
+query error pq: bit string length 2 does not match type BIT\(3\)
+CALL proc_in_type20('10');
+
+query O
+CALL proc_in_type20('011');
+----
+011
+
+query error pq: bit string length 1 does not match type BIT\(3\)
+CALL proc_in_type20('1');
+
+query error pq: bit string length 5 does not match type BIT\(3\)
+CALL proc_in_type20('10101');
+
+statement ok
+drop PROCEDURE if exists proc_in_type20(INOUT p BIT(3));

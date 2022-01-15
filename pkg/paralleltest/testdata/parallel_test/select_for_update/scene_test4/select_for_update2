@@ -1,0 +1,14 @@
+statement ok
+SELECT pg_sleep(1)
+
+statement ok
+BEGIN;
+
+statement ok
+SELECT * FROM t WHERE key = 0 FOR UPDATE;
+
+statement ok
+SELECT pg_sleep(2)
+
+statement ok
+COMMIT;

@@ -1,0 +1,75 @@
+{
+    "初始化": [
+        {
+            "cmd": "DROP TABLE IF EXISTS t",
+            "type": "execute"
+        },
+        {
+            "cmd": "CREATE TABLE t(a INT primary key, b STRING);",
+            "type": "execute"
+        },
+        {
+            "cmd": "INSERT INTO t VALUES(1, 'a'),(2, 'b'),(3, 'c'), (4, 'd'),(5, 'e'),(6, 'f');",
+            "type": "execute"
+        }
+    ],
+    "执行": [
+        {
+            "cmd": "BEGIN;",
+            "conn": "conn1",
+            "type": "execute",
+            "result": {
+                "regular": "BEG.*"
+            }
+        },
+        {
+            "cmd": "SELECT * FROM t where a>4 for update nowait;",
+            "conn": "conn1",
+            "type": "query",
+            "result": {
+                "header": [
+                    "a",
+                    "b"
+                ],
+                "body": [
+                    [
+                        5,
+                        "e"
+                    ],
+                    [
+                        6,
+                        "f"
+                    ]
+                ]
+            }
+        },
+        {
+            "cmd": "BEGIN;",
+            "conn": "conn2",
+            "type": "execute",
+            "result": {
+                "regular": "BEG.*"
+            }
+        },
+        {
+            "cmd": "SET TRANSACTION AS OF SYSTEM TIME '-20s';",
+            "conn": "conn2",
+            "type": "execute"
+        },
+        {
+            "cmd": "SELECT * FROM t where a>4 for update nowait;",
+            "conn": "conn2",
+            "type": "query",
+            "block": false,
+            "error": "cannot execute FOR UPDATE in a read-only transaction"
+        },
+        {
+            "cmd": "COMMIT;",
+            "conn": "conn1"
+        },
+        {
+            "cmd": "COMMIT;",
+            "conn": "conn2"
+        }
+    ]
+}

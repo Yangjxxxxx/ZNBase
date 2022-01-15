@@ -1,0 +1,18 @@
+#test multi session replication
+cluster_size: 3
+
+range_split_size: 65536
+
+run:
+  # First run setup
+  - - file: set_up_table
+
+  # Run txn on all nodes in parallel.
+  - - node: 0
+      file: read0
+
+    - node: 1
+      file: read1
+
+    - node: 1
+      file: read2

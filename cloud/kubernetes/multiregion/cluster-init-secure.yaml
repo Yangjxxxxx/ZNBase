@@ -1,0 +1,28 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: cluster-init-secure
+  labels:
+    app: znbasedb
+spec:
+  template:
+    spec:
+      serviceAccountName: znbasedb
+      containers:
+      - name: cluster-init
+        image: znbasedb/znbase:v2.1.6
+        imagePullPolicy: IfNotPresent
+        volumeMounts:
+        - name: client-certs
+          mountPath: /znbase-certs
+        command:
+          - "/znbase/znbase"
+          - "init"
+          - "--certs-dir=/znbase-certs"
+          - "--host=znbasedb-0.znbasedb"
+      restartPolicy: OnFailure
+      volumes:
+      - name: client-certs
+        secret:
+          secretName: znbasedb.client.root
+          defaultMode: 256

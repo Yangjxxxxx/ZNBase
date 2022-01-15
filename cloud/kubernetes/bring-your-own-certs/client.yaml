@@ -1,0 +1,35 @@
+# This config file demonstrates how to connect to the ZNBaseDB StatefulSet
+# defined in bring-your-own-certs-statefulset.yaml that uses certificates
+# created outside of Kubernetes. See that file for why you may want to use it.
+# You should be able to adapt the core ideas to deploy your own custom
+# applications and connect them to the database similarly.
+#
+# The pod that this file defines will sleep in the cluster not using any
+# resources. After creating the pod, you can use it to open up a SQL shell to
+# the database by running:
+#
+# kubectl exec -it znbasedb-client-secure -- ./znbase sql --url="postgres://root@znbasedb-public:26257/?sslmode=verify-full&sslcert=/znbase-certs/client.root.crt&sslkey=/znbase-certs/client.root.key&sslrootcert=/znbase-certs/ca.crt"
+apiVersion: v1
+kind: Pod
+metadata:
+  name: znbasedb-client-secure
+  labels:
+    app: znbasedb-client
+spec:
+  serviceAccountName: znbasedb
+  containers:
+  - name: znbasedb-client
+    image: znbasedb/znbase:v2.1.6
+    # Keep a pod open indefinitely so kubectl exec can be used to get a shell to it
+    # and run znbase client commands, such as znbase sql, znbase node status, etc.
+    command:
+    - sleep
+    - "2147483648" # 2^31
+    volumeMounts:
+    - name: client-certs
+      mountPath: /znbase-certs
+  volumes:
+  - name: client-certs
+    secret:
+      secretName: znbasedb.client.root
+      defaultMode: 256

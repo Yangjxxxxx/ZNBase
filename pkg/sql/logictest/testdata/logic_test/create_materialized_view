@@ -1,0 +1,552 @@
+# LogicTest: local local-opt local-parallel-stmts fakedist fakedist-opt fakedist-metadata
+
+# NOTE: Keep this table at the beginning of the file to ensure that its numeric
+#       reference is 53 (the numeric reference of the first table). If the
+#       numbering scheme in znbase changes, this test will break.
+
+statement ok
+CREATE TABLE t (a INT PRIMARY KEY, b INT)
+
+statement ok
+INSERT INTO t VALUES (1, 99), (2, 98), (3, 97)
+
+statement ok
+CREATE MATERIALIZED VIEW m1 AS SELECT a, b FROM t
+
+statement error pq: relation \"m1\" already exists
+CREATE MATERIALIZED VIEW m1 AS SELECT a, b FROM t
+
+statement ok
+CREATE MATERIALIZED VIEW m2 (x, y) AS SELECT a, b FROM t
+
+statement error pgcode 42601 CREATE VIEW specifies 1 column name, but data source has 2 columns
+CREATE MATERIALIZED VIEW m3 (x) AS SELECT a, b FROM t
+
+statement error pgcode 42601 CREATE VIEW specifies 3 column names, but data source has 2 columns
+CREATE MATERIALIZED VIEW m4 (x, y, z) AS SELECT a, b FROM t
+
+statement error pgcode 42P01 relation "dne" does not exist
+CREATE MATERIALIZED VIEW m5 AS SELECT a, b FROM dne
+
+#依赖物化视图创建物化视图
+statement ok
+CREATE MATERIALIZED VIEW m6 (x, y) AS SELECT a, b FROM m1
+
+statement ok
+CREATE MATERIALIZED VIEW m7 (x, y) AS SELECT a, b FROM m1 ORDER BY a DESC LIMIT 2
+
+query II colnames,rowsort
+SELECT * FROM m1
+----
+a b
+1 99
+2 98
+3 97
+
+query II colnames,rowsort
+SELECT * FROM m2
+----
+x y
+1 99
+2 98
+3 97
+
+query II colnames,rowsort
+SELECT * FROM m6
+----
+x y
+1 99
+2 98
+3 97
+
+query II colnames,rowsort
+SELECT * FROM m7
+----
+x y
+3 97
+2 98
+
+query II colnames
+SELECT * FROM m7 ORDER BY x LIMIT 1
+----
+x y
+2 98
+
+query II
+SELECT * FROM m2 ORDER BY x DESC LIMIT 1
+----
+3 97
+
+query IIII rowsort
+SELECT * FROM m1 AS m1 INNER JOIN m2 AS m2 ON m1.a = m2.x
+----
+1 99 1 99
+2 98 2 98
+3 97 3 97
+
+statement ok
+CREATE DATABASE test2
+
+statement ok
+SET DATABASE = test2
+
+query II colnames,rowsort
+SELECT * FROM test.m1
+----
+a b
+1 99
+2 98
+3 97
+
+query II colnames,rowsort
+SELECT * FROM test.m2
+----
+x y
+1 99
+2 98
+3 97
+
+query II colnames,rowsort
+SELECT * FROM test.m6
+----
+x y
+1 99
+2 98
+3 97
+
+query II colnames,rowsort
+SELECT * FROM test.m7
+----
+x y
+3 97
+2 98
+
+query II colnames
+SELECT * FROM test.m7 ORDER BY x LIMIT 1
+----
+x y
+2 98
+
+statement ok
+CREATE MATERIALIZED VIEW m1 AS SELECT x, y FROM test.m2
+
+statement ok
+SET DATABASE = test
+
+query TT
+SHOW CREATE TABLE m1
+----
+m1  CREATE MATERIALIZED VIEW m1 (a, b, rowid) AS SELECT a, b FROM test.public.t
+
+query TT
+SHOW CREATE TABLE m2
+----
+m2  CREATE MATERIALIZED VIEW m2 (x, y, rowid) AS SELECT a, b FROM test.public.t
+
+query TT
+SHOW CREATE TABLE m7
+----
+m7  CREATE MATERIALIZED VIEW m7 (x, y, rowid) AS SELECT a, b FROM test.public.m1 ORDER BY a DESC LIMIT 2
+
+query TT
+SHOW CREATE TABLE test2.m1
+----
+test2.public.m1  CREATE MATERIALIZED VIEW m1 (x, y, rowid) AS SELECT x, y FROM test.public.m2
+
+statement ok
+GRANT SELECT ON t TO testuser
+
+statement ok
+GRANT USAGE ON SCHEMA public TO testuser
+
+statement ok
+GRANT USAGE ON DATABASE test TO testuser
+
+user testuser
+
+query II rowsort
+SELECT * FROM t
+----
+1 99
+2 98
+3 97
+
+query error user testuser does not have SELECT privilege on relation test.public.m1
+SELECT * FROM m1
+
+query error user testuser does not have SELECT privilege on relation test.public.m6
+SELECT * FROM m6
+
+#query error pq: user testuser has no privileges on relation test.public.m1
+statement ok
+SHOW CREATE table m1
+
+user root
+
+statement error pq: "m1" is not a table
+DROP TABLE m1
+
+statement error pq: "t" is not a view
+DROP MATERIALIZED VIEW t
+
+statement error pq: cannot drop relation "m1" because view "m6" depends on it
+DROP MATERIALIZED VIEW m1
+
+statement error pq: cannot drop relation "m2" because view "test2.public.m1" depends on it
+DROP MATERIALIZED VIEW m2
+
+statement ok
+DROP MATERIALIZED VIEW test2.m1
+
+statement ok
+DROP MATERIALIZED VIEW m7
+
+statement ok
+DROP MATERIALIZED VIEW m6
+
+statement ok
+DROP MATERIALIZED VIEW m2
+
+statement ok
+DROP MATERIALIZED VIEW m1
+
+statement error pq: relation "m1" does not exist
+DROP MATERIALIZED VIEW m1
+
+statement ok
+create materialized view m1 AS SELECT * FROM t
+
+statement ok
+DROP MATERIALIZED VIEW m1
+
+statement ok
+create materialized view m1 AS SELECT t.* FROM t
+
+statement ok
+DROP MATERIALIZED VIEW m1
+
+statement ok
+create materialized view m1 AS SELECT a FROM t ORDER BY t.*
+
+statement ok
+DROP MATERIALIZED VIEW m1
+
+statement ok
+create materialized view m1 AS SELECT a FROM (SELECT * FROM t)
+
+statement ok
+DROP MATERIALIZED VIEW m1
+
+statement ok
+create materialized view m1 AS SELECT a FROM t WHERE NOT a IN (SELECT a FROM (SELECT * FROM t))
+
+statement ok
+DROP MATERIALIZED VIEW m1
+
+statement ok
+create materialized view m1 AS SELECT a FROM t GROUP BY a HAVING a IN (SELECT a FROM (SELECT * FROM t))
+
+statement ok
+DROP MATERIALIZED VIEW m1
+
+statement error duplicate column name: "a"
+create materialized view m1 AS SELECT t1.*, t2.a FROM t AS t1 JOIN t AS t2 ON t1.a = t2.a
+
+statement ok
+create materialized view m1 AS SELECT a FROM t WHERE a IN (SELECT count(*) FROM t)
+
+statement ok
+DROP MATERIALIZED VIEW m1
+
+# Check for memory leak (#10466)
+statement ok
+CREATE MATERIALIZED VIEW m1 AS SELECT catalog_name, schema_name, sql_path FROM information_schema.schemata
+
+statement ok
+DROP MATERIALIZED VIEW m1
+
+# Ensure views work with dates/timestamps (#12420)
+statement ok
+CREATE TABLE t1 (d DATE, t TIMESTAMP)
+
+statement ok
+insert into t1 values('2021-4-1','2021-4-1 12:13:14')
+
+statement ok
+CREATE MATERIALIZED VIEW m1 AS SELECT d, t FROM t1 WHERE d > DATE '1988-11-12' AND t < TIMESTAMP '2017-01-01'
+
+statement ok
+DROP MATERIALIZED VIEW m1
+
+statement ok
+create view v as select * from t
+
+statement ok
+create view v1 as select * from t1
+
+statement ok
+CREATE MATERIALIZED VIEW m1(i,s) as select v.a, v1.t from v,v1
+
+statement ok
+DROP TABLE t, t1 cascade
+
+statement ok
+create table test1(a string,b int);
+
+statement ok
+create table test2(b int,c string);
+
+statement ok
+insert into test1 values('一',1),('二',2),('三',3),('四',4),('五',5);
+
+statement ok
+insert into test2 values(1,'yi'),(2,'er'),(3,'san'),(4,'si'),(5,'wu'),(6,'liu'),(7,'qi'),(8,'ba');
+
+statement ok
+create MATERIALIZED VIEW m1(m1,m2)as select a,b from test1;
+
+statement ok
+create MATERIALIZED VIEW m2(m1,m2)as select b,c from test2;
+
+statement ok
+create MATERIALIZED VIEW m3(m)as select m1.m1 from m1 union (select m2.m1 from m2 where m1>1)
+
+statement ok
+drop materialized view m1 cascade
+
+query TT
+show tables;
+----
+m2     root
+test1  root
+test2  root
+
+statement ok
+drop table test1, test2 cascade;
+
+statement ok
+create table test(a int);
+
+statement ok
+insert into test values(1),(111);
+
+statement ok
+create materialized view m1 as select * from test;
+
+statement ok
+create index idx on m1(abs(a));
+
+statement ok
+drop table test cascade;
+
+statement ok
+CREATE TABLE t1 ( i1 INT, s1 STRING );
+
+statement ok
+CREATE TABLE t2 ( i2 INT, s2 STRING );
+
+statement ok
+INSERT INTO t1 VALUES(11, 'YI'), (22, 'ER');
+
+statement ok
+INSERT INTO t2 VALUES(100, 'YIBAI'), (200, 'ERBAI');
+
+statement ok
+CREATE MATERIALIZED VIEW mt1 ( mi1, ms1 ) AS SELECT i1, s2 FROM t1, t2;
+
+statement ok
+CREATE VIEW v AS SELECT *,rowid FROM mt1;
+
+statement ok
+DROP TABLE t1, t2 CASCADE;
+
+statement ok
+create table test1(a string,b int);
+
+statement ok
+create table test2(b int,c string);
+
+statement ok
+insert into test1 values('一',1),('二',2),('三',3),('四',4),('五',5);
+
+statement ok
+insert into test2 values(1,'yi'),(2,'er'),(3,'san'),(4,'si'),(5,'wu'),(6,'liu'),(7,'qi'),(8,'ba');
+
+statement ok
+create MATERIALIZED VIEW m1(m1,m2)as select a,b from test1;
+
+statement ok
+create MATERIALIZED VIEW m2(m1,m2)as select b,c from test2;
+
+statement ok
+create MATERIALIZED VIEW m3(m1)as (select m1.m1 from m1)intersect (select m2.m1 from m2 where m1>1)
+
+statement ok
+drop table test1,test2 cascade
+
+statement ok
+create table t1(a int,b text);
+
+statement ok
+create table t2(a int,b text);
+
+statement ok
+insert into t1 values(1,'yi'),(2,'er');
+
+statement ok
+insert into t2 values(3,'san'),(4,'si');
+
+statement ok
+create MATERIALIZED VIEW m1(m1)as select a from t1;
+
+statement error pq: cannot create unique index on materialized view
+create UNIQUE index idx on m1(m1);
+
+statement ok
+create index idx on m1(m1);
+
+statement ok
+drop table t1,t2 cascade
+
+statement ok
+CREATE MATERIALIZED VIEW mt2 AS SELECT tz_offset('UTC');
+
+statement ok
+DROP MATERIALIZED VIEW  mt2
+
+statement ok
+create table test1(a string,b int);
+
+statement ok
+create table test2(b int,c string);
+
+statement ok
+insert into test1 values('一',1),('二',2),('三',3),('四',4),('五',5);
+
+statement ok
+insert into test2 values(1,'yi'),(2,'er'),(3,'san'),(4,'si'),(5,'wu'),(6,'liu'),(7,'qi'),(8,'ba');
+
+statement ok
+create MATERIALIZED VIEW m1(m1,m2)as select a,b from test1;
+
+statement ok
+create MATERIALIZED VIEW m2(m1,m2)as select b,c from test2;
+
+statement error pq: more than one row returned by a subquery used as an expression
+create MATERIALIZED VIEW m3(m1)as select ((select m1.m1 from m1)union (select m2.m1 from m2 where m1>1))
+
+statement ok
+create MATERIALIZED VIEW m3(m1)as select m1.m1 from m1 union (select m2.m1 from m2 where m1>1);
+
+statement error pq: cannot modify materialized views
+ALTER VIEW m3 AS SELECT m1.m2 FROM m1;
+
+statement ok
+drop table test1,test2 cascade
+
+statement ok
+CREATE TABLE t1 ( a INT, b INT );
+
+statement ok
+CREATE TABLE t2 ( c INT, d INT, e int );
+
+statement ok
+CREATE MATERIALIZED VIEW mt1 ( a1,b1,c1 ) AS SELECT a,b,c FROM t1, t2;
+
+statement ok
+set sql_safe_updates=false
+
+statement error pq: cannot drop column "e" because view "mt1" depends on it\nHINT: you can drop mt1 instead.
+ALTER TABLE t2 DROP COLUMN e;
+
+statement ok
+DROP TABLE t1,t2 CASCADE
+
+statement ok
+create table test1(a int,b int);
+
+statement ok
+create materialized view m15(m1,m2) as select (select sum(diff) from (select sum(a)+sum(a)as diff from test1)),sum(a) from test1;
+
+statement ok
+drop table test1 cascade;
+
+statement ok
+create temp table test(a int,b int);
+
+statement error pq: cannot create materialized view using temporary tables
+create materialized view m1(m1)as select a from test;
+
+statement ok
+DROP TABLE test;
+
+statement ok
+create table test1(a oid,b string);
+
+statement ok
+create materialized view m13(m1) as SELECT has_any_column_privilege((select oid FROM pg_class where relname ='test'),'update');
+
+
+query I colnames,rowsort
+SELECT * FROM m13
+----
+m1
+NULL
+
+
+statement ok
+create materialized view m3(m1) as SELECT has_any_column_privilege((select oid FROM pg_class where relname ='test1'),'update');
+
+query B colnames,rowsort
+SELECT * FROM m3
+----
+m1
+true
+
+statement ok
+DROP TABLE test1;
+
+statement ok
+drop materialized view m3,m13;
+
+statement ok
+create table test (id int, name string, salary int);
+
+statement ok
+insert into test values (1,'Tom',120),(2,'Ellen',240),(2,'Joe',80),(3,'Erick',1300),(3,'Secooler',800),(3,null,2800),(3,null,10);
+
+statement ok
+create materialized view m81 as select ID, name, salary, first_value(name) OVER (partition by ID order by salary ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING) as highest_sal_name from test order by ID,salary, name;
+
+statement ok
+drop  materialized view m81
+
+statement ok
+DROP TABLE test;
+
+statement ok
+DROP TABLE IF EXISTS t1,t2 CASCADE;
+
+statement ok
+CREATE TABLE t1 ( a INT, b INT );
+
+statement ok
+INSERT INTO t1 VALUES(1,2);
+
+statement ok
+CREATE TABLE t2 ( c INT, d INT, e int );
+
+statement ok
+INSERT INTO t2 VALUES(3,4);
+
+statement error pq: division by zero
+CREATE MATERIALIZED VIEW mt1 as SELECT 1/0;
+
+statement ok
+CREATE MATERIALIZED VIEW mt1 ( a1,b1,c1 ) AS SELECT a,b,c FROM t1, t2;
+
+statement ok
+ALTER TABLE t1 DROP COLUMN b CASCADE;
+
+statement ok
+DROP TABLE t1,t2 CASCADE

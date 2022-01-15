@@ -1,0 +1,256 @@
+// Copyright 2015  The Cockroach Authors.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+// implied. See the License for the specific language governing
+// permissions and limitations under the License.
+
+package tree
+
+import (
+	"fmt"
+
+	"github.com/znbasedb/znbase/pkg/sql/pgwire/pgcode"
+	"github.com/znbasedb/znbase/pkg/sql/pgwire/pgerror"
+	"github.com/znbasedb/znbase/pkg/util"
+)
+
+// IsolationLevel holds the isolation level for a transaction.
+type IsolationLevel util.IsolationLevel
+
+// IsolationLevel values
+const (
+	UnspecifiedIsolation   = IsolationLevel(util.UnspecifiedIsolation)
+	ReadCommittedIsolation = IsolationLevel(util.ReadCommittedIsolation)
+	SerializableIsolation  = IsolationLevel(util.SerializableIsolation)
+	UnreachableIsolation   = IsolationLevel(util.UnreachableIsolation)
+)
+
+// DefaultIsolation value
+const DefaultIsolation = IsolationLevel(util.DefaultIsolation)
+
+// UserPriority holds the user priority for a transaction.
+type UserPriority int
+
+// UserPriority values
+const (
+	UnspecifiedUserPriority UserPriority = iota
+	Low
+	Normal
+	High
+)
+
+var userPriorityNames = [...]string{
+	UnspecifiedUserPriority: "UNSPECIFIED",
+	Low:                     "LOW",
+	Normal:                  "NORMAL",
+	High:                    "HIGH",
+}
+
+func (up UserPriority) String() string {
+	if up < 0 || up > UserPriority(len(userPriorityNames)-1) {
+		return fmt.Sprintf("UserPriority(%d)", up)
+	}
+	return userPriorityNames[up]
+}
+
+// SUPDDL holds whether support ddl for a transaction.
+type SUPDDL int
+
+// SUP_DDL values
+const (
+	NotSupportDDL SUPDDL = iota
+	SupportDDL
+)
+
+var supportDDLArray = [...]string{
+	NotSupportDDL: "NOT_SUPPORT",
+	SupportDDL:    "SUPPORT",
+}
+
+func (sd SUPDDL) String() string {
+	if sd < 0 || sd > SUPDDL(len(supportDDLArray)-1) {
+		return fmt.Sprintf("support ddl(%d)", sd)
+	}
+	return supportDDLArray[sd]
+}
+
+// ReadWriteMode holds the read write mode for a transaction.
+type ReadWriteMode int
+
+// ReadWriteMode values
+const (
+	UnspecifiedReadWriteMode ReadWriteMode = iota
+	ReadOnly
+	ReadWrite
+)
+
+var readWriteModeNames = [...]string{
+	UnspecifiedReadWriteMode: "UNSPECIFIED",
+	ReadOnly:                 "ONLY",
+	ReadWrite:                "WRITE",
+}
+
+func (ro ReadWriteMode) String() string {
+	if ro < 0 || ro > ReadWriteMode(len(readWriteModeNames)-1) {
+		return fmt.Sprintf("ReadWriteMode(%d)", ro)
+	}
+	return readWriteModeNames[ro]
+}
+
+// TransactionModes holds the transaction modes for a transaction.
+type TransactionModes struct {
+	Isolation     IsolationLevel
+	UserPriority  UserPriority
+	ReadWriteMode ReadWriteMode
+	AsOf          AsOfClause
+	Name          Name
+	TxnDDL        SUPDDL
+}
+
+// Format implements the NodeFormatter interface.
+func (node *TransactionModes) Format(ctx *FmtCtx) {
+	var sep string
+	if node.Isolation != UnspecifiedIsolation {
+		ctx.Printf(" ISOLATION LEVEL %s", util.IsolationLevelNames[node.Isolation])
+		sep = ","
+	}
+	if node.UserPriority != UnspecifiedUserPriority {
+		ctx.Printf("%s PRIORITY %s", sep, node.UserPriority)
+		sep = ","
+	}
+	if node.ReadWriteMode != UnspecifiedReadWriteMode {
+		ctx.Printf("%s READ %s", sep, node.ReadWriteMode)
+	}
+	if node.AsOf.Expr != nil {
+		ctx.WriteString(sep)
+		ctx.WriteString(" ")
+		node.AsOf.Format(ctx)
+	}
+	if node.Name != "" {
+		ctx.Printf(" NAME %s", node.Name)
+	}
+}
+
+var (
+	errIsolationLevelSpecifiedMultipleTimes = pgerror.NewError(pgcode.Syntax, "isolation level specified multiple times")
+	errUserPrioritySpecifiedMultipleTimes   = pgerror.NewError(pgcode.Syntax, "user priority specified multiple times")
+	errReadModeSpecifiedMultipleTimes       = pgerror.NewError(pgcode.Syntax, "read mode specified multiple times")
+	errAsOfSpecifiedMultipleTimes           = pgerror.NewError(pgcode.Syntax, "AS OF SYSTEM TIME specified multiple times")
+
+	// ErrAsOfSpecifiedWithReadWrite is returned when a statement attempts to set
+	// a historical query to READ WRITE which conflicts with its implied READ ONLY
+	// mode.
+	ErrAsOfSpecifiedWithReadWrite = pgerror.NewError(pgcode.Syntax, "AS OF SYSTEM TIME specified with READ WRITE mode")
+)
+
+// Merge groups two sets of transaction modes together.
+// Used in the parser.
+func (node *TransactionModes) Merge(other TransactionModes) error {
+	if other.Isolation != UnspecifiedIsolation {
+		if node.Isolation != UnspecifiedIsolation {
+			return errIsolationLevelSpecifiedMultipleTimes
+		}
+		node.Isolation = other.Isolation
+	}
+	if other.UserPriority != UnspecifiedUserPriority {
+		if node.UserPriority != UnspecifiedUserPriority {
+			return errUserPrioritySpecifiedMultipleTimes
+		}
+		node.UserPriority = other.UserPriority
+	}
+	if other.AsOf.Expr != nil {
+		if node.AsOf.Expr != nil {
+			return errAsOfSpecifiedMultipleTimes
+		}
+		node.AsOf.Expr = other.AsOf.Expr
+	}
+	if other.ReadWriteMode != UnspecifiedReadWriteMode {
+		if node.ReadWriteMode != UnspecifiedReadWriteMode {
+			return errReadModeSpecifiedMultipleTimes
+		}
+		node.ReadWriteMode = other.ReadWriteMode
+	}
+	if node.ReadWriteMode != UnspecifiedReadWriteMode &&
+		node.ReadWriteMode != ReadOnly &&
+		node.AsOf.Expr != nil {
+		return ErrAsOfSpecifiedWithReadWrite
+	}
+	return nil
+}
+
+// BeginTransaction represents a BEGIN statement
+type BeginTransaction struct {
+	Modes TransactionModes
+}
+
+// Format implements the NodeFormatter interface.
+func (n *BeginTransaction) Format(ctx *FmtCtx) {
+	ctx.WriteString("BEGIN TRANSACTION")
+	n.Modes.Format(ctx)
+}
+
+// CommitTransaction represents a COMMIT statement.
+type CommitTransaction struct{}
+
+// Format implements the NodeFormatter interface.
+func (n *CommitTransaction) Format(ctx *FmtCtx) {
+	ctx.WriteString("COMMIT TRANSACTION")
+}
+
+// RollbackTransaction represents a ROLLBACK statement.
+type RollbackTransaction struct{}
+
+// Format implements the NodeFormatter interface.
+func (n *RollbackTransaction) Format(ctx *FmtCtx) {
+	ctx.WriteString("ROLLBACK TRANSACTION")
+}
+
+// Savepoint represents a SAVEPOINT <name> statement.
+type Savepoint struct {
+	Name Name
+}
+
+// Format implements the NodeFormatter interface.
+func (n *Savepoint) Format(ctx *FmtCtx) {
+	ctx.WriteString("SAVEPOINT ")
+	n.Name.Format(ctx)
+}
+
+// ReleaseSavepoint represents a RELEASE SAVEPOINT <name> statement.
+type ReleaseSavepoint struct {
+	Savepoint Name
+}
+
+// Format implements the NodeFormatter interface.
+func (n *ReleaseSavepoint) Format(ctx *FmtCtx) {
+	ctx.WriteString("RELEASE SAVEPOINT ")
+	n.Savepoint.Format(ctx)
+}
+
+// RollbackToSavepoint represents a ROLLBACK TO SAVEPOINT <name> statement.
+type RollbackToSavepoint struct {
+	Savepoint Name
+}
+
+// Format implements the NodeFormatter interface.
+func (n *RollbackToSavepoint) Format(ctx *FmtCtx) {
+	ctx.WriteString("ROLLBACK TRANSACTION TO SAVEPOINT ")
+	n.Savepoint.Format(ctx)
+}
+
+// BeginCommit represents noTxn execute Begin, openTxn execute commit
+type BeginCommit struct {
+	Name     Name
+	Prepared bool
+}
+
+// Format implements the NodeFormatter interface.
+func (n *BeginCommit) Format(ctx *FmtCtx) {}

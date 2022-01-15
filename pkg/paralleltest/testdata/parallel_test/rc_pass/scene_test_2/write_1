@@ -1,0 +1,25 @@
+statement ok
+SELECT pg_sleep(1);
+
+statement ok
+BEGIN TRANSACTION ISOLATION LEVEL READ COMMITTED;
+
+query III
+select * from t;
+----
+1  1  1
+2  2  2
+3  3  3
+
+statement ok
+INSERT INTO T VALUES(0, 0, 0);
+
+statement ok
+INSERT INTO T VALUES(10, 10, 10);
+
+statement ok
+SELECT pg_sleep(5);
+
+statement ok
+COMMIT;
+

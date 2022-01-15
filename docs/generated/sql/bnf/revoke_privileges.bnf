@@ -1,0 +1,7 @@
+revoke_stmt ::=
+	'REVOKE' ( 'ALL' | 'ALL' '(' insert_column_list ')' | ( ( ( name | 'CREATE' | 'GRANT' | 'SELECT' | 'REFERENCES' ) ) ( ( ',' ( name | 'CREATE' | 'GRANT' | 'SELECT' | 'REFERENCES' ) ) )* ) ) 'ON' ( ( 'TABLE' | ) table_pattern ( ( ',' table_pattern ) )* | 'DATABASE' database_name ( ( ',' database_name ) )* ) 'FROM' ( ( user_name ) ( ( ',' user_name ) )* )
+	| 'REVOKE' 'GRANT' 'OPTION' 'FOR' ( 'ALL' | 'ALL' '(' insert_column_list ')' | ( ( ( name | 'CREATE' | 'GRANT' | 'SELECT' | 'REFERENCES' ) ) ( ( ',' ( name | 'CREATE' | 'GRANT' | 'SELECT' | 'REFERENCES' ) ) )* ) ) 'ON' ( ( 'TABLE' | ) table_pattern ( ( ',' table_pattern ) )* | 'DATABASE' database_name ( ( ',' database_name ) )* ) 'FROM' ( ( user_name ) ( ( ',' user_name ) )* )
+	| 'REVOKE' privilege_cols 'ON' ( ( 'TABLE' | ) table_pattern ( ( ',' table_pattern ) )* | 'DATABASE' database_name ( ( ',' database_name ) )* ) 'FROM' ( ( user_name ) ( ( ',' user_name ) )* )
+	| 'REVOKE' 'GRANT' 'OPTION' 'FOR' privilege_cols 'ON' ( ( 'TABLE' | ) table_pattern ( ( ',' table_pattern ) )* | 'DATABASE' database_name ( ( ',' database_name ) )* ) 'FROM' ( ( user_name ) ( ( ',' user_name ) )* )
+	| 'REVOKE' ( ( ( name | 'CREATE' | 'GRANT' | 'SELECT' | 'REFERENCES' ) ) ( ( ',' ( name | 'CREATE' | 'GRANT' | 'SELECT' | 'REFERENCES' ) ) )* ) 'FROM' ( ( user_name ) ( ( ',' user_name ) )* )
+	| 'REVOKE'  ( ( ( name | 'CREATE' | 'GRANT' | 'SELECT' | 'REFERENCES' ) ) ( ( ',' ( name | 'CREATE' | 'GRANT' | 'SELECT' | 'REFERENCES' ) ) )* ) 'FROM' ( ( user_name ) ( ( ',' user_name ) )* )

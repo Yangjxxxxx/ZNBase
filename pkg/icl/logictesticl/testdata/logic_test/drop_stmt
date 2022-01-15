@@ -1,0 +1,174 @@
+# locate space name : inpsur TJ CHINA TEST
+
+# case 1 drop table
+
+statement ok
+create table test01(a int primary key, name01 string) partition by list(a) (partition p1 values in(1) locate in ("TJ"));
+
+statement ok
+create table test02(b int primary key, name02 string, Age int) partition by list(b) (partition p1 values in(2) locate in ("TJ"));
+
+query IT colnames
+select * from system.location;
+----
+id  locationbuf
+56  [18 2 8 1 26 22 10 2 112 49 18 3 192 137 137 26 3 192 137 138 34 4 10 2 84 74 40 1]
+57  [18 2 8 1 26 22 10 2 112 49 18 3 193 137 138 26 3 193 137 139 34 4 10 2 84 74 40 1]
+
+statement ok
+alter table test02 add constraint age_positive CHECK (age > 0);
+
+statement ok
+alter table test02 add constraint name_unique unique (name02);
+
+statement ok
+insert into test02 (b, name02, age) values (1, 'zhangsan', 18), (2, 'lisi', 17), (3, 'wangwu', 22);
+
+statement ok
+create index idx1 on test01  (name01);
+
+statement ok
+insert into test01 (a, name01) values (1, 'zhangsan');
+
+statement ok
+alter table test01 add constraint name_fk foreign key (name01) references test02 (name02);
+
+statement error "test02" is referenced by foreign key from table "test.public.test01"
+drop table test02;
+
+query IT colnames
+select * from system.location;
+----
+id  locationbuf
+56  [18 2 8 1 26 22 10 2 112 49 18 3 192 137 137 26 3 192 137 138 34 4 10 2 84 74 40 1]
+57  [18 2 8 1 26 22 10 2 112 49 18 3 193 137 138 26 3 193 137 139 34 4 10 2 84 74 40 1]
+
+statement ok
+drop table test02 cascade;
+
+query IT colnames
+select * from system.location;
+----
+id  locationbuf
+56  [18 2 8 1 26 22 10 2 112 49 18 3 192 137 137 26 3 192 137 138 34 4 10 2 84 74 40 1]
+
+statement ok
+drop table test01;
+
+statement ok
+CREATE TABLE test03 (
+    product_id           INT PRIMARY KEY NOT NULL,
+    product_name         STRING(50) UNIQUE NOT NULL,
+    product_description  STRING(2000),
+    category_id          STRING(1) NOT NULL CHECK (category_id IN ('A','B','C')),
+    weight_class         INT,
+    warranty_period      INT CONSTRAINT valid_warranty CHECK (warranty_period BETWEEN 0 AND 24),
+    supplier_id          INT,
+    product_status       STRING(20),
+    list_price           DECIMAL(8,2),
+    min_price            DECIMAL(8,2),
+    catalog_url          STRING(50) UNIQUE,
+    date_added           DATE DEFAULT current_date(),
+    misc                 JSONB,
+    CONSTRAINT price_check CHECK (list_price >= min_price),
+    INDEX date_added_idx (date_added),
+    INDEX supp_id_prod_status_idx (supplier_id, product_status),
+    INVERTED INDEX details (misc)
+) partition by list(product_id) (partition p1 values in(2) locate in ("TJ"));
+
+query IT colnames
+select * from system.location;
+----
+id  locationbuf
+58  [18 2 8 1 18 2 8 2 18 2 8 3 18 2 8 4 18 2 8 5 18 2 8 6 26 22 10 2 112 49 18 3 194 137 138 26 3 194 137 139 34 4 10 2 84 74 40 1]
+
+statement ok
+drop table test03;
+
+query IT colnames
+select * from system.location;
+----
+id  locationbuf
+
+# case 2 drop index
+
+statement ok
+create table test01(a int primary key, name01 string, age int) partition by list(a) (partition p1 values in(1) locate in ("TJ"));
+
+statement ok
+create table test02(b int primary key, name02 string, Age int) partition by list(b) (partition p1 values in(2) locate in ("TJ"));
+
+statement ok
+CREATE UNIQUE INDEX ON test01 (name01);
+
+statement ok
+alter table test02 add constraint fk foreign key (name02) references test01 (name01) on delete cascade;
+
+query TTBITTBBTT colnames
+show index from test01;
+----
+table_name  index_name         non_unique  seq_in_index  column_name  direction  storing  implicit locality  partitioned
+test01      primary            false       1             a            ASC        false    false    global    YES
+test01      test01_name01_key  false       1             name01       ASC        false    false    global    NO
+test01      test01_name01_key  false       2             a            ASC        false    true     global    NO
+
+statement error "test01_name01_key" is referenced by foreign key from table "test.public.test02"
+DROP INDEX test01_name01_key;
+
+query TTBITTBBTT colnames
+show index from test01;
+----
+table_name  index_name         non_unique  seq_in_index  column_name  direction  storing  implicit locality  partitioned
+test01      primary            false       1             a            ASC        false    false    global    YES
+test01      test01_name01_key  false       1             name01       ASC        false    false    global    NO
+test01      test01_name01_key  false       2             a            ASC        false    true     global    NO
+
+statement ok
+DROP INDEX test01_name01_key cascade;
+
+query TTBITTBBTT colnames
+show index from test01;
+----
+table_name  index_name  non_unique  seq_in_index  column_name  direction  storing  implicit locality  partitioned
+test01      primary     false       1             a            ASC        false    false    global    YES
+
+statement ok
+drop table test01;
+
+# case 3 drop database
+
+statement ok
+create database DB1;
+
+statement ok
+set database=DB1;
+
+query T colnames
+show database;
+----
+database
+db1
+
+statement ok
+create table test01(a int primary key, name01 string);
+
+query TT colnames
+show tables from db1;
+----
+table_name  owner
+test01      root
+
+statement error database "db1" is not empty and RESTRICT was specified
+drop database db1 restrict;
+
+query TT colnames
+show tables from db1;
+----
+table_name  owner
+test01      root
+
+statement ok
+drop database db1;
+
+statement error "db1" does not match any valid database or schema
+show tables from db1;

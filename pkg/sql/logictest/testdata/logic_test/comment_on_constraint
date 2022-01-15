@@ -1,0 +1,339 @@
+# LogicTest: local local-opt
+
+statement ok
+CREATE TABLE customers (
+    id INT,
+	email STRING UNIQUE,
+	num INT CHECK(num > 0),
+	CONSTRAINT customers_pk_id PRIMARY KEY (id)
+);
+
+statement ok
+COMMENT ON CONSTRAINT customers_pk_id ON customers IS 'pk';
+
+query T
+SELECT obj_description(oid) from pg_constraint WHERE conname='customers_pk_id';
+----
+pk
+
+statement ok
+COMMENT ON CONSTRAINT customers_pk_id ON customers IS NULL;
+
+query T
+SELECT obj_description(oid) from pg_constraint WHERE conname='customers_pk_id';
+----
+NULL
+
+statement ok
+COMMENT ON CONSTRAINT customers_pk_id ON customers IS '';
+
+query T
+SELECT obj_description(oid) from pg_constraint WHERE conname='customers_pk_id';
+----
+·
+
+statement ok
+COMMENT ON CONSTRAINT customers_email_key ON customers IS 'email';
+
+query T
+SELECT obj_description(oid) from pg_constraint WHERE conname='customers_email_key';
+----
+email
+
+statement ok
+COMMENT ON CONSTRAINT customers_email_key ON customers IS NULL;
+
+query T
+SELECT obj_description(oid) from pg_constraint WHERE conname='customers_email_key';
+----
+NULL
+
+statement ok
+COMMENT ON CONSTRAINT customers_email_key ON customers IS '';
+
+query T
+SELECT obj_description(oid) from pg_constraint WHERE conname='customers_email_key';
+----
+·
+
+statement ok
+COMMENT ON CONSTRAINT customers_check_num ON customers IS 'num';
+
+query T
+SELECT obj_description(oid) from pg_constraint WHERE conname='customers_check_num';
+----
+num
+
+statement ok
+COMMENT ON CONSTRAINT customers_check_num ON customers IS NULL;
+
+query T
+SELECT obj_description(oid) from pg_constraint WHERE conname='customers_check_num';
+----
+NULL
+
+statement ok
+COMMENT ON CONSTRAINT customers_check_num ON customers IS '';
+
+query T
+SELECT obj_description(oid) from pg_constraint WHERE conname='customers_check_num';
+----
+·
+
+statement ok
+CREATE TABLE orders (
+    id INT ,
+    email STRING UNIQUE,
+	num INT CHECK(num > 0),
+	CONSTRAINT orders_pk_id PRIMARY KEY (id),
+    customer INT NOT NULL REFERENCES customers (id),
+    orderTotal DECIMAL(9,2),
+    INDEX (customer)
+);
+
+statement ok
+COMMENT ON CONSTRAINT orders_pk_id ON orders IS 'pk';
+
+query T
+SELECT obj_description(oid) from pg_constraint WHERE conname='orders_pk_id';
+----
+pk
+
+statement ok
+COMMENT ON CONSTRAINT orders_pk_id ON orders IS NULL;
+
+query T
+SELECT obj_description(oid) from pg_constraint WHERE conname='orders_pk_id';
+----
+NULL
+
+statement ok
+COMMENT ON CONSTRAINT orders_pk_id ON orders IS '';
+
+query T
+SELECT obj_description(oid) from pg_constraint WHERE conname='orders_pk_id';
+----
+·
+
+statement ok
+COMMENT ON CONSTRAINT orders_email_key ON orders IS 'email';
+
+query T
+SELECT obj_description(oid) from pg_constraint WHERE conname='orders_email_key';
+----
+email
+
+statement ok
+COMMENT ON CONSTRAINT orders_email_key ON orders IS NULL;
+
+query T
+SELECT obj_description(oid) from pg_constraint WHERE conname='orders_email_key';
+----
+NULL
+
+statement ok
+COMMENT ON CONSTRAINT orders_email_key ON orders IS '';
+
+query T
+SELECT obj_description(oid) from pg_constraint WHERE conname='orders_email_key';
+----
+·
+
+statement ok
+COMMENT ON CONSTRAINT orders_check_num ON orders IS 'num';
+
+query T
+SELECT obj_description(oid) from pg_constraint WHERE conname='orders_check_num';
+----
+num
+
+statement ok
+COMMENT ON CONSTRAINT orders_check_num ON orders IS NULL;
+
+query T
+SELECT obj_description(oid) from pg_constraint WHERE conname='orders_check_num';
+----
+NULL
+
+statement ok
+COMMENT ON CONSTRAINT orders_check_num ON orders IS '';
+
+query T
+SELECT obj_description(oid) from pg_constraint WHERE conname='orders_check_num';
+----
+·
+
+statement ok
+COMMENT ON CONSTRAINT fk_customer_ref_customers ON orders IS 'fk';
+
+query T
+SELECT obj_description(oid) from pg_constraint WHERE conname='fk_customer_ref_customers';
+----
+fk
+
+statement ok
+COMMENT ON CONSTRAINT fk_customer_ref_customers ON orders IS NULL;
+
+query T
+SELECT obj_description(oid) from pg_constraint WHERE conname='fk_customer_ref_customers';
+----
+NULL
+
+statement ok
+COMMENT ON CONSTRAINT fk_customer_ref_customers ON orders IS '';
+
+query T
+SELECT obj_description(oid) from pg_constraint WHERE conname='fk_customer_ref_customers';
+----
+·
+
+statement ok
+DROP TABLE IF EXISTS t;
+CREATE TABLE t (
+    id INT NOT NULL,
+    num INT NULL,
+    email STRING,
+    passwd STRING UNIQUE NOT NULL,
+    CONSTRAINT t_pk_id PRIMARY KEY (id),
+    UNIQUE INDEX t_email_key (email),
+    INDEX t_passwd_idx (passwd),
+    FAMILY "primary" (id, email, num),
+    CONSTRAINT t_check_num CHECK (num > 0)
+);
+
+statement ok
+COMMENT ON CONSTRAINT t_pk_id ON t IS 'pk';
+
+statement ok
+COMMENT ON CONSTRAINT t_email_key ON t IS 'email';
+
+statement ok
+COMMENT ON CONSTRAINT t_check_num ON t IS 'check';
+
+query TTTTB
+SHOW CONSTRAINT FROM t
+----
+t  t_check_num   CHECK        CHECK (num > 0) ENABLE  true
+t  t_email_key   UNIQUE       UNIQUE (email ASC)      true
+t  t_passwd_key  UNIQUE       UNIQUE (passwd ASC)     true
+t  t_pk_id       PRIMARY KEY  PRIMARY KEY (id ASC)    true
+
+query TTTTBT
+SHOW CONSTRAINT FROM t WITH COMMENT
+----
+t  t_check_num   CHECK        CHECK (num > 0) ENABLE  true  check
+t  t_email_key   UNIQUE       UNIQUE (email ASC)      true  email
+t  t_passwd_key  UNIQUE       UNIQUE (passwd ASC)     true  NULL
+t  t_pk_id       PRIMARY KEY  PRIMARY KEY (id ASC)    true  pk
+
+statement error pq: constraint "t_passwd_idx" does not exist
+COMMENT ON CONSTRAINT t_passwd_idx ON t IS 'index';
+
+statement ok
+DROP TABLE IF EXISTS t1;
+create TABLE t1 (id INT,email STRING ,num INT CHECK(num > 0));
+SHOW CONSTRAINT FROM t1 WITH COMMENT;
+COMMENT ON CONSTRAINT t1_check_num on t1 IS 'check';
+SHOW CONSTRAINT FROM t1 WITH COMMENT;
+alter table t1 rename CONSTRAINT t1_check_num to num222;
+SHOW CONSTRAINT FROM t1 WITH COMMENT;
+
+statement ok
+drop table if exists t1;
+create TABLE t1 (id INT,email STRING ,num INT CHECK(num > 0) check(num<18));
+
+query TT
+show create t1
+----
+t1  CREATE TABLE t1 (
+    id INT NULL,
+    email STRING NULL,
+    num INT NULL,
+    FAMILY "primary" (id, email, num, rowid),
+    CONSTRAINT t1_check_num CHECK (num > 0) ENABLE,
+    CONSTRAINT t1_check_num1 CHECK (num < 18) ENABLE
+)
+
+statement ok
+comment on constraint t1_check_num on t1 is 'this is t1_check_num, later will be t1_check_num2';
+
+query TTTTBT
+SHOW CONSTRAINT FROM t1 WITH COMMENT
+----
+t1  t1_check_num    CHECK   CHECK (num > 0) ENABLE      true      this is t1_check_num, later will be t1_check_num2
+t1  t1_check_num1   CHECK   CHECK (num < 18) ENABLE     true      NULL
+
+statement ok
+alter table t1 rename CONSTRAINT t1_check_num to t1_check_num2;
+
+query TTTTBT
+SHOW CONSTRAINT FROM t1 WITH COMMENT
+----
+t1  t1_check_num1   CHECK   CHECK (num < 18) ENABLE     true    NULL
+t1  t1_check_num2   CHECK   CHECK (num > 0) ENABLE      true    this is t1_check_num, later will be t1_check_num2
+
+statement ok
+drop table if exists t;
+create TABLE t (id INT primary key,email STRING unique,num INT CHECK(num > 0) check(num<10));
+comment on constraint t_email_key on t is 'unique key';
+comment on constraint t_check_num on t is 'check num';
+comment on constraint t_check_num1 on t is 'check num1';
+comment on constraint "primary" on t is 'pk';
+alter table t rename constraint "primary" to p_k;
+alter table t drop constraint  p_k;
+
+query TTTTBT
+SHOW CONSTRAINT FROM t WITH COMMENT
+----
+t   t_check_num         CHECK       CHECK (num > 0) ENABLE      true    check num
+t   t_check_num1        CHECK       CHECK (num < 10) ENABLE     true    check num1
+t   t_email_key         UNIQUE      UNIQUE (email ASC)          true    unique key
+t   t_id_key            UNIQUE      UNIQUE (id ASC)             true    NULL
+
+statement ok
+alter index t_email_key rename to email;
+
+query TTTTBT
+SHOW CONSTRAINT FROM t WITH COMMENT
+----
+t   email               UNIQUE      UNIQUE (email ASC)          true    unique key
+t   t_check_num         CHECK       CHECK (num > 0) ENABLE      true    check num
+t   t_check_num1        CHECK       CHECK (num < 10) ENABLE     true    check num1
+t   t_id_key            UNIQUE      UNIQUE (id ASC)             true    NULL
+
+statement ok
+drop index email cascade;
+comment on constraint t_id_key on t is 't id key';
+
+query TTTTBT
+SHOW CONSTRAINT FROM t WITH COMMENT
+----
+t   t_check_num         CHECK       CHECK (num > 0) ENABLE      true    check num
+t   t_check_num1        CHECK       CHECK (num < 10) ENABLE     true    check num1
+t   t_id_key            UNIQUE      UNIQUE (id ASC)             true    t id key
+
+statement ok
+CREATE DATABASE "‘数据库""]}'#$%^&*(";
+CREATE SCHEMA "‘数据库""]}'#$%^&*("."'sdddd~/*&$#@!~";
+CREATE TABLE "‘数据库""]}'#$%^&*("."'sdddd~/*&$#@!~"."sdd!!`'"(
+"dsfdasrgg*&'" INT PRIMARY KEY,
+b INT
+);
+
+statement ok
+COMMENT ON CONSTRAINT "primary" ON "‘数据库""]}'#$%^&*("."'sdddd~/*&$#@!~"."sdd!!`'" is '主键';
+
+query TTTTBT
+SHOW CONSTRAINTS FROM "‘数据库""]}'#$%^&*("."'sdddd~/*&$#@!~"."sdd!!`'" WITH COMMENT
+----
+sdd!!`'      primary     PRIMARY KEY     PRIMARY KEY ("dsfdasrgg*&'" ASC)   true     主键
+
+statement ok
+COMMENT ON COLUMN "‘数据库""]}'#$%^&*("."'sdddd~/*&$#@!~"."sdd!!`'"."dsfdasrgg*&'" is 'aaaaaa';
+COMMENT ON COLUMN "‘数据库""]}'#$%^&*("."'sdddd~/*&$#@!~"."sdd!!`'".b is 'bbbbbb';
+
+query TTBTTTBT
+SHOW COLUMNS FROM "‘数据库""]}'#$%^&*("."'sdddd~/*&$#@!~"."sdd!!`'" WITH COMMENT
+----
+dsfdasrgg*&'    INT    false    NULL     ·      {primary}   false   aaaaaa
+b               INT    true     NULL     ·      {}          false   bbbbbb

@@ -1,0 +1,11 @@
+statement ok
+SET SESSION replicate_tables_in_sync='on';
+
+statement ok
+alter table reptest alter column b set not null ;
+
+statement ok
+alter table reptest alter column c set not null ;
+
+statement ok
+SET SESSION replicate_tables_in_sync='off';

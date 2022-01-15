@@ -1,0 +1,14 @@
+# =============================================================================
+# scan.opt contains exploration rules for the Scan operator.
+# =============================================================================
+
+
+# GenerateIndexScans creates alternate Scan expressions for each secondary index
+# on the scanned table.
+#[GenerateIndexScans, Explore]
+#(Scan $scanPrivate:* & (IsCanonicalScan $scanPrivate)) => (GenerateIndexScans $scanPrivate)
+
+[GenerateIndexScans, Explore, EngineKVOnly]
+(Scan $scanPrivate:* & (IsCanonicalScan $scanPrivate) & (IsTableDSEngineValid $scanPrivate Const "EngineKVOnly")
+)
+=> (GenerateIndexScans $scanPrivate)

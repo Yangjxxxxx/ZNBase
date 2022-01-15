@@ -1,0 +1,495 @@
+# LogicTest: local-insecure
+# ------------------------------------------------------------------------------
+# grant with grant options tests.
+# ------------------------------------------------------------------------------
+statement ok
+create user a;
+create user b;
+create user c;
+
+statement ok
+create database a;
+
+statement ok
+GRANT USAGE ON DATABASE test TO public;
+GRANT USAGE ON DATABASE a TO public;
+
+query TTTTT
+show grants on database a for a,b;
+----
+a  root  public  USAGE  NO
+
+statement ok
+grant usage on database a to a with grant option;
+
+userInsecure a
+
+query TTTTT
+show grants on database a for a;
+----
+a  root  a       USAGE  YES
+a  root  public  USAGE  NO
+
+statement ok
+grant usage on database a to b with grant option;
+
+query TTTTT
+show grants on database a for b;
+----
+a  a     b       USAGE  YES
+a  root  public  USAGE  NO
+
+userInsecure b
+
+statement ok
+grant usage on database a to c;
+
+userInsecure root
+
+statement ok
+grant create on database a to a, b;
+
+statement ok
+revoke usage on database a from a;
+
+query TTTTT
+show grants on database a for a, b, c;
+----
+a  root  a       CREATE  NO
+a  root  b       CREATE  NO
+a  root  public  USAGE   NO
+
+query TTTTTTTT
+show grants for a;
+----
+test  NULL                NULL                               NULL  root   public  USAGE   NO
+test  information_schema  NULL                               NULL  root   public  USAGE   NO
+test  information_schema  administrable_role_authorizations  NULL  admin  public  SELECT  NO
+test  information_schema  applicable_roles                   NULL  admin  public  SELECT  NO
+test  information_schema  check_constraints                  NULL  admin  public  SELECT  NO
+test  information_schema  column_privileges                  NULL  admin  public  SELECT  NO
+test  information_schema  columns                            NULL  admin  public  SELECT  NO
+test  information_schema  constraint_column_usage            NULL  admin  public  SELECT  NO
+test  information_schema  database_privileges                NULL  admin  public  SELECT  NO
+test  information_schema  enabled_roles                      NULL  admin  public  SELECT  NO
+test  information_schema  functions                          NULL  admin  public  SELECT  NO
+test  information_schema  index_partition                    NULL  admin  public  SELECT  NO
+test  information_schema  key_column_usage                   NULL  admin  public  SELECT  NO
+test  information_schema  parameters                         NULL  admin  public  SELECT  NO
+test  information_schema  referential_constraints            NULL  admin  public  SELECT  NO
+test  information_schema  role_table_grants                  NULL  admin  public  SELECT  NO
+test  information_schema  routines                           NULL  admin  public  SELECT  NO
+test  information_schema  schema_privileges                  NULL  admin  public  SELECT  NO
+test  information_schema  schemata                           NULL  admin  public  SELECT  NO
+test  information_schema  sequences                          NULL  admin  public  SELECT  NO
+test  information_schema  statistics                         NULL  admin  public  SELECT  NO
+test  information_schema  table_constraints                  NULL  admin  public  SELECT  NO
+test  information_schema  table_privileges                   NULL  admin  public  SELECT  NO
+test  information_schema  tables                             NULL  admin  public  SELECT  NO
+test  information_schema  trigger_privileges                 NULL  admin  public  SELECT  NO
+test  information_schema  user_privileges                    NULL  admin  public  SELECT  NO
+test  information_schema  views                              NULL  admin  public  SELECT  NO
+test  pg_catalog          NULL                               NULL  root   public  USAGE   NO
+test  pg_catalog          pg_am                              NULL  admin  public  SELECT  NO
+test  pg_catalog          pg_attrdef                         NULL  admin  public  SELECT  NO
+test  pg_catalog          pg_attribute                       NULL  admin  public  SELECT  NO
+test  pg_catalog          pg_auth_members                    NULL  admin  public  SELECT  NO
+test  pg_catalog          pg_class                           NULL  admin  public  SELECT  NO
+test  pg_catalog          pg_collation                       NULL  admin  public  SELECT  NO
+test  pg_catalog          pg_constraint                      NULL  admin  public  SELECT  NO
+test  pg_catalog          pg_database                        NULL  admin  public  SELECT  NO
+test  pg_catalog          pg_depend                          NULL  admin  public  SELECT  NO
+test  pg_catalog          pg_description                     NULL  admin  public  SELECT  NO
+test  pg_catalog          pg_enum                            NULL  admin  public  SELECT  NO
+test  pg_catalog          pg_extension                       NULL  admin  public  SELECT  NO
+test  pg_catalog          pg_foreign_data_wrapper            NULL  admin  public  SELECT  NO
+test  pg_catalog          pg_foreign_server                  NULL  admin  public  SELECT  NO
+test  pg_catalog          pg_foreign_table                   NULL  admin  public  SELECT  NO
+test  pg_catalog          pg_index                           NULL  admin  public  SELECT  NO
+test  pg_catalog          pg_indexes                         NULL  admin  public  SELECT  NO
+test  pg_catalog          pg_inherits                        NULL  admin  public  SELECT  NO
+test  pg_catalog          pg_language                        NULL  admin  public  SELECT  NO
+test  pg_catalog          pg_namespace                       NULL  admin  public  SELECT  NO
+test  pg_catalog          pg_nodestatus                      NULL  admin  public  SELECT  NO
+test  pg_catalog          pg_operator                        NULL  admin  public  SELECT  NO
+test  pg_catalog          pg_proc                            NULL  admin  public  SELECT  NO
+test  pg_catalog          pg_range                           NULL  admin  public  SELECT  NO
+test  pg_catalog          pg_rewrite                         NULL  admin  public  SELECT  NO
+test  pg_catalog          pg_roles                           NULL  admin  public  SELECT  NO
+test  pg_catalog          pg_seclabel                        NULL  admin  public  SELECT  NO
+test  pg_catalog          pg_sequence                        NULL  admin  public  SELECT  NO
+test  pg_catalog          pg_settings                        NULL  admin  public  SELECT  NO
+test  pg_catalog          pg_shdescription                   NULL  admin  public  SELECT  NO
+test  pg_catalog          pg_shseclabel                      NULL  admin  public  SELECT  NO
+test  pg_catalog          pg_stat_activity                   NULL  admin  public  SELECT  NO
+test  pg_catalog          pg_tables                          NULL  admin  public  SELECT  NO
+test  pg_catalog          pg_tablespace                      NULL  admin  public  SELECT  NO
+test  pg_catalog          pg_trigger                         NULL  admin  public  SELECT  NO
+test  pg_catalog          pg_type                            NULL  admin  public  SELECT  NO
+test  pg_catalog          pg_user                            NULL  admin  public  SELECT  NO
+test  pg_catalog          pg_user_mapping                    NULL  admin  public  SELECT  NO
+test  pg_catalog          pg_views                           NULL  admin  public  SELECT  NO
+test  public              NULL                               NULL  root   public  USAGE   NO
+test  zbdb_internal       NULL                               NULL  root   public  USAGE   NO
+test  zbdb_internal       backward_dependencies              NULL  admin  public  SELECT  NO
+test  zbdb_internal       builtin_functions                  NULL  admin  public  SELECT  NO
+test  zbdb_internal       cluster_queries                    NULL  admin  public  SELECT  NO
+test  zbdb_internal       cluster_sessions                   NULL  admin  public  SELECT  NO
+test  zbdb_internal       cluster_settings                   NULL  admin  public  SELECT  NO
+test  zbdb_internal       create_statements                  NULL  admin  public  SELECT  NO
+test  zbdb_internal       databases                          NULL  admin  public  SELECT  NO
+test  zbdb_internal       feature_usage                      NULL  admin  public  SELECT  NO
+test  zbdb_internal       forward_dependencies               NULL  admin  public  SELECT  NO
+test  zbdb_internal       function_privileges                NULL  admin  public  SELECT  NO
+test  zbdb_internal       gossip_alerts                      NULL  admin  public  SELECT  NO
+test  zbdb_internal       gossip_liveness                    NULL  admin  public  SELECT  NO
+test  zbdb_internal       gossip_network                     NULL  admin  public  SELECT  NO
+test  zbdb_internal       gossip_nodes                       NULL  admin  public  SELECT  NO
+test  zbdb_internal       index_columns                      NULL  admin  public  SELECT  NO
+test  zbdb_internal       jobs                               NULL  admin  public  SELECT  NO
+test  zbdb_internal       kv_node_status                     NULL  admin  public  SELECT  NO
+test  zbdb_internal       kv_store_status                    NULL  admin  public  SELECT  NO
+test  zbdb_internal       leases                             NULL  admin  public  SELECT  NO
+test  zbdb_internal       node_build_info                    NULL  admin  public  SELECT  NO
+test  zbdb_internal       node_metrics                       NULL  admin  public  SELECT  NO
+test  zbdb_internal       node_queries                       NULL  admin  public  SELECT  NO
+test  zbdb_internal       node_runtime_info                  NULL  admin  public  SELECT  NO
+test  zbdb_internal       node_sessions                      NULL  admin  public  SELECT  NO
+test  zbdb_internal       node_statement_statistics          NULL  admin  public  SELECT  NO
+test  zbdb_internal       partition_views                    NULL  admin  public  SELECT  NO
+test  zbdb_internal       partitions                         NULL  admin  public  SELECT  NO
+test  zbdb_internal       predefined_comments                NULL  admin  public  SELECT  NO
+test  zbdb_internal       ranges                             NULL  admin  public  SELECT  NO
+test  zbdb_internal       ranges_no_leases                   NULL  admin  public  SELECT  NO
+test  zbdb_internal       savepoint_status                   NULL  admin  public  SELECT  NO
+test  zbdb_internal       schema_changes                     NULL  admin  public  SELECT  NO
+test  zbdb_internal       session_trace                      NULL  admin  public  SELECT  NO
+test  zbdb_internal       session_variables                  NULL  admin  public  SELECT  NO
+test  zbdb_internal       table_columns                      NULL  admin  public  SELECT  NO
+test  zbdb_internal       table_indexes                      NULL  admin  public  SELECT  NO
+test  zbdb_internal       table_row_statistics               NULL  admin  public  SELECT  NO
+test  zbdb_internal       tables                             NULL  admin  public  SELECT  NO
+test  zbdb_internal       zones                              NULL  admin  public  SELECT  NO
+
+statement ok
+revoke all on database a from a;
+
+query TTTTT
+show grants on database a for a, b;
+----
+a  root  b       CREATE  NO
+a  root  public  USAGE   NO
+
+statement ok
+grant all on database a to a;
+
+query TTTTT
+show grants on database a for a;
+----
+a  root  a       CREATE  NO
+a  root  a       DROP    NO
+a  root  a       USAGE   NO
+a  root  public  USAGE   NO
+
+statement error pq: invalid privilege type SELECT for database
+grant select on database a to a;
+
+
+statement ok
+CREATE DATABASE database_test;
+CREATE USER test;
+GRANT USAGE ON DATABASE database_test TO public;
+GRANT CREATE on database database_test to test;
+
+query TT
+SHOW USERS
+----
+a         ·
+b         ·
+c         ·
+root      ·
+test      ·
+testuser  ·
+
+userInsecure test
+
+statement ok
+CREATE SCHEMA database_test.schema_test;
+CREATE TABLE database_test.schema_test.table_test(a int PRIMARY KEY, b string);
+
+# TODO lixinze 是否需要限制不存在的用户not_exist
+statement error user or role not_exist does not exist
+show grants on database database_test for not_exist;
+
+query TTTTT
+show grants on database database_test for test;
+----
+database_test  root  public  USAGE   NO
+database_test  root  test    CREATE  NO
+
+query TTTTTT
+show grants on schema database_test.schema_test for test;
+----
+
+query TTTTTTTT
+show grants on table database_test.schema_test.table_test for test;
+----
+
+userInsecure root
+
+statement ok
+CREATE DATABASE b;
+
+statement ok
+GRANT USAGE ON DATABASE b TO public;
+
+query TTTTT
+show grants on database b;
+----
+b  admin  admin   CREATE  YES
+b  admin  admin   DROP    YES
+b  admin  admin   USAGE   YES
+b  admin  root    CREATE  YES
+b  admin  root    DROP    YES
+b  admin  root    USAGE   YES
+b  root   public  USAGE   NO
+
+statement ok
+GRANT CREATE ON DATABASE b TO root;
+
+query TTTTT
+select * from "".information_schema.database_privileges where table_catalog = 'b';
+----
+admin  admin   b  CREATE  YES
+admin  admin   b  DROP    YES
+admin  admin   b  USAGE   YES
+root   public  b  USAGE   NO
+admin  root    b  CREATE  YES
+admin  root    b  DROP    YES
+admin  root    b  USAGE   YES
+root   root    b  CREATE  NO
+
+statement ok
+REVOKE CREATE ON DATABASE b FROM root;
+
+query TTTTT
+select * from "".information_schema.database_privileges where table_catalog = 'b';
+----
+admin  admin   b  CREATE  YES
+admin  admin   b  DROP    YES
+admin  admin   b  USAGE   YES
+root   public  b  USAGE   NO
+admin  root    b  CREATE  YES
+admin  root    b  DROP    YES
+admin  root    b  USAGE   YES
+
+statement ok
+CREATE DATABASE c;
+CREATE USER user1;
+CREATE USER user2;
+CREATE USER user3;
+CREATE USER user4;
+GRANT USAGE, CREATE ON DATABASE c TO user1;
+
+userInsecure user1
+
+statement ok
+CREATE SCHEMA c.s;
+
+query TTTTTT
+select * from "".information_schema.schema_privileges where table_catalog = 'c' and table_schema = 's';
+----
+
+statement ok
+GRANT USAGE ON SCHEMA c.s TO user2 WITH GRANT OPTION;
+
+userInsecure user2
+
+statement ok
+GRANT USAGE ON SCHEMA c.s TO user3 WITH GRANT OPTION;
+
+userInsecure user3
+
+statement ok
+GRANT USAGE ON SCHEMA c.s TO user4 WITH GRANT OPTION;
+
+userInsecure user4
+
+statement error privilege has loop
+GRANT USAGE ON SCHEMA c.s TO user1 WITH GRANT OPTION;
+
+userInsecure user1
+
+query TTTTTT
+select * from "".information_schema.schema_privileges where table_catalog = 'c' and table_schema = 's';
+----
+user1  user2  c  s  USAGE  YES
+
+statement ok
+REVOKE USAGE ON SCHEMA c.s FROM user2;
+
+query TTTTTT
+select * from "".information_schema.schema_privileges where table_catalog = 'c' and table_schema = 's';
+----
+
+userInsecure root
+
+statement ok
+CREATE DATABASE d;
+GRANT USAGE, CREATE ON DATABASE d TO user1;
+
+userInsecure user1
+
+statement ok
+CREATE SCHEMA d.s;
+
+query TTTTTT
+select * from "".information_schema.schema_privileges where table_catalog = 'd' and table_schema = 's';
+----
+
+statement ok
+GRANT USAGE ON SCHEMA d.s TO user2 WITH GRANT OPTION;
+
+userInsecure user2
+
+statement error privilege has loop
+GRANT USAGE ON SCHEMA d.s TO user1 WITH GRANT OPTION;
+
+statement error privilege has loop
+GRANT USAGE ON SCHEMA d.s TO user2 WITH GRANT OPTION;
+
+userInsecure user1
+
+query TTTTTT
+select * from "".information_schema.schema_privileges where table_catalog = 'd' and table_schema = 's';
+----
+user1  user2  d  s  USAGE  YES
+
+statement ok
+REVOKE USAGE ON SCHEMA d.s FROM user2;
+
+query TTTTTT
+select * from "".information_schema.schema_privileges where table_catalog = 'd' and table_schema = 's';
+----
+
+userInsecure root
+
+statement ok
+CREATE DATABASE e;
+GRANT USAGE, CREATE ON DATABASE e TO user1;
+
+userInsecure user1
+
+statement ok
+CREATE SCHEMA e.s;
+
+query TTTTTT
+select * from "".information_schema.schema_privileges where table_catalog = 'e' and table_schema = 's';
+----
+
+statement ok
+GRANT USAGE ON SCHEMA e.s TO user2 WITH GRANT OPTION;
+GRANT USAGE ON SCHEMA e.s TO user3 WITH GRANT OPTION;
+
+userInsecure user2
+
+statement ok
+GRANT USAGE ON SCHEMA e.s TO user3 WITH GRANT OPTION;
+
+userInsecure user3
+
+statement ok
+GRANT USAGE ON SCHEMA e.s TO user4 WITH GRANT OPTION;
+
+userInsecure root
+
+query TTTTTT
+select * from "".information_schema.schema_privileges where table_catalog = 'e' and table_schema = 's';
+----
+admin  admin  e  s  CREATE  YES
+admin  admin  e  s  DROP    YES
+admin  admin  e  s  USAGE   YES
+admin  root   e  s  CREATE  YES
+admin  root   e  s  DROP    YES
+admin  root   e  s  USAGE   YES
+user1  user2  e  s  USAGE   YES
+user1  user3  e  s  USAGE   YES
+user2  user3  e  s  USAGE   YES
+user3  user4  e  s  USAGE   YES
+
+userInsecure user4
+
+statement error privilege has loop
+GRANT USAGE ON SCHEMA e.s TO user1 WITH GRANT OPTION;
+
+userInsecure user1
+
+statement ok
+REVOKE GRANT OPTION FOR USAGE ON SCHEMA e.s FROM user2;
+
+query TTTTTT
+select * from "".information_schema.schema_privileges where table_catalog = 'e' and table_schema = 's';
+----
+user1  user2  e  s  USAGE  NO
+user1  user3  e  s  USAGE  YES
+
+userInsecure root
+
+query TTTTTT
+select * from "".information_schema.schema_privileges where table_catalog = 'e' and table_schema = 's';
+----
+admin  admin  e  s  CREATE  YES
+admin  admin  e  s  DROP    YES
+admin  admin  e  s  USAGE   YES
+admin  root   e  s  CREATE  YES
+admin  root   e  s  DROP    YES
+admin  root   e  s  USAGE   YES
+user1  user2  e  s  USAGE   NO
+user1  user3  e  s  USAGE   YES
+user3  user4  e  s  USAGE   YES
+
+statement ok
+create schema sch1;
+create schema sch2;
+create user u1;
+create user u2;
+grant create on schema sch1,sch2 to u1,u2;
+
+query TTTTTT
+show grants on schema sch1, sch2;
+----
+test  sch1  admin  admin  CREATE  YES
+test  sch1  admin  admin  DROP    YES
+test  sch1  admin  admin  USAGE   YES
+test  sch1  admin  root   CREATE  YES
+test  sch1  admin  root   DROP    YES
+test  sch1  admin  root   USAGE   YES
+test  sch1  root   u1     CREATE  NO
+test  sch1  root   u2     CREATE  NO
+test  sch2  admin  admin  CREATE  YES
+test  sch2  admin  admin  DROP    YES
+test  sch2  admin  admin  USAGE   YES
+test  sch2  admin  root   CREATE  YES
+test  sch2  admin  root   DROP    YES
+test  sch2  admin  root   USAGE   YES
+test  sch2  root   u1     CREATE  NO
+test  sch2  root   u2     CREATE  NO
+
+statement ok
+revoke create on schema sch1,sch2 from u1,u2;
+
+query TTTTTT
+show grants on schema sch1, sch2;
+----
+test  sch1  admin  admin  CREATE  YES
+test  sch1  admin  admin  DROP    YES
+test  sch1  admin  admin  USAGE   YES
+test  sch1  admin  root   CREATE  YES
+test  sch1  admin  root   DROP    YES
+test  sch1  admin  root   USAGE   YES
+test  sch2  admin  admin  CREATE  YES
+test  sch2  admin  admin  DROP    YES
+test  sch2  admin  admin  USAGE   YES
+test  sch2  admin  root   CREATE  YES
+test  sch2  admin  root   DROP    YES
+test  sch2  admin  root   USAGE   YES

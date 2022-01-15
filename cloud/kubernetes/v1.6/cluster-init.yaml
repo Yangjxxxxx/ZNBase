@@ -1,0 +1,19 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: cluster-init
+  labels:
+    app: znbasedb
+spec:
+  template:
+    spec:
+      containers:
+      - name: cluster-init
+        image: znbasedb/znbase:v2.1.6
+        imagePullPolicy: IfNotPresent
+        command:
+          - "/znbase/znbase"
+          - "init"
+          - "--insecure"
+          - "--host=znbasedb-0.znbasedb"
+      restartPolicy: OnFailure

@@ -1,0 +1,2337 @@
+# LogicTest: local local-opt
+
+statement ok
+create table employe (EMPLOYEID INT NOT NULL, NAME STRING,SALARY FLOAT)
+
+statement ok
+INSERT INTO EMPLOYE VALUES (1,'1',1000),(2,'2',2000),(3,'3',3000),(4,'4',4000),(5,'5',5000),(6,'6',6000)
+
+statement ok
+CREATE TABLE MANAGER (MANAGERID INT NOT NULL, NAME STRING, SALARY FLOAT)
+
+statement ok
+INSERT INTO MANAGER VALUES (3,'3',3666),(4,'4',4666),(6,'6',6666),(7,'7',7666),(8,'8',8666)
+
+statement ok
+merge into employe as em using manager as ma
+on em.employeid = ma.managerid
+when matched then update set salary = ma.salary
+
+query ITR colnames
+select * from employe
+----
+employeid   name    salary
+1           1       1000
+2           2       2000
+3           3       3666
+4           4       4666
+5           5       5000
+6           6       6666
+
+statement ok
+drop table employe
+
+statement ok
+create table employe (EMPLOYEID INT NOT NULL, NAME STRING,SALARY FLOAT)
+
+statement ok
+INSERT INTO EMPLOYE VALUES (1,'1',1000),(2,'2',2000),(3,'3',3000),(4,'4',4000),(5,'5',5000),(6,'6',6000)
+
+statement ok
+drop table manager
+
+statement ok
+CREATE TABLE MANAGER (MANAGERID INT NOT NULL, NAME STRING, SALARY FLOAT)
+
+statement ok
+INSERT INTO MANAGER VALUES (3,'3',3666),(4,'4',4666),(6,'6',6666),(7,'7',7666),(8,'8',8666)
+
+statement error column "emsalary" does not exist
+merge into employe as em using manager as ma
+on em.employeid = ma.managerid
+when matched then update set emSalary = ma.salary
+
+statement ok
+drop table employe
+
+statement ok
+create table employe (EMPLOYEID INT NOT NULL, NAME STRING,SALARY FLOAT)
+
+statement ok
+INSERT INTO EMPLOYE VALUES (1,'1',1000),(2,'2',2000),(3,'3',3000),(4,'4',4000),(5,'5',5000),(6,'6',6000)
+
+statement ok
+drop table manager
+
+statement ok
+CREATE TABLE MANAGER (MANAGERID INT NOT NULL, NAME STRING, SALARY FLOAT)
+
+statement ok
+INSERT INTO MANAGER VALUES (3,'3',3666),(4,'4',4666),(6,'6',6666),(7,'7',7666),(8,'8',8666)
+
+statement error no data source matches prefix: manager
+merge into employe as em using manager as ma
+on em.employeid = manager.managerid
+when matched then update set Salary = manager.salary
+
+statement ok
+drop table employe
+
+statement ok
+create table employe (EMPLOYEID INT NOT NULL, NAME STRING,SALARY FLOAT)
+
+statement ok
+INSERT INTO EMPLOYE VALUES (1,'1',1000),(2,'2',2000),(3,'3',3000),(4,'4',4000),(5,'5',5000),(6,'6',6000)
+
+statement ok
+drop table manager
+
+statement ok
+CREATE TABLE MANAGER (MANAGERID INT NOT NULL, NAME STRING, SALARY FLOAT)
+
+statement ok
+INSERT INTO MANAGER VALUES (3,'3',3666),(4,'4',4666),(6,'6',6666),(7,'7',7666),(8,'8',8666)
+
+statement error multiple assignments to the same column in a matched
+merge into employe as em using manager as ma
+on em.employeid = ma.managerid
+when matched then update set salary = ma.salary, salary = 3000
+
+statement ok
+drop table employe
+
+statement ok
+create table employe (EMPLOYEID INT NOT NULL, NAME STRING,SALARY FLOAT)
+
+statement ok
+INSERT INTO EMPLOYE VALUES (1,'1',1000),(2,'2',2000),(3,'3',3000),(4,'4',4000),(5,'5',5000),(6,'6',6000)
+
+statement ok
+drop table manager
+
+statement ok
+CREATE TABLE MANAGER (MANAGERID INT NOT NULL, NAME STRING, SALARY FLOAT)
+
+statement ok
+INSERT INTO MANAGER VALUES (3,'3',3666),(4,'4',4666),(6,'6',6666),(7,'7',7666),(8,'8',8666)
+
+statement ok
+merge into employe using manager
+on employe.employeid = manager.managerid
+when matched then update set salary = manager.salary+100
+
+query ITR colnames
+select * from employe
+----
+employeid   name    salary
+1           1       1000
+2           2       2000
+3           3       3766
+4           4       4766
+5           5       5000
+6           6       6766
+
+statement ok
+drop table employe
+
+statement ok
+create table employe (EMPLOYEID INT NOT NULL, NAME STRING,SALARY FLOAT)
+
+statement ok
+INSERT INTO EMPLOYE VALUES (1,'1',1000),(2,'2',2000),(3,'3',3000),(4,'4',4000),(5,'5',5000),(6,'6',6000)
+
+statement ok
+drop table manager
+
+statement ok
+CREATE TABLE MANAGER (MANAGERID INT NOT NULL, NAME STRING, SALARY FLOAT)
+
+statement ok
+INSERT INTO MANAGER VALUES (3,'3',3666),(4,'4',4666),(6,'6',6666),(7,'7',7666),(8,'8',8666)
+
+statement ok
+merge into employe as em using manager as ma
+on em.employeid = ma.managerid
+when matched and em.employeid = 3 then update set salary = ma.salary
+
+query ITR colnames
+select * from employe
+----
+employeid   name    salary
+1           1       1000
+2           2       2000
+3           3       3666
+4           4       4000
+5           5       5000
+6           6       6000
+
+statement ok
+drop table employe
+
+statement ok
+create table employe (EMPLOYEID INT NOT NULL, NAME STRING,SALARY FLOAT)
+
+statement ok
+INSERT INTO EMPLOYE VALUES (1,'1',1000),(2,'2',2000),(3,'3',3000),(4,'4',4000),(5,'5',5000),(6,'6',6000)
+
+statement ok
+drop table manager
+
+statement ok
+CREATE TABLE MANAGER (MANAGERID INT NOT NULL, NAME STRING, SALARY FLOAT)
+
+statement ok
+INSERT INTO MANAGER VALUES (3,'3',3666),(4,'4',4666),(6,'6',6666),(7,'7',7666),(8,'8',8666)
+
+statement ok
+merge into employe as em using manager as ma
+on em.employeid = ma.managerid
+when matched then update set salary = ma.salary, name = 'newName';
+
+query ITR colnames
+select * from employe
+----
+employeid   name    salary
+1           1       1000
+2           2       2000
+3           newName       3666
+4           newName       4666
+5           5       5000
+6           newName       6666
+
+statement ok
+drop table employe
+
+statement ok
+create table employe (EMPLOYEID INT NOT NULL, NAME STRING,SALARY FLOAT)
+
+statement ok
+INSERT INTO EMPLOYE VALUES (1,'1',1000),(2,'2',2000),(3,'3',3000),(4,'4',4000),(5,'5',5000),(6,'6',6000)
+
+statement ok
+drop table manager
+
+statement ok
+CREATE TABLE MANAGER (MANAGERID INT NOT NULL, NAME STRING, SALARY FLOAT)
+
+statement ok
+INSERT INTO MANAGER VALUES (3,'3',3666),(4,'4',4666),(6,'6',6666),(7,'7',7666),(8,'8',8666)
+
+statement ok
+merge into employe as em using manager as ma
+on em.employeid = ma.managerid
+when matched and em.employeid = 6 then update set salary = ma.salary, name = 'newName';
+
+query ITR colnames
+select * from employe
+----
+employeid   name    salary
+1   1   1000
+2   2   2000
+3   3   3000
+4   4   4000
+5   5   5000
+6   newName   6666
+
+statement ok
+drop table employe
+
+statement ok
+create table employe (EMPLOYEID INT NOT NULL, NAME STRING,SALARY FLOAT)
+
+statement ok
+INSERT INTO EMPLOYE VALUES (1,'1',1000),(2,'2',2000),(3,'3',3000),(4,'4',4000),(5,'5',5000),(6,'6',6000)
+
+statement ok
+drop table manager
+
+statement ok
+CREATE TABLE MANAGER (MANAGERID INT NOT NULL, NAME STRING, SALARY FLOAT)
+
+statement ok
+INSERT INTO MANAGER VALUES (3,'3',3666),(4,'4',4666),(6,'6',6666),(7,'7',7666),(8,'8',8666)
+
+statement ok
+merge into employe as em using manager as ma
+on em.employeid = ma.managerid
+when matched then delete;
+
+query ITR colnames
+select * from employe
+----
+employeid   name    salary
+1   1   1000
+2   2   2000
+5   5   5000
+
+statement ok
+drop table employe
+
+statement ok
+create table employe (EMPLOYEID INT NOT NULL, NAME STRING,SALARY FLOAT)
+
+statement ok
+INSERT INTO EMPLOYE VALUES (1,'1',1000),(2,'2',2000),(3,'3',3000),(4,'4',4000),(5,'5',5000),(6,'6',6000)
+
+statement ok
+drop table manager
+
+statement ok
+CREATE TABLE MANAGER (MANAGERID INT NOT NULL, NAME STRING, SALARY FLOAT)
+
+statement ok
+INSERT INTO MANAGER VALUES (3,'3',3666),(4,'4',4666),(6,'6',6666),(7,'7',7666),(8,'8',8666)
+
+statement ok
+merge into employe as em using manager as ma
+on em.employeid = ma.managerid
+when matched and em.employeid = 4 then delete;
+
+query ITR colnames
+select * from employe
+----
+employeid   name    salary
+1   1   1000
+2   2   2000
+3   3   3000
+5   5   5000
+6   6   6000
+
+statement ok
+drop table employe
+
+statement ok
+create table employe (EMPLOYEID INT NOT NULL, NAME STRING,SALARY FLOAT)
+
+statement ok
+INSERT INTO EMPLOYE VALUES (1,'1',1000),(2,'2',2000),(3,'3',3000),(4,'4',4000),(5,'5',5000),(6,'6',6000)
+
+statement ok
+drop table manager
+
+statement ok
+CREATE TABLE MANAGER (MANAGERID INT NOT NULL, NAME STRING, SALARY FLOAT)
+
+statement ok
+INSERT INTO MANAGER VALUES (3,'3',3666),(4,'4',4666),(6,'6',6666),(7,'7',7666),(8,'8',8666)
+
+statement error pq: error1: error2
+merge into employe as em using manager as ma
+on em.employeid = ma.managerid
+when matched then signal sqlstate 'error1' set message_text 'error2';
+
+statement ok
+drop table employe
+
+statement ok
+create table employe (EMPLOYEID INT NOT NULL, NAME STRING,SALARY FLOAT)
+
+statement ok
+INSERT INTO EMPLOYE VALUES (1,'1',1000),(2,'2',2000),(3,'3',3000),(4,'4',4000),(5,'5',5000),(6,'6',6000)
+
+statement ok
+drop table manager
+
+statement ok
+CREATE TABLE MANAGER (MANAGERID INT NOT NULL, NAME STRING, SALARY FLOAT)
+
+statement ok
+INSERT INTO MANAGER VALUES (3,'3',3666),(4,'4',4666),(6,'6',6666),(7,'7',7666),(8,'8',8666)
+
+statement error pq: error1: error2
+merge into employe as em using manager as ma
+on em.employeid = ma.managerid
+when matched and em.employeid = 3 then signal sqlstate 'error1' set message_text 'error2';
+
+statement ok
+drop table employe
+
+statement ok
+create table employe (EMPLOYEID INT NOT NULL, NAME STRING,SALARY FLOAT)
+
+statement ok
+INSERT INTO EMPLOYE VALUES (1,'1',1000),(2,'2',2000),(3,'3',3000),(4,'4',4000),(5,'5',5000),(6,'6',6000)
+
+statement ok
+drop table manager
+
+statement ok
+CREATE TABLE MANAGER (MANAGERID INT NOT NULL, NAME STRING, SALARY FLOAT)
+
+statement ok
+INSERT INTO MANAGER VALUES (3,'3',3666),(4,'4',4666),(6,'6',6666),(7,'7',7666),(8,'8',8666)
+
+statement ok
+merge into employe as em using manager as ma
+on em.employeid = ma.managerid
+when matched and em.employeid = 3 or em.employeid = 4 then update set salary = ma.salary;
+
+query ITR colnames
+select * from employe
+----
+employeid   name    salary
+1   1   1000
+2   2   2000
+3   3   3666
+4   4   4666
+5   5   5000
+6   6   6000
+
+statement ok
+drop table employe
+
+statement ok
+create table employe (EMPLOYEID INT NOT NULL, NAME STRING,SALARY FLOAT)
+
+statement ok
+INSERT INTO EMPLOYE VALUES (1,'1',1000),(2,'2',2000),(3,'3',3000),(4,'4',4000),(5,'5',5000),(6,'6',6000)
+
+statement ok
+drop table manager
+
+statement ok
+CREATE TABLE MANAGER (MANAGERID INT NOT NULL, NAME STRING, SALARY FLOAT)
+
+statement ok
+INSERT INTO MANAGER VALUES (3,'3',3666),(4,'4',4666),(6,'6',6666),(7,'7',7666),(8,'8',8666)
+
+statement ok
+merge into employe as em using manager as ma
+on em.employeid = ma.managerid
+when matched and em.employeid = 3 and em.name = '3' then update set salary = ma.salary;
+
+query ITR colnames
+select * from employe
+----
+employeid   name    salary
+1   1   1000
+2   2   2000
+3   3   3666
+4   4   4000
+5   5   5000
+6   6   6000
+
+statement ok
+drop table employe
+
+statement ok
+create table employe (EMPLOYEID INT NOT NULL, NAME STRING,SALARY FLOAT)
+
+statement ok
+INSERT INTO EMPLOYE VALUES (1,'1',1000),(2,'2',2000),(3,'3',3000),(4,'4',4000),(5,'5',5000),(6,'6',6000)
+
+statement ok
+drop table manager
+
+statement ok
+CREATE TABLE MANAGER (MANAGERID INT NOT NULL, NAME STRING, SALARY FLOAT)
+
+statement ok
+INSERT INTO MANAGER VALUES (3,'3',3666),(4,'4',4666),(6,'6',6666),(7,'7',7666),(8,'8',8666)
+
+statement ok
+merge into employe as em using manager as ma
+on em.employeid = ma.managerid
+when matched and em.employeid = 3 and em.name = '4' then update set salary = ma.salary;
+
+query ITR colnames
+select * from employe
+----
+employeid   name    salary
+1   1   1000
+2   2   2000
+3   3   3000
+4   4   4000
+5   5   5000
+6   6   6000
+
+statement ok
+drop table employe
+
+statement ok
+create table employe (EMPLOYEID INT NOT NULL, NAME STRING,SALARY FLOAT)
+
+statement ok
+INSERT INTO EMPLOYE VALUES (1,'1',1000),(2,'2',2000),(3,'3',3000),(4,'4',4000),(5,'5',5000),(6,'6',6000)
+
+statement ok
+drop table manager
+
+statement ok
+CREATE TABLE MANAGER (MANAGERID INT NOT NULL, NAME STRING, SALARY FLOAT)
+
+statement ok
+INSERT INTO MANAGER VALUES (3,'3',3666),(4,'4',4666),(6,'6',6666),(7,'7',7666),(8,'8',8666)
+
+statement ok
+merge into employe as em using manager as ma
+on em.employeid = ma.managerid
+when matched and em.employeid = 3 then update set salary = ma.salary
+when matched and em.employeid = 4 then delete;
+
+query ITR colnames
+select * from employe
+----
+employeid   name    salary
+1 1 1000
+2 2 2000
+3 3 3666
+5 5 5000
+6 6 6000
+
+statement ok
+drop table employe
+
+statement ok
+create table employe (EMPLOYEID INT NOT NULL, NAME STRING,SALARY FLOAT)
+
+statement ok
+INSERT INTO EMPLOYE VALUES (1,'1',1000),(2,'2',2000),(3,'3',3000),(4,'4',4000),(5,'5',5000),(6,'6',6000)
+
+statement ok
+drop table manager
+
+statement ok
+CREATE TABLE MANAGER (MANAGERID INT NOT NULL, NAME STRING, SALARY FLOAT)
+
+statement ok
+INSERT INTO MANAGER VALUES (3,'3',3666),(4,'4',4666),(6,'6',6666),(7,'7',7666),(8,'8',8666)
+
+statement ok
+merge into employe as em using manager as ma
+on em.employeid = ma.managerid
+when matched and em.employeid = 3 then update set salary = ma.salary
+when matched and em.employeid = 4 then delete
+when matched then update set salary = ma.salary;
+
+query ITR colnames
+select * from employe
+----
+employeid   name    salary
+1 1 1000
+2 2 2000
+3 3 3666
+5 5 5000
+6 6 6666
+
+statement ok
+drop table employe
+
+statement ok
+create table employe (EMPLOYEID INT NOT NULL, NAME STRING,SALARY FLOAT)
+
+statement ok
+INSERT INTO EMPLOYE VALUES (1,'1',1000),(2,'2',2000),(3,'3',3000),(4,'4',4000),(5,'5',5000),(6,'6',6000)
+
+statement ok
+drop table manager
+
+statement ok
+CREATE TABLE MANAGER (MANAGERID INT NOT NULL, NAME STRING, SALARY FLOAT)
+
+statement ok
+INSERT INTO MANAGER VALUES (3,'3',3666),(4,'4',4666),(6,'6',6666),(7,'7',7666),(8,'8',8666)
+
+statement error pq: error1: error2
+merge into employe as em using manager as ma
+on em.employeid = ma.managerid
+when matched and em.employeid = 3 then update set salary = ma.salary
+when matched and em.employeid = 4 then delete
+when matched and em.employeid = 6 then signal sqlstate 'error1' set message_text 'error2';
+
+statement ok
+drop table employe
+
+statement ok
+create table employe (EMPLOYEID INT NOT NULL, NAME STRING,SALARY FLOAT)
+
+statement ok
+INSERT INTO EMPLOYE VALUES (1,'1',1000),(2,'2',2000),(3,'3',3000),(4,'4',4000),(5,'5',5000),(6,'6',6000)
+
+statement ok
+drop table manager
+
+statement ok
+CREATE TABLE MANAGER (MANAGERID INT NOT NULL, NAME STRING, SALARY FLOAT)
+
+statement ok
+INSERT INTO MANAGER VALUES (3,'3',3666),(4,'4',4666),(6,'6',6666),(7,'7',7666),(8,'8',8666)
+
+statement ok
+merge into employe as em using manager as ma
+on em.employeid = ma.managerid
+when matched and em.employeid = 3 then update set salary = ma.salary
+when matched and em.employeid = 3 then update set salary = ma.salary+100;
+
+query ITR colnames
+select * from employe
+----
+employeid   name    salary
+1 1 1000
+2 2 2000
+3 3 3666
+4 4 4000
+5 5 5000
+6 6 6000
+
+statement ok
+drop table employe
+
+statement ok
+create table employe (EMPLOYEID INT NOT NULL, NAME STRING,SALARY FLOAT)
+
+statement ok
+INSERT INTO EMPLOYE VALUES (1,'1',1000),(2,'2',2000),(3,'3',3000),(4,'4',4000),(5,'5',5000),(6,'6',6000)
+
+statement ok
+drop table manager
+
+statement ok
+CREATE TABLE MANAGER (MANAGERID INT NOT NULL, NAME STRING, SALARY FLOAT)
+
+statement ok
+INSERT INTO MANAGER VALUES (3,'3',3666),(4,'4',4666),(6,'6',6666),(7,'7',7666),(8,'8',8666)
+
+statement ok
+merge into employe as em using manager as ma
+on em.employeid = ma.managerid
+when matched and em.employeid = 3 then update set salary = ma.salary
+when matched and em.employeid = 3 then delete;
+
+query ITR colnames
+select * from employe
+----
+employeid   name    salary
+1 1 1000
+2 2 2000
+4 4 4000
+5 5 5000
+6 6 6000
+
+statement ok
+drop table employe
+
+statement ok
+create table employe (EMPLOYEID INT NOT NULL, NAME STRING,SALARY FLOAT)
+
+statement ok
+INSERT INTO EMPLOYE VALUES (1,'1',1000),(2,'2',2000),(3,'3',3000),(4,'4',4000),(5,'5',5000),(6,'6',6000)
+
+statement ok
+drop table manager
+
+statement ok
+CREATE TABLE MANAGER (MANAGERID INT NOT NULL, NAME STRING, SALARY FLOAT)
+
+statement ok
+INSERT INTO MANAGER VALUES (3,'3',3666),(4,'4',4666),(6,'6',6666),(7,'7',7666),(8,'8',8666)
+
+statement ok
+MERGE INTO EMPLOYE AS EM
+USING MANAGER AS MA
+ON EM.EMPLOYEID = MA.MANAGERID
+WHEN NOT MATCHED THEN INSERT VALUES (MA.MANAGERID, MA.NAME, MA.SALARY);
+
+query ITR colnames
+select * from employe
+----
+employeid   name    salary
+1 1 1000
+2 2 2000
+3 3 3000
+4 4 4000
+5 5 5000
+6 6 6000
+7 7 7666
+8 8 8666
+
+statement ok
+drop table employe
+
+statement ok
+create table employe (EMPLOYEID INT NOT NULL, NAME STRING,SALARY FLOAT)
+
+statement ok
+INSERT INTO EMPLOYE VALUES (1,'1',1000),(2,'2',2000),(3,'3',3000),(4,'4',4000),(5,'5',5000),(6,'6',6000)
+
+statement ok
+drop table manager
+
+statement ok
+CREATE TABLE MANAGER (MANAGERID INT NOT NULL, NAME STRING, SALARY FLOAT)
+
+statement ok
+INSERT INTO MANAGER VALUES (3,'3',3666),(4,'4',4666),(6,'6',6666),(7,'7',7666),(8,'8',8666)
+
+statement ok
+MERGE INTO EMPLOYE AS EM
+USING MANAGER AS MA
+ON EM.EMPLOYEID = MA.MANAGERID
+WHEN NOT MATCHED AND MA.NAME = '8' THEN INSERT VALUES (MA.MANAGERID, MA.NAME, MA.SALARY);
+
+query ITR colnames
+select * from employe
+----
+employeid   name    salary
+1 1 1000
+2 2 2000
+3 3 3000
+4 4 4000
+5 5 5000
+6 6 6000
+8 8 8666
+
+statement ok
+drop table employe
+
+statement ok
+create table employe (EMPLOYEID INT NOT NULL, NAME STRING,SALARY FLOAT)
+
+statement ok
+INSERT INTO EMPLOYE VALUES (1,'1',1000),(2,'2',2000),(3,'3',3000),(4,'4',4000),(5,'5',5000),(6,'6',6000)
+
+statement ok
+drop table manager
+
+statement ok
+CREATE TABLE MANAGER (MANAGERID INT NOT NULL, NAME STRING, SALARY FLOAT)
+
+statement ok
+INSERT INTO MANAGER VALUES (3,'3',3666),(4,'4',4666),(6,'6',6666),(7,'7',7666),(8,'8',8666)
+
+statement ok
+MERGE INTO EMPLOYE AS EM
+USING MANAGER AS MA
+ON EM.EMPLOYEID = MA.MANAGERID
+WHEN NOT MATCHED AND MA.NAME = '7' THEN INSERT VALUES (10, MA.NAME, 50);
+
+query ITR colnames
+select * from employe
+----
+employeid   name    salary
+1 1 1000
+2 2 2000
+3 3 3000
+4 4 4000
+5 5 5000
+6 6 6000
+10 7 50
+
+statement ok
+drop table employe
+
+statement ok
+create table employe (EMPLOYEID INT NOT NULL, NAME STRING,SALARY FLOAT)
+
+statement ok
+INSERT INTO EMPLOYE VALUES (1,'1',1000),(2,'2',2000),(3,'3',3000),(4,'4',4000),(5,'5',5000),(6,'6',6000)
+
+statement ok
+drop table manager
+
+statement ok
+CREATE TABLE MANAGER (MANAGERID INT NOT NULL, NAME STRING, SALARY FLOAT)
+
+statement ok
+INSERT INTO MANAGER VALUES (3,'3',3666),(4,'4',4666),(6,'6',6666),(7,'7',7666),(8,'8',8666)
+
+statement error pq: notMatched's values count is not right
+MERGE INTO EMPLOYE AS EM
+USING MANAGER AS MA
+ON EM.EMPLOYEID = MA.MANAGERID
+WHEN NOT MATCHED THEN INSERT VALUES (MA.MANAGERID, MA.NAME, MA.SALARY, 50);
+
+statement ok
+drop table employe
+
+statement ok
+create table employe (EMPLOYEID INT NOT NULL, NAME STRING,SALARY FLOAT)
+
+statement ok
+INSERT INTO EMPLOYE VALUES (1,'1',1000),(2,'2',2000),(3,'3',3000),(4,'4',4000),(5,'5',5000),(6,'6',6000)
+
+statement ok
+drop table manager
+
+statement ok
+CREATE TABLE MANAGER (MANAGERID INT NOT NULL, NAME STRING, SALARY FLOAT)
+
+statement ok
+INSERT INTO MANAGER VALUES (3,'3',3666),(4,'4',4666),(6,'6',6666),(7,'7',7666),(8,'8',8666)
+
+statement error pq: notMatched's values count is not right
+MERGE INTO EMPLOYE AS EM
+USING MANAGER AS MA
+ON EM.EMPLOYEID = MA.MANAGERID
+WHEN NOT MATCHED THEN INSERT VALUES (MA.MANAGERID, MA.NAME);
+
+statement ok
+drop table employe
+
+statement ok
+create table employe (EMPLOYEID INT NOT NULL, NAME STRING,SALARY FLOAT)
+
+statement ok
+INSERT INTO EMPLOYE VALUES (1,'1',1000),(2,'2',2000),(3,'3',3000),(4,'4',4000),(5,'5',5000),(6,'6',6000)
+
+statement ok
+drop table manager
+
+statement ok
+CREATE TABLE MANAGER (MANAGERID INT NOT NULL, NAME STRING, SALARY FLOAT)
+
+statement ok
+INSERT INTO MANAGER VALUES (3,'3',3666),(4,'4',4666),(6,'6',6666),(7,'7',7666),(8,'8',8666)
+
+statement error pq: notMatched's values count is not right
+MERGE INTO EMPLOYE AS EM
+USING MANAGER AS MA
+ON EM.EMPLOYEID = MA.MANAGERID
+WHEN NOT MATCHED THEN INSERT (EMPLOYEID, NAME, SALARY) VALUES (MA.MANAGERID, MA.NAME);
+
+statement ok
+drop table employe
+
+statement ok
+create table employe (EMPLOYEID INT NOT NULL, NAME STRING,SALARY FLOAT)
+
+statement ok
+INSERT INTO EMPLOYE VALUES (1,'1',1000),(2,'2',2000),(3,'3',3000),(4,'4',4000),(5,'5',5000),(6,'6',6000)
+
+statement ok
+drop table manager
+
+statement ok
+CREATE TABLE MANAGER (MANAGERID INT NOT NULL, NAME STRING, SALARY FLOAT)
+
+statement ok
+INSERT INTO MANAGER VALUES (3,'3',3666),(4,'4',4666),(6,'6',6666),(7,'7',7666),(8,'8',8666)
+
+statement error pq: notMatched's values count is not right
+MERGE INTO EMPLOYE AS EM
+USING MANAGER AS MA
+ON EM.EMPLOYEID = MA.MANAGERID
+WHEN NOT MATCHED THEN INSERT (EMPLOYEID, NAME) VALUES (MA.MANAGERID, MA.NAME, MA.SALARY);
+
+statement ok
+drop table employe
+
+statement ok
+create table employe (EMPLOYEID INT NOT NULL, NAME STRING,SALARY FLOAT)
+
+statement ok
+INSERT INTO EMPLOYE VALUES (1,'1',1000),(2,'2',2000),(3,'3',3000),(4,'4',4000),(5,'5',5000),(6,'6',6000)
+
+statement ok
+drop table manager
+
+statement ok
+CREATE TABLE MANAGER (MANAGERID INT NOT NULL, NAME STRING, SALARY FLOAT)
+
+statement ok
+INSERT INTO MANAGER VALUES (3,'3',3666),(4,'4',4666),(6,'6',6666),(7,'7',7666),(8,'8',8666)
+
+statement error pq: multiple assignments to the same column in an NotMatched
+MERGE INTO EMPLOYE AS EM
+USING MANAGER AS MA
+ON EM.EMPLOYEID = MA.MANAGERID
+WHEN NOT MATCHED THEN INSERT (EMPLOYEID, NAME, NAME) VALUES (MA.MANAGERID, MA.NAME, MA.NAME);
+
+statement ok
+drop table employe
+
+statement ok
+create table employe (EMPLOYEID INT NOT NULL, NAME STRING,SALARY FLOAT)
+
+statement ok
+INSERT INTO EMPLOYE VALUES (1,'1',1000),(2,'2',2000),(3,'3',3000),(4,'4',4000),(5,'5',5000),(6,'6',6000)
+
+statement ok
+drop table manager
+
+statement ok
+CREATE TABLE MANAGER (MANAGERID INT NOT NULL, NAME STRING, SALARY FLOAT)
+
+statement ok
+INSERT INTO MANAGER VALUES (3,'3',3666),(4,'4',4666),(6,'6',6666),(7,'7',7666),(8,'8',8666)
+
+statement ok
+MERGE INTO EMPLOYE AS EM
+USING MANAGER AS MA
+ON EM.EMPLOYEID = MA.MANAGERID
+WHEN NOT MATCHED THEN INSERT (EMPLOYEID, NAME, SALARY) VALUES (MA.MANAGERID, MA.NAME, MA.SALARY);
+
+query ITR colnames
+select * from employe
+----
+employeid   name    salary
+1 1 1000
+2 2 2000
+3 3 3000
+4 4 4000
+5 5 5000
+6 6 6000
+7 7 7666
+8 8 8666
+
+statement ok
+drop table employe
+
+statement ok
+create table employe (EMPLOYEID INT NOT NULL, NAME STRING,SALARY FLOAT)
+
+statement ok
+INSERT INTO EMPLOYE VALUES (1,'1',1000),(2,'2',2000),(3,'3',3000),(4,'4',4000),(5,'5',5000),(6,'6',6000)
+
+statement ok
+drop table manager
+
+statement ok
+CREATE TABLE MANAGER (MANAGERID INT NOT NULL, NAME STRING, SALARY FLOAT)
+
+statement ok
+INSERT INTO MANAGER VALUES (3,'3',3666),(4,'4',4666),(6,'6',6666),(7,'7',7666),(8,'8',8666)
+
+statement ok
+MERGE INTO EMPLOYE AS EM
+USING MANAGER AS MA
+ON EM.EMPLOYEID = MA.MANAGERID
+WHEN NOT MATCHED AND MA.NAME = '8' THEN INSERT (EMPLOYEID, NAME) VALUES (MA.MANAGERID, MA.NAME);
+
+query ITR colnames
+select * from employe
+----
+employeid   name    salary
+1 1 1000
+2 2 2000
+3 3 3000
+4 4 4000
+5 5 5000
+6 6 6000
+8 8 NULL
+
+statement ok
+drop table employe
+
+statement ok
+create table employe (EMPLOYEID INT NOT NULL, NAME STRING,SALARY FLOAT)
+
+statement ok
+INSERT INTO EMPLOYE VALUES (1,'1',1000),(2,'2',2000),(3,'3',3000),(4,'4',4000),(5,'5',5000),(6,'6',6000)
+
+statement ok
+drop table manager
+
+statement ok
+CREATE TABLE MANAGER (MANAGERID INT NOT NULL, NAME STRING, SALARY FLOAT)
+
+statement ok
+INSERT INTO MANAGER VALUES (3,'3',3666),(4,'4',4666),(6,'6',6666),(7,'7',7666),(8,'8',8666)
+
+statement ok
+MERGE INTO EMPLOYE AS EM
+USING MANAGER AS MA
+ON EM.EMPLOYEID = MA.MANAGERID
+WHEN NOT MATCHED AND MA.NAME = '7' THEN INSERT (NAME,EMPLOYEID) VALUES (MA.NAME, 10);
+
+query ITR colnames
+select * from employe
+----
+employeid   name    salary
+1 1 1000
+2 2 2000
+3 3 3000
+4 4 4000
+5 5 5000
+6 6 6000
+10 7 NULL
+
+statement ok
+drop table employe
+
+statement ok
+create table employe (EMPLOYEID INT NOT NULL, NAME STRING,SALARY FLOAT)
+
+statement ok
+INSERT INTO EMPLOYE VALUES (1,'1',1000),(2,'2',2000),(3,'3',3000),(4,'4',4000),(5,'5',5000),(6,'6',6000)
+
+statement ok
+drop table manager
+
+statement ok
+CREATE TABLE MANAGER (MANAGERID INT NOT NULL, NAME STRING, SALARY FLOAT)
+
+statement ok
+INSERT INTO MANAGER VALUES (3,'3',3666),(4,'4',4666),(6,'6',6666),(7,'7',7666),(8,'8',8666)
+
+statement ok
+MERGE INTO EMPLOYE AS EM
+USING MANAGER AS MA
+ON EM.EMPLOYEID = MA.MANAGERID
+WHEN NOT MATCHED AND MA.NAME = '8' THEN INSERT (EMPLOYEID, SALARY) VALUES (MA.MANAGERID, MA.SALARY*2);
+
+query ITR colnames
+select * from employe
+----
+employeid   name    salary
+1 1 1000
+2 2 2000
+3 3 3000
+4 4 4000
+5 5 5000
+6 6 6000
+8 NULL 17332
+
+statement ok
+drop table employe
+
+statement ok
+create table employe (EMPLOYEID INT NOT NULL, NAME STRING,SALARY FLOAT)
+
+statement ok
+INSERT INTO EMPLOYE VALUES (1,'1',1000),(2,'2',2000),(3,'3',3000),(4,'4',4000),(5,'5',5000),(6,'6',6000)
+
+statement ok
+drop table manager
+
+statement ok
+CREATE TABLE MANAGER (MANAGERID INT NOT NULL, NAME STRING, SALARY FLOAT)
+
+statement ok
+INSERT INTO MANAGER VALUES (3,'3',3666),(4,'4',4666),(6,'6',6666),(7,'7',7666),(8,'8',8666)
+
+statement error pq: employeid2 in NotMatched NameList does no exist
+MERGE INTO EMPLOYE AS EM
+USING MANAGER AS MA
+ON EM.EMPLOYEID = MA.MANAGERID
+WHEN NOT MATCHED THEN INSERT (EMPLOYEID2, NAME) VALUES (MA.MANAGERID, MA.NAME);
+
+statement ok
+drop table employe
+
+statement ok
+create table employe (EMPLOYEID INT NOT NULL, NAME STRING,SALARY FLOAT)
+
+statement ok
+INSERT INTO EMPLOYE VALUES (1,'1',1000),(2,'2',2000),(3,'3',3000),(4,'4',4000),(5,'5',5000),(6,'6',6000)
+
+statement ok
+drop table manager
+
+statement ok
+CREATE TABLE MANAGER (MANAGERID INT NOT NULL, NAME STRING, SALARY FLOAT)
+
+statement ok
+INSERT INTO MANAGER VALUES (3,'3',3666),(4,'4',4666),(6,'6',6666),(7,'7',7666),(8,'8',8666)
+
+statement error pq: FIRST: SECOND
+MERGE INTO EMPLOYE AS EM
+USING MANAGER AS MA
+ON EM.EMPLOYEID = MA.MANAGERID
+WHEN NOT MATCHED THEN SIGNAL SQLSTATE 'FIRST' SET MESSAGE_TEXT 'SECOND';
+
+statement ok
+drop table employe
+
+statement ok
+create table employe (EMPLOYEID INT NOT NULL, NAME STRING,SALARY FLOAT)
+
+statement ok
+INSERT INTO EMPLOYE VALUES (1,'1',1000),(2,'2',2000),(3,'3',3000),(4,'4',4000),(5,'5',5000),(6,'6',6000)
+
+statement ok
+drop table manager
+
+statement ok
+CREATE TABLE MANAGER (MANAGERID INT NOT NULL, NAME STRING, SALARY FLOAT)
+
+statement ok
+INSERT INTO MANAGER VALUES (3,'3',3666),(4,'4',4666),(6,'6',6666),(7,'7',7666),(8,'8',8666)
+
+statement ok
+MERGE INTO EMPLOYE AS EM
+USING MANAGER AS MA
+ON EM.EMPLOYEID = MA.MANAGERID
+WHEN NOT MATCHED AND MA.NAME = '3' THEN SIGNAL SQLSTATE 'FIRST' SET MESSAGE_TEXT 'SECOND';
+
+query ITR colnames
+select * from employe
+----
+employeid   name    salary
+1 1 1000
+2 2 2000
+3 3 3000
+4 4 4000
+5 5 5000
+6 6 6000
+
+statement ok
+drop table employe
+
+statement ok
+create table employe (EMPLOYEID INT NOT NULL, NAME STRING,SALARY FLOAT)
+
+statement ok
+INSERT INTO EMPLOYE VALUES (1,'1',1000),(2,'2',2000),(3,'3',3000),(4,'4',4000),(5,'5',5000),(6,'6',6000)
+
+statement ok
+drop table manager
+
+statement ok
+CREATE TABLE MANAGER (MANAGERID INT NOT NULL, NAME STRING, SALARY FLOAT)
+
+statement ok
+INSERT INTO MANAGER VALUES (3,'3',3666),(4,'4',4666),(6,'6',6666),(7,'7',7666),(8,'8',8666)
+
+statement error pq: FIRST: SECOND
+MERGE INTO EMPLOYE AS EM
+USING MANAGER AS MA
+ON EM.EMPLOYEID = MA.MANAGERID
+WHEN NOT MATCHED AND (MA.NAME = '8' OR MA.SALARY = 7666) THEN SIGNAL SQLSTATE 'FIRST' SET MESSAGE_TEXT 'SECOND';
+
+statement ok
+drop table employe
+
+statement ok
+create table employe (EMPLOYEID INT NOT NULL, NAME STRING,SALARY FLOAT)
+
+statement ok
+INSERT INTO EMPLOYE VALUES (1,'1',1000),(2,'2',2000),(3,'3',3000),(4,'4',4000),(5,'5',5000),(6,'6',6000)
+
+statement ok
+drop table manager
+
+statement ok
+CREATE TABLE MANAGER (MANAGERID INT NOT NULL, NAME STRING, SALARY FLOAT)
+
+statement ok
+INSERT INTO MANAGER VALUES (3,'3',3666),(4,'4',4666),(6,'6',6666),(7,'7',7666),(8,'8',8666)
+
+statement ok
+MERGE INTO EMPLOYE AS EM
+USING MANAGER AS MA
+ON EM.EMPLOYEID = MA.MANAGERID
+WHEN NOT MATCHED AND MA.NAME = '7' AND MA.MANAGERID = 7 AND MA.SALARY < 3999 THEN INSERT VALUES (MA.MANAGERID, MA.NAME, MA.SALARY);
+
+query ITR colnames
+select * from employe
+----
+employeid   name    salary
+1 1 1000
+2 2 2000
+3 3 3000
+4 4 4000
+5 5 5000
+6 6 6000
+
+statement ok
+drop table employe
+
+statement ok
+create table employe (EMPLOYEID INT NOT NULL, NAME STRING,SALARY FLOAT)
+
+statement ok
+INSERT INTO EMPLOYE VALUES (1,'1',1000),(2,'2',2000),(3,'3',3000),(4,'4',4000),(5,'5',5000),(6,'6',6000)
+
+statement ok
+drop table manager
+
+statement ok
+CREATE TABLE MANAGER (MANAGERID INT NOT NULL, NAME STRING, SALARY FLOAT)
+
+statement ok
+INSERT INTO MANAGER VALUES (3,'3',3666),(4,'4',4666),(6,'6',6666),(7,'7',7666),(8,'8',8666)
+
+statement ok
+MERGE INTO EMPLOYE AS EM
+USING MANAGER AS MA
+ON EM.EMPLOYEID = MA.MANAGERID
+WHEN NOT MATCHED AND MA.NAME = '7' AND MA.MANAGERID != 8 AND MA.SALARY >= 3999 THEN INSERT VALUES (MA.MANAGERID, MA.NAME, MA.SALARY+1);
+
+query ITR colnames
+select * from employe
+----
+employeid   name    salary
+1 1 1000
+2 2 2000
+3 3 3000
+4 4 4000
+5 5 5000
+6 6 6000
+7 7 7667
+
+statement ok
+drop table employe
+
+statement ok
+create table employe (EMPLOYEID INT NOT NULL, NAME STRING,SALARY FLOAT)
+
+statement ok
+INSERT INTO EMPLOYE VALUES (1,'1',1000),(2,'2',2000),(3,'3',3000),(4,'4',4000),(5,'5',5000),(6,'6',6000)
+
+statement ok
+drop table manager
+
+statement ok
+CREATE TABLE MANAGER (MANAGERID INT NOT NULL, NAME STRING, SALARY FLOAT)
+
+statement ok
+INSERT INTO MANAGER VALUES (3,'3',3666),(4,'4',4666),(6,'6',6666),(7,'7',7666),(8,'8',8666)
+
+statement ok
+MERGE INTO EMPLOYE AS EM
+USING MANAGER AS MA
+ON EM.EMPLOYEID = MA.MANAGERID
+WHEN NOT MATCHED AND MA.NAME = '7' THEN INSERT VALUES (MA.MANAGERID, MA.NAME, MA.SALARY)
+WHEN NOT MATCHED AND MA.NAME = '8' THEN INSERT (EMPLOYEID, NAME) VALUES (MA.MANAGERID, MA.NAME);
+
+query ITR colnames
+select * from employe
+----
+employeid   name    salary
+1 1 1000
+2 2 2000
+3 3 3000
+4 4 4000
+5 5 5000
+6 6 6000
+7 7 7666
+8 8 NULL
+
+statement ok
+drop table employe
+
+statement ok
+create table employe (EMPLOYEID INT NOT NULL, NAME STRING,SALARY FLOAT)
+
+statement ok
+INSERT INTO EMPLOYE VALUES (1,'1',1000),(2,'2',2000),(3,'3',3000),(4,'4',4000),(5,'5',5000),(6,'6',6000)
+
+statement ok
+drop table manager
+
+statement ok
+CREATE TABLE MANAGER (MANAGERID INT NOT NULL, NAME STRING, SALARY FLOAT)
+
+statement ok
+INSERT INTO MANAGER VALUES (3,'3',3666),(4,'4',4666),(6,'6',6666),(7,'7',7666),(8,'8',8666)
+
+statement error pq: FIRST: SECOND
+MERGE INTO EMPLOYE AS EM
+USING MANAGER AS MA
+ON EM.EMPLOYEID = MA.MANAGERID
+WHEN NOT MATCHED AND MA.NAME = '7' THEN SIGNAL SQLSTATE 'FIRST' SET MESSAGE_TEXT 'SECOND'
+WHEN NOT MATCHED AND MA.NAME = '8' THEN INSERT (EMPLOYEID, NAME) VALUES (MA.MANAGERID, MA.NAME);
+
+statement ok
+drop table employe
+
+statement ok
+create table employe (EMPLOYEID INT NOT NULL, NAME STRING,SALARY FLOAT)
+
+statement ok
+INSERT INTO EMPLOYE VALUES (1,'1',1000),(2,'2',2000),(3,'3',3000),(4,'4',4000),(5,'5',5000),(6,'6',6000)
+
+statement ok
+drop table manager
+
+statement ok
+CREATE TABLE MANAGER (MANAGERID INT NOT NULL, NAME STRING, SALARY FLOAT)
+
+statement ok
+INSERT INTO MANAGER VALUES (3,'3',3666),(4,'4',4666),(6,'6',6666),(7,'7',7666),(8,'8',8666)
+
+statement error pq: FIRST: LAST
+MERGE INTO EMPLOYE AS EM
+USING MANAGER AS MA
+ON EM.EMPLOYEID = MA.MANAGERID
+WHEN NOT MATCHED AND MA.NAME = '7' THEN INSERT (EMPLOYEID, NAME) VALUES (MA.MANAGERID, MA.NAME)
+WHEN NOT MATCHED AND MA.NAME = '8' THEN SIGNAL SQLSTATE 'FIRST' SET MESSAGE_TEXT 'LAST';
+
+statement ok
+drop table employe
+
+statement ok
+create table employe (EMPLOYEID INT NOT NULL, NAME STRING,SALARY FLOAT)
+
+statement ok
+INSERT INTO EMPLOYE VALUES (1,'1',1000),(2,'2',2000),(3,'3',3000),(4,'4',4000),(5,'5',5000),(6,'6',6000)
+
+statement ok
+drop table manager
+
+statement ok
+CREATE TABLE MANAGER (MANAGERID INT NOT NULL, NAME STRING, SALARY FLOAT)
+
+statement ok
+INSERT INTO MANAGER VALUES (3,'3',3666),(4,'4',4666),(6,'6',6666),(7,'7',7666),(8,'8',8666)
+
+statement ok
+merge into employe as em using manager as MA
+on em.employeid = ma.managerid
+when matched then update set salary = ma.salary
+when not matched then insert values (ma.managerid, ma.name, ma.salary);
+
+query ITR colnames
+select * from employe
+----
+employeid   name    salary
+1 1 1000
+2 2 2000
+3 3 3666
+4 4 4666
+5 5 5000
+6 6 6666
+7 7 7666
+8 8 8666
+
+statement ok
+drop table employe
+
+statement ok
+create table employe (EMPLOYEID INT NOT NULL, NAME STRING,SALARY FLOAT)
+
+statement ok
+INSERT INTO EMPLOYE VALUES (1,'1',1000),(2,'2',2000),(3,'3',3000),(4,'4',4000),(5,'5',5000),(6,'6',6000)
+
+statement ok
+drop table manager
+
+statement ok
+CREATE TABLE MANAGER (MANAGERID INT NOT NULL, NAME STRING, SALARY FLOAT)
+
+statement ok
+INSERT INTO MANAGER VALUES (3,'3',3666),(4,'4',4666),(6,'6',6666),(7,'7',7666),(8,'8',8666)
+
+statement error pq: error1: error2
+merge into employe as em using manager as MA
+on em.employeid = ma.managerid
+when matched then update set salary = ma.salary
+when not matched then signal sqlstate 'error1' set message_text 'error2';
+
+statement ok
+drop table employe
+
+statement ok
+create table employe (EMPLOYEID INT NOT NULL, NAME STRING,SALARY FLOAT)
+
+statement ok
+INSERT INTO EMPLOYE VALUES (1,'1',1000),(2,'2',2000),(3,'3',3000),(4,'4',4000),(5,'5',5000),(6,'6',6000)
+
+statement ok
+drop table manager
+
+statement ok
+CREATE TABLE MANAGER (MANAGERID INT NOT NULL, NAME STRING, SALARY FLOAT)
+
+statement ok
+INSERT INTO MANAGER VALUES (3,'3',3666),(4,'4',4666),(6,'6',6666),(7,'7',7666),(8,'8',8666)
+
+statement ok
+merge into employe as em using manager as MA
+on em.employeid = ma.managerid
+when matched then delete
+when not matched then insert values (ma.managerid, ma.name, ma.salary);
+
+query ITR colnames
+select * from employe
+----
+employeid   name    salary
+1 1 1000
+2 2 2000
+5 5 5000
+7 7 7666
+8 8 8666
+
+statement ok
+drop table employe
+
+statement ok
+create table employe (EMPLOYEID INT NOT NULL, NAME STRING,SALARY FLOAT)
+
+statement ok
+INSERT INTO EMPLOYE VALUES (1,'1',1000),(2,'2',2000),(3,'3',3000),(4,'4',4000),(5,'5',5000),(6,'6',6000)
+
+statement ok
+drop table manager
+
+statement ok
+CREATE TABLE MANAGER (MANAGERID INT NOT NULL, NAME STRING, SALARY FLOAT)
+
+statement ok
+INSERT INTO MANAGER VALUES (3,'3',3666),(4,'4',4666),(6,'6',6666),(7,'7',7666),(8,'8',8666)
+
+statement error pq: error1: error2
+merge into employe as em using manager as MA
+on em.employeid = ma.managerid
+when matched then delete
+when not matched then signal sqlstate 'error1' set message_text 'error2';
+
+statement ok
+drop table employe
+
+statement ok
+create table employe (EMPLOYEID INT NOT NULL, NAME STRING,SALARY FLOAT)
+
+statement ok
+INSERT INTO EMPLOYE VALUES (1,'1',1000),(2,'2',2000),(3,'3',3000),(4,'4',4000),(5,'5',5000),(6,'6',6000)
+
+statement ok
+drop table manager
+
+statement ok
+CREATE TABLE MANAGER (MANAGERID INT NOT NULL, NAME STRING, SALARY FLOAT)
+
+statement ok
+INSERT INTO MANAGER VALUES (3,'3',3666),(4,'4',4666),(6,'6',6666),(7,'7',7666),(8,'8',8666)
+
+statement error pq: error1: error2
+merge into employe as em using manager as MA
+on em.employeid = ma.managerid
+when matched then signal sqlstate 'error1' set message_text 'error2'
+when not matched then insert values (ma.managerid, ma.name, ma.salary);
+
+statement ok
+drop table employe
+
+statement ok
+create table employe (EMPLOYEID INT NOT NULL, NAME STRING,SALARY FLOAT)
+
+statement ok
+INSERT INTO EMPLOYE VALUES (1,'1',1000),(2,'2',2000),(3,'3',3000),(4,'4',4000),(5,'5',5000),(6,'6',6000)
+
+statement ok
+drop table manager
+
+statement ok
+CREATE TABLE MANAGER (MANAGERID INT NOT NULL, NAME STRING, SALARY FLOAT)
+
+statement ok
+INSERT INTO MANAGER VALUES (3,'3',3666),(4,'4',4666),(6,'6',6666),(7,'7',7666),(8,'8',8666)
+
+statement error pq: error1: error2
+merge into employe as em using manager as MA
+on em.employeid = ma.managerid
+when matched then signal sqlstate 'error1' set message_text 'error2'
+when not matched then signal sqlstate 'error1' set message_text 'error2';
+
+statement ok
+drop table employe
+
+statement ok
+create table employe (EMPLOYEID INT NOT NULL, NAME STRING,SALARY FLOAT)
+
+statement ok
+INSERT INTO EMPLOYE VALUES (1,'1',1000),(2,'2',2000),(3,'3',3000),(4,'4',4000),(5,'5',5000),(6,'6',6000)
+
+statement ok
+drop table manager
+
+statement ok
+CREATE TABLE MANAGER (MANAGERID INT NOT NULL, NAME STRING, SALARY FLOAT)
+
+statement ok
+INSERT INTO MANAGER VALUES (3,'3',3666),(4,'4',4666),(6,'6',6666),(7,'7',7666),(8,'8',8666)
+
+statement ok
+merge into employe as em using manager as MA
+on em.employeid = ma.managerid
+when matched then update set salary = ma.salary
+when matched then update set name = 'newName'
+when not matched then insert values (ma.managerid, ma.name, ma.salary);
+
+query ITR colnames
+select * from employe
+----
+employeid   name    salary
+1 1 1000
+2 2 2000
+3 newName 3666
+4 newName 4666
+5 5 5000
+6 newName 6666
+7 7 7666
+8 8 8666
+
+statement ok
+drop table employe
+
+statement ok
+create table employe (EMPLOYEID INT NOT NULL, NAME STRING,SALARY FLOAT)
+
+statement ok
+INSERT INTO EMPLOYE VALUES (1,'1',1000),(2,'2',2000),(3,'3',3000),(4,'4',4000),(5,'5',5000),(6,'6',6000)
+
+statement ok
+drop table manager
+
+statement ok
+CREATE TABLE MANAGER (MANAGERID INT NOT NULL, NAME STRING, SALARY FLOAT)
+
+statement ok
+INSERT INTO MANAGER VALUES (3,'3',3666),(4,'4',4666),(6,'6',6666),(7,'7',7666),(8,'8',8666)
+
+statement error pq: error1: error2
+merge into employe as em using manager as MA
+on em.employeid = ma.managerid
+when matched then update set salary = ma.salary
+when matched then update set name = 'newName'
+when not matched then signal sqlstate 'error1' set message_text 'error2';
+
+statement ok
+drop table employe
+
+statement ok
+create table employe (EMPLOYEID INT NOT NULL, NAME STRING,SALARY FLOAT)
+
+statement ok
+INSERT INTO EMPLOYE VALUES (1,'1',1000),(2,'2',2000),(3,'3',3000),(4,'4',4000),(5,'5',5000),(6,'6',6000)
+
+statement ok
+drop table manager
+
+statement ok
+CREATE TABLE MANAGER (MANAGERID INT NOT NULL, NAME STRING, SALARY FLOAT)
+
+statement ok
+INSERT INTO MANAGER VALUES (3,'3',3666),(4,'4',4666),(6,'6',6666),(7,'7',7666),(8,'8',8666)
+
+statement ok
+merge into employe as em using manager as MA
+on em.employeid = ma.managerid
+when matched then update set salary = ma.salary
+when matched then delete
+when not matched then insert values (ma.managerid, ma.name, ma.salary);
+
+query ITR colnames
+select * from employe
+----
+employeid   name    salary
+1 1 1000
+2 2 2000
+5 5 5000
+7 7 7666
+8 8 8666
+
+statement ok
+drop table employe
+
+statement ok
+create table employe (EMPLOYEID INT NOT NULL, NAME STRING,SALARY FLOAT)
+
+statement ok
+INSERT INTO EMPLOYE VALUES (1,'1',1000),(2,'2',2000),(3,'3',3000),(4,'4',4000),(5,'5',5000),(6,'6',6000)
+
+statement ok
+drop table manager
+
+statement ok
+CREATE TABLE MANAGER (MANAGERID INT NOT NULL, NAME STRING, SALARY FLOAT)
+
+statement ok
+INSERT INTO MANAGER VALUES (3,'3',3666),(4,'4',4666),(6,'6',6666),(7,'7',7666),(8,'8',8666)
+
+statement error pq: error1: error2
+merge into employe as em using manager as MA
+on em.employeid = ma.managerid
+when matched then update set salary = ma.salary
+when matched then delete
+when not matched then signal sqlstate 'error1' set message_text 'error2';
+
+statement ok
+drop table employe
+
+statement ok
+create table employe (EMPLOYEID INT NOT NULL, NAME STRING,SALARY FLOAT)
+
+statement ok
+INSERT INTO EMPLOYE VALUES (1,'1',1000),(2,'2',2000),(3,'3',3000),(4,'4',4000),(5,'5',5000),(6,'6',6000)
+
+statement ok
+drop table manager
+
+statement ok
+CREATE TABLE MANAGER (MANAGERID INT NOT NULL, NAME STRING, SALARY FLOAT)
+
+statement ok
+INSERT INTO MANAGER VALUES (3,'3',3666),(4,'4',4666),(6,'6',6666),(7,'7',7666),(8,'8',8666)
+
+statement ok
+merge into employe as em using manager as MA
+on em.employeid = ma.managerid
+when matched then update set salary = ma.salary
+when not matched then insert (employeid, name) values (ma.managerid, ma.name)
+when not matched then insert (salary) values (ma.salary);
+
+query ITR colnames
+select * from employe
+----
+employeid   name    salary
+1 1 1000
+2 2 2000
+3 3 3666
+4 4 4666
+5 5 5000
+6 6 6666
+7 7 NULL
+8 8 NULL
+
+statement ok
+drop table employe
+
+statement ok
+create table employe (EMPLOYEID INT NOT NULL, NAME STRING,SALARY FLOAT)
+
+statement ok
+INSERT INTO EMPLOYE VALUES (1,'1',1000),(2,'2',2000),(3,'3',3000),(4,'4',4000),(5,'5',5000),(6,'6',6000)
+
+statement ok
+drop table manager
+
+statement ok
+CREATE TABLE MANAGER (MANAGERID INT NOT NULL, NAME STRING, SALARY FLOAT)
+
+statement ok
+INSERT INTO MANAGER VALUES (3,'3',3666),(4,'4',4666),(6,'6',6666),(7,'7',7666),(8,'8',8666)
+
+statement error pq: error1: error2
+merge into employe as em using manager as MA
+on em.employeid = ma.managerid
+when matched then update set salary = ma.salary
+when not matched then insert (employeid, name) values (ma.managerid, ma.name)
+when not matched then signal sqlstate 'error1' set message_text 'error2';
+
+statement ok
+drop table employe
+
+statement ok
+create table employe (EMPLOYEID INT NOT NULL, NAME STRING,SALARY FLOAT)
+
+statement ok
+INSERT INTO EMPLOYE VALUES (1,'1',1000),(2,'2',2000),(3,'3',3000),(4,'4',4000),(5,'5',5000),(6,'6',6000)
+
+statement ok
+drop table manager
+
+statement ok
+CREATE TABLE MANAGER (MANAGERID INT NOT NULL, NAME STRING, SALARY FLOAT)
+
+statement ok
+INSERT INTO MANAGER VALUES (3,'3',3666),(4,'4',4666),(6,'6',6666),(7,'7',7666),(8,'8',8666)
+
+statement ok
+merge into employe as em using manager as MA
+on em.employeid = ma.managerid
+when matched then delete
+when not matched then insert (employeid, name) values (ma.managerid, ma.name)
+when not matched then insert (salary) values (ma.salary);
+
+query ITR colnames
+select * from employe
+----
+employeid   name    salary
+1 1 1000
+2 2 2000
+5 5 5000
+7 7 NULL
+8 8 NULL
+
+statement ok
+drop table employe
+
+statement ok
+create table employe (EMPLOYEID INT NOT NULL, NAME STRING,SALARY FLOAT)
+
+statement ok
+INSERT INTO EMPLOYE VALUES (1,'1',1000),(2,'2',2000),(3,'3',3000),(4,'4',4000),(5,'5',5000),(6,'6',6000)
+
+statement ok
+drop table manager
+
+statement ok
+CREATE TABLE MANAGER (MANAGERID INT NOT NULL, NAME STRING, SALARY FLOAT)
+
+statement ok
+INSERT INTO MANAGER VALUES (3,'3',3666),(4,'4',4666),(6,'6',6666),(7,'7',7666),(8,'8',8666)
+
+statement error pq: error1: error2
+merge into employe as em using manager as MA
+on em.employeid = ma.managerid
+when matched then delete
+when not matched then insert (employeid, name) values (ma.managerid, ma.name)
+when not matched then signal sqlstate 'error1' set message_text 'error2';
+
+statement ok
+drop table employe
+
+statement ok
+create table employe (EMPLOYEID INT NOT NULL, NAME STRING,SALARY FLOAT)
+
+statement ok
+INSERT INTO EMPLOYE VALUES (1,'1',1000),(2,'2',2000),(3,'3',3000),(4,'4',4000),(5,'5',5000),(6,'6',6000)
+
+statement ok
+drop table manager
+
+statement ok
+CREATE TABLE MANAGER (MANAGERID INT NOT NULL, NAME STRING, SALARY FLOAT)
+
+statement ok
+INSERT INTO MANAGER VALUES (3,'3',3666),(4,'4',4666),(6,'6',6666),(7,'7',7666),(8,'8',8666)
+
+statement ok
+MERGE INTO EMPLOYE AS EM
+USING MANAGER AS MA
+ON EM.EMPLOYEID = MA.MANAGERID
+WHEN MATCHED THEN UPDATE SET SALARY = 3333
+WHEN MATCHED AND EM.NAME = '4' THEN UPDATE SET SALARY = 4444
+WHEN MATCHED AND EM.NAME = '3' THEN UPDATE SET SALARY = 5555
+
+query ITR colnames
+select * from employe
+----
+employeid   name    salary
+1 1 1000
+2 2 2000
+3 3 3333
+4 4 3333
+5 5 5000
+6 6 3333
+
+statement ok
+drop table employe
+
+statement ok
+drop table manager
+
+statement ok
+create table employe (EMPLOYEID INT NOT NULL, NAME STRING,SALARY FLOAT)
+
+statement ok
+INSERT INTO EMPLOYE VALUES (1,'1',1000),(2,'2',2000),(3,'3',3000),(4,'4',4000),(5,'5',5000),(6,'6',6000)
+
+statement ok
+CREATE TABLE MANAGER (MANAGERID INT NOT NULL, NAME STRING, SALARY FLOAT)
+
+statement ok
+INSERT INTO MANAGER VALUES (3,'3',3666),(4,'4',4666),(6,'6',6666),(7,'7',7666),(8,'8',8666)
+
+statement ok
+MERGE INTO EMPLOYE AS EM
+USING MANAGER AS MA
+ON EM.EMPLOYEID = MA.MANAGERID
+WHEN MATCHED AND EM.NAME = '4' THEN UPDATE SET SALARY = 4444
+WHEN MATCHED THEN UPDATE SET SALARY = 3333
+WHEN MATCHED AND EM.NAME = '3' THEN UPDATE SET SALARY = 5555
+
+query ITR colnames
+select * from employe
+----
+employeid   name    salary
+1 1 1000
+2 2 2000
+3 3 3333
+4 4 4444
+5 5 5000
+6 6 3333
+
+statement ok
+drop table employe
+
+statement ok
+drop table manager
+
+statement ok
+create table employe (EMPLOYEID INT NOT NULL, NAME STRING,SALARY FLOAT)
+
+statement ok
+INSERT INTO EMPLOYE VALUES (1,'1',1000),(2,'2',2000),(3,'3',3000),(4,'4',4000),(5,'5',5000),(6,'6',6000)
+
+statement ok
+CREATE TABLE MANAGER (MANAGERID INT NOT NULL, NAME STRING, SALARY FLOAT)
+
+statement ok
+INSERT INTO MANAGER VALUES (3,'3',3666),(4,'4',4666),(6,'6',6666),(7,'7',7666),(8,'8',8666)
+
+statement ok
+MERGE INTO EMPLOYE AS EM
+USING MANAGER AS MA
+ON EM.EMPLOYEID = MA.MANAGERID
+WHEN MATCHED THEN DELETE
+WHEN MATCHED AND EM.NAME = '4' THEN DELETE
+WHEN MATCHED AND EM.NAME = '3' THEN DELETE
+
+query ITR colnames
+select * from employe
+----
+employeid   name    salary
+1 1 1000
+2 2 2000
+5 5 5000
+
+statement ok
+drop table employe
+
+statement ok
+drop table manager
+
+statement ok
+create table employe (EMPLOYEID INT NOT NULL, NAME STRING,SALARY FLOAT)
+
+statement ok
+INSERT INTO EMPLOYE VALUES (1,'1',1000),(2,'2',2000),(3,'3',3000),(4,'4',4000),(5,'5',5000),(6,'6',6000)
+
+statement ok
+CREATE TABLE MANAGER (MANAGERID INT NOT NULL, NAME STRING, SALARY FLOAT)
+
+statement ok
+INSERT INTO MANAGER VALUES (3,'3',3666),(4,'4',4666),(6,'6',6666),(7,'7',7666),(8,'8',8666)
+
+statement ok
+MERGE INTO EMPLOYE AS EM
+USING MANAGER AS MA
+ON EM.EMPLOYEID = MA.MANAGERID
+WHEN MATCHED AND (EM.NAME = '4' OR EM.NAME = '6') THEN DELETE
+
+query ITR colnames
+select * from employe
+----
+employeid   name    salary
+1 1 1000
+2 2 2000
+3 3 3000
+5 5 5000
+
+statement ok
+drop table employe
+
+statement ok
+drop table manager
+
+statement ok
+create table employe (EMPLOYEID INT NOT NULL, NAME STRING,SALARY FLOAT)
+
+statement ok
+INSERT INTO EMPLOYE VALUES (1,'1',1000),(2,'2',2000),(3,'3',3000),(4,'4',4000),(5,'5',5000),(6,'6',6000)
+
+statement ok
+CREATE TABLE MANAGER (MANAGERID INT NOT NULL, NAME STRING, SALARY FLOAT)
+
+statement ok
+INSERT INTO MANAGER VALUES (3,'3',3666),(4,'4',4666),(6,'6',6666),(7,'7',7666),(8,'8',8666)
+
+statement ok
+MERGE INTO EMPLOYE AS EM
+USING MANAGER AS MA
+ON EM.EMPLOYEID = MA.MANAGERID
+WHEN MATCHED AND (EM.SALARY > 1000 AND EM.SALARY < 6000) THEN DELETE
+
+query ITR colnames
+select * from employe
+----
+employeid   name    salary
+1 1 1000
+2 2 2000
+5 5 5000
+6 6 6000
+
+statement ok
+drop table employe
+
+statement ok
+drop table manager
+
+statement ok
+create table employe (EMPLOYEID INT NOT NULL, NAME STRING,SALARY FLOAT)
+
+statement ok
+INSERT INTO EMPLOYE VALUES (1,'1',1000),(2,'2',2000),(3,'3',3000),(4,'4',4000),(5,'5',5000),(6,'6',6000)
+
+statement ok
+CREATE TABLE MANAGER (MANAGERID INT NOT NULL, NAME STRING, SALARY FLOAT)
+
+statement ok
+INSERT INTO MANAGER VALUES (3,'3',3666),(4,'4',4666),(6,'6',6666),(7,'7',7666),(8,'8',8666)
+
+statement ok
+MERGE INTO EMPLOYE AS EM
+USING MANAGER AS MA
+ON EM.EMPLOYEID = MA.MANAGERID
+WHEN MATCHED THEN UPDATE SET SALARY = 3333
+WHEN MATCHED AND EM.NAME = '4' THEN UPDATE SET SALARY = 4444, NAME = 'CASE1'
+WHEN MATCHED AND EM.NAME = '3' THEN UPDATE SET SALARY = 5555, NAME = 'case2'
+
+query ITR colnames
+select * from employe
+----
+employeid   name    salary
+1 1 1000
+2 2 2000
+3 case2 3333
+4 CASE1 3333
+5 5 5000
+6 6 3333
+
+statement ok
+drop table employe
+
+statement ok
+drop table manager
+
+statement ok
+create table employe (EMPLOYEID INT NOT NULL, NAME STRING,SALARY FLOAT)
+
+statement ok
+INSERT INTO EMPLOYE VALUES (1,'1',1000),(2,'2',2000),(3,'3',3000),(4,'4',4000),(5,'5',5000),(6,'6',6000)
+
+statement ok
+CREATE TABLE MANAGER (MANAGERID INT NOT NULL, NAME STRING, SALARY FLOAT)
+
+statement ok
+INSERT INTO MANAGER VALUES (3,'3',3666),(4,'4',4666),(6,'6',6666),(7,'7',7666),(8,'8',8666)
+
+statement ok
+MERGE INTO EMPLOYE AS EM
+USING MANAGER AS MA
+ON EM.EMPLOYEID = MA.MANAGERID
+WHEN MATCHED AND EM.NAME = '4' THEN UPDATE SET SALARY = 4444, NAME = 'CASE1'
+WHEN MATCHED THEN UPDATE SET SALARY = 3333, NAME = 'case3'
+WHEN MATCHED AND EM.NAME = '3' THEN UPDATE SET SALARY = 5555, NAME = 'case2'
+WHEN NOT MATCHED AND MA.NAME = '7' THEN INSERT VALUES (MA.MANAGERID, MA.NAME, MA.SALARY)
+
+query ITR colnames
+select * from employe
+----
+employeid   name    salary
+1 1 1000
+2 2 2000
+3 case3 3333
+4 CASE1 4444
+5 5 5000
+6 case3 3333
+7 7 7666
+
+statement ok
+drop table employe
+
+statement ok
+drop table manager
+
+statement ok
+create table employe (EMPLOYEID INT NOT NULL, NAME STRING,SALARY FLOAT)
+
+statement ok
+INSERT INTO EMPLOYE VALUES (1,'1',1000),(2,'2',2000),(3,'3',3000),(4,'4',4000),(5,'5',5000),(6,'6',6000)
+
+statement ok
+CREATE TABLE MANAGER (MANAGERID INT NOT NULL, NAME STRING, SALARY FLOAT)
+
+statement ok
+INSERT INTO MANAGER VALUES (3,'3',3666),(4,'4',4666),(6,'6',6666),(7,'7',7666),(8,'8',8666)
+
+statement ok
+MERGE INTO EMPLOYE AS EM
+USING MANAGER AS MA
+ON EM.EMPLOYEID = MA.MANAGERID
+WHEN MATCHED AND EM.NAME = '3' THEN UPDATE SET SALARY = 3, NAME = 'case3'
+WHEN MATCHED AND (EM.NAME = '4' OR EM.NAME = '3') THEN UPDATE SET SALARY = 4, NAME = 'case2'
+WHEN MATCHED AND (EM.NAME = '6' OR EM.NAME = '3' OR EM.NAME = '4') THEN UPDATE SET SALARY = 6, NAME = 'case3'
+WHEN MATCHED THEN UPDATE SET SALARY = 0
+WHEN NOT MATCHED THEN INSERT VALUES (MA.MANAGERID, MA.NAME, MA.SALARY)
+
+query ITR colnames
+select * from employe
+----
+employeid   name    salary
+1 1 1000
+2 2 2000
+3 case3 3
+4 case2 4
+5 5 5000
+6 case3 6
+7 7 7666
+8 8 8666
+
+statement ok
+drop table employe
+
+statement ok
+drop table manager
+
+statement ok
+create table employe (EMPLOYEID INT NOT NULL, NAME STRING,SALARY FLOAT)
+
+statement ok
+INSERT INTO EMPLOYE VALUES (1,'1',1000),(2,'2',2000),(3,'3',3000),(4,'4',4000),(5,'5',5000),(6,'6',6000)
+
+statement ok
+CREATE TABLE MANAGER (MANAGERID INT NOT NULL, NAME STRING, SALARY FLOAT)
+
+statement ok
+INSERT INTO MANAGER VALUES (3,'3',3666),(4,'4',4666),(6,'6',6666),(7,'7',7666),(8,'8',8666)
+
+statement ok
+MERGE INTO EMPLOYE AS EM
+USING MANAGER AS MA
+ON EM.EMPLOYEID = MA.MANAGERID
+WHEN MATCHED AND EM.SALARY < 2000 THEN DELETE
+WHEN NOT MATCHED AND MA.MANAGERID = 8 THEN INSERT (EMPLOYEID, SALARY) VALUES (MA.MANAGERID, MA.SALARY)
+
+query ITR colnames
+select * from employe
+----
+employeid   name    salary
+1 1 1000
+2 2 2000
+3 3 3000
+4 4 4000
+5 5 5000
+6 6 6000
+8 NULL 8666
+
+statement ok
+drop table employe
+
+statement ok
+drop table manager
+
+statement ok
+create table employe (EMPLOYEID INT NOT NULL PRIMARY KEY,NAME STRING,SALARY FLOAT)
+
+statement ok
+INSERT INTO EMPLOYE VALUES (1,'1',1000),(2,'2',2000),(3,'3',3000),(4,'4',4000),(5,'5',5000),(6,'6',6000);
+
+statement ok
+CREATE TABLE MANAGER (MANAGERID INT NOT NULL, NAME STRING, SALARY FLOAT);
+
+statement ok
+INSERT INTO MANAGER VALUES (3,'3',3666),(4,'4',4666),(6,'6',6666),(7,'7',7666),(8,'8',8666)
+
+statement ok
+merge into employe as em using manager as MA
+on em.employeid = ma.managerid
+when matched then update set salary = ma.salary
+when not matched then insert values (ma.managerid, ma.name, ma.salary)
+
+query ITR colnames
+select * from employe
+----
+employeid   name    salary
+1 1 1000
+2 2 2000
+3 3 3666
+4 4 4666
+5 5 5000
+6 6 6666
+7 7 7666
+8 8 8666
+
+statement ok
+drop table employe
+
+statement ok
+drop table manager
+
+statement ok
+create table employe (EMPLOYEID INT NOT NULL,NAME STRING,SALARY FLOAT)
+
+statement ok
+INSERT INTO EMPLOYE VALUES (1,'1',1000),(2,'2',2000),(3,'3',3000),(4,'4',4000),(5,'5',5000),(6,'6',6000);
+
+statement ok
+CREATE TABLE MANAGER (MANAGERID INT NOT NULL PRIMARY KEY, NAME STRING, SALARY FLOAT);
+
+statement ok
+INSERT INTO MANAGER VALUES (3,'3',3666),(4,'4',4666),(6,'6',6666),(7,'7',7666),(8,'8',8666)
+
+statement ok
+merge into employe as em using manager as MA
+on em.employeid = ma.managerid
+when matched then update set salary = ma.salary
+when not matched then insert values (ma.managerid, ma.name, ma.salary)
+
+query ITR colnames
+select * from employe
+----
+employeid   name    salary
+1 1 1000
+2 2 2000
+3 3 3666
+4 4 4666
+5 5 5000
+6 6 6666
+7 7 7666
+8 8 8666
+
+statement ok
+drop table employe
+
+statement ok
+drop table manager
+
+statement ok
+create table employe (EMPLOYEID INT NOT NULL PRIMARY KEY,NAME STRING,SALARY FLOAT)
+
+statement ok
+INSERT INTO EMPLOYE VALUES (1,'1',1000),(2,'2',2000),(3,'3',3000),(4,'4',4000),(5,'5',5000),(6,'6',6000);
+
+statement ok
+CREATE TABLE MANAGER (MANAGERID INT NOT NULL PRIMARY KEY, NAME STRING, SALARY FLOAT);
+
+statement ok
+INSERT INTO MANAGER VALUES (3,'3',3666),(4,'4',4666),(6,'6',6666),(7,'7',7666),(8,'8',8666)
+
+statement ok
+merge into employe as em using manager as MA
+on em.employeid = ma.managerid
+when matched then update set salary = ma.salary
+when not matched then insert values (ma.managerid, ma.name, ma.salary)
+
+query ITR colnames
+select * from employe
+----
+employeid   name    salary
+1 1 1000
+2 2 2000
+3 3 3666
+4 4 4666
+5 5 5000
+6 6 6666
+7 7 7666
+8 8 8666
+
+statement ok
+drop table employe
+
+statement ok
+drop table manager
+
+statement ok
+create table employe (EMPLOYEID INT NOT NULL, NAME STRING,SALARY FLOAT)
+
+statement ok
+INSERT INTO EMPLOYE VALUES (1,'1',1000),(2,'2',2000),(3,'3',3000),(4,'4',4000),(5,'5',5000),(6,'6',6000)
+
+statement ok
+CREATE TABLE MANAGER (MANAGERID INT NOT NULL, NAME STRING, SALARY FLOAT)
+
+statement ok
+INSERT INTO MANAGER VALUES (3,'3',3666),(4,'4',4666),(6,'6',6666),(7,'7',7666),(8,'8',8666)
+
+statement ok
+MERGE INTO EMPLOYE AS EM
+USING MANAGER AS MA
+ON EM.EMPLOYEID = MA.MANAGERID AND MA.SALARY > 6000
+WHEN MATCHED THEN UPDATE SET SALARY = MA.SALARY
+WHEN NOT MATCHED THEN INSERT VALUES (MA.MANAGERID, MA.NAME, MA.SALARY)
+
+query ITR colnames
+select * from employe
+----
+employeid   name    salary
+1 1 1000
+2 2 2000
+3 3 3000
+4 4 4000
+5 5 5000
+6 6 6666
+3 3 3666
+4 4 4666
+7 7 7666
+8 8 8666
+
+statement ok
+drop table employe
+
+statement ok
+drop table manager
+
+statement ok
+create table employe (EMPLOYEID INT NOT NULL, NAME STRING,SALARY FLOAT)
+
+statement ok
+INSERT INTO EMPLOYE VALUES (1,'1',1000),(2,'2',2000),(3,'3',3000),(4,'4',4000),(5,'5',5000),(6,'6',6000)
+
+statement ok
+CREATE TABLE MANAGER (MANAGERID INT NOT NULL, NAME STRING, SALARY FLOAT)
+
+statement ok
+INSERT INTO MANAGER VALUES (3,'3',3666),(4,'4',4666),(6,'6',6666),(7,'7',7666),(8,'8',8666)
+
+statement ok
+MERGE INTO EMPLOYE AS EM
+USING MANAGER AS MA
+ON EM.EMPLOYEID = MA.MANAGERID AND MA.SALARY > EM.SALARY + 1000
+WHEN MATCHED THEN UPDATE SET SALARY = MA.SALARY
+WHEN NOT MATCHED THEN INSERT VALUES (MA.MANAGERID, MA.NAME, MA.SALARY)
+
+query ITR colnames
+select * from employe
+----
+employeid   name    salary
+1 1 1000
+2 2 2000
+3 3 3000
+4 4 4000
+5 5 5000
+6 6 6000
+3 3 3666
+4 4 4666
+6 6 6666
+7 7 7666
+8 8 8666
+
+statement ok
+drop table employe
+
+statement ok
+drop table manager
+
+statement ok
+create table employe (EMPLOYEID INT NOT NULL, NAME STRING,SALARY FLOAT)
+
+statement ok
+INSERT INTO EMPLOYE VALUES (1,'1',1000),(2,'2',2000),(3,'3',3000),(4,'4',4000),(5,'5',5000),(6,'6',6000)
+
+statement ok
+CREATE TABLE MANAGER (MANAGERID INT NOT NULL, NAME STRING, SALARY FLOAT)
+
+statement ok
+INSERT INTO MANAGER VALUES (3,'3',3666),(4,'4',4666),(6,'6',6666),(7,'7',7666),(8,'8',8666)
+
+statement ok
+MERGE INTO EMPLOYE AS EM
+USING MANAGER AS MA
+ON EM.EMPLOYEID = MA.MANAGERID AND MA.SALARY > 4000 AND MA.MANAGERID > 5
+WHEN MATCHED THEN UPDATE SET SALARY = MA.SALARY
+WHEN NOT MATCHED THEN INSERT VALUES (MA.MANAGERID, MA.NAME, MA.SALARY)
+
+query ITR colnames
+select * from employe
+----
+employeid   name    salary
+1 1 1000
+2 2 2000
+3 3 3000
+4 4 4000
+5 5 5000
+6 6 6666
+3 3 3666
+4 4 4666
+7 7 7666
+8 8 8666
+
+statement ok
+drop table employe
+
+statement ok
+drop table manager
+
+statement ok
+create table employe (EMPLOYEID INT NOT NULL,NAME STRING)
+
+statement ok
+INSERT INTO EMPLOYE VALUES (1,'1'),(2,'2' ),(3,'3' ),(4,'4' ),(5,'5' ),(6,'6' );
+
+statement ok
+CREATE TABLE MANAGER (MANAGERID INT NOT NULL, NAME STRING, SALARY FLOAT);
+
+statement ok
+INSERT INTO MANAGER VALUES (3,'3',3666),(4,'4',4666),(6,'6',6666),(7,'7',7666),(8,'8',8666);
+
+statement error pq: INSERT has more expressions than target columns, 3 expressions for 2 targets
+merge into employe as em using manager as MA
+on em.employeid = ma.managerid
+when matched then update set salary = ma.salary
+when not matched then insert values (ma.managerid, ma.name, ma.salary)
+
+query IT colnames
+select * from employe
+----
+employeid   name
+1 1
+2 2
+3 3
+4 4
+5 5
+6 6
+
+statement ok
+drop table employe
+
+statement ok
+drop table manager
+
+statement ok
+create table employe (EMPLOYEID INT NOT NULL,NAME INT,SALARY FLOAT)
+
+statement ok
+INSERT INTO EMPLOYE VALUES (1,1,1000),(2,2,2000),(3,3,3000),(4,4 ,4000),(5,5,5000),(6,6,6000);
+
+statement ok
+CREATE TABLE MANAGER (MANAGERID INT NOT NULL, NAME STRING, SALARY FLOAT);
+
+statement ok
+INSERT INTO MANAGER VALUES (3,'3',3666),(4,'4',4666),(6,'6',6666),(7,'7',7666),(8,'8',8666);
+
+statement ok
+merge into employe as em using manager as MA
+on em.employeid = ma.managerid
+when matched then update set salary = ma.salary
+when not matched then insert values (ma.managerid, ma.name, ma.salary)
+
+query IIR colnames
+select * from employe
+----
+employeid  name  salary
+1          1     1000
+2          2     2000
+3          3     3666
+4          4     4666
+5          5     5000
+6          6     6666
+7          7     7666
+8          8     8666
+
+statement ok
+drop table employe
+
+statement ok
+drop table manager
+
+statement ok
+CREATE TABLE MANAGER (rowid INT NOT NULL, NAME text, SALARY FLOAT)
+
+statement ok
+CREATE TABLE employee (rowid INT NOT NULL, NAME text,SALARY FLOAT)
+
+statement ok
+INSERT INTO EMPLOYEE VALUES (1,'1',1000),(2,'2',2000),(3,'3',3000),(4,'4',4000),(5,'5',5000),(6,'6',6000)
+
+statement ok
+INSERT INTO MANAGER VALUES (3,'3',3666),(4,'4',4666),(6,'6',6666),(7,'7',7666),(8,'8',8666)
+
+statement ok
+MERGE INTO EMPLOYEE AS EM
+USING MANAGER AS MA
+ON EM.rowid = MA.rowid
+WHEN NOT MATCHED THEN INSERT VALUES (MA.rowid, MA.NAME, MA.SALARY)
+
+query ITR colnames
+select * from employee
+----
+rowid      name  salary
+1          1     1000
+2          2     2000
+3          3     3000
+4          4     4000
+5          5     5000
+6          6     6000
+7          7     7666
+8          8     8666
+
+statement ok
+drop table employee
+
+statement ok
+drop table manager

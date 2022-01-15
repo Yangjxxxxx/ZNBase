@@ -1,0 +1,15 @@
+statement ok
+BEGIN;
+
+query II
+SELECT * FROM T WHERE a>0 ORDER BY a DESC FOR UPDATE;
+----
+3 3
+2 2
+1 1
+
+statement ok
+SELECT pg_sleep(5);
+
+statement ok
+COMMIT;

@@ -1,0 +1,13 @@
+statement ok
+SELECT pg_sleep(1);
+
+statement ok
+SET SESSION DEFAULT_TRANSACTION_ISOLATION='READ COMMITTED';
+SET statement_timeout = 1000;
+
+query I
+SELECT * FROM T;
+----
+1
+
+

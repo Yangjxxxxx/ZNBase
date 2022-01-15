@@ -1,0 +1,24 @@
+statement ok
+SELECT pg_sleep(2);
+
+statement ok
+BEGIN;
+SET TRANSACTION ISOLATION LEVEL READ COMMITTED;
+
+query TI
+SELECT * FROM T;
+----
+H  2
+c  4
+
+statement ok
+SELECT pg_sleep(6);
+
+query TI
+SELECT * FROM T;
+----
+H  6
+c  4
+
+statement ok
+COMMIT;

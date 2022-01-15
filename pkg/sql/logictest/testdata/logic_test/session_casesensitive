@@ -1,0 +1,657 @@
+# LogicTest: local local-opt fakedist fakedist-opt fakedist-metadata
+statement ok
+set casesensitive = on
+
+# Case sensitivity of database names
+
+statement ok
+CREATE DATABASE D
+
+statement ok
+SHOW TABLES FROM D
+
+statement error "d" does not match any valid database or schema
+SHOW TABLES FROM d
+
+statement ok
+CREATE DATABASE "e"
+
+statement error "E" does not match any valid database or schema
+SHOW TABLES FROM E
+
+statement ok
+SHOW TABLES FROM "e"
+
+# Case sensitivity of table names:
+
+statement ok
+CREATE TABLE A(x INT)
+
+statement error pgcode 42P01 relation "a" does not exist
+SHOW COLUMNS FROM a
+
+statement error pgcode 42P01 relation "a" does not exist
+SHOW INDEXES FROM a
+
+statement error pgcode 42P01 relation "a" does not exist
+SHOW CREATE TABLE a
+
+statement error pgcode 42P01 relation "a" does not exist
+SHOW GRANTS ON TABLE a
+
+statement error pgcode 42P01 relation "test.a" does not exist
+SHOW GRANTS ON TABLE test.a
+
+statement error pgcode 42P01 relation "a" does not exist
+SHOW CONSTRAINTS FROM a 
+
+statement error pgcode 42P01 relation "a" does not exist
+SELECT * FROM a
+
+statement error pgcode 42P01 relation "a" does not exist
+INSERT INTO a(x) VALUES(1)
+
+statement error pgcode 42P01 relation "a" does not exist
+UPDATE a SET x = 42
+
+statement error pgcode 42P01 relation "a" does not exist
+DELETE FROM a
+
+statement error pgcode 42P01 relation "a" does not exist
+TRUNCATE a 
+
+statement error pgcode 42P01 relation "a" does not exist
+DROP TABLE a
+
+statement ok
+SHOW COLUMNS FROM A
+
+statement ok
+SHOW INDEXES FROM A
+
+statement ok
+SHOW CREATE TABLE A
+
+statement ok
+SHOW CONSTRAINTS FROM A
+
+statement ok
+SELECT * FROM A
+
+statement ok
+INSERT INTO A(x) VALUES(1)
+
+statement ok
+UPDATE A SET x = 42
+
+statement ok
+DELETE FROM A
+
+statement ok
+TRUNCATE A
+
+statement ok
+DROP TABLE A
+
+# Case sensitivity of column names.
+
+statement ok
+CREATE TABLE foo(X INT, y INT)
+
+query II colnames
+SELECT  X, y FROM foo
+----
+X y
+
+statement error column "x" does not exist
+SELECT x FROM foo
+
+statement error column "Y" does not exist
+SELECT Y FROM foo
+
+# The following should not be ambiguous.
+query II colnames
+select Y,y from (select X as Y,y from foo)
+----
+Y y
+
+# Case sensitivity of view names.
+
+statement ok
+CREATE VIEW XV AS SELECT X, y FROM foo
+
+query TT
+SHOW CREATE VIEW XV
+----
+"XV"  CREATE VIEW "XV" ("X", y) AS SELECT "X", y FROM test.public.foo
+
+query error pgcode 42P01 relation "xv" does not exist
+SHOW CREATE VIEW xv
+
+# Case sensitivity of index names.
+
+statement ok
+CREATE TABLE a(x INT, y INT, CONSTRAINT Foo PRIMARY KEY(x)); CREATE INDEX I ON a(y)
+
+statement error index "i" not found
+SELECT * FROM a@i
+
+statement error index "foo" not found
+SELECT * FROM a@foo
+
+statement error index "i" not found
+SELECT * FROM a ORDER BY INDEX a@i
+
+statement error index "foo" not found
+SELECT * FROM a ORDER BY INDEX a@foo
+
+statement error index "i" does not exist
+DROP INDEX a@i
+
+statement ok
+SELECT * FROM a@I
+
+statement ok
+SELECT * FROM a@Foo
+
+statement ok
+SELECT * FROM a ORDER BY INDEX a@I
+
+statement ok
+SELECT * FROM a ORDER BY INDEX a@Foo
+
+statement ok
+DROP INDEX a@I
+
+# Unicode sequences are preserved.
+
+statement ok
+CREATE TABLE Amelie("Amélie" INT, "Amélie" INT); INSERT INTO Amelie VALUES (1, 2)
+
+# Check that the column names were encoded properly
+query I
+SELECT ordinal_position FROM information_schema.columns WHERE table_name = 'Amelie' AND column_name::BYTES = b'Ame\xcc\x81lie'
+----
+1
+
+query I
+SELECT ordinal_position FROM information_schema.columns WHERE table_name = 'Amelie' AND column_name::BYTES = b'Am\xc3\xa9lie'
+----
+2
+
+# Check that the non-normalized names propagate throughout until results.
+
+query II colnames
+SELECT "Amélie", "Amélie" FROM Amelie
+----
+Amélie Amélie
+2      1
+
+# Check that function names are also recognized case-insensitively.
+query I
+SELECT LENGTH('abc') -- lint: uppercase function OK
+----
+3
+
+#NEWSQL 6755 表名、列名为保留关键字
+statement ok
+create table animals(id INT PRIMARY KEY , NAME STRING);
+
+statement ok
+insert into animals(id,NAME) VALUES (2,'barn owl');
+
+statement ok
+select NAME from animals;
+
+statement ok
+set casesensitive = off
+
+# NEWSQL 8562 表名列名和函数名同名、关开关后仍走缓存
+statement ok
+set casesensitive = on
+
+statement ok
+create table ANAGE(id int primary key,AGE string)
+
+statement error pgcode 42P01 relation "anage" does not exist
+select * from anage
+
+query II colnames
+SELECT * FROM ANAGE
+----
+id AGE
+
+statement ok
+create table ANAGE2(id int primary key, NAME string);
+
+query II colnames
+SELECT * FROM ANAGE2
+----
+id NAME
+
+statement ok
+create database park;
+use park;
+
+statement ok
+set casesensitive = off
+
+statement ok
+create table ANAGE(id int primary key,AGE string)
+
+query II colnames
+SELECT * FROM ANAGE
+----
+id age
+
+statement ok
+select * from anage
+
+#b(nan int)
+statement ok
+create table b(nan int)
+
+statement ok
+insert into b values(0),(9)
+
+query I colnames
+SELECT NAn FROM B order by nan
+----
+  NAn
+   0
+   9
+
+query I colnames
+SELECT nan AS MMN FROM B order by nan
+----
+  MMN
+   0
+   9
+
+query I colnames
+select nAN from (SELECT NAn FROM B) order by nan
+----
+  NAn
+   0
+   9
+
+query I colnames
+select mmn from (SELECT NAn as mMn FROM B) order by mmn
+----
+  mMn
+   0
+   9
+
+#test (ABC int)
+statement ok
+create table test (ABC int)
+
+statement ok
+insert into test values(1),(2),(3)
+
+query error column "ABC" does not exist
+select abc from test order by "ABC"
+
+query I colnames
+select "abc" from (select ABC from test) order by ABC
+----
+ ABC
+  1
+  2
+  3
+
+query I colnames
+select ABC from (select abc from test) order by abc
+----
+ abc
+  1
+  2
+  3
+
+query I colnames
+select Abc from(select ABC from (select abc from test)) order by abc
+----
+ abc
+  1
+  2
+  3
+
+query I colnames
+select Abc from(select ABC from (select abc as abC from test)) order by abc
+----
+ abC
+  1
+  2
+  3
+
+query I colnames
+select Abc from(select ABC as ABc from (select abc as abC from test)) order by abc
+----
+ ABc
+  1
+  2
+  3
+
+query error column "ABC" does not exist
+select "ABC" from (select ABC from test)
+
+query T colnames
+select def from (select 'ABC' as DEF from test)
+----
+  DEF
+  ABC
+  ABC
+  ABC
+
+query error column "ABC" does not exist
+select aBc from (select "ABC" from test)as c
+
+query T colnames
+select abC AS B FROM(select 'aBc' AS ABC from test) order by aBC
+----
+   B
+  aBc
+  aBc
+  aBc
+
+query I colnames
+select abC  FROM(select aBc AS ABC from test) where ABc < 4 order by aBC
+----
+ ABC
+  1
+  2
+  3
+
+query I colnames
+select AbC from (select ABC as "abc" from test) order by aBC
+----
+ abc
+  1
+  2
+  3
+
+query I colnames
+select ABC from (select ABC as abc from test) order by aBC
+----
+ abc
+  1
+  2
+  3
+
+query I colnames
+select abc as AbC from(select ABC from test)as c order by aBC
+----
+ AbC
+  1
+  2
+  3
+
+query I colnames
+select aBC as nbn from (select ABC from test where abc<2) test where ABC<2 order by abc
+----
+ nbn
+  1
+
+query error column "nbn" does not exist
+select aBC as nbn from (select ABC from test where abc<2) test where nbn<2
+
+#test1("ABC" int),test2(def int)
+statement ok
+create table test1("ABC" int)
+
+statement ok
+create table test2(def int)
+
+statement ok
+insert into test1 values(1),(2),(3)
+
+statement ok
+insert into test2 values(1),(2),(3)
+
+query II colnames
+select test1."ABC",test2.def from test1 left join test2 on test1."ABC"=test2.def order by "ABC"
+----
+ ABC  def
+  1    1
+  2    2
+  3    3
+
+query error column "test1.abc" does not exist
+select test1."ABC",test2.def from test1 left join test2 on test1.ABC=test2.def order by abc
+
+query error column "abc" does not exist
+select "ABC" from test1 where ABC=1
+
+query I colnames
+select def from test2 where Def=1
+----
+def
+1
+
+query I colnames
+select def as BB from test2 where Def=1
+----
+BB
+1
+
+query error column "abc" does not exist
+select "ABC" from test1 t1 join test2 t2 on t1."ABC"=t2.def order by "abc"
+
+statement ok
+drop table test
+
+#test("ABC" int)
+statement ok
+create table test("ABC" int)
+
+statement ok
+insert into test values(1),(2),(3)
+
+query error column "AbC" does not exist
+select "AbC" as "DeF" from test
+
+query error column "AbC" does not exist
+select AbC from(select "ABC" from test) order by abc
+
+query error column "AbC" does not exist
+select "AbC" from (select "ABC" from test)
+
+query error column "ABC" does not exist
+select ABC from (select "ABC" from (select "ABC" from test))
+
+query I colnames
+select "ABC" from (select "ABC" from test) order by "ABC"
+----
+   ABC
+    1
+    2
+    3
+
+query I colnames
+select "abc" from (select "ABC" as AbC from test) order by abc
+----
+   AbC
+    1
+    2
+    3
+
+query I colnames
+select "abc" as nbn from (select "ABC" as AbC from test) order by abc
+----
+   nbn
+    1
+    2
+    3
+
+query error column "AbC" does not exist
+select "ABC" as AbC from test order by "AbC"
+
+query I colnames
+select "ABC" as "AbC" from test order by "ABC"
+----
+   AbC
+    1
+    2
+    3
+
+query I colnames
+select "ABC" as AbC from test order by abc
+----
+   AbC
+    1
+    2
+    3
+
+query error column "abc" does not exist
+SELECT "ABC" FROM(select "ABC" from test)order by abc
+
+query error column "ABC" does not exist
+select "AbC"from(select "ABC" as "AbC" from test) order by "ABC"
+
+query I colnames
+select abc as "ABC"from(select "ABC" as AbC from test)order by abc
+----
+   ABC
+    1
+    2
+    3
+
+query error column "abc" does not exist
+select "abc" as nbn from (select "ABC" as "AbC" from test) order by abc
+
+query error column "ABC" does not exist
+select ABC from (select "ABC" from test) order by abc
+
+query error column "AbC" does not exist
+select AbC from (select "ABC" from test) order by abc
+
+query error column "ABC" does not exist
+select AbC from (select ABC from test) order by abc
+
+query error column "ABC" does not exist
+select "AbC" from (select ABC from test)
+
+statement ok
+create view v1 as select * from test
+
+query I colnames
+select "ABC" from v1 order by "ABC"
+----
+ ABC
+  1
+  2
+  3
+
+query error column "AbC" does not exist
+select AbC from v1
+
+#t (abc int, "ABC" int)
+statement ok
+create table t (abc int, "ABC" int)
+
+statement ok
+insert into t values(0,1)
+
+query I colnames
+select aBc from t
+----
+  aBc
+   0
+
+query I colnames
+select "ABC" from t
+----
+  ABC
+   1
+
+query error column "aBc" does not exist
+select aBc from (select 'ABC' from t)
+
+statement ok
+drop table t cascade
+
+statement ok
+drop table test cascade
+
+statement ok
+create table test(abc int,def int)
+
+statement ok
+insert into test values(1,2),(3,4),(5,6)
+
+query O colnames
+select A as aa from (select sum(abc+def) as A from test)
+----
+  aa
+  21
+
+query O colnames
+select "A" as aa from (select sum(abc+def) as "A" from test)
+----
+  aa
+  21
+
+query error column "A" does not exist
+select A as aa from (select sum(abc+def) as "A" from test)
+
+statement ok
+drop table test cascade
+
+statement ok
+create table test("ABC" int,abc int)
+
+statement ok
+insert into test values(1,2),(1,2)
+
+query O colnames
+select sum("ABC"+abc) from test
+----
+  sum
+  6
+
+query O colnames
+select sum("ABC"+ABC) from test
+----
+  sum
+  6
+
+statement ok
+DROP TABLE IF EXISTS SJCX01,SJCX02,SJCX03
+
+statement ok
+CREATE TABLE SJCX01(rowid INT DEFAULT 10,B INT,C VARCHAR,D VARCHAR)
+
+statement ok
+INSERT INTO SJCX01 VALUES(1,1,'A','DFFDARG'),(6,3,'B','ABCDEFV'),(4,1,'C','VDWFSF'),(6,4,'D','GDSDFDS'),(8,3,'E','DFDSFFF'),(11,5,'F','DFSFFDS'),(1,13,'G','FGACFG'),(0,21,'H','DDDVF'),(NULL,NULL,NULL,NULL);
+
+statement ok
+CREATE TABLE SJCX02( rowid INT,C VARCHAR,D VARCHAR)
+
+statement ok
+INSERT INTO SJCX02 VALUES(1,'A','DFFDARG'),(3,'B','ABCDEFV'),(1,'C','VDWFSF'),(4,'D','GDSDFDS'),(3,'E','DFDSFFF'),(5,'F','DFSFFDS'),(13,'G','FGACFG'),(21,'H','DDDVF'),(NULL,NULL,NULL);
+
+query IITT colnames
+SELECT * FROM SJCX01 WHERE rowid IN (SELECT rowid FROM SJCX02 WHERE rowid NOT IN (SELECT B FROM SJCX01 WHERE B<3))
+----
+ rowid   b  c     d
+   4     1  C  VDWFSF
+
+statement ok
+create table t(a int ,b int)
+
+statement ok
+select * from (select A, a as AA ,b as BB from t) tt where tt.a=1 and tt.aa=1 and tt.BB=1
+
+statement ok
+create table tt(create_time timestamp)
+
+query T colnames
+select Create_time::date from tt group by Create_time::date
+----
+  Create_time
+
+query T colnames
+select Create_time::date as AA from tt group by Create_time::date
+----
+  AA
+

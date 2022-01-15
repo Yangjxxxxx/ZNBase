@@ -1,0 +1,68 @@
+# LogicTest:default
+
+query IIIII
+SELECT date_part('hour',   '89 day 32 hour 37 minute 44 second'-'30 day 12 hour 40 minute 29 second'::interval),
+       date_part('hours',  '89 day 32 hour 37 minute 44 second'-'30 day 12 hour 40 minute 29 second'::interval),
+       date_part('minute', '89 day 32 hour 37 minute 44 second'-'30 day 12 hour 40 minute 29 second'::interval),
+       date_part('minutes','89 day 32 hour 37 minute 44 second'-'30 day 12 hour 40 minute 29 second'::interval),
+       date_part('second','89 day 32 hour 37 minute 44 second'-'30 day 12 hour 40 minute 29 second'::interval)
+----
+19  19  57  57  15
+
+query IIIIIIIIIIIII
+SELECT date_part('year','100231314year  231322 day 3344hour 3999minute 999999.34324252SECOND'::interval),
+       date_part('month','100231314year  231322 day 3344hour 3999minute 999999.34324252SECOND'::interval),
+       date_part('day','100231314 year 331313 month 231322 day 3344hour 3999minute 999999.34324252SECOND'::interval),
+       date_part('month','100231314year 331313 month 231322 day 3344hour 3999minute 999999.34324252SECOND'::interval),
+       date_part('hour','100231314 year 331313 month 231322 day 3344hour 3999minute 999999.34324252SECOND'::interval),
+       date_part('minute','100231314 year 331313 month 231322 day 3344hour 3999minute 999999.34324252SECOND'::interval),
+       date_part('second','100231314 year 331313 month 231322 day 3344hour 3999minute 999999.34324252SECOND'::interval),
+       date_part('MILLISECONDS','100231314 year 331313 month 231322 day 3344hour 3999minute 999999.34324252SECOND'::interval),
+       date_part('MICROSECONDS','100231314 year 331313 month 231322 day 3344hour 3999minute 999999.34324252SECOND'::interval),
+       date_part('CENTURY','300years 2months 1089 day 32 hour 37 minute 44 second'::interval),
+       date_part('DECADE', '300years 2months 1089 day 32 hour 37 minute 44 second'::interval),
+       date_part('QUARTER','300years 2months 1089 day 32 hour 37 minute 44 second'::interval),
+       date_part('QUARTER','2020-1-1 15:10:33'::TIMESTAMP - '2020-12-1 10:12:35'::TIMESTAMP);
+----
+100231314 0 231322 5 3688 25 39 39343 39343243 3 30 1 1
+
+#
+query IIIIIIII
+SELECT date_part('day', '2020-8-1 15:12:33'-'2020-7-1 10:12:34'::timestamp),
+       date_part('hour','2020-8-1 15:12:33'-'2020-7-1 10:12:34'::timestamp),
+       date_part('hours', '2020-8-1 14:12:33'-'2020-7-1 10:12:34'::timestamp),
+       date_part('minute','2020-8-1 14:12:33'-'2020-7-1 10:12:34'::timestamp),
+       date_part('minutes','2020-8-1 14:12:33'-'2020-7-1 10:12:34'::timestamp),
+       date_part('second','2020-8-1 14:12:33'-'2020-7-1 10:12:34'::timestamp),
+       date_part('MILLISECONDS','2020-8-1 14:12:33.34343'-'2020-7-1 10:12:34.45466'::timestamp),
+       date_part('MICROSECONDS','2020-8-1 14:12:33.34343'-'2020-7-1 10:12:34.45466'::timestamp)
+----
+31 4 3 59 59 59 58888 58888770
+
+query I
+SELECT date_part('minute',date_trunc('minute','2020-12-14 21:21:21'::timestamp)-date_trunc('minute','2019-7-1 3:12:34'::timestamp))
+----
+9
+
+query IIIIIII
+SELECT date_part('year','2020-12-14 21:21:21'),
+       date_part('month','2020-12-14 21:21:21'),
+       date_part('day','2020-12-14 21:21:21'),
+       date_part('week','2020-12-14 21:21:21'),
+       date_part('hour','2020-12-14 21:21:21'),
+       date_part('minute','2020-12-14 21:21:21'),
+       date_part('second','2020-12-14 21:21:21')
+----
+2020 12 14 51 21 21 21
+
+query II
+SELECT date_part('epoch'::text, '2020-09-13 12:00:00'::timestamp - '2020-09-12 12:00:11'::timestamp),
+       date_part('epoch'::text, '2020-09-13 12:00:00'::timestamptz - '2020-09-12 12:00:11'::timestamptz)
+----
+86389 86389
+
+query II
+SELECT date_part('epoch','1970-1-12 12:00:00'::timestamp),
+       date_part('epoch','1970-1-12 12:00:00'::timestamptz)
+----
+993600 993600

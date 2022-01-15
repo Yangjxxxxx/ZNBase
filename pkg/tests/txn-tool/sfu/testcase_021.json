@@ -1,0 +1,73 @@
+{
+    "初始化": [
+        {
+            "cmd": "DROP TABLE IF EXISTS t1 CASCADE;",
+            "type": "execute"
+        },
+        {
+            "cmd": "CREATE TABLE t1(a INT primary key, b STRING);",
+            "type": "execute"
+        },
+        {
+            "cmd": "INSERT INTO t1 VALUES(1, 'a'),(2, 'b');",
+            "type": "execute"
+        }
+    ],
+    "执行": [
+        {
+            "cmd": "CREATE USER IF NOT EXISTS u;",
+            "conn": "conn1",
+            "type": "execute"
+        },
+        {
+            "cmd": "GRANT USAGE ON DATABASE defaultdb TO u;",
+            "conn": "conn1",
+            "type": "execute"
+        },
+        {
+            "cmd": "GRANT SELECT ON t1 TO u;",
+            "conn": "conn1",
+            "type": "execute"
+        },
+        {
+            "cmd": "BEGIN;",
+            "conn": "conn4",
+            "type": "execute",
+            "result": {
+                "regular": "BEG.*"
+            }
+        },
+        {
+            "cmd": "SELECT * FROM t1 for UPDATE NOWAIT;",
+            "conn": "conn4",
+            "type": "query",
+            "block": false,
+            "error": "user u does not have UPDATE privilege on.*"
+        },
+        {
+            "cmd": "SELECT * FROM t1 for UPDATE NOWAIT;",
+            "conn": "conn1",
+            "type": "query",
+            "result": {
+                "header": [
+                    "a",
+                    "b"
+                ],
+                "body": [
+                    [
+                        1,
+                        "a"
+                    ],
+                    [
+                        2,
+                        "b"
+                    ]
+                ]
+            }
+        },
+        {
+            "cmd": "COMMIT;",
+            "conn": "conn4"
+        }
+    ]
+}

@@ -1,0 +1,47 @@
+query I
+SELECT * FROM t;
+----
+
+sleep 48s
+
+query I
+SELECT * FROM t;
+----
+1
+
+sleep 3s
+
+query I
+SELECT * FROM t;
+----
+1
+
+# set replicate_tables_in_sysnc='on' follower read will be closed
+statement ok
+SET SESSION replicate_tables_in_sync='on';
+
+query I
+SELECT * FROM t;
+----
+1
+2
+
+statement ok
+UPDATE t SET a=3 WHERE a=2;
+
+statement ok
+DELETE FROM t where a=1;
+
+query I
+SELECT * FROM t;
+----
+3
+
+#read before 48s
+statement ok
+SET SESSION replicate_tables_in_sync='off';
+
+query I
+SELECT * FROM t;
+----
+1

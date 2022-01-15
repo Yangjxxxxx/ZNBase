@@ -1,0 +1,566 @@
+# LogicTest: local-insecure
+
+statement ok
+create user u;
+grant usage on database test to u;
+create database db;
+create schema db.sc;
+
+statement ok
+CREATE TABLE db.sc.test_data(s VARCHAR);
+
+statement ok
+create or replace procedure db.sc.test_proc() AS $$
+begin
+insert into db.sc.test_data values('test');
+end
+$$ language plsql;
+
+statement ok
+create or replace function db.sc.increment(i int) returns int
+as $$
+begin
+return i+1;
+end;
+$$ language plsql;
+
+statement ok
+call db.sc.test_proc();
+
+statement ok
+select db.sc.increment(1);
+
+userInsecure u
+
+statement error pq: user u does not have privileges to access database db
+call db.sc.test_proc();
+
+statement error pq: user u does not have privileges to access database db
+select db.sc.increment(1);
+
+userInsecure root
+
+statement ok
+grant usage on database db to u;
+
+query TTTTTTT
+show grants on procedure db.sc.test_proc()
+----
+
+userInsecure u
+
+statement error pq: user u does not have privileges to access schema db\.sc
+call db.sc.test_proc();
+
+statement error pq: user u does not have privileges to access schema db\.sc
+select db.sc.increment(1);
+
+userInsecure root
+
+statement ok
+grant usage on schema db.sc to u;
+
+userInsecure u
+
+statement error pq: user u does not have EXECUTE privilege on procedure db\.sc\.test_proc()
+call db.sc.test_proc();
+
+statement ok
+use db;
+set search_path = sc;
+
+statement error pq: user u does not have EXECUTE privilege on function db\.sc\.increment\(INT\)
+select increment(1);
+
+query TTTTTTT
+show grants on procedure db.sc.test_proc()
+----
+
+userInsecure root
+
+statement ok
+grant execute on procedure db.sc.test_proc() to u;
+
+statement ok
+grant execute on function db.sc.increment(i int) to u;
+
+userInsecure u
+
+statement ok
+select db.sc.increment(1);
+
+statement error user u does not have INSERT privilege on relation db\.sc\.test_data
+call db.sc.test_proc();
+
+statement error pq: user u does not have CREATE privilege on schema db\.sc
+create or replace procedure db.sc.test_proc() AS $$
+begin
+insert into db.sc.test_data values('test');
+end
+$$ language plsql;
+
+userInsecure root
+
+statement ok
+grant create on schema db.sc to u;
+
+userInsecure u
+
+statement error pq: user u does not have DROP privilege on procedure db.sc\.test_proc()
+create or replace procedure db.sc.test_proc() AS $$
+begin
+insert into db.sc.test_data values('test');
+end
+$$ language plsql;
+
+userInsecure root
+
+statement ok
+grant drop on procedure db.sc.test_proc() to u;
+
+userInsecure u
+statement ok
+create or replace procedure db.sc.test_proc() AS $$
+begin
+insert into db.sc.test_data values('test');
+end
+$$ language plsql;
+
+#####################
+#  ZNBASE-procedure #
+#####################
+userInsecure root
+
+statement ok
+drop database db CASCADE;
+create database db;
+create schema db.sch;
+CREATE OR REPLACE FUNCTION db.sch.f(a INT)
+returns INT[] as $$
+DECLARE
+ t1 INT [] ;
+ t2 INT ARRAY ;
+BEGIN
+ t1 = ARRAY['a','b','c'];
+ t2 = ARRAY[1,2,3];
+ return t1||t2 ;
+END
+$$ language plpgsql;
+CREATE OR REPLACE FUNCTION db.sch.f(a DECIMAL)
+returns INT[] as $$
+DECLARE
+ t1 INT [] ;
+ t2 INT ARRAY ;
+BEGIN
+ t1 = ARRAY['a','b','c'];
+ t2 = ARRAY[4,5,6];
+ return t1||t2 ;
+END
+$$ language plpgsql;
+grant usage on database db to u;
+grant usage on schema db.sch to u;
+grant execute on FUNCTION db.sch.f(a DECIMAL) TO u;
+
+userInsecure u
+
+statement ok
+SELECT db.sch.f(1::DECIMAL);
+
+statement error pq: user u does not have EXECUTE privilege on function .*?
+select db.sch.f(1::int);
+
+####################
+# clear environment #
+####################
+userInsecure root
+statement ok
+drop schema db.sch cascade;
+
+#############################
+#prepare needs for function #
+#############################
+statement ok
+create schema db.sch;
+create table db.sch.t(a int);
+insert into db.sch.t values (1),(2),(3);
+
+#-----------------------------------------#
+#   caculate + - * / db.sch.fx(a DECIMAL) #
+#-----------------------------------------#
+statement ok
+CREATE OR REPLACE FUNCTION db.sch.fx(a DECIMAL)
+returns INT[] as $$
+DECLARE
+t2 INT ARRAY ;
+BEGIN
+  t2 = ARRAY[5+a,10-a,16*a,5/a];
+  return t2  ;
+END
+$$ language plpgsql;
+
+#------------------------------------------------------------#
+# 包含select insert create drop语句的函数db.sch.test_seq_cur() #
+#------------------------------------------------------------#
+statement ok
+create or replace function db.sch.test_seq_cur()
+returns text as $$
+declare res text;
+begin
+select a from db.sch.t into res;
+insert into db.sch.t values (7);
+return res;
+end;
+$$ language plpgsql;
+
+#-------------------------
+# 包含create语句的函数db.sch.test_seq_ctb()
+#--------------------------
+statement ok
+CREATE or replace function db.sch.test_seq_ctb()
+returns text as $$
+declare res text;
+begin
+    create table db.sch.b(a int);
+    res='ok';
+    return res;
+end;
+$$ language plpgsql;
+
+#-------------------------------------#
+# 包含drop语句的函数db.sch.test_seq_d() #
+#-------------------------------------#
+statement ok
+create or replace function db.sch.test_seq_d()
+returns text as $$
+declare res text;
+begin
+drop table db.sch.b;
+return res;
+end;
+$$ language plpgsql;
+
+
+#-------------------------------------------------#
+# 包含insert语句的函数db.sch.test_seq_insert(b int) #
+#------------------------------------------------#
+statement ok
+create or replace function db.sch.test_seq_insert(b int)
+returns text as $$
+declare res text;
+begin
+insert into db.sch.t values (b);
+select a from db.sch.t into res;
+return res;
+end;
+$$ language plpgsql;
+
+
+#-----------------------------------------#
+# 包含函数的函数 db.sch.test_seq_ffinsert() #
+#-----------------------------------------#
+statement ok
+create or replace function db.sch.test_seq_ffinsert()
+returns text as $$
+declare res text;
+begin
+select db.sch.test_seq_insert(45) into res;
+select db.sch.fx(2.22) into res;
+return res;
+end;
+$$ language plpgsql;
+
+#-------------------------------------------------#
+# 包含insert语句的函数db.sch.test_seq_insert(b int) #
+#------------------------------------------------#
+statement ok
+create or replace function db.sch.test_seq_insert(b int)
+returns text as $$
+declare res text;
+begin
+insert into db.sch.t values (b);
+select a from db.sch.t into res;
+return res;
+end;
+$$ language plpgsql;
+
+#-----------------------------------------#
+# 包含函数的函数 db.sch.test_seq_ffinsert() #
+#-----------------------------------------#
+statement ok
+create or replace function db.sch.test_seq_ffinsert()
+returns text as $$
+declare res text;
+begin
+select db.sch.test_seq_insert(45) into res;
+select db.sch.fx(2.22) into res;
+return res;
+end;
+$$ language plpgsql;
+
+###############
+# new user uf #
+###############
+statement ok
+create user uf;
+
+#----------------------------------#
+# test1: grant usage on db to uf ; #
+# uf call db.sch.fx(2.22)          #
+#----------------------------------#
+statement ok
+grant usage on database db to uf;
+
+userInsecure uf
+
+statement error pq: user uf does not have privileges to access schema db.sch
+select db.sch.fx(2.22);
+
+userInsecure root
+
+statement ok
+grant usage on schema db.sch to uf;
+
+userInsecure uf
+#---------------------------------#
+# test17: create without privilege
+#---------------------------------#
+statement error pq: user uf does not have CREATE privilege on schema db.sch
+CREATE FUNCTION db.sch.fuff(a DECIMAL)
+returns INT[] as $$
+DECLARE
+t2 INT ARRAY ;
+BEGIN
+  t2 = ARRAY[5+a,10-a,16*a,5/a];
+  return t2  ;
+END
+$$ language plpgsql;
+
+#---------------------------------#
+# test2: grant usage db.sch to uf #
+# uf call db.sch.fx(2.22)         #
+#---------------------------------#
+
+statement error pq: user uf does not have EXECUTE privilege on function db\.sch\.fx\(DECIMAL\)
+select db.sch.fx(2.22);
+
+userInsecure root
+
+#--------------------------------------------------#
+# test3: grant execute on db.sch.fx(DECIMAL) to uf #
+# uf call db.sch.fx(2.22)                          #
+#--------------------------------------------------#
+statement ok
+grant execute on function db.sch.fx(a DECIMAL) to uf;
+
+userInsecure uf
+
+query T
+select db.sch.fx(2.22);
+----
+{7,8,36,2}
+
+
+userInsecure root
+#---------------------------------------#
+# test4: grant execute on db.sch.cur()  #
+# uf call db.sch.cur()                  #
+#---------------------------------------#
+statement ok
+grant execute on function db.sch.test_seq_cur() to uf;
+grant execute on function db.sch.test_seq_d() to uf;
+
+userInsecure uf
+
+statement error pq: .*?user uf does not have SELECT privilege on relation db\.sch\.t
+select db.sch.test_seq_cur();
+
+userInsecure root
+
+statement ok
+create table db.sch.b(a int);
+
+#------------------------------------#
+# test5: grant execute on db.sch.d() #
+# uf call db.sch.d()                 #
+#------------------------------------#
+userInsecure uf
+
+statement error .*?user uf does not have DROP privilege on relation db.sch.b
+select db.sch.test_seq_d();
+
+userInsecure root
+
+statement ok
+drop table db.sch.b;
+
+#--------------------------------------------------#
+# test6: grant execute on db.sch.test_seq_insert() #
+# uf call db.sch.ff()                              #
+#--------------------------------------------------#
+statement ok
+grant execute on function db.sch.test_seq_ffinsert() to uf;
+
+userInsecure uf
+
+statement error pq: .*?user uf does not have EXECUTE privilege on function db\.sch\.test_seq_insert\(INT\)
+select db.sch.test_seq_ffinsert();
+
+userInsecure root
+
+#--------------------------------------------------#
+# test7: grant execute on db.sch.test_seq_insert() #
+# uf call db.sch.test_seq_insert()                 #
+#--------------------------------------------------#
+statement ok
+grant execute on function db.sch.test_seq_insert(b int) to uf;
+
+userInsecure uf
+
+statement error pq: .*?user uf does not have INSERT privilege on relation db.sch.t
+select db.sch.test_seq_insert(3);
+
+userInsecure root
+
+#------------------------------------#
+# test8: grant insert on db.sch.t    #
+# uf call db.sch.test_seq_insert()   #
+#------------------------------------#
+statement ok
+grant INSERT,SELECT on db.sch.t to uf;
+
+userInsecure uf
+
+query T
+select db.sch.test_seq_insert(3);
+----
+1
+
+#--------------------------------------#
+# test9: call db.sch.test_seq_insert() #
+#--------------------------------------#
+
+query T
+select db.sch.test_seq_ffinsert();
+----
+{7,8,36,2}
+
+userInsecure root
+#-------------------------#
+# test10: create tb       #
+#-------------------------#
+statement ok
+grant create on schema db.sch to uf;
+grant execute on function db.sch.test_seq_ctb() to uf;
+
+userInsecure uf
+
+query T
+select db.sch.test_seq_ctb();
+----
+ok
+
+userInsecure root
+########################
+# test11: drop tb
+#########################
+
+userInsecure uf
+
+statement ok
+select db.sch.test_seq_d();
+
+userInsecure root
+
+statement ok
+select db.sch.test_seq_ctb();
+
+userInsecure uf
+
+statement error pq:.*?user uf does not have DROP privilege on relation db.sch.b
+select db.sch.test_seq_d();
+
+##################################
+# test12: select insert          #
+# uf call db.sch.test_seq_insert #
+##################################
+
+query T
+select db.sch.test_seq_insert(66);
+----
+1
+
+#################################
+# test13: function call function #
+#  uf call db.sch.test_seq_ffinsert()
+##################################
+
+query T
+select db.sch.test_seq_ffinsert()
+----
+{7,8,36,2}
+
+##############################
+# test14: drop function #
+#########################
+
+statement error pq: user uf does not have DROP privilege on function db.sch.test_seq_ffinsert()
+drop function db.sch.test_seq_ffinsert();
+
+userInsecure root
+
+statement ok
+grant drop on function db.sch.test_seq_ffinsert() to uf;
+
+userInsecure uf
+
+statement ok
+drop function db.sch.test_seq_ffinsert();
+
+######################
+# test15: replace function #
+###########################
+
+statement error pq: user uf does not have DROP privilege on function db\.sch\.fx\(DECIMAL\)
+CREATE OR REPLACE FUNCTION db.sch.fx(a DECIMAL)
+returns INT[] as $$
+DECLARE
+t2 INT ARRAY ;
+BEGIN
+  t2 = ARRAY[5+a,10-a,16*a,5/a];
+  return t2  ;
+END
+$$ language plpgsql;
+
+userInsecure root
+
+statement ok
+grant drop on function db.sch.fx(DECIMAL) to uf;
+
+userInsecure uf
+
+statement ok
+CREATE OR REPLACE FUNCTION db.sch.fx(a DECIMAL)
+returns INT[] as $$
+DECLARE
+t2 INT ARRAY ;
+BEGIN
+  t2 = ARRAY[5+a,10-a,16*a,5/a];
+  return t2  ;
+END
+$$ language plpgsql;
+
+##################################
+# test16: create function #
+##########################
+
+statement ok
+CREATE FUNCTION db.sch.fuf(a DECIMAL)
+returns INT[] as $$
+DECLARE
+t2 INT ARRAY ;
+BEGIN
+  t2 = ARRAY[5+a,10-a,16*a,5/a];
+  return t2  ;
+END
+$$ language plpgsql;
+

@@ -1,0 +1,35 @@
+# LogicTest: local local-opt local-parallel-stmts fakedist fakedist-opt fakedist-metadata
+
+statement ok
+create table test(t1 int);
+
+statement ok
+create view vtest as select * from test;
+
+statement ok
+create sequence seq;
+
+statement error pq: ERROR: seq is not a view
+show create view seq;
+
+statement ok
+show create view vtest;
+
+statement error pq: ERROR: vtest is not a table
+show create table vtest;
+
+statement error pq: ERROR: seq is not a table
+show create table seq;
+
+statement ok
+show create table test;
+
+statement error pq: ERROR: vtest is not a sequence
+show create sequence vtest;
+
+statement error pq: ERROR: test is not a sequence
+show create sequence test;
+
+statement ok
+show create sequence seq;
+

@@ -1,0 +1,101 @@
+// Copyright 2012, Google Inc. All rights reserved.
+// Use of this source code is governed by a BSD-style
+// license that can be found in licenses/BSD-vitess.txt.
+
+// Portions of this file are additionally subject to the following
+// license and copyright.
+//
+// Copyright 2015  The Cockroach Authors.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+// implied. See the License for the specific language governing
+// permissions and limitations under the License.
+
+// This code was derived from https://github.com/youtube/vitess.
+
+package tree
+
+// SetVar represents a SET or RESET statement.
+type SetVar struct {
+	Name   string
+	Values Exprs
+}
+
+// Format implements the NodeFormatter interface.
+func (n *SetVar) Format(ctx *FmtCtx) {
+	ctx.WriteString("SET ")
+	if n.Name == "" {
+		ctx.WriteString("ROW (")
+		ctx.FormatNode(&n.Values)
+		ctx.WriteString(")")
+	} else {
+		ctx.WithFlags(ctx.flags & ^FmtAnonymize, func() {
+			// Session var names never contain PII and should be distinguished
+			// for feature tracking purposes.
+			ctx.FormatNameP(&n.Name)
+		})
+
+		ctx.WriteString(" = ")
+		ctx.FormatNode(&n.Values)
+	}
+}
+
+// SetClusterSetting represents a SET CLUSTER SETTING statement.
+type SetClusterSetting struct {
+	Name  string
+	Value Expr
+}
+
+// Format implements the NodeFormatter interface.
+func (n *SetClusterSetting) Format(ctx *FmtCtx) {
+	ctx.WriteString("SET CLUSTER SETTING ")
+	// Cluster setting names never contain PII and should be distinguished
+	// for feature tracking purposes.
+	ctx.WithFlags(ctx.flags & ^FmtAnonymize, func() {
+		ctx.FormatNameP(&n.Name)
+	})
+
+	ctx.WriteString(" = ")
+	ctx.FormatNode(n.Value)
+}
+
+// SetTransaction represents a SET TRANSACTION statement.
+type SetTransaction struct {
+	Modes TransactionModes
+}
+
+// Format implements the NodeFormatter interface.
+func (n *SetTransaction) Format(ctx *FmtCtx) {
+	ctx.WriteString("SET TRANSACTION")
+	n.Modes.Format(ctx)
+}
+
+// SetSessionCharacteristics represents a SET SESSION CHARACTERISTICS AS TRANSACTION statement.
+type SetSessionCharacteristics struct {
+	Modes TransactionModes
+}
+
+// Format implements the NodeFormatter interface.
+func (n *SetSessionCharacteristics) Format(ctx *FmtCtx) {
+	ctx.WriteString("SET SESSION CHARACTERISTICS AS TRANSACTION")
+	n.Modes.Format(ctx)
+}
+
+// SetTracing represents a SET TRACING statement.
+type SetTracing struct {
+	Values Exprs
+}
+
+// Format implements the NodeFormatter interface.
+func (n *SetTracing) Format(ctx *FmtCtx) {
+	ctx.WriteString("SET TRACING = ")
+	ctx.FormatNode(&n.Values)
+}

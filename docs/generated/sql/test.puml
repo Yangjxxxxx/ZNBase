@@ -1,0 +1,14 @@
+@startuml
+autonumber
+
+activate batch
+batch -> replica: spans
+|||
+activate replica
+replica -> locktable:spans.key/spans.Endkey
+|||
+activate locktable
+locktable --> batch :batch.RawResponse
+|||
+note right:是否被锁
+@enduml

@@ -1,0 +1,188 @@
+# LogicTest: local-insecure local-insecure-opt
+# ------------------------------------------------------------------------------
+# DML Access privilege test
+# ------------------------------------------------------------------------------
+#
+# ------------------------------------------------------------------------------
+# test schemaCache / databaseCache
+# ------------------------------------------------------------------------------
+
+statement ok
+create database db_a;
+create schema db_a.sch_a;
+create table db_a.sch_a.tbl_a(a int);
+create user user1;
+revoke usage on database db_a from public;
+revoke usage on database db_a from user1;
+revoke usage on schema db_a.sch_a from public;
+revoke usage on schema db_a.sch_a from user1;
+
+query TTTTT retry
+SHOW GRANTS on database db_a;
+----
+db_a  admin  admin  CREATE  YES
+db_a  admin  admin  DROP    YES
+db_a  admin  admin  USAGE   YES
+db_a  admin  root   CREATE  YES
+db_a  admin  root   DROP    YES
+db_a  admin  root   USAGE   YES
+
+userInsecure user1
+
+statement error user user1 does not have privileges to access database db_a
+use db_a;
+
+statement error pq: user user1 does not have CREATE privilege on schema db_a.sch_a
+ALTER TABLE db_a.sch_a.tbl_a REPLICATION ENABLE;
+
+statement error pq: user user1 does not have CREATE privilege on schema db_a.sch_a
+ALTER TABLE db_a.sch_a.tbl_a REPLICATION DISABLE;
+
+userInsecure root
+
+statement ok
+grant create on database db_a to user1;
+
+statement ok
+grant create on schema db_a.sch_a to user1;
+
+userInsecure user1
+
+statement error pq: user user1 does not have DROP privilege on relation db_a.sch_a.tbl_a
+ALTER TABLE db_a.sch_a.tbl_a REPLICATION ENABLE;
+
+statement error pq: user user1 does not have DROP privilege on relation db_a.sch_a.tbl_a
+ALTER TABLE db_a.sch_a.tbl_a REPLICATION DISABLE;
+
+userInsecure root
+
+statement ok
+revoke create on database db_a from user1;
+
+statement ok
+revoke create on schema db_a.sch_a from user1;
+
+userInsecure root
+
+statement ok
+grant usage on database db_a to user1;
+
+userInsecure user1
+
+query TTTTT
+SHOW GRANTS ON DATABASE db_a;
+----
+db_a  root  user1  USAGE  NO
+
+statement ok
+use db_a;
+
+statement error user user1 does not have privileges to access schema db_a.sch_a
+delete from db_a.sch_a.tbl_a where a = 1;
+
+userInsecure root
+
+statement ok
+grant usage on schema db_a.sch_a to user1;
+
+userInsecure user1
+
+query TTTTTT
+SHOW GRANTS ON SCHEMA db_a.sch_a;
+----
+db_a  sch_a  root   user1  USAGE   NO
+
+statement error user user1 does not have DELETE privilege on relation db_a.sch_a.tbl_a
+delete from db_a.sch_a.tbl_a where a = 1;
+
+userInsecure root
+
+statement ok
+create user u2;
+create database db1;
+create schema db1.sch1;
+create table db1.sch1.t1(a INT primary key, b INT);
+create table db1.sch1.t4(c1 INT references db1.sch1.t1(a) ON UPDATE CASCADE ON DELETE CASCADE);
+grant drop on db1.sch1.t1 to u2;
+
+userInsecure u2
+
+statement error pq: "t1" is referenced by foreign key from table "db1.sch1.t4"
+drop table db1.sch1.t1;
+
+statement error pq: user u2 does not have REFERENCES privilege on relation db1.sch1.t4
+drop table db1.sch1.t1 cascade;
+
+# test show constraints
+
+userInsecure root
+
+statement ok
+create database db3;
+create schema db3.sch1;
+create user u3;
+grant usage on schema db3.sch1 to u3;
+
+statement ok
+GRANT USAGE ON DATABASE db3 TO public;
+
+statement ok
+create table db3.sch1.t (
+    id int primary key,
+    date timestamp not null,
+    priority int default 1,
+    customer_id int unique,
+    status string default 'open',
+    check (priority between 1 and 5),
+    check (status in ('open', 'in progress', 'done', 'cancelled')),
+    family (id, date, priority, customer_id, status)
+);
+
+query TTTTB
+show constraints from db3.sch1.t;
+----
+t  primary            PRIMARY KEY  PRIMARY KEY (id ASC)                                                                                       true
+t  t_check_priority   CHECK        CHECK (priority BETWEEN 1 AND 5) ENABLE                                                                    true
+t  t_check_status     CHECK        CHECK (status IN ('open':::STRING, 'in progress':::STRING, 'done':::STRING, 'cancelled':::STRING)) ENABLE  true
+t  t_customer_id_key  UNIQUE       UNIQUE (customer_id ASC)                                                                                   true
+
+userInsecure u3
+
+query TTTTB
+show constraints from db3.sch1.t;
+----
+t  primary            PRIMARY KEY  PRIMARY KEY (id ASC)                                                                                       true
+t  t_check_priority   CHECK        CHECK (priority BETWEEN 1 AND 5) ENABLE                                                                    true
+t  t_check_status     CHECK        CHECK (status IN ('open':::STRING, 'in progress':::STRING, 'done':::STRING, 'cancelled':::STRING)) ENABLE  true
+t  t_customer_id_key  UNIQUE       UNIQUE (customer_id ASC)                                                                                   true
+
+userInsecure root
+
+statement ok
+grant select on table db3.sch1.t to u3;
+
+userInsecure u3
+
+query TTTTB
+show constraints from db3.sch1.t;
+----
+t  primary            PRIMARY KEY  PRIMARY KEY (id ASC)                                                                                       true
+t  t_check_priority   CHECK        CHECK (priority BETWEEN 1 AND 5) ENABLE                                                                    true
+t  t_check_status     CHECK        CHECK (status IN ('open':::STRING, 'in progress':::STRING, 'done':::STRING, 'cancelled':::STRING)) ENABLE  true
+t  t_customer_id_key  UNIQUE       UNIQUE (customer_id ASC)                                                                                   true
+
+userInsecure root
+
+statement ok
+revoke select on table db3.sch1.t from u3;
+grant insert on table db3.sch1.t to u3;
+
+userInsecure u3
+
+query TTTTB
+show constraints from db3.sch1.t;
+----
+t  primary            PRIMARY KEY  PRIMARY KEY (id ASC)                                                                                       true
+t  t_check_priority   CHECK        CHECK (priority BETWEEN 1 AND 5) ENABLE                                                                    true
+t  t_check_status     CHECK        CHECK (status IN ('open':::STRING, 'in progress':::STRING, 'done':::STRING, 'cancelled':::STRING)) ENABLE  true
+t  t_customer_id_key  UNIQUE       UNIQUE (customer_id ASC)                                                                                   true

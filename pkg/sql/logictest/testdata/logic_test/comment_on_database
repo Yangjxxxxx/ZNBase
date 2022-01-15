@@ -1,0 +1,29 @@
+# LogicTest: local local-opt
+
+statement ok
+create database ctest
+
+statement ok
+comment on database ctest is 'r u shabby'
+
+statement error pq: database "atest" does not exist
+comment on database atest is 'qq love'
+
+statement ok
+comment on database defaultdb is 'NULL'
+
+query TTT
+show databases with comment
+----
+ ctest      root  r u shabby
+defaultdb  root  NULL
+postgres   root  NULL
+system     node  NULL
+test       root  NULL
+
+query TTT
+select * from [show databases with comment] where comment is null order by database_name
+----
+postgres  root  NULL
+system    node  NULL
+test      root  NULL

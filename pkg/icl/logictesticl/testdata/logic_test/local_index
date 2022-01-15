@@ -1,0 +1,95 @@
+# LogicTest: local local-opt local-parallel-stmts fakedist fakedist-opt fakedist-metadata
+
+# 创建分区表t1, t2 以及非分区表 k1
+statement ok
+CREATE TABLE t1 (
+  a int primary key,
+  b string,
+  c int
+) partition by list (a) (
+partition p1 values in ((1)),
+partition p2 values in ((2))
+)
+
+statement ok
+CREATE TABLE t2 (
+  a int,
+  b int,
+  c float,
+  d string,
+  primary key (a, b)
+) partition by list (a) (
+partition p1 values in ((1)) partition by range (b) (
+  partition p11 values from (1) to (10),
+  partition p12 values from (11) to (maxvalue)
+),
+partition p2 values in ((2))
+)
+
+statement ok
+CREATE TABLE k1 (
+  a int,
+  b int
+)
+
+# CREATE-报错情况
+# 1. 非分区表创建本地分区索引
+statement error pq: Underlying table of a LOCAL partitioned index must be partitioned
+create index idx1 on k1(a, b) local
+
+# 2. 索引列的前缀不是表的分区列
+statement error pq: do not support non-prefixed local partition index temporarily.
+create index idx1 on t1(b, c) local
+
+# 3. 索引自定义分区名数目不足
+statement error pq: number of partitions of LOCAL index must equal that of the underlying table
+create index idx1 on t1(a, b) local (
+partition t11
+)
+
+statement error pq: number of partitions of LOCAL index must equal that of the underlying table
+create index idx2 on t2(a) local (
+partition t21,
+partition t22
+)
+
+# 4. 索引自定义分区名数目过多
+statement error pq: number of partitions of LOCAL index must equal that of the underlying table
+create index idx1 on t1(a, b) local (
+partition t11,
+partition t12,
+partition t13
+)
+
+# 5. 索引自定义分区名违法
+statement error pq: partition name is invalid which end with '_local_range' because it was only used in automatic naming for local-index
+create index idx1 on t1(a, b) local (
+partition a_local_range,
+partition b_local_list
+)
+
+statement error pq: partition name is invalid which end with '_local_list' because it was only used in automatic naming for local-index
+create index idx1 on t1(a, b) local (
+partition b_local_list,
+partition a_local_range
+)
+
+# CREATE-正常情况
+# 非自定义命名
+statement ok
+create index idx1 on t1 (a, b) local
+
+query TTBITTBBTT colnames
+SHOW INDEXES FROM t1
+----
+table_name  index_name  non_unique  seq_in_index  column_name  direction  storing  implicit locality  partitioned
+t1          primary     false       1             a            ASC        false    false     global    YES
+t1          idx1        true        1             a            ASC        false    false     local     YES
+t1          idx1        true        2             b            ASC        false    false     local     YES
+
+query TTT colnames
+show index t1@idx1
+----
+index_name  partition_name     subpartition_name
+idx1        idx1_0_local_list  ·
+idx1        idx1_1_local_list  ·

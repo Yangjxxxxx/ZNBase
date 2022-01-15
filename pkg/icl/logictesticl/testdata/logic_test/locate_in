@@ -1,0 +1,180 @@
+# LogicTest: local
+
+# todo inspur add testCase
+
+statement ok
+CREATE TABLE t (a INT PRIMARY KEY, i INT)
+
+
+# testCase 0: AlterTable
+
+statement ok
+ALTER TABLE t LOCATE IN (inspur)
+
+query TT colnames
+show create table t
+----
+table_name  create_statement
+t           CREATE TABLE t (
+            a INT NOT NULL,
+            i INT NULL,
+            CONSTRAINT "primary" PRIMARY KEY (a ASC),
+            FAMILY "primary" (a, i)
+            ) LOCATE IN (inspur)
+
+statement ok
+
+query TT colnames
+show create table t with cache
+----
+table_name  create_statement
+t           CREATE TABLE t (
+            a INT NOT NULL,
+            i INT NULL,
+            CONSTRAINT "primary" PRIMARY KEY (a ASC) LOCATE IN (inspur),
+            FAMILY "primary" (a, i)
+            ) LOCATE IN (inspur)
+
+
+# testCase 1: AlterPrimaryIndex
+
+statement ok
+ALTER INDEX t@primary LOCATE IN ("TJ")
+
+query TT colnames
+show create table t with cache
+----
+table_name  create_statement
+t           CREATE TABLE t (
+            a INT NOT NULL,
+            i INT NULL,
+            CONSTRAINT "primary" PRIMARY KEY (a ASC) LOCATE IN ("TJ"),
+            FAMILY "primary" (a, i)
+            ) LOCATE IN (inspur)
+
+statement ok
+ALTER TABLE t LOCATE IN ("CHINA")
+
+query TT colnames
+show create table t with cache
+----
+table_name  create_statement
+t           CREATE TABLE t (
+            a INT NOT NULL,
+            i INT NULL,
+            CONSTRAINT "primary" PRIMARY KEY (a ASC) LOCATE IN ("TJ"),
+            FAMILY "primary" (a, i)
+            ) LOCATE IN ("CHINA")
+
+
+# testCase 2: AlterIndex
+
+statement ok
+CREATE INDEX id ON t(i)
+
+query TT colnames
+show create table t with cache
+----
+table_name           create_statement
+t                    CREATE TABLE t (
+                        a INT NOT NULL,
+                        i INT NULL,
+                        CONSTRAINT "primary" PRIMARY KEY (a ASC) LOCATE IN ("TJ"),
+                        INDEX id (i ASC) LOCATE IN ("CHINA"),
+                        FAMILY "primary" (a, i)
+                    ) LOCATE IN ("CHINA")
+
+statement ok
+ALTER INDEX t@id LOCATE IN ("TJ")
+
+query TT colnames
+show create table t with cache
+----
+table_name           create_statement
+t                    CREATE TABLE t (
+                        a INT NOT NULL,
+                        i INT NULL,
+                        CONSTRAINT "primary" PRIMARY KEY (a ASC) LOCATE IN ("TJ"),
+                        INDEX id (i ASC) LOCATE IN ("TJ"),
+                        FAMILY "primary" (a, i)
+                    ) LOCATE IN ("CHINA")
+
+statement ok
+ALTER INDEX t@id PARTITION BY LIST (i) (
+  PARTITION n1 VALUES IN (1, 999)  LOCATE IN ("TJ"),
+  PARTITION n2 VALUES IN (2, 8)  LOCATE IN (inspur),
+  PARTITION n3 VALUES IN (3, 7)
+) LOCATE IN ("TEST")
+
+query TT colnames
+show create table t with cache
+----
+table_name           create_statement
+t                    CREATE TABLE t (
+                        a INT NOT NULL,
+                        i INT NULL,
+                        CONSTRAINT "primary" PRIMARY KEY (a ASC) LOCATE IN ("TJ"),
+                        INDEX id (i ASC) PARTITION BY LIST (i) (
+                          PARTITION n1 VALUES IN ((1), (999)) LOCATE IN ("TJ"),
+                          PARTITION n2 VALUES IN ((2), (8)) LOCATE IN (inspur),
+                          PARTITION n3 VALUES IN ((3), (7)) LOCATE IN ("TEST")
+                        ) LOCATE IN ("TEST"),
+                        FAMILY "primary" (a, i)
+                    ) LOCATE IN ("CHINA")
+
+# testCase 3: AlterPartition
+
+statement ok
+ALTER PARTITION n3 OF TABLE t LOCATE IN ("CHINA")
+
+query TT colnames
+show create table t with cache
+----
+table_name           create_statement
+t                    CREATE TABLE t (
+                        a INT NOT NULL,
+                        i INT NULL,
+                        CONSTRAINT "primary" PRIMARY KEY (a ASC) LOCATE IN ("TJ"),
+                        INDEX id (i ASC) PARTITION BY LIST (i) (
+                          PARTITION n1 VALUES IN ((1), (999)) LOCATE IN ("TJ"),
+                          PARTITION n2 VALUES IN ((2), (8)) LOCATE IN (inspur),
+                          PARTITION n3 VALUES IN ((3), (7)) LOCATE IN ("CHINA")
+                        ) LOCATE IN ("TEST"),
+                        FAMILY "primary" (a, i)
+                    ) LOCATE IN ("CHINA")
+
+
+# testCase 5: Alter TABLE COLUMN
+
+statement ok
+ALTER TABLE t ADD COLUMN j INT DEFAULT 2;
+
+query TT colnames
+show create table t with cache
+----
+table_name           create_statement
+t                    CREATE TABLE t (
+                        a INT NOT NULL,
+                        i INT NULL,
+                        j INT NULL DEFAULT 2,
+                        CONSTRAINT "primary" PRIMARY KEY (a ASC) LOCATE IN ("TJ"),
+                        INDEX id (i ASC) PARTITION BY LIST (i) (
+                          PARTITION n1 VALUES IN ((1), (999)) LOCATE IN ("TJ"),
+                          PARTITION n2 VALUES IN ((2), (8)) LOCATE IN (inspur),
+                          PARTITION n3 VALUES IN ((3), (7)) LOCATE IN ("CHINA")
+                        ) LOCATE IN ("TEST"),
+                        FAMILY "primary" (a, i, j)
+                    ) LOCATE IN ("CHINA")
+
+#statement ok
+#CREATE TABLE x (a INT PRIMARY KEY, b INT) PARTITION BY RANGE (a) (
+#    PARTITION p1 VALUES FROM (1) TO (11) LOCATE IN (t1, t2, t3) LEASE IN (t4),
+#    PARTITION p2 VALUES FROM (11) TO (21) LOCATE IN (t1, t2, t3) LEASE IN (t2),
+#    PARTITION p3 VALUES FROM (21) TO (31) LOCATE IN (t1, t2, t3) LEASE IN (t3),
+#    PARTITION p4 VALUES FROM (31) TO (41) LOCATE IN (t4, t5, t6) LEASE IN (t4),
+#    PARTITION p5 VALUES FROM (41) TO (51) LOCATE IN (t4, t5, t6) LEASE IN (t5),
+#    PARTITION p6 VALUES FROM (51) TO (61) LOCATE IN (t4, t5, t6) LEASE IN (t6),
+#    PARTITION p7 VALUES FROM (61) TO (71) LOCATE IN (t7, t8, t9) LEASE IN (t7),
+#    PARTITION p8 VALUES FROM (71) TO (81) LOCATE IN (t7, t8, t9) LEASE IN (t8),
+#    PARTITION p9 VALUES FROM (81) TO (91) LOCATE IN (t7, t8, t9) LEASE IN (t9)
+#);

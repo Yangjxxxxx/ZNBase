@@ -1,0 +1,19 @@
+sleep 1s
+
+statement ok
+SET SESSION replicate_tables_in_sync='on';
+
+statement error pq: 相同的键值 b=1 违反了唯一性约束 "cb"
+insert into reptest values (1,1,99);
+
+statement error pq: 相同的键值 b=99 违反了唯一性约束 "cb"
+insert into reptest values (1,99,99);
+
+statement ok
+insert into reptest values (1,101,101);
+
+statement error pq: null value in column "b" violates not-null constraint
+insert into reptest (a) values (100000000000000);
+
+statement ok
+SET SESSION replicate_tables_in_sync='off';

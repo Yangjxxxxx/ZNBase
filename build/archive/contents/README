@@ -1,0 +1,27 @@
+ZNBaseDB is a scalable, survivable, strongly-consistent SQL database.
+
+You have downloaded a source archive, which requires a Go toolchain to compile.
+For other installation options, including pre-compiled binaries, see
+https://www.znbaselabs.com/docs/stable/install-znbasedb.html.
+
+To build ZNBaseDB from this source archive:
+
+     $ make build
+
+See src/github.com/znbasedb/znbase/CONTRIBUTING.md for a complete list of
+build requirements.
+
+To install ZNBaseDB as /usr/local/bin/znbase:
+
+     $ make install
+
+To interact with a one-node SQL cluster:
+
+     $ znbase start --background --insecure
+     $ znbase sql --insecure
+     $ znbase quit --insecure
+
+Next steps:
+
+    * Read the docs: https://znbaselabs.com/docs/stable/
+    * Check out the GitHub repository: https://github.com/znbasedb/znbase

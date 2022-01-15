@@ -1,0 +1,122 @@
+# LogicTest: 5node-dist
+# this script is geo-partition feature test
+# locate space name : Dongli1 Dongli2 Dongli3 Dongli4 Dongli5 TJ, TJ is set up at all nodes
+
+# todo inspur add test
+
+# subtest create table with locate and another lease, location "Dongli1" and "Dongli2" in different node
+
+statement error lease space Dongli2 not exist in locate space \[Dongli1\]
+CREATE TABLE test1 (a INT PRIMARY KEY, i INT) LOCATE IN ("Dongli1") LEASE IN ("Dongli2");
+
+statement error lease space BJ not exist in locate space \[Dongli1 TJ\]
+CREATE TABLE test1 (a INT PRIMARY KEY, i INT) LOCATE IN ("Dongli1", "TJ") LEASE IN ("BJ");
+
+statement ok
+CREATE TABLE test1 (a INT PRIMARY KEY, i INT) LOCATE IN ("TJ") LEASE IN ("Dongli2");
+
+statement ok
+ALTER TABLE test1 LOCATE IN ("Dongli1", "TJ") LEASE IN ("Dongli2");
+
+query TT colnames
+show create table test1
+----
+table_name                                          create_statement
+test1                                               CREATE TABLE test1 (
+                                                    a INT NOT NULL,
+                                                    i INT NULL,
+                                                    CONSTRAINT "primary" PRIMARY KEY (a ASC),
+                                                    FAMILY "primary" (a, i)
+) LOCATE IN ("Dongli1", "TJ") LEASE IN ("Dongli2")
+
+query TT colnames
+show create table test1 with cache
+----
+table_name                                          create_statement
+test1                                               CREATE TABLE test1 (
+                                                    a INT NOT NULL,
+                                                    i INT NULL,
+                                                    CONSTRAINT "primary" PRIMARY KEY (a ASC) LOCATE IN ("Dongli1", "TJ") LEASE IN ("Dongli2"),
+                                                    FAMILY "primary" (a, i)
+) LOCATE IN ("Dongli1", "TJ") LEASE IN ("Dongli2")
+
+
+# subtest create table or alter table with locate in multiple "" and lease in multiple ""
+statement ok
+CREATE TABLE test2 (a INT PRIMARY KEY, i INT) LOCATE IN ("","", "TJ", "", "") LEASE IN ("", "", "Dongli2","Dongli1", "", "");
+
+query TT colnames
+show create table test2
+----
+table_name                                                                 create_statement
+test2                                                                      CREATE TABLE test2 (
+                                                                           a INT NOT NULL,
+                                                                           i INT NULL,
+                                                                           CONSTRAINT "primary" PRIMARY KEY (a ASC),
+                                                                           FAMILY "primary" (a, i)
+) LOCATE IN ("TJ") LEASE IN ("Dongli2", "Dongli1")
+
+# subtest Create a table in multiple same locations and leases
+
+statement ok
+CREATE TABLE test3 (a INT PRIMARY KEY, i INT) LOCATE IN ("TJ","TJ", "TJ") LEASE IN ("Dongli2", "Dongli2","Dongli1");
+
+query TT colnames
+show create table test3
+----
+table_name                                                                 create_statement
+test3                                                                      CREATE TABLE test3 (
+                                                                           a INT NOT NULL,
+                                                                           i INT NULL,
+                                                                           CONSTRAINT "primary" PRIMARY KEY (a ASC),
+                                                                           FAMILY "primary" (a, i)
+) LOCATE IN ("TJ") LEASE IN ("Dongli2", "Dongli1")
+
+# sub test show the result of transfer lease
+
+statement ok
+create table test4 (a INT PRIMARY KEY, i INT) LOCATE IN ("Dongli1", "TJ") LEASE IN ("Dongli2");
+CREATE INDEX id ON test4(i);
+insert into test4 values(1, 1), (2, 2), (3, 3);
+
+statement ok
+ALTER INDEX test4@id LOCATE IN ("TJ") LEASE IN ("Dongli3")
+
+query TT
+show tables;
+----
+test1  root
+test2  root
+test3  root
+test4  root
+
+statement ok
+ALTER RANGE default CONFIGURE ZONE USING num_replicas = 3;
+
+query TTTT colnames
+SELECT descriptor_name, index_name, locate_in, lease_in from zbdb_internal.index_columns order by descriptor_name;
+----
+descriptor_name  index_name  locate_in  lease_in
+test1            primary     ·          ·
+test2            primary     ·          ·
+test3            primary     ·          ·
+test4            primary     ·          ·
+test4            id          ( TJ )     ( Dongli3 )
+test4            id          ( TJ )     ( Dongli3 )
+
+statement ok
+alter table test4 locate in ("Dongli1", "Dongli2", "Dongli3") LEASE IN ("Dongli2");
+
+statement ok
+alter index test4@id LOCATE IN ("TJ") LEASE IN ("Dongli5")
+
+query TTTT colnames
+SELECT descriptor_name, index_name, locate_in, lease_in from zbdb_internal.index_columns order by descriptor_name;
+----
+descriptor_name  index_name  locate_in  lease_in
+test1            primary     ·          ·
+test2            primary     ·          ·
+test3            primary     ·          ·
+test4            primary     ·          ·
+test4            id          ( TJ )     ( Dongli5 )
+test4            id          ( TJ )     ( Dongli5 )

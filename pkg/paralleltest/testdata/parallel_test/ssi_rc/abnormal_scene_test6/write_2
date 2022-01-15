@@ -1,0 +1,10 @@
+statement ok
+BEGIN;
+SELECT pg_sleep(1);
+
+statement ok
+UPDATE T SET a = 4 WHERE a = 2;
+SELECT pg_sleep(5);
+
+statement ok
+COMMIT;

@@ -1,0 +1,15 @@
+statement ok
+BEGIN TRANSACTION ISOLATION LEVEL READ COMMITTED;
+
+statement ok
+UPDATE T SET b=b+1 WHERE a='a';
+SELECT pg_sleep(2);
+
+query TI
+SELECT * FROM T;
+----
+a  2
+
+statement ok
+COMMIT;
+

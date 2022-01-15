@@ -1,0 +1,8 @@
+statement ok
+CREATE TABLE district(w_id INT PRIMARY KEY, next_o_id INT);
+CREATE TABLE new_order(w_id INT, o_id INT);
+
+
+statement ok
+INSERT INTO district VALUES(1, 2);
+INSERT INTO new_order VALUES(1, 1);

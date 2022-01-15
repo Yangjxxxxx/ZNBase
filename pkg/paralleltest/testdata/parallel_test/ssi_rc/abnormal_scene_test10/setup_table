@@ -1,0 +1,8 @@
+statement ok
+CREATE TABLE T (a INT primary key);
+
+statement ok
+INSERT INTO T (a) VALUES (3);
+
+statement ok
+INSERT INTO T (a) VALUES (2);

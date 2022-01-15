@@ -1,0 +1,159 @@
+# LogicTest: local local-opt
+
+query T
+(select 1 + 1.5) union (select 'ABC') ORDER BY 1
+----
+2.5
+ABC
+
+### 04-28
+statement ok
+create table test_num(boolcol bool, intcol int, floatcol float, deci decimal, bitcol varbit);
+insert into test_num values (true, 8, 3.14, 2.34, B'110');
+
+statement ok
+create table test_string(str string);
+insert into test_string values ('abcdefg');
+
+statement ok
+create table test_datetime(dateCol date, timeCol time, tt timestamp, ttz timestampTZ);
+insert into test_datetime values ('2019-01-02', '10:11:12', '2019-01-01 12:12:12', '2019-01-01 13:13:13+05:00');
+
+query I
+select true union select 2
+----
+1
+2
+
+query T
+select timestampTZ '2019-10-10 11:11:11.123' union select 2
+----
+2019-10-10 11:11:11.123+00:00
+2
+
+query I
+select 2 union select B'1000'
+----
+2
+8
+
+query R
+select 1.2 union select B'100'
+----
+1.2
+4
+
+query T
+select true union select '10'
+----
+true
+10
+
+query T
+select true union select date'2019-02-03'
+----
+true
+2019-02-03
+
+query T
+select true union select time'10:10:10'
+----
+true
+10:10:10
+
+query T
+select timestamp'2019-06-01' union select true
+----
+2019-06-01 00:00:00
+true
+
+### 以列进行union
+query I
+select boolcol from test_num union select intcol from test_num
+----
+1
+8
+
+query T
+select tt from test_datetime union select intcol from test_num
+----
+2019-01-01 12:12:12
+8
+
+query T
+select ttz from test_datetime union select intcol from test_num
+----
+2019-01-01 08:13:13+00:00
+8
+
+query I
+select intcol from test_num union select bitcol from test_num
+----
+8
+6
+
+query R
+select floatcol from test_num union select bitcol from test_num
+----
+3.14
+6
+
+query R
+select floatcol from test_num union select intcol from test_num
+----
+3.14
+8
+
+query R
+select deci from test_num union select bitcol from test_num
+----
+2.34
+6
+
+query T
+select boolcol from test_num union select str from test_string
+----
+true
+abcdefg
+
+query T
+select boolcol from test_num union select dateCol from test_datetime
+----
+true
+2019-01-02
+
+query T
+select boolcol from test_num union select timeCol from test_datetime
+----
+true
+10:11:12
+
+query T
+select tt from test_datetime union select boolcol from test_num
+----
+2019-01-01 12:12:12
+true
+
+query T
+select ttz from test_datetime union select boolcol from test_num
+----
+2019-01-01 08:13:13+00:00
+true
+
+query R
+select decimal'inf' union select B'100'
+----
+Infinity
+4
+
+query R
+select decimal'-inf' union select B'100'
+----
+-Infinity
+4
+
+query T
+select DECIMAL'+inf' union select B'100'
+----
+Infinity
+4

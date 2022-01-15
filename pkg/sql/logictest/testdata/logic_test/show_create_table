@@ -1,0 +1,139 @@
+# LogicTest: local
+
+statement ok
+CREATE TABLE t1(no1 INT,
+no2 INTEGER,
+no3 INT8,
+no4 BIGINT,
+no5 INT64,
+no6 INT2,
+no7 SMALLINT,
+no8 INT4,
+no9 SERIAL,
+no10 SERIAL2,
+no11 SMALLSERIAL,
+no12 SERIAL4,
+no13 SERIAL8,
+no14 BIGSERIAL,
+no15 FLOAT,
+no16 REAL,
+no17 FLOAT4,
+no18 DOUBLE PRECISION,
+no19 INT ARRAY,
+no20 FLOAT8,
+no21 DECIMAL,
+no22 DEC,
+no23 NUMERIC,
+no24 BOOLEAN,
+no25 BOOL,
+no26 BIT,
+no27 VARBIT,
+no28 BIT VARYING,
+no29 BYTES,
+no30 BYTEA,
+no31 BLOB,
+no32 STRING,
+no33 CHARACTER,
+no34 CHAR,
+no35 VARCHAR,
+no36 TEXT,
+no37  STRING(10),
+no38 CHARACTER(10),
+no39 CHARACTER VARYING(10),
+no40 CHAR(10),
+no41 CHAR VARYING(10),
+no42 VARCHAR(10),
+no43 DATE,
+no44 TIME,
+no45 TIME WITHOUT TIME ZONE,
+no46 TIMESTAMP,
+no47 TIMESTAMPTZ,
+no48 TIMESTAMP WITHOUT TIME ZONE,
+no49 TIMESTAMP WITH TIME ZONE,
+no50 INTERVAL,
+no51 INET,
+no52 UUID,
+no53 JSON,
+no54 JSONB,
+no55 CLOB);
+
+query TT colnames
+show create table t1
+----
+table_name  create_statement
+t1          CREATE TABLE t1 (
+            no1 INT NULL,
+            no2 INTEGER NULL,
+            no3 INT8 NULL,
+            no4 BIGINT NULL,
+            no5 INT64 NULL,
+            no6 INT2 NULL,
+            no7 SMALLINT NULL,
+            no8 INT4 NULL,
+            no9 SERIAL NOT NULL DEFAULT unique_rowid(),
+            no10 SERIAL2 NOT NULL DEFAULT unique_rowid16(),
+            no11 SMALLSERIAL NOT NULL DEFAULT unique_rowid16(),
+            no12 SERIAL4 NOT NULL DEFAULT unique_rowid32(),
+            no13 SERIAL8 NOT NULL DEFAULT unique_rowid(),
+            no14 BIGSERIAL NOT NULL DEFAULT unique_rowid(),
+            no15 FLOAT NULL,
+            no16 REAL NULL,
+            no17 FLOAT4 NULL,
+            no18 DOUBLE PRECISION NULL,
+            no19 INT[] NULL,
+            no20 FLOAT8 NULL,
+            no21 DECIMAL NULL,
+            no22 DEC NULL,
+            no23 NUMERIC NULL,
+            no24 BOOLEAN NULL,
+            no25 BOOL NULL,
+            no26 BIT NULL,
+            no27 VARBIT NULL,
+            no28 BIT VARYING NULL,
+            no29 BYTES NULL,
+            no30 BYTEA NULL,
+            no31 BLOB NULL,
+            no32 STRING NULL,
+            no33 CHARACTER NULL,
+            no34 CHAR NULL,
+            no35 VARCHAR NULL,
+            no36 TEXT NULL,
+            no37 STRING(10) NULL,
+            no38 CHARACTER(10) NULL,
+            no39 CHARACTER VARYING(10) NULL,
+            no40 CHAR(10) NULL,
+            no41 CHAR VARYING(10) NULL,
+            no42 VARCHAR(10) NULL,
+            no43 DATE NULL,
+            no44 TIME NULL,
+            no45 TIME NULL,
+            no46 TIMESTAMP NULL,
+            no47 TIMESTAMPTZ NULL,
+            no48 TIMESTAMP NULL,
+            no49 TIMESTAMP WITH TIME ZONE NULL,
+            no50 INTERVAL NULL,
+            no51 INET NULL,
+            no52 UUID NULL,
+            no53 JSON NULL,
+            no54 JSONB NULL,
+            no55 CLOB NULL,
+            FAMILY "primary" (no1, no2, no3, no4, no5, no6, no7, no8, no9, no10, no11, no12, no13, no14, no15, no16, no17, no18, no19, no20, no21, no22, no23, no24, no25, no26, no27, no28, no29, no30, no31, no32, no33, no34, no35, no36, no37, no38, no39, no40, no41, no42, no43, no44, no45, no46, no47, no48, no49, no50, no51, no52, no53, no54, no55, rowid)
+)
+
+statement ok
+create table test(t1 int);
+
+statement ok
+create view vtest as select * from test;
+
+statement ok
+create sequence seq;
+
+statement error pq: ERROR: seq is not a view
+show create view seq;
+
+statement error pq: ERROR: seq is not a table
+show create table seq;
+
+statement error pq: ERROR: vtest is not a sequence
+show create sequence vtest;

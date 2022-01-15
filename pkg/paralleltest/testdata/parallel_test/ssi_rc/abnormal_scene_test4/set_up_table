@@ -1,0 +1,6 @@
+statement ok
+CREATE TABLE T ( a INT primary key );
+
+
+
+

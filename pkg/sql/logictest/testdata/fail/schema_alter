@@ -1,0 +1,126 @@
+# LogicTest: local
+
+query T
+SHOW SEARCH_PATH;
+----
+public
+
+statement ok
+CREATE SCHEMA a;
+
+statement error schema "system" collides with builtin schema's name
+ALTER SCHEMA a RENAME TO system;
+
+statement error schema "zbdb_internal" collides with builtin schema's name
+ALTER SCHEMA a RENAME TO zbdb_internal;
+
+statement error schema "information_schema" collides with builtin schema's name
+ALTER SCHEMA a RENAME TO information_schema;
+
+statement error schema "pg_catalog" collides with builtin schema's name
+ALTER SCHEMA a RENAME TO pg_catalog;
+
+statement error schema "public" in database "test" already exists
+ALTER SCHEMA a RENAME TO public;
+
+statement ok
+ALTER SCHEMA a RENAME TO a;
+
+statement ok
+ALTER SCHEMA a RENAME TO b;
+
+statement error schema "a" doesn't exist
+ALTER SCHEMA a RENAME TO b;
+
+statement ok
+ALTER SCHEMA IF EXISTS a RENAME TO b;
+
+statement ok
+CREATE SCHEMA a;
+
+statement error schema "b" in database "test" already exists
+ALTER SCHEMA a RENAME TO b;
+
+statement error schema "b" in database "test" already exists
+ALTER SCHEMA IF EXISTS a RENAME TO b;
+
+statement ok
+DROP SCHEMA b;
+
+statement ok
+ALTER SCHEMA IF EXISTS a RENAME TO b;
+
+statement ok
+DROP SCHEMA b;
+
+query T
+SHOW SCHEMAS;
+----
+zbdb_internal
+information_schema
+pg_catalog
+public
+
+statement error schema "a" doesn't exist
+ALTER SCHEMA a RENAME TO b;
+
+statement ok
+ALTER SCHEMA IF EXISTS a RENAME TO b;
+
+statement ok
+SET SEARCH_PATH TO nonexist
+
+query T
+SHOW SEARCH_PATH
+----
+nonexist
+
+query TTTTTI
+SELECT * FROM information_schema.tables WHERE table_schema ='nonexist';
+
+
+statement ok
+CREATE SCHEMA nonexist;
+
+statement ok
+ALTER SCHEMA nonexist RENAME TO nonexist;
+
+query TTTTTI
+SELECT * FROM information_schema.tables WHERE table_schema ='nonexist';
+----
+
+
+statement ok
+CREATE TABLE t(a char primary key,b int);
+
+query TTTTTI
+SELECT * FROM information_schema.tables WHERE table_schema ='nonexist';
+----
+test  nonexist  t  BASE TABLE  YES  1
+
+statement ok
+ALTER SCHEMA nonexist RENAME TO t;
+
+query T
+SHOW SCHEMAS;
+----
+zbdb_internal
+information_schema
+pg_catalog
+public
+t
+
+statement ok
+CREATE SCHEMA nonexist;
+
+statement ok
+CREATE TABLE t(a char primary key,b int);
+
+statement ok
+ALTER SCHEMA IF EXISTS  nonexist RENAME TO myschema;
+
+statement ok
+CREATE SCHEMA nonexist;
+
+statement ok
+CREATE TABLE t(a char primary key,b int);

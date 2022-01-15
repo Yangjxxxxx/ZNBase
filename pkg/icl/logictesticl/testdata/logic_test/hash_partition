@@ -1,0 +1,324 @@
+# hash partition
+
+# part 1: create hash-partition table
+statement ok
+create table hasht(hashkey int primary key, colname string) partition by HASH(hashkey) (
+    partition p1,
+    partition p2,
+    partition p3
+);
+
+query TT colnames
+show create table hasht;
+----
+table_name  create_statement
+hasht       CREATE TABLE hasht (
+            hashkey INT NOT NULL,
+            colname STRING NULL,
+            CONSTRAINT "primary" PRIMARY KEY (hashkey ASC),
+            FAMILY "primary" (hashkey, colname)
+) PARTITION BY HASH (hashkey) (
+   PARTITION p1,
+   PARTITION p2,
+   PARTITION p3
+)
+
+# create hash partition table without primary key
+statement ok
+drop table hasht;
+
+statement error pq: can only use primary key as HASH field
+create table hasht(hashkey int, colname string) partition by HASH(hashkey) (
+    partition p1,
+    partition p2,
+    partition p3
+);
+
+# create hash partition table with primary key, but do not use primary key to do hash partition
+statement error pq: can only use primary key as HASH field
+create table hasht(hashkey int, colname string) partition by HASH(colname) (
+    partition p1,
+    partition p2,
+    partition p3
+);
+
+# part 2: insert into hash partition table
+statement ok
+create table hasht(hashkey int primary key, colname string) partition by HASH(hashkey) (
+    partition p1,
+    partition p2,
+    partition p3
+);
+
+statement ok
+insert into hasht values (1,'1'),(2,'2');
+
+query IT colnames
+select * from hasht;
+----
+hashkey     colname
+1           1
+2           2
+
+query I colnames
+select hashnum from hasht;
+----
+hashnum
+1
+2
+
+statement ok
+insert into hasht(hashkey, colname, hashnum) values (3,'3',3);
+
+statement ok
+insert into hasht(hashkey, colname, hashnum) values (4,'4',4);
+
+statement ok
+insert into hasht(hashnum, colname, hashkey) values (5,'5',5);
+
+# part 3: update hash partition table
+statement ok
+drop table hasht;
+
+statement ok
+create table hasht(hashkey int primary key, colname string) partition by HASH(hashkey) (
+    partition p1,
+    partition p2,
+    partition p3
+);
+
+statement ok
+insert into hasht values (1,'1'),(2,'2');
+
+statement ok
+update hasht set hashkey = 20 where colname = '1';
+
+query IT colnames
+select * from hasht;
+----
+hashkey     colname
+20          1
+2           2
+
+query I colnames
+select hashnum from hasht;
+----
+hashnum
+0
+2
+
+# part 4.1: alter table partition by hash: partition p1, partition p2...
+statement ok
+drop table hasht;
+
+statement ok
+create table hasht(hashkey int primary key, colname string);
+
+query TT colnames
+show create table hasht;
+----
+table_name  create_statement
+hasht       CREATE TABLE hasht (
+            hashkey INT NOT NULL,
+            colname STRING NULL,
+            CONSTRAINT "primary" PRIMARY KEY (hashkey ASC),
+            FAMILY "primary" (hashkey, colname)
+)
+
+statement ok
+insert into hasht values (1,'1'),(2,'2');
+
+query IT colnames
+select * from hasht;
+----
+hashkey     colname
+1           1
+2           2
+
+statement error pq: column "hashnum" does not exist
+select hashnum from hasht;
+
+statement ok
+alter table hasht partition by HASH(hashkey)(
+    partition p1,
+    partition p2,
+    partition p3
+);
+
+query TTBITTBBTT colnames
+show indexes from hasht;
+----
+table_name  index_name        non_unique  seq_in_index  column_name  direction  storing  implicit locality  partitioned
+hasht       primary           false       1             hashkey      ASC        false    false    global    NO
+hasht       hashpartitionidx  true        1             hashnum      ASC        false    false    global    YES
+hasht       hashpartitionidx  true        2             hashkey      ASC        false    true     global    YES
+
+query IT colnames
+select * from hasht;
+----
+hashkey     colname
+1           1
+2           2
+
+query I colnames
+select hashnum from hasht;
+----
+hashnum
+0
+1
+
+statement ok
+update hasht set hashkey = 20 where colname = '1';
+
+query IT colnames
+select * from hasht;
+----
+hashkey     colname
+2           2
+20          1
+
+query I colnames
+select hashnum from hasht;
+----
+hashnum
+0
+1
+
+# part 4.2: alter table partition by hash: partitions 3
+statement ok
+drop table hasht;
+
+statement ok
+create table hasht(hashkey int primary key, colname string);
+
+query TT colnames
+show create table hasht;
+----
+table_name  create_statement
+hasht       CREATE TABLE hasht (
+            hashkey INT NOT NULL,
+            colname STRING NULL,
+            CONSTRAINT "primary" PRIMARY KEY (hashkey ASC),
+            FAMILY "primary" (hashkey, colname)
+)
+
+statement ok
+insert into hasht values (1,'1'),(2,'2');
+
+query IT colnames
+select * from hasht;
+----
+hashkey     colname
+1           1
+2           2
+
+statement error pq: column "hashnum" does not exist
+select hashnum from hasht;
+
+statement ok
+alter table hasht partition by HASH(hashkey)( partitions 3);
+
+query TTBITTBBTT colnames
+show indexes from hasht;
+----
+table_name  index_name        non_unique  seq_in_index  column_name  direction  storing  implicit locality  partitioned
+hasht       primary           false       1             hashkey      ASC        false    false    global    NO
+hasht       hashpartitionidx  true        1             hashnum      ASC        false    false    global    YES
+hasht       hashpartitionidx  true        2             hashkey      ASC        false    true     global    YES
+
+query IT colnames
+select * from hasht;
+----
+hashkey     colname
+1           1
+2           2
+
+query I colnames
+select hashnum from hasht;
+----
+hashnum
+0
+1
+
+statement ok
+update hasht set hashkey = 20 where colname = '1';
+
+query IT colnames
+select * from hasht;
+----
+hashkey     colname
+2           2
+20          1
+
+query I colnames
+select hashnum from hasht;
+----
+hashnum
+0
+1
+
+statement error remove hash partition first before altering primary key
+CREATE TABLE hashtable (
+    hashkey INT NOT NULL,
+    colname STRING NULL,
+    num INT NOT NULL,
+    CONSTRAINT "primary" PRIMARY KEY (hashkey ASC),
+    UNIQUE INDEX hasht_num_key (num ASC),
+    FAMILY "primary" (hashkey, colname, num)
+) PARTITION BY HASH (hashkey) (
+    PARTITION p1,
+    PARTITION p2,
+    PARTITION p3
+);
+ALTER TABLE hashtable ALTER PRIMARY KEY USING COLUMNS(hashkey, num);
+
+statement ok
+drop table if exists a;
+CREATE TABLE a (a INT, b VARCHAR, c INT, CONSTRAINT pk PRIMARY KEY (a, b));
+insert into a values(-1, 'a', -1),(2, 'b', 2),(3, 'c', 4),(999, 'd', 999);
+ALTER TABLE a PARTITION BY HASH(a)(PARTITION p1, PARTITION p2);
+update a set hashnum=1 where a=-1;
+update a set hashnum=2 where a=2;
+update a set hashnum=3 where b='c';
+update a set hashnum=4 where b='b';
+update a set b='test' where hashnum=1;
+
+statement ok
+drop table if exists hasht1
+
+statement ok
+create table hasht1(
+    hashkey int primary key, col1 string
+) partition by HASH(hashkey) (
+    partition p1,partition p2,partition p3
+);
+
+statement ok
+ALTER TABLE hasht1 partition by NOTHING;
+
+query TT colnames
+SHOW CREATE TABLE hasht1;
+----
+table_name        create_statement
+  hasht1      CREATE TABLE hasht1 (
+                  hashkey INT NOT NULL,
+                  col1 STRING NULL,
+                  CONSTRAINT "primary" PRIMARY KEY (hashkey ASC),
+                  FAMILY "primary" (hashkey, col1)
+              )
+
+statement ok
+drop table if exists hasht1
+
+statement ok
+create table hasht1(
+    hashkey int primary key, col1 string
+) partition by HASH(hashkey) (
+    partition p1,partition p2,partition p3
+);
+
+statement ok
+ALTER TABLE hasht1 partition by NOTHING;
+
+statement ok
+ALTER TABLE hasht1 partition by HASH(hashkey) (partitions 3);

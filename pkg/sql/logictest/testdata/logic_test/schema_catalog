@@ -1,0 +1,80 @@
+# LogicTest: local
+
+statement ok
+CREATE DATABASE da;
+
+statement ok
+CREATE SCHEMA da.sa;
+
+statement ok
+CREATE SCHEMA IF NOT EXISTS da.sa;
+
+statement error schema "sa" in database "da" already exists
+CREATE SCHEMA da.sa;
+
+query TT
+SHOW SCHEMAS;
+----
+information_schema  root
+pg_catalog          root
+public              root
+zbdb_internal       root
+
+
+statement error schema "public" in database "test" already exists
+CREATE SCHEMA public;
+
+statement ok
+SET DATABASE = da;
+
+query T
+SHOW search_path;
+----
+public
+
+statement ok
+SET search_path to sa;
+
+query T
+SHOW search_path;
+----
+sa
+
+statement ok
+create table t2(a int);
+
+query TT
+SHOW SCHEMAS;
+----
+information_schema  root
+pg_catalog          root
+public              root
+sa                  root
+zbdb_internal       root
+
+statement ok
+DROP SCHEMA sa;
+
+statement ok
+create schema da.t2;
+
+query TT
+SHOW SCHEMAS;
+----
+information_schema  root
+pg_catalog          root
+public              root
+t2                  root
+zbdb_internal       root
+
+statement ok
+DROP SCHEMA IF EXISTS da.t1;
+
+statement ok
+CREATE TABLE da.t2.t2(a int);
+
+statement ok
+DROP SCHEMA da.t2;
+
+statement error schema "t2" does not exist in database "da"
+DROP SCHEMA da.t2 CASCADE;

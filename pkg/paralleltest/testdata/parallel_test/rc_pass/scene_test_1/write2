@@ -1,0 +1,12 @@
+statement ok
+PREPARE ea AS UPDATE a SET c=c+$1 WHERE a=$2 AND b=$3;
+
+statement ok
+PREPARE eb AS UPDATE b SET b=b+$1 WHERE a=$2;
+
+repeat 200
+statement ok
+BEGIN TRANSACTION ISOLATION LEVEL READ COMMITTED;
+EXECUTE ea(2, 1, 2);
+EXECUTE eb(2, 1);
+COMMIT;

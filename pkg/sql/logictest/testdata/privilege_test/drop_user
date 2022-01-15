@@ -1,0 +1,520 @@
+# LogicTest: local-insecure local-insecure-opt
+
+# grant all privileges of database, schema, table to user u
+
+statement ok
+CREATE DATABASE a
+
+statement ok
+GRANT USAGE ON DATABASE a TO public
+
+statement ok
+CREATE USER u
+
+statement ok
+GRANT ALL ON DATABASE a TO u
+
+statement ok
+GRANT ALL ON schema a.public TO u
+
+userInsecure u
+
+statement ok
+SET DATABASE = a
+
+statement ok
+CREATE TABLE t (id INT PRIMARY KEY)
+
+query TTTTTTTT colnames
+SHOW GRANTS for u
+----
+database_name  schema_name         relation_name                      column_name  grantor  grantee  privilege_type  grantable
+a              NULL                NULL                               NULL         root     public   USAGE           NO
+a              NULL                NULL                               NULL         root     u        CREATE          NO
+a              NULL                NULL                               NULL         root     u        DROP            NO
+a              NULL                NULL                               NULL         root     u        USAGE           NO
+a              information_schema  NULL                               NULL         root     public   USAGE           NO
+a              information_schema  NULL                               NULL         root     u        CREATE          NO
+a              information_schema  NULL                               NULL         root     u        DROP            NO
+a              information_schema  NULL                               NULL         root     u        USAGE           NO
+a              information_schema  administrable_role_authorizations  NULL         admin    public   SELECT          NO
+a              information_schema  applicable_roles                   NULL         admin    public   SELECT          NO
+a              information_schema  check_constraints                  NULL         admin    public   SELECT          NO
+a              information_schema  column_privileges                  NULL         admin    public   SELECT          NO
+a              information_schema  columns                            NULL         admin    public   SELECT          NO
+a              information_schema  constraint_column_usage            NULL         admin    public   SELECT          NO
+a              information_schema  database_privileges                NULL         admin    public   SELECT          NO
+a              information_schema  enabled_roles                      NULL         admin    public   SELECT          NO
+a              information_schema  functions                          NULL         admin    public   SELECT          NO
+a              information_schema  index_partition                    NULL         admin    public   SELECT          NO
+a              information_schema  key_column_usage                   NULL         admin    public   SELECT          NO
+a              information_schema  parameters                         NULL         admin    public   SELECT          NO
+a              information_schema  referential_constraints            NULL         admin    public   SELECT          NO
+a              information_schema  role_table_grants                  NULL         admin    public   SELECT          NO
+a              information_schema  routines                           NULL         admin    public   SELECT          NO
+a              information_schema  schema_privileges                  NULL         admin    public   SELECT          NO
+a              information_schema  schemata                           NULL         admin    public   SELECT          NO
+a              information_schema  sequences                          NULL         admin    public   SELECT          NO
+a              information_schema  statistics                         NULL         admin    public   SELECT          NO
+a              information_schema  table_constraints                  NULL         admin    public   SELECT          NO
+a              information_schema  table_privileges                   NULL         admin    public   SELECT          NO
+a              information_schema  tables                             NULL         admin    public   SELECT          NO
+a              information_schema  trigger_privileges                 NULL         admin    public   SELECT          NO
+a              information_schema  user_privileges                    NULL         admin    public   SELECT          NO
+a              information_schema  views                              NULL         admin    public   SELECT          NO
+a              pg_catalog          NULL                               NULL         root     public   USAGE           NO
+a              pg_catalog          NULL                               NULL         root     u        CREATE          NO
+a              pg_catalog          NULL                               NULL         root     u        DROP            NO
+a              pg_catalog          NULL                               NULL         root     u        USAGE           NO
+a              pg_catalog          pg_am                              NULL         admin    public   SELECT          NO
+a              pg_catalog          pg_attrdef                         NULL         admin    public   SELECT          NO
+a              pg_catalog          pg_attribute                       NULL         admin    public   SELECT          NO
+a              pg_catalog          pg_auth_members                    NULL         admin    public   SELECT          NO
+a              pg_catalog          pg_class                           NULL         admin    public   SELECT          NO
+a              pg_catalog          pg_collation                       NULL         admin    public   SELECT          NO
+a              pg_catalog          pg_constraint                      NULL         admin    public   SELECT          NO
+a              pg_catalog          pg_database                        NULL         admin    public   SELECT          NO
+a              pg_catalog          pg_depend                          NULL         admin    public   SELECT          NO
+a              pg_catalog          pg_description                     NULL         admin    public   SELECT          NO
+a              pg_catalog          pg_enum                            NULL         admin    public   SELECT          NO
+a              pg_catalog          pg_extension                       NULL         admin    public   SELECT          NO
+a              pg_catalog          pg_foreign_data_wrapper            NULL         admin    public   SELECT          NO
+a              pg_catalog          pg_foreign_server                  NULL         admin    public   SELECT          NO
+a              pg_catalog          pg_foreign_table                   NULL         admin    public   SELECT          NO
+a              pg_catalog          pg_index                           NULL         admin    public   SELECT          NO
+a              pg_catalog          pg_indexes                         NULL         admin    public   SELECT          NO
+a              pg_catalog          pg_inherits                        NULL         admin    public   SELECT          NO
+a              pg_catalog          pg_language                        NULL         admin    public   SELECT          NO
+a              pg_catalog          pg_namespace                       NULL         admin    public   SELECT          NO
+a              pg_catalog          pg_nodestatus                      NULL         admin    public   SELECT          NO
+a              pg_catalog          pg_operator                        NULL         admin    public   SELECT          NO
+a              pg_catalog          pg_proc                            NULL         admin    public   SELECT          NO
+a              pg_catalog          pg_range                           NULL         admin    public   SELECT          NO
+a              pg_catalog          pg_rewrite                         NULL         admin    public   SELECT          NO
+a              pg_catalog          pg_roles                           NULL         admin    public   SELECT          NO
+a              pg_catalog          pg_seclabel                        NULL         admin    public   SELECT          NO
+a              pg_catalog          pg_sequence                        NULL         admin    public   SELECT          NO
+a              pg_catalog          pg_settings                        NULL         admin    public   SELECT          NO
+a              pg_catalog          pg_shdescription                   NULL         admin    public   SELECT          NO
+a              pg_catalog          pg_shseclabel                      NULL         admin    public   SELECT          NO
+a              pg_catalog          pg_stat_activity                   NULL         admin    public   SELECT          NO
+a              pg_catalog          pg_tables                          NULL         admin    public   SELECT          NO
+a              pg_catalog          pg_tablespace                      NULL         admin    public   SELECT          NO
+a              pg_catalog          pg_trigger                         NULL         admin    public   SELECT          NO
+a              pg_catalog          pg_type                            NULL         admin    public   SELECT          NO
+a              pg_catalog          pg_user                            NULL         admin    public   SELECT          NO
+a              pg_catalog          pg_user_mapping                    NULL         admin    public   SELECT          NO
+a              pg_catalog          pg_views                           NULL         admin    public   SELECT          NO
+a              public              NULL                               NULL         root     public   USAGE           NO
+a              public              NULL                               NULL         root     u        CREATE          NO
+a              public              NULL                               NULL         root     u        DROP            NO
+a              public              NULL                               NULL         root     u        USAGE           NO
+a              zbdb_internal       NULL                               NULL         root     public   USAGE           NO
+a              zbdb_internal       NULL                               NULL         root     u        CREATE          NO
+a              zbdb_internal       NULL                               NULL         root     u        DROP            NO
+a              zbdb_internal       NULL                               NULL         root     u        USAGE           NO
+a              zbdb_internal       backward_dependencies              NULL         admin    public   SELECT          NO
+a              zbdb_internal       builtin_functions                  NULL         admin    public   SELECT          NO
+a              zbdb_internal       cluster_queries                    NULL         admin    public   SELECT          NO
+a              zbdb_internal       cluster_sessions                   NULL         admin    public   SELECT          NO
+a              zbdb_internal       cluster_settings                   NULL         admin    public   SELECT          NO
+a              zbdb_internal       create_statements                  NULL         admin    public   SELECT          NO
+a              zbdb_internal       databases                          NULL         admin    public   SELECT          NO
+a              zbdb_internal       feature_usage                      NULL         admin    public   SELECT          NO
+a              zbdb_internal       forward_dependencies               NULL         admin    public   SELECT          NO
+a              zbdb_internal       function_privileges                NULL         admin    public   SELECT          NO
+a              zbdb_internal       gossip_alerts                      NULL         admin    public   SELECT          NO
+a              zbdb_internal       gossip_liveness                    NULL         admin    public   SELECT          NO
+a              zbdb_internal       gossip_network                     NULL         admin    public   SELECT          NO
+a              zbdb_internal       gossip_nodes                       NULL         admin    public   SELECT          NO
+a              zbdb_internal       index_columns                      NULL         admin    public   SELECT          NO
+a              zbdb_internal       jobs                               NULL         admin    public   SELECT          NO
+a              zbdb_internal       kv_node_status                     NULL         admin    public   SELECT          NO
+a              zbdb_internal       kv_store_status                    NULL         admin    public   SELECT          NO
+a              zbdb_internal       leases                             NULL         admin    public   SELECT          NO
+a              zbdb_internal       node_build_info                    NULL         admin    public   SELECT          NO
+a              zbdb_internal       node_metrics                       NULL         admin    public   SELECT          NO
+a              zbdb_internal       node_queries                       NULL         admin    public   SELECT          NO
+a              zbdb_internal       node_runtime_info                  NULL         admin    public   SELECT          NO
+a              zbdb_internal       node_sessions                      NULL         admin    public   SELECT          NO
+a              zbdb_internal       node_statement_statistics          NULL         admin    public   SELECT          NO
+a              zbdb_internal       partition_views                    NULL         admin    public   SELECT          NO
+a              zbdb_internal       partitions                         NULL         admin    public   SELECT          NO
+a              zbdb_internal       predefined_comments                NULL         admin    public   SELECT          NO
+a              zbdb_internal       ranges                             NULL         admin    public   SELECT          NO
+a              zbdb_internal       ranges_no_leases                   NULL         admin    public   SELECT          NO
+a              zbdb_internal       savepoint_status                   NULL         admin    public   SELECT          NO
+a              zbdb_internal       schema_changes                     NULL         admin    public   SELECT          NO
+a              zbdb_internal       session_trace                      NULL         admin    public   SELECT          NO
+a              zbdb_internal       session_variables                  NULL         admin    public   SELECT          NO
+a              zbdb_internal       table_columns                      NULL         admin    public   SELECT          NO
+a              zbdb_internal       table_indexes                      NULL         admin    public   SELECT          NO
+a              zbdb_internal       table_row_statistics               NULL         admin    public   SELECT          NO
+a              zbdb_internal       tables                             NULL         admin    public   SELECT          NO
+a              zbdb_internal       zones                              NULL         admin    public   SELECT          NO
+
+# try to drop user u with all privileges
+
+user root
+
+statement error pq: cannot drop user or role u: grants still exist on a, a.public
+DROP USER u
+
+# try to drop user u with privileges of database and schema
+
+statement ok
+SET DATABASE = a
+
+statement ok
+REVOKE ALL ON TABLE t FROM u
+
+query TTTTTTTT colnames
+SHOW GRANTS for u
+----
+database_name  schema_name         relation_name                      column_name  grantor  grantee  privilege_type  grantable
+a              NULL                NULL                               NULL         root     public   USAGE           NO
+a              NULL                NULL                               NULL         root     u        CREATE          NO
+a              NULL                NULL                               NULL         root     u        DROP            NO
+a              NULL                NULL                               NULL         root     u        USAGE           NO
+a              information_schema  NULL                               NULL         root     public   USAGE           NO
+a              information_schema  NULL                               NULL         root     u        CREATE          NO
+a              information_schema  NULL                               NULL         root     u        DROP            NO
+a              information_schema  NULL                               NULL         root     u        USAGE           NO
+a              information_schema  administrable_role_authorizations  NULL         admin    public   SELECT          NO
+a              information_schema  applicable_roles                   NULL         admin    public   SELECT          NO
+a              information_schema  check_constraints                  NULL         admin    public   SELECT          NO
+a              information_schema  column_privileges                  NULL         admin    public   SELECT          NO
+a              information_schema  columns                            NULL         admin    public   SELECT          NO
+a              information_schema  constraint_column_usage            NULL         admin    public   SELECT          NO
+a              information_schema  database_privileges                NULL         admin    public   SELECT          NO
+a              information_schema  enabled_roles                      NULL         admin    public   SELECT          NO
+a              information_schema  functions                          NULL         admin    public   SELECT          NO
+a              information_schema  index_partition                    NULL         admin    public   SELECT          NO
+a              information_schema  key_column_usage                   NULL         admin    public   SELECT          NO
+a              information_schema  parameters                         NULL         admin    public   SELECT          NO
+a              information_schema  referential_constraints            NULL         admin    public   SELECT          NO
+a              information_schema  role_table_grants                  NULL         admin    public   SELECT          NO
+a              information_schema  routines                           NULL         admin    public   SELECT          NO
+a              information_schema  schema_privileges                  NULL         admin    public   SELECT          NO
+a              information_schema  schemata                           NULL         admin    public   SELECT          NO
+a              information_schema  sequences                          NULL         admin    public   SELECT          NO
+a              information_schema  statistics                         NULL         admin    public   SELECT          NO
+a              information_schema  table_constraints                  NULL         admin    public   SELECT          NO
+a              information_schema  table_privileges                   NULL         admin    public   SELECT          NO
+a              information_schema  tables                             NULL         admin    public   SELECT          NO
+a              information_schema  trigger_privileges                 NULL         admin    public   SELECT          NO
+a              information_schema  user_privileges                    NULL         admin    public   SELECT          NO
+a              information_schema  views                              NULL         admin    public   SELECT          NO
+a              pg_catalog          NULL                               NULL         root     public   USAGE           NO
+a              pg_catalog          NULL                               NULL         root     u        CREATE          NO
+a              pg_catalog          NULL                               NULL         root     u        DROP            NO
+a              pg_catalog          NULL                               NULL         root     u        USAGE           NO
+a              pg_catalog          pg_am                              NULL         admin    public   SELECT          NO
+a              pg_catalog          pg_attrdef                         NULL         admin    public   SELECT          NO
+a              pg_catalog          pg_attribute                       NULL         admin    public   SELECT          NO
+a              pg_catalog          pg_auth_members                    NULL         admin    public   SELECT          NO
+a              pg_catalog          pg_class                           NULL         admin    public   SELECT          NO
+a              pg_catalog          pg_collation                       NULL         admin    public   SELECT          NO
+a              pg_catalog          pg_constraint                      NULL         admin    public   SELECT          NO
+a              pg_catalog          pg_database                        NULL         admin    public   SELECT          NO
+a              pg_catalog          pg_depend                          NULL         admin    public   SELECT          NO
+a              pg_catalog          pg_description                     NULL         admin    public   SELECT          NO
+a              pg_catalog          pg_enum                            NULL         admin    public   SELECT          NO
+a              pg_catalog          pg_extension                       NULL         admin    public   SELECT          NO
+a              pg_catalog          pg_foreign_data_wrapper            NULL         admin    public   SELECT          NO
+a              pg_catalog          pg_foreign_server                  NULL         admin    public   SELECT          NO
+a              pg_catalog          pg_foreign_table                   NULL         admin    public   SELECT          NO
+a              pg_catalog          pg_index                           NULL         admin    public   SELECT          NO
+a              pg_catalog          pg_indexes                         NULL         admin    public   SELECT          NO
+a              pg_catalog          pg_inherits                        NULL         admin    public   SELECT          NO
+a              pg_catalog          pg_language                        NULL         admin    public   SELECT          NO
+a              pg_catalog          pg_namespace                       NULL         admin    public   SELECT          NO
+a              pg_catalog          pg_nodestatus                      NULL         admin    public   SELECT          NO
+a              pg_catalog          pg_operator                        NULL         admin    public   SELECT          NO
+a              pg_catalog          pg_proc                            NULL         admin    public   SELECT          NO
+a              pg_catalog          pg_range                           NULL         admin    public   SELECT          NO
+a              pg_catalog          pg_rewrite                         NULL         admin    public   SELECT          NO
+a              pg_catalog          pg_roles                           NULL         admin    public   SELECT          NO
+a              pg_catalog          pg_seclabel                        NULL         admin    public   SELECT          NO
+a              pg_catalog          pg_sequence                        NULL         admin    public   SELECT          NO
+a              pg_catalog          pg_settings                        NULL         admin    public   SELECT          NO
+a              pg_catalog          pg_shdescription                   NULL         admin    public   SELECT          NO
+a              pg_catalog          pg_shseclabel                      NULL         admin    public   SELECT          NO
+a              pg_catalog          pg_stat_activity                   NULL         admin    public   SELECT          NO
+a              pg_catalog          pg_tables                          NULL         admin    public   SELECT          NO
+a              pg_catalog          pg_tablespace                      NULL         admin    public   SELECT          NO
+a              pg_catalog          pg_trigger                         NULL         admin    public   SELECT          NO
+a              pg_catalog          pg_type                            NULL         admin    public   SELECT          NO
+a              pg_catalog          pg_user                            NULL         admin    public   SELECT          NO
+a              pg_catalog          pg_user_mapping                    NULL         admin    public   SELECT          NO
+a              pg_catalog          pg_views                           NULL         admin    public   SELECT          NO
+a              public              NULL                               NULL         root     public   USAGE           NO
+a              public              NULL                               NULL         root     u        CREATE          NO
+a              public              NULL                               NULL         root     u        DROP            NO
+a              public              NULL                               NULL         root     u        USAGE           NO
+a              zbdb_internal       NULL                               NULL         root     public   USAGE           NO
+a              zbdb_internal       NULL                               NULL         root     u        CREATE          NO
+a              zbdb_internal       NULL                               NULL         root     u        DROP            NO
+a              zbdb_internal       NULL                               NULL         root     u        USAGE           NO
+a              zbdb_internal       backward_dependencies              NULL         admin    public   SELECT          NO
+a              zbdb_internal       builtin_functions                  NULL         admin    public   SELECT          NO
+a              zbdb_internal       cluster_queries                    NULL         admin    public   SELECT          NO
+a              zbdb_internal       cluster_sessions                   NULL         admin    public   SELECT          NO
+a              zbdb_internal       cluster_settings                   NULL         admin    public   SELECT          NO
+a              zbdb_internal       create_statements                  NULL         admin    public   SELECT          NO
+a              zbdb_internal       databases                          NULL         admin    public   SELECT          NO
+a              zbdb_internal       feature_usage                      NULL         admin    public   SELECT          NO
+a              zbdb_internal       forward_dependencies               NULL         admin    public   SELECT          NO
+a              zbdb_internal       function_privileges                NULL         admin    public   SELECT          NO
+a              zbdb_internal       gossip_alerts                      NULL         admin    public   SELECT          NO
+a              zbdb_internal       gossip_liveness                    NULL         admin    public   SELECT          NO
+a              zbdb_internal       gossip_network                     NULL         admin    public   SELECT          NO
+a              zbdb_internal       gossip_nodes                       NULL         admin    public   SELECT          NO
+a              zbdb_internal       index_columns                      NULL         admin    public   SELECT          NO
+a              zbdb_internal       jobs                               NULL         admin    public   SELECT          NO
+a              zbdb_internal       kv_node_status                     NULL         admin    public   SELECT          NO
+a              zbdb_internal       kv_store_status                    NULL         admin    public   SELECT          NO
+a              zbdb_internal       leases                             NULL         admin    public   SELECT          NO
+a              zbdb_internal       node_build_info                    NULL         admin    public   SELECT          NO
+a              zbdb_internal       node_metrics                       NULL         admin    public   SELECT          NO
+a              zbdb_internal       node_queries                       NULL         admin    public   SELECT          NO
+a              zbdb_internal       node_runtime_info                  NULL         admin    public   SELECT          NO
+a              zbdb_internal       node_sessions                      NULL         admin    public   SELECT          NO
+a              zbdb_internal       node_statement_statistics          NULL         admin    public   SELECT          NO
+a              zbdb_internal       partition_views                    NULL         admin    public   SELECT          NO
+a              zbdb_internal       partitions                         NULL         admin    public   SELECT          NO
+a              zbdb_internal       predefined_comments                NULL         admin    public   SELECT          NO
+a              zbdb_internal       ranges                             NULL         admin    public   SELECT          NO
+a              zbdb_internal       ranges_no_leases                   NULL         admin    public   SELECT          NO
+a              zbdb_internal       savepoint_status                   NULL         admin    public   SELECT          NO
+a              zbdb_internal       schema_changes                     NULL         admin    public   SELECT          NO
+a              zbdb_internal       session_trace                      NULL         admin    public   SELECT          NO
+a              zbdb_internal       session_variables                  NULL         admin    public   SELECT          NO
+a              zbdb_internal       table_columns                      NULL         admin    public   SELECT          NO
+a              zbdb_internal       table_indexes                      NULL         admin    public   SELECT          NO
+a              zbdb_internal       table_row_statistics               NULL         admin    public   SELECT          NO
+a              zbdb_internal       tables                             NULL         admin    public   SELECT          NO
+a              zbdb_internal       zones                              NULL         admin    public   SELECT          NO
+
+user root
+
+statement error pq: cannot drop user or role u: grants still exist on a
+DROP USER u
+
+# try to drop user with privileges of database a
+
+statement ok
+REVOKE ALL ON SCHEMA a.public FROM u
+
+userInsecure u
+
+statement ok
+SET DATABASE = a
+
+query TTTTTTTT colnames
+SHOW GRANTS FOR u
+----
+database_name  schema_name         relation_name                      column_name  grantor  grantee  privilege_type  grantable
+a              NULL                NULL                               NULL         root     public   USAGE           NO
+a              NULL                NULL                               NULL         root     u        CREATE          NO
+a              NULL                NULL                               NULL         root     u        DROP            NO
+a              NULL                NULL                               NULL         root     u        USAGE           NO
+a              information_schema  NULL                               NULL         root     public   USAGE           NO
+a              information_schema  NULL                               NULL         root     u        CREATE          NO
+a              information_schema  NULL                               NULL         root     u        DROP            NO
+a              information_schema  NULL                               NULL         root     u        USAGE           NO
+a              information_schema  administrable_role_authorizations  NULL         admin    public   SELECT          NO
+a              information_schema  applicable_roles                   NULL         admin    public   SELECT          NO
+a              information_schema  check_constraints                  NULL         admin    public   SELECT          NO
+a              information_schema  column_privileges                  NULL         admin    public   SELECT          NO
+a              information_schema  columns                            NULL         admin    public   SELECT          NO
+a              information_schema  constraint_column_usage            NULL         admin    public   SELECT          NO
+a              information_schema  database_privileges                NULL         admin    public   SELECT          NO
+a              information_schema  enabled_roles                      NULL         admin    public   SELECT          NO
+a              information_schema  functions                          NULL         admin    public   SELECT          NO
+a              information_schema  index_partition                    NULL         admin    public   SELECT          NO
+a              information_schema  key_column_usage                   NULL         admin    public   SELECT          NO
+a              information_schema  parameters                         NULL         admin    public   SELECT          NO
+a              information_schema  referential_constraints            NULL         admin    public   SELECT          NO
+a              information_schema  role_table_grants                  NULL         admin    public   SELECT          NO
+a              information_schema  routines                           NULL         admin    public   SELECT          NO
+a              information_schema  schema_privileges                  NULL         admin    public   SELECT          NO
+a              information_schema  schemata                           NULL         admin    public   SELECT          NO
+a              information_schema  sequences                          NULL         admin    public   SELECT          NO
+a              information_schema  statistics                         NULL         admin    public   SELECT          NO
+a              information_schema  table_constraints                  NULL         admin    public   SELECT          NO
+a              information_schema  table_privileges                   NULL         admin    public   SELECT          NO
+a              information_schema  tables                             NULL         admin    public   SELECT          NO
+a              information_schema  trigger_privileges                 NULL         admin    public   SELECT          NO
+a              information_schema  user_privileges                    NULL         admin    public   SELECT          NO
+a              information_schema  views                              NULL         admin    public   SELECT          NO
+a              pg_catalog          NULL                               NULL         root     public   USAGE           NO
+a              pg_catalog          NULL                               NULL         root     u        CREATE          NO
+a              pg_catalog          NULL                               NULL         root     u        DROP            NO
+a              pg_catalog          NULL                               NULL         root     u        USAGE           NO
+a              pg_catalog          pg_am                              NULL         admin    public   SELECT          NO
+a              pg_catalog          pg_attrdef                         NULL         admin    public   SELECT          NO
+a              pg_catalog          pg_attribute                       NULL         admin    public   SELECT          NO
+a              pg_catalog          pg_auth_members                    NULL         admin    public   SELECT          NO
+a              pg_catalog          pg_class                           NULL         admin    public   SELECT          NO
+a              pg_catalog          pg_collation                       NULL         admin    public   SELECT          NO
+a              pg_catalog          pg_constraint                      NULL         admin    public   SELECT          NO
+a              pg_catalog          pg_database                        NULL         admin    public   SELECT          NO
+a              pg_catalog          pg_depend                          NULL         admin    public   SELECT          NO
+a              pg_catalog          pg_description                     NULL         admin    public   SELECT          NO
+a              pg_catalog          pg_enum                            NULL         admin    public   SELECT          NO
+a              pg_catalog          pg_extension                       NULL         admin    public   SELECT          NO
+a              pg_catalog          pg_foreign_data_wrapper            NULL         admin    public   SELECT          NO
+a              pg_catalog          pg_foreign_server                  NULL         admin    public   SELECT          NO
+a              pg_catalog          pg_foreign_table                   NULL         admin    public   SELECT          NO
+a              pg_catalog          pg_index                           NULL         admin    public   SELECT          NO
+a              pg_catalog          pg_indexes                         NULL         admin    public   SELECT          NO
+a              pg_catalog          pg_inherits                        NULL         admin    public   SELECT          NO
+a              pg_catalog          pg_language                        NULL         admin    public   SELECT          NO
+a              pg_catalog          pg_namespace                       NULL         admin    public   SELECT          NO
+a              pg_catalog          pg_nodestatus                      NULL         admin    public   SELECT          NO
+a              pg_catalog          pg_operator                        NULL         admin    public   SELECT          NO
+a              pg_catalog          pg_proc                            NULL         admin    public   SELECT          NO
+a              pg_catalog          pg_range                           NULL         admin    public   SELECT          NO
+a              pg_catalog          pg_rewrite                         NULL         admin    public   SELECT          NO
+a              pg_catalog          pg_roles                           NULL         admin    public   SELECT          NO
+a              pg_catalog          pg_seclabel                        NULL         admin    public   SELECT          NO
+a              pg_catalog          pg_sequence                        NULL         admin    public   SELECT          NO
+a              pg_catalog          pg_settings                        NULL         admin    public   SELECT          NO
+a              pg_catalog          pg_shdescription                   NULL         admin    public   SELECT          NO
+a              pg_catalog          pg_shseclabel                      NULL         admin    public   SELECT          NO
+a              pg_catalog          pg_stat_activity                   NULL         admin    public   SELECT          NO
+a              pg_catalog          pg_tables                          NULL         admin    public   SELECT          NO
+a              pg_catalog          pg_tablespace                      NULL         admin    public   SELECT          NO
+a              pg_catalog          pg_trigger                         NULL         admin    public   SELECT          NO
+a              pg_catalog          pg_type                            NULL         admin    public   SELECT          NO
+a              pg_catalog          pg_user                            NULL         admin    public   SELECT          NO
+a              pg_catalog          pg_user_mapping                    NULL         admin    public   SELECT          NO
+a              pg_catalog          pg_views                           NULL         admin    public   SELECT          NO
+a              public              NULL                               NULL         root     public   USAGE           NO
+a              zbdb_internal       NULL                               NULL         root     public   USAGE           NO
+a              zbdb_internal       NULL                               NULL         root     u        CREATE          NO
+a              zbdb_internal       NULL                               NULL         root     u        DROP            NO
+a              zbdb_internal       NULL                               NULL         root     u        USAGE           NO
+a              zbdb_internal       backward_dependencies              NULL         admin    public   SELECT          NO
+a              zbdb_internal       builtin_functions                  NULL         admin    public   SELECT          NO
+a              zbdb_internal       cluster_queries                    NULL         admin    public   SELECT          NO
+a              zbdb_internal       cluster_sessions                   NULL         admin    public   SELECT          NO
+a              zbdb_internal       cluster_settings                   NULL         admin    public   SELECT          NO
+a              zbdb_internal       create_statements                  NULL         admin    public   SELECT          NO
+a              zbdb_internal       databases                          NULL         admin    public   SELECT          NO
+a              zbdb_internal       feature_usage                      NULL         admin    public   SELECT          NO
+a              zbdb_internal       forward_dependencies               NULL         admin    public   SELECT          NO
+a              zbdb_internal       function_privileges                NULL         admin    public   SELECT          NO
+a              zbdb_internal       gossip_alerts                      NULL         admin    public   SELECT          NO
+a              zbdb_internal       gossip_liveness                    NULL         admin    public   SELECT          NO
+a              zbdb_internal       gossip_network                     NULL         admin    public   SELECT          NO
+a              zbdb_internal       gossip_nodes                       NULL         admin    public   SELECT          NO
+a              zbdb_internal       index_columns                      NULL         admin    public   SELECT          NO
+a              zbdb_internal       jobs                               NULL         admin    public   SELECT          NO
+a              zbdb_internal       kv_node_status                     NULL         admin    public   SELECT          NO
+a              zbdb_internal       kv_store_status                    NULL         admin    public   SELECT          NO
+a              zbdb_internal       leases                             NULL         admin    public   SELECT          NO
+a              zbdb_internal       node_build_info                    NULL         admin    public   SELECT          NO
+a              zbdb_internal       node_metrics                       NULL         admin    public   SELECT          NO
+a              zbdb_internal       node_queries                       NULL         admin    public   SELECT          NO
+a              zbdb_internal       node_runtime_info                  NULL         admin    public   SELECT          NO
+a              zbdb_internal       node_sessions                      NULL         admin    public   SELECT          NO
+a              zbdb_internal       node_statement_statistics          NULL         admin    public   SELECT          NO
+a              zbdb_internal       partition_views                    NULL         admin    public   SELECT          NO
+a              zbdb_internal       partitions                         NULL         admin    public   SELECT          NO
+a              zbdb_internal       predefined_comments                NULL         admin    public   SELECT          NO
+a              zbdb_internal       ranges                             NULL         admin    public   SELECT          NO
+a              zbdb_internal       ranges_no_leases                   NULL         admin    public   SELECT          NO
+a              zbdb_internal       savepoint_status                   NULL         admin    public   SELECT          NO
+a              zbdb_internal       schema_changes                     NULL         admin    public   SELECT          NO
+a              zbdb_internal       session_trace                      NULL         admin    public   SELECT          NO
+a              zbdb_internal       session_variables                  NULL         admin    public   SELECT          NO
+a              zbdb_internal       table_columns                      NULL         admin    public   SELECT          NO
+a              zbdb_internal       table_indexes                      NULL         admin    public   SELECT          NO
+a              zbdb_internal       table_row_statistics               NULL         admin    public   SELECT          NO
+a              zbdb_internal       tables                             NULL         admin    public   SELECT          NO
+a              zbdb_internal       zones                              NULL         admin    public   SELECT          NO
+
+user root
+
+statement error pq: cannot drop user or role u: grants still exist on a
+DROP USER u
+
+# try to drop user with privileges of schema
+
+statement ok
+REVOKE ALL ON DATABASE a FROM u
+
+statement ok
+GRANT ALL ON SCHEMA a.public TO u
+
+
+# user u does not have privileges to access database a
+
+user root
+
+query TTTTTT colnames
+SHOW GRANTS ON SCHEMA a.public FOR u
+----
+database_name  schema_name  grantor  grantee  privilege_type  grantable
+a              public       root     public   USAGE           NO
+a              public       root     u        CREATE          NO
+a              public       root     u        DROP            NO
+a              public       root     u        USAGE           NO
+
+statement error pq: cannot drop user or role u: grants still exist on a.public
+DROP USER u
+
+statement ok
+GRANT DROP ON a.public.t TO u
+
+statement error pq: cannot drop user or role u: grants still exist on a.public, a.public.t
+DROP USER u
+
+statement ok
+GRANT insert(id) ON a.public.t TO u
+
+query TTTTTTTT
+SHOW GRANTS ON a.public.t FOR u
+----
+a  public  t  NULL  root  u  DROP    NO
+a  public  t  id    root  u  INSERT  NO
+
+statement error pq: cannot drop user or role u: grants still exist on a.public, a.public.t
+DROP USER u
+
+
+#Grant DROP on table to user, check if user can ALTER table
+user root
+
+statement ok
+USE test;
+CREATE USER u1;
+CREATE TABLE t (id INT);
+GRANT USAGE ON DATABASE test TO u1;
+GRANT CREATE ON SCHEMA public TO u1;
+GRANT DROP ON TABLE t TO u1;
+
+userInsecure u1
+
+statement ok
+ALTER TABLE t ADD COLUMN name STRING;
+ALTER TABLE t ADD CONSTRAINT ID_UNIQUE UNIQUE (id);
+
+user root
+
+statement error pq: cannot drop user or role u1: grants still exist on test, test.public, test.public.t
+DROP USER u1;
+
+statement ok
+REVOKE USAGE ON DATABASE test FROM u1;
+REVOKE CREATE ON SCHEMA public FROM u1;
+
+statement error pq: cannot drop user or role u1: grants still exist on test.public.t
+DROP USER u1;
+
+statement ok
+REVOKE DROP ON TABLE t FROM u1;
+DROP USER u1;
+DROP TABLE t;

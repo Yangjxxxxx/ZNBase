@@ -1,0 +1,628 @@
+# LogicTest: local
+
+statement ok
+CREATE TABLE t (x INT PRIMARY KEY, y INT NOT NULL, z INT NOT NULL, w INT, INDEX i (x), INDEX i2 (z))
+
+statement ok
+INSERT INTO t VALUES (1, 2, 3, 4), (5, 6, 7, 8)
+
+statement ok
+ALTER TABLE t ALTER PRIMARY KEY USING COLUMNS (y, z)
+
+query IIII rowsort
+SELECT * FROM t@primary
+----
+1 2 3 4
+5 6 7 8
+
+statement ok
+INSERT INTO t VALUES (9, 10, 11, 12)
+
+query IIII rowsort
+SELECT * from t@primary
+----
+1 2 3 4
+5 6 7 8
+9 10 11 12
+
+statement ok
+UPDATE t SET x = 2 WHERE z = 7
+
+query IIII rowsort
+SELECT * from t@primary
+----
+1 2 3 4
+2 6 7 8
+9 10 11 12
+
+# TODO:没有统计信息
+# query T
+# SELECT feature_name FROM zbdb_internal.feature_usage
+# WHERE feature_name IN ('sql.schema.alter_table.alter_primary_key') AND usage_count > 0
+# ORDER BY feature_name
+# ----
+# sql.schema.alter_table.alter_primary_key
+
+# Test primary key changes on storing indexes with different column families (the randomizer will do this for us).
+statement ok
+DROP TABLE t;
+CREATE TABLE t (
+  x INT PRIMARY KEY, y INT, z INT NOT NULL, w INT, v INT,
+  INDEX i1 (y) STORING (w, v), INDEX i2 (z) STORING (y, v)
+);
+INSERT INTO t VALUES (1, 2, 3, 4, 5), (6, 7, 8, 9, 10), (11, 12, 13, 14, 15);
+ALTER TABLE t ALTER PRIMARY KEY USING COLUMNS (z);
+INSERT INTO t VALUES (16, 17, 18, 19, 20)
+
+query III rowsort
+SELECT y, w, v FROM t@i1
+----
+2 4 5
+7 9 10
+12 14 15
+17 19 20
+
+query III rowsort
+SELECT y, z, v FROM t@i2
+----
+2 3 5
+7 8 10
+12 13 15
+17 18 20
+
+# Test that composite values are encoded correctly in covering indexes.
+statement ok
+CREATE TABLE t_composite (x INT PRIMARY KEY, y DECIMAL NOT NULL);
+INSERT INTO t_composite VALUES (1, 1.0), (2, 1.001)
+
+statement ok
+ALTER TABLE t_composite ALTER PRIMARY KEY USING COLUMNS (y)
+
+query IT rowsort
+SELECT * FROM t_composite@primary
+----
+1 1.0
+2 1.001
+
+# Test that we can drop tables after a primary key change.
+statement ok
+DROP TABLE t_composite
+
+# Test altering a primary key interleaving into another table.
+statement ok
+CREATE TABLE parent (x INT, y INT, PRIMARY KEY (x, y), FAMILY (x, y));
+CREATE TABLE child (x INT PRIMARY KEY, y INT NOT NULL, z INT NOT NULL, FAMILY (x, y, z));
+INSERT INTO parent VALUES (1, 2), (4, 5);
+INSERT INTO child VALUES (1, 2, 3), (4, 5, 6);
+ALTER TABLE child ALTER PRIMARY KEY USING COLUMNS (x, y, z) INTERLEAVE IN PARENT parent(x, y)
+
+query TT
+SHOW CREATE child
+----
+child  CREATE TABLE child (
+           x INT NOT NULL,
+           y INT NOT NULL,
+           z INT NOT NULL,
+           CONSTRAINT "primary" PRIMARY KEY (x ASC, y ASC, z ASC),
+           UNIQUE INDEX child_x_key (x ASC),
+           FAMILY fam_0_x_y_z (x, y, z)
+       ) INTERLEAVE IN PARENT parent (x, y)
+
+
+query II rowsort
+SELECT * FROM parent
+----
+1 2
+4 5
+
+#TODO 计划待优化
+#query TTT
+#EXPLAIN SELECT * FROM child WHERE x >= 1 AND x < 5 AND y >= 2 AND y <= 6
+#----
+#scan  ·            ·
+#·     table        child@primary
+#·     spans        /1/2/#/57/2-/4/6/#/57/3
+#·     filter       (y >= 2) AND (y <= 6)
+
+query III rowsort
+SELECT * FROM child WHERE x >= 1 AND x < 5 AND y >= 2 AND y <= 6
+----
+1 2 3
+4 5 6
+
+statement error pq: cannot change the primary key of an interleaved parent
+ALTER TABLE parent ALTER PRIMARY KEY USING COLUMNS (x)
+
+statement error pq: unimplemented: "parent" is interleaved by table "child"
+DROP TABLE parent
+
+statement ok
+DROP TABLE parent CASCADE
+
+# Test that we can change the primary key of an interleaved child.
+statement ok
+DROP TABLE IF EXISTS child;
+CREATE TABLE parent (x INT, y INT, PRIMARY KEY (x, y), FAMILY (x, y));
+CREATE TABLE child (
+  x INT, y INT NOT NULL, z INT NOT NULL,
+  FAMILY (x, y, z), PRIMARY KEY (x, y, z)
+) INTERLEAVE IN PARENT parent (x, y);
+INSERT INTO parent VALUES (1, 2), (4, 5);
+INSERT INTO child VALUES (1, 2, 3), (4, 5, 6);
+ALTER TABLE child ALTER PRIMARY KEY USING COLUMNS (y, z)
+
+query TT
+SHOW CREATE child
+----
+child  CREATE TABLE child (
+       x INT NOT NULL,
+       y INT NOT NULL,
+       z INT NOT NULL,
+       CONSTRAINT "primary" PRIMARY KEY (y ASC, z ASC),
+       UNIQUE INDEX child_x_y_z_key (x ASC, y ASC, z ASC),
+       FAMILY fam_0_x_y_z (x, y, z)
+)
+
+query TTT
+EXPLAIN SELECT * FROM child WHERE y >=2 AND y <= 6
+----
+scan  ·      ·
+·     table  child@primary
+·     spans  /2-/7
+
+query III rowsort
+SELECT * FROM child WHERE y >=2 AND y <= 6
+----
+1 2 3
+4 5 6
+
+# We can drop parent because it isn't an interleaved parent anymore.
+statement ok
+DROP TABLE parent
+
+# Test that we can change the primary key of an interleaved child
+# that also has a secondary index interleaved.
+statement ok
+DROP TABLE IF EXISTS child;
+CREATE TABLE parent (x INT PRIMARY KEY);
+CREATE TABLE child (
+  x INT, y INT, PRIMARY KEY (x, y), z INT NOT NULL, W INT,
+  FAMILY (x, y, z, w)
+) INTERLEAVE IN PARENT parent (x);
+CREATE INDEX i ON child (x, w) INTERLEAVE IN PARENT parent (x);
+INSERT INTO parent VALUES (1);
+INSERT INTO child VALUES (1, 2, 3, 4);
+ALTER TABLE child ALTER PRIMARY KEY USING COLUMNS (x, y, z) INTERLEAVE IN PARENT parent (x)
+
+query TT
+SHOW CREATE child
+----
+child  CREATE TABLE child (
+         x INT NOT NULL,
+         y INT NOT NULL,
+         z INT NOT NULL,
+         w INT NULL,
+         CONSTRAINT "primary" PRIMARY KEY (x ASC, y ASC, z ASC),
+         UNIQUE INDEX child_x_y_key (x ASC, y ASC),
+         INDEX i (x ASC, w ASC) INTERLEAVE IN PARENT parent (x),
+         FAMILY fam_0_x_y_z_w (x, y, z, w)
+       ) INTERLEAVE IN PARENT parent (x)
+
+# If child@i was not properly rewritten, we wouldn't be able to select
+# all columns in child from it without an index join
+query TTT
+EXPLAIN SELECT * FROM child@i
+----
+scan  ·      ·
+·     table  child@i
+·     spans  ALL
+
+query IIII
+SELECT * FROM child@i
+----
+1 2 3 4
+
+subtest foreign_keys
+
+# Test primary key changes on tables with inbound and outbound FK's.
+statement ok
+CREATE TABLE fk1 (x INT NOT NULL);
+CREATE TABLE fk2 (x INT NOT NULL, UNIQUE INDEX i (x));
+ALTER TABLE fk1 ADD CONSTRAINT fk FOREIGN KEY (x) REFERENCES fk2(x);
+INSERT INTO fk2 VALUES (1);
+INSERT INTO fk1 VALUES (1)
+
+statement ok
+ALTER TABLE fk1 ALTER PRIMARY KEY USING COLUMNS (x)
+
+statement ok
+INSERT INTO fk2 VALUES (2);
+INSERT INTO fk1 VALUES (2)
+
+statement ok
+ALTER TABLE fk2 ALTER PRIMARY KEY USING COLUMNS (x)
+
+statement ok
+INSERT INTO fk2 VALUES (3);
+INSERT INTO fk1 VALUES (3)
+
+# Test some self-referencing foreign keys.
+statement ok
+CREATE TABLE self (a INT PRIMARY KEY, x INT, y INT, z INT, w INT NOT NULL,
+  INDEX (x), UNIQUE INDEX (y), INDEX (z));
+INSERT INTO self VALUES (1, 1, 1, 1, 1);
+ALTER TABLE self ADD CONSTRAINT fk1 FOREIGN KEY (z) REFERENCES self (y);
+ALTER TABLE self ADD CONSTRAINT fk2 FOREIGN KEY (x) REFERENCES self (y);
+
+statement ok
+ALTER TABLE self ALTER PRIMARY KEY USING COLUMNS (w)
+
+statement ok
+INSERT INTO self VALUES (2, 1, 2, 1, 2);
+INSERT INTO self VALUES (3, 2, 3, 2, 3)
+
+# Set up a bunch of foreign key references pointing into and out of a table.
+statement ok
+CREATE TABLE t1 (x INT PRIMARY KEY, y INT NOT NULL, z INT, w INT, INDEX (y), INDEX (z), UNIQUE INDEX (w));
+CREATE TABLE t2 (y INT, UNIQUE INDEX (y));
+CREATE TABLE t3 (z INT, UNIQUE INDEX (z));
+CREATE TABLE t4 (w INT, INDEX (w));
+CREATE TABLE t5 (x INT, INDEX (x));
+INSERT INTO t1 VALUES (1, 1, 1, 1);
+INSERT INTO t2 VALUES (1);
+INSERT INTO t3 VALUES (1);
+INSERT INTO t4 VALUES (1);
+INSERT INTO t5 VALUES (1);
+ALTER TABLE t1 ADD CONSTRAINT fk1 FOREIGN KEY (y) REFERENCES t2(y);
+ALTER TABLE t1 ADD CONSTRAINT fk2 FOREIGN KEY (z) REFERENCES t3(z);
+ALTER TABLE t4 ADD CONSTRAINT fk3 FOREIGN KEY (w) REFERENCES t1(w);
+ALTER TABLE t5 ADD CONSTRAINT fk4 FOREIGN KEY (x) REFERENCES t1(x);
+ALTER TABLE t1 ALTER PRIMARY KEY USING COLUMNS (y)
+
+statement ok
+INSERT INTO t2 VALUES (5);
+INSERT INTO t3 VALUES (6);
+INSERT INTO t1 VALUES (7, 5, 6, 8);
+INSERT INTO t4 VALUES (8);
+INSERT INTO t5 VALUES (7)
+
+# t2 or t3
+statement error foreign key violation: value \[100\] not found
+INSERT INTO t1 VALUES (100, 100, 100, 100)
+
+statement error foreign key violation: value \[101\] not found in t1@t1_w_key \[w\]
+INSERT INTO t4 VALUES (101)
+
+# Ensure that we still rewrite a primary index if the index column has name "rowid".
+statement ok
+DROP TABLE IF EXISTS t;
+CREATE TABLE t (rowid INT PRIMARY KEY, y INT NOT NULL, FAMILY (rowid, y));
+ALTER TABLE t ALTER PRIMARY KEY USING COLUMNS (y)
+
+query TT
+SHOW CREATE t
+----
+t  CREATE TABLE t (
+   rowid INT NOT NULL,
+   y INT NOT NULL,
+   CONSTRAINT "primary" PRIMARY KEY (y ASC),
+   UNIQUE INDEX t_rowid_key (rowid ASC),
+   FAMILY fam_0_rowid_y (rowid, y)
+)
+
+subtest index_rewrites
+# Test that indexes that need to get rewritten indeed get rewritten.
+statement ok
+DROP TABLE IF EXISTS t;
+CREATE TABLE t (
+  x INT PRIMARY KEY,
+  y INT NOT NULL, -- will be new primary key.
+  z INT NOT NULL,
+  w INT,
+  v JSONB,
+  INDEX i1 (w), -- will get rewritten.
+  INDEX i2 (y), -- will get rewritten.
+  UNIQUE INDEX i3 (z) STORING (y), -- will not be rewritten.
+  UNIQUE INDEX i4 (z), -- will be rewritten.
+  UNIQUE INDEX i5 (w) STORING (y), -- will be rewritten.
+  INVERTED INDEX i6 (v) -- will be rewritten.
+);
+INSERT INTO t VALUES (1, 2, 3, 4, '{}');
+ALTER TABLE t ALTER PRIMARY KEY USING COLUMNS (y)
+
+# Test that the indexes we expect got rewritten. All but i3 should have been rewritten,
+# so all but i3's indexID should be larger than 7.
+
+query IT
+SELECT index_id, index_name FROM zbdb_internal.table_indexes WHERE descriptor_name = 't' ORDER BY index_id
+----
+4 i3
+8 primary
+9 t_x_key
+10 i1
+11 i2
+12 i4
+13 i5
+14 i6
+
+# Make sure that each index can index join against the new primary key;
+
+query TTT
+EXPLAIN SELECT * FROM t@i1
+----
+index-join  ·            ·
+ │          table        t@primary
+ └── scan   ·            ·
+·           table        t@i1
+·           spans        ALL
+
+query IIIIT
+SELECT * FROM t@i1
+----
+1 2 3 4 {}
+
+query TTT
+EXPLAIN SELECT * FROM t@i2
+----
+index-join  ·            ·
+ │          table        t@primary
+ └── scan   ·            ·
+·           table        t@i2
+·           spans        ALL
+
+query IIIIT
+SELECT * FROM t@i2
+----
+1 2 3 4 {}
+
+query TTT
+EXPLAIN SELECT * FROM t@i3
+----
+index-join  ·            ·
+ │          table        t@primary
+ └── scan   ·            ·
+·           table        t@i3
+·           spans        ALL
+
+query IIIIT
+SELECT * FROM t@i3
+----
+1 2 3 4 {}
+
+query TTT
+EXPLAIN SELECT * FROM t@i4
+----
+index-join  ·            ·
+ │          table        t@primary
+ └── scan   ·            ·
+·           table        t@i4
+·           spans        ALL
+
+query IIIIT
+SELECT * FROM t@i4
+----
+1 2 3 4 {}
+
+query TTT
+EXPLAIN SELECT * FROM t@i5
+----
+index-join  ·            ·
+ │          table        t@primary
+ └── scan   ·            ·
+·           table        t@i5
+·           spans        ALL
+
+query IIIIT
+SELECT * FROM t@i5
+----
+1 2 3 4 {}
+
+statement ok
+DROP TABLE IF EXISTS t;
+CREATE TABLE t (id1 INT not null unique ,id2 INT not null unique, col1 INT, col2 CHAR(16));
+
+query TT
+show create t
+----
+t       CREATE TABLE t (
+            id1 INT NOT NULL,
+            id2 INT NOT NULL,
+            col1 INT NULL,
+            col2 CHAR(16) NULL,
+            UNIQUE INDEX t_id1_key (id1 ASC),
+            UNIQUE INDEX t_id2_key (id2 ASC),
+            FAMILY "primary" (id1, id2, col1, col2, rowid)
+)
+
+statement ok
+alter table t add primary key (id1);
+
+query TT
+show create t
+----
+t       CREATE TABLE t (
+            id1 INT NOT NULL,
+            id2 INT NOT NULL,
+            col1 INT NULL,
+            col2 CHAR(16) NULL,
+            CONSTRAINT "primary" PRIMARY KEY (id1 ASC),
+            UNIQUE INDEX t_id1_key (id1 ASC),
+            UNIQUE INDEX t_id2_key (id2 ASC),
+            FAMILY "primary" (id1, id2, col1, col2, rowid)
+)
+
+statement ok
+DROP TABLE IF EXISTS t;
+CREATE TABLE t (rowid INT NOT NULL);
+
+query TT
+SHOW CREATE t
+----
+t  CREATE TABLE t (
+   rowid INT NOT NULL,
+   FAMILY "primary" (rowid, rowid_1)
+)
+
+statement ok
+ALTER TABLE t ALTER PRIMARY KEY USING COLUMNS (rowid)
+
+query TT
+SHOW CREATE t
+----
+t  CREATE TABLE t (
+   rowid INT NOT NULL,
+   CONSTRAINT "primary" PRIMARY KEY (rowid ASC),
+   FAMILY "primary" (rowid, rowid_1)
+)
+
+statement ok
+DROP TABLE IF EXISTS t;
+CREATE TABLE t (rowid INT, rowid_1 INT, FAMILY (rowid, rowid_1))
+
+query T rowsort
+SELECT column_name FROM [SHOW COLUMNS FROM t]
+----
+rowid
+rowid_1
+rowid_2
+
+query TT
+SELECT index_name, column_name FROM [SHOW INDEXES FROM t]
+----
+primary rowid_2
+
+query TT
+SHOW CREATE t
+----
+t  CREATE TABLE t (
+   rowid INT NULL,
+   rowid_1 INT NULL,
+   FAMILY fam_0_rowid_rowid_1_rowid_2 (rowid, rowid_1, rowid_2)
+)
+
+statement ok
+DROP TABLE IF EXISTS t;
+create table t(id int primary key,num int unique not null);
+
+query TT
+show create t
+----
+t   CREATE TABLE t (
+    id INT NOT NULL,
+    num INT NOT NULL,
+    CONSTRAINT "primary" PRIMARY KEY (id ASC),
+    UNIQUE INDEX t_num_key (num ASC),
+    FAMILY "primary" (id, num)
+)
+
+statement ok
+alter table t drop constraint "primary";
+
+statement ok
+DROP TABLE IF EXISTS t;
+CREATE TABLE t (a INT NOT NULL, b INT NOT NULL,c INT PRIMARY KEY);
+INSERT INTO t VALUES(1,1,2);
+INSERT INTO t VALUES(1,1,1);
+
+statement error 相同的键值 b=1 违反了主键约束 "primary"
+ALTER TABLE t ALTER PRIMARY KEY USING COLUMNS (b);
+
+statement error 相同的键值 a=1 违反了主键约束 "primary"
+ALTER TABLE t ALTER PRIMARY KEY USING COLUMNS (a);
+
+statement ok
+DROP TABLE IF EXISTS test_drop_pk;
+CREATE TABLE test_drop_pk (id int,a varchar(100),b int,c int,d int);
+insert into test_drop_pk values(1,'aaa',1,1,1),(2,'bbb',2,2,2),(3,'ccc',3,3,3);
+
+statement error pq: cannot use nullable column "id" in primary key
+ALTER TABLE test_drop_pk ADD CONSTRAINT pk PRIMARY KEY(id);
+
+statement ok
+alter table test_drop_pk alter column id set not null;
+ALTER TABLE test_drop_pk ADD CONSTRAINT pk PRIMARY KEY(id);
+
+query TT
+show create test_drop_pk
+----
+test_drop_pk    CREATE TABLE test_drop_pk (
+                id INT NOT NULL,
+                a VARCHAR(100) NULL,
+                b INT NULL,
+                c INT NULL,
+                d INT NULL,
+                CONSTRAINT pk PRIMARY KEY (id ASC),
+                FAMILY "primary" (id, a, b, c, d, rowid)
+)
+
+statement ok
+ALTER TABLE test_drop_pk DROP CONSTRAINT pk;
+
+statement ok
+drop table if exists test;
+drop table if exists student;
+create table student ( id int, hometown string, district string, name string, PRIMARY KEY(hometown, district,name) );
+create table test(hometown1 text, district text,name text);
+ALTER TABLE test ADD CONSTRAINT fk FOREIGN KEY(hometown1,district,name) REFERENCES student (hometown,district,name);
+
+statement error pq: not support drop primary key with cascade
+ALTER TABLE student DROP CONSTRAINT "primary" cascade;
+
+statement ok
+drop table if exists tt;
+create table tt(a INT PRIMARY KEY, b INT NOT NULL);
+
+statement error pq: unimplemented: multiple primary key changes in the same transaction are unsupported
+ALTER TABLE tt DROP CONSTRAINT "primary", ADD CONSTRAINT "primary" PRIMARY KEY (b)
+
+statement ok
+ALTER TABLE tt DROP CONSTRAINT "primary"
+
+statement ok
+drop table if exists t;
+create table t(a INT not null, b INT);
+alter table t add constraint pk primary key(a);
+set sql_safe_updates = false;
+alter table t drop column b;
+
+statement ok
+drop table if exists t;
+create table t(a INT not null, b INT);
+INSERT INTO t VALUES(1,1),(2,2),(3,3);
+ALTER TABLE t ADD CONSTRAINT pk PRIMARY KEY(a);
+ALTER TABLE t ADD COLUMN c INT;
+UPDATE t SET c=11 WHERE a=1;
+UPDATE t SET c=12 WHERE a=2;
+UPDATE t SET c=22 WHERE b=2;
+
+statement ok
+DROP TABLE IF EXISTS banji CASCADE;
+create table banji(bno char(5),bname varchar(40),constraint b_pk primary key(bno));
+insert into banji values('97001','97001Bn');
+insert into banji values('97002','97002Bn');
+insert into banji values('97003','97003Bn');
+insert into banji values('97004','97002Bn');
+DROP TABLE IF EXISTS student CASCADE;
+create table student(sno char(5),sname varchar(20),sage numeric,sclass char(5),constraint sclass_fk foreign key(sclass) references banji(bno));
+insert into student values('10001','Tom',21,'97001');
+insert into student values('10002','Jerry',24,'97002');
+insert into student values('10003','Lili',23,'97003');
+insert into student values('10004','Tim',25,'97004');
+alter table banji alter column bname set not null;
+ALTER TABLE banji alter primary key using columns(bno,bname);
+
+statement error pq: not support drop primary key with cascade
+alter table banji drop CONSTRAINT "primary" CASCADE;
+
+statement ok
+show create table banji;
+
+statement ok
+drop table student
+
+statement ok
+DROP TABLE IF EXISTS t_cf;
+CREATE TABLE t_cf (c1 INT PRIMARY KEY, c2 TIMESTAMP,c3 BYTES);
+
+statement error pq: multiple primary keys for table "t_cf" are not allowed
+ALTER TABLE t_cf ADD COLUMN c4 INT PRIMARY KEY;

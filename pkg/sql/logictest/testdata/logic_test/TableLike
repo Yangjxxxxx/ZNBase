@@ -1,0 +1,68 @@
+# LogicTest: local local-opt local-parallel-stmts fakedist fakedist-opt fakedist-metadata
+statement ok
+create table tb_test(id int primary key, name int);
+
+statement ok
+create table tb_emp(id int primary key,name int unique,deid int default 1,constraint hsz_fr foreign key (deid) references tb_test(id));
+
+statement ok
+create table like_test like tb_emp;
+
+query TTBITTBBTT
+show index from tb_emp;
+----
+ tb_emp      primary                     false                1  id           ASC         false    false    global    NO
+ tb_emp      tb_emp_name_key             false                1  name         ASC         false    false    global    NO
+ tb_emp      tb_emp_name_key             false                2  id           ASC         false     true    global    NO
+ tb_emp      tb_emp_auto_index_hsz_fr     true                1  deid         ASC         false    false    global    NO
+ tb_emp      tb_emp_auto_index_hsz_fr     true                2  id           ASC         false     true    global    NO
+
+
+query TTBITTBBTT
+show index from like_test;
+----
+            like_test  primary                   false  1  id    ASC  false  false  global  NO
+            like_test  tb_emp_name_key           false  1  name  ASC  false  false  global  NO
+            like_test  tb_emp_name_key           false  2  id    ASC  false  true   global  NO
+            like_test  tb_emp_auto_index_hsz_fr  true   1  deid  ASC  false  false  global  NO
+            like_test  tb_emp_auto_index_hsz_fr  true   2  id    ASC  false  true   global  NO
+
+statement ok
+drop table if exists like_test;
+
+statement ok
+create temp table like_test like tb_emp;
+
+query TTBITTBBTT
+show index from tb_emp;
+----
+ tb_emp      primary                     false                1  id           ASC         false    false    global    NO
+ tb_emp      tb_emp_name_key             false                1  name         ASC         false    false    global    NO
+ tb_emp      tb_emp_name_key             false                2  id           ASC         false     true    global    NO
+ tb_emp      tb_emp_auto_index_hsz_fr     true                1  deid         ASC         false    false    global    NO
+ tb_emp      tb_emp_auto_index_hsz_fr     true                2  id           ASC         false     true    global    NO
+
+
+query TTBITTBBTT
+show index from like_test;
+----
+     like_test  primary                   false  1  id    ASC  false  false  global  NO
+     like_test  tb_emp_name_key           false  1  name  ASC  false  false  global  NO
+     like_test  tb_emp_name_key           false  2  id    ASC  false  true   global  NO
+     like_test  tb_emp_auto_index_hsz_fr  true   1  deid  ASC  false  false  global  NO
+     like_test  tb_emp_auto_index_hsz_fr  true   2  id    ASC  false  true   global  NO
+
+query TTBTTTB
+SHOW COLUMNS FROM like_test;
+----
+  id    INT8  false  NULL  ·  {primary,tb_emp_name_key,tb_emp_auto_index_hsz_fr}  false
+  name  INT8  true   NULL  ·  {tb_emp_name_key}                                   false
+  deid  INT8  true   1     ·  {tb_emp_auto_index_hsz_fr}                          false
+
+statement ok
+INSERT INTO like_test VALUES(1,1);
+
+query III
+SELECT * FROM like_test;
+----
+   1     1     1

@@ -1,0 +1,11 @@
+statement ok
+SET SESSION replicate_tables_in_sync='on';
+
+statement ok
+alter table reptest add constraint cb unique (b) ;
+
+statement ok
+alter table reptest add constraint cc unique (c) ;
+
+statement ok
+SET SESSION replicate_tables_in_sync='off';

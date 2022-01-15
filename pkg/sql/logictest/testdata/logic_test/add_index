@@ -1,0 +1,117 @@
+# LogicTest: local local-opt local-parallel-stmts fakedist fakedist-opt fakedist-metadata
+
+statement ok
+DROP TABLE IF EXISTS test;
+
+statement ok
+CREATE TABLE test(a int,b int);
+
+statement ok
+ALTER TABLE test ADD INDEX test_id(a);
+
+query TTBITTBBTT
+SHOW INDEX FROM test;
+----
+  test        primary       false            1  rowid        ASC         false    false    global    NO
+  test        test_id        true            1  a            ASC         false    false    global    NO
+  test        test_id        true            2  rowid        ASC         false     true    global    NO
+
+statement ok
+ALTER TABLE test ADD KEY test_id2(a);
+
+query TTBITTBBTT
+SHOW INDEX FROM test;
+----
+  test        primary       false                1  rowid        ASC         false    false    global    NO
+  test        test_id        true                1  a            ASC         false    false    global    NO
+  test        test_id        true                2  rowid        ASC         false     true    global    NO
+  test        test_id2       true                1  a            ASC         false    false    global    NO
+  test        test_id2       true                2  rowid        ASC         false     true    global    NO
+
+statement ok
+ALTER TABLE test ADD KEY test_id3(a DESC);
+
+statement ok
+ALTER TABLE test ADD KEY test_id4(a DESC);
+
+statement ok
+ALTER TABLE test ADD KEY (a DESC);
+
+statement ok
+alter table test add CONSTRAINT con_id UNIQUE index (a);
+
+statement ok
+ALTER TABLE test ADD CONSTRAINT UNIQUE INDEX test_id5(a);
+
+statement ok
+ALTER TABLE test ADD CONSTRAINT UNIQUE INDEX (a);
+
+query TTBITTBBTT
+SHOW INDEX FROM test;
+----
+            test  primary     false  1  rowid  ASC   false  false  global  NO
+            test  test_id     true   1  a      ASC   false  false  global  NO
+            test  test_id     true   2  rowid  ASC   false  true   global  NO
+            test  test_id2    true   1  a      ASC   false  false  global  NO
+            test  test_id2    true   2  rowid  ASC   false  true   global  NO
+            test  test_id3    true   1  a      DESC  false  false  global  NO
+            test  test_id3    true   2  rowid  ASC   false  true   global  NO
+            test  test_id4    true   1  a      DESC  false  false  global  NO
+            test  test_id4    true   2  rowid  ASC   false  true   global  NO
+            test  test_a_idx  true   1  a      DESC  false  false  global  NO
+            test  test_a_idx  true   2  rowid  ASC   false  true   global  NO
+            test  con_id      false  1  a      ASC   false  false  global  NO
+            test  con_id      false  2  rowid  ASC   false  true   global  NO
+            test  test_id5    false  1  a      ASC   false  false  global  NO
+            test  test_id5    false  2  rowid  ASC   false  true   global  NO
+            test  test_a_key  false  1  a      ASC   false  false  global  NO
+            test  test_a_key  false  2  rowid  ASC   false  true   global  NO
+
+statement error  pq: duplicate index name: \"test_id\"
+alter table test add CONSTRAINT  UNIQUE index test_id(a);
+
+statement error pq: relation \"testw\" does not exist
+ALTER TABLE testw ADD  INDEX (a);
+
+statement error pq: index \"test_f_idx\" contains unknown column \"f\"
+ALTER TABLE test ADD  INDEX (f);
+
+statement ok
+ALTER TABLE test DROP INDEX test_id4;
+
+statement  error pq: index \"test_id4\" does not exist
+ALTER TABLE test DROP INDEX test_id4;
+
+statement  error pq: relation \"test3\" does not exist
+ALTER TABLE test3 DROP KEY test_id4;
+
+statement ok
+ALTER TABLE test DROP KEY test_id;
+
+statement ok
+ALTER TABLE test RENAME KEY test_id3 TO test_id3_re;
+
+statement ok
+ALTER TABLE test RENAME KEY test_id3_re TO test_id3;
+
+
+statement error cannot use nullable column \"a\" in primary key
+ALTER TABLE test ADD PRIMARY KEY (a);
+
+statement error constraint \"\" does not exist
+ALTER TABLE test DROP PRIMARY KEY;
+
+statement error cannot use nullable column "a" in primary key
+ALTER TABLE test ADD CONSTRAINT test_pr PRIMARY KEY (a);
+
+statement ok
+drop table if exists test;
+
+statement ok
+create table test(a float);
+
+statement ok
+insert into test values(1);
+
+statement error pq: sum\(\): aggregate functions are not allowed in CREATE FUNCTION INDEX
+alter table test add index(sum(a));

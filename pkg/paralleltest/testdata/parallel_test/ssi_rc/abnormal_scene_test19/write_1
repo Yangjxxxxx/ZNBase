@@ -1,0 +1,14 @@
+statement ok
+SELECT pg_sleep(1);
+
+statement ok
+BEGIN;
+
+statement ok
+UPDATE T SET b = '1' WHERE b = '2';
+
+statement ok
+SELECT pg_sleep(3);
+
+statement ok
+COMMIT;

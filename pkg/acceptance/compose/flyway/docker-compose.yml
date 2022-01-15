@@ -1,0 +1,14 @@
+version: '3'
+services:
+  znbase:
+    image: ubuntu:xenial-20170214
+    command: /znbase/znbase start --insecure --listen-addr znbase
+    volumes:
+      - ../../../../znbase-linux-2.6.32-gnu-amd64:/znbase/znbase
+  flyway:
+    depends_on:
+      - znbase
+    image: boxfuse/flyway:6.0.0-beta
+    volumes:
+      - ./sql:/sql
+    command: migrate -user=root -url=jdbc:postgresql://znbase:26257/defaultdb -locations=filesystem:/sql

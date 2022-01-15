@@ -1,0 +1,3 @@
+alter_user_options_stmt ::=
+	'ALTER' 'USER' string_or_placeholder opt_user_options
+	| 'ALTER' 'USER' 'IF' 'EXISTS' string_or_placeholder opt_user_options

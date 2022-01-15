@@ -1,0 +1,175 @@
+# LogicTest: local-insecure
+
+#Test: drop procedure/function owner u1
+userInsecure root
+
+statement ok
+CREATE USER u1;
+GRANT CREATE, USAGE ON DATABASE test TO u1;
+GRANT CREATE ON SCHEMA public TO u1;
+
+#Test 1: drop procedure owner u1
+userInsecure u1
+
+statement ok
+CREATE TABLE t (name string);
+CREATE OR REPLACE PROCEDURE pt() AS $$
+BEGIN
+INSERT INTO t VALUES ('TEST');
+END
+$$ LANGUAGE PLPGSQL;
+
+userInsecure root
+
+statement error pq: cannot drop user or role u1: grants still exist on test, test.public
+DROP USER u1;
+
+statement ok
+REVOKE CREATE, USAGE ON DATABASE test FROM u1;
+REVOKE CREATE ON SCHEMA public FROM u1;
+
+statement error pq: role u1 cannot be dropped because some objects depend on it.*\n.*owner of function test.public.pt.*\n.*owner of table test.public.t
+DROP USER u1;
+
+statement ok
+DROP PROCEDURE pt();
+DROP TABLE t;
+DROP USER u1;
+
+
+#Test 2: drop function owner u1
+userInsecure root
+
+statement ok
+CREATE USER u1;
+GRANT CREATE, USAGE ON DATABASE test TO u1;
+GRANT CREATE ON SCHEMA public TO u1;
+
+userInsecure u1
+
+statement ok
+CREATE OR REPLACE FUNCTION inc (i INT)
+RETURNS INT
+AS $$
+BEGIN
+RETURN i+1;
+END
+$$ LANGUAGE PLPGSQL;
+
+userInsecure root
+
+statement error pq: cannot drop user or role u1: grants still exist on test, test.public
+DROP USER u1;
+
+statement ok
+REVOKE CREATE, USAGE ON DATABASE test FROM u1;
+REVOKE CREATE ON SCHEMA public FROM u1;
+
+statement error pq: role u1 cannot be dropped because some objects depend on it.*\n.*owner of function test.public.inc
+DROP USER u1;
+
+statement ok
+DROP FUNCTION inc(INT);
+DROP USER u1;
+
+#Test 3: Show function, display owner info
+userInsecure root
+
+statement ok
+CREATE OR REPLACE FUNCTION f(a INT) returns INT[] as $$ DECLARE  t1 INT [];  t2 INT ARRAY; BEGIN  t1 = ARRAY['a','b','c'];  t2 = ARRAY[1,2,3];return t1||t2 ; END $$ language plpgsql;
+CREATE OR REPLACE PROCEDURE proc(a INT, b VARCHAR)
+AS $$
+begin
+INSERT INTO db.sch.t(b) VALUES(66);
+end
+$$ language PLPGSQL;
+
+query TTTTTTT
+show functions;
+----
+f     root  a INT             INT[]   DECLARE  t1 INT [];  t2 INT ARRAY; BEGIN  t1 = ARRAY['a','b','c'];  t2 = ARRAY[1,2,3];return t1||t2 ; END   func  plsql
+proc  root  a INT, b VARCHAR  ·
+begin
+INSERT INTO db.sch.t(b) VALUES(66);
+end
+  proc  plsql
+
+statement ok
+DROP FUNCTION f(a INT);
+DROP PROCEDURE proc (a INT, b VARCHAR);
+
+#Test 2: user:u
+userInsecure root
+
+statement ok
+CREATE USER u;
+GRANT USAGE ON DATABASE test TO u;
+GRANT CREATE ON SCHEMA public TO u;
+
+userInsecure u
+
+#Test 2-1: User u create function
+statement ok
+CREATE OR REPLACE FUNCTION f(a INT) RETURNS INT[]
+AS $$
+DECLARE  t1 INT [];  t2 INT ARRAY; BEGIN  t1 = ARRAY['a','b','c'];  t2 = ARRAY[1,2,3];return t1||t2 ; END
+$$ language PLPGSQL;
+
+#Test 2-2: User u create procedure
+statement ok
+CREATE OR REPLACE PROCEDURE proc(a INT, b VARCHAR)
+AS $$
+begin
+INSERT INTO db.sch.t(b) VALUES(66);
+end
+$$ language PLPGSQL;
+
+query TTTTTTT
+show functions;
+----
+f  u  a INT  INT[]
+DECLARE  t1 INT [];  t2 INT ARRAY; BEGIN  t1 = ARRAY['a','b','c'];  t2 = ARRAY[1,2,3];return t1||t2 ; END
+      func  plsql
+proc  u     a INT, b VARCHAR  ·
+begin
+INSERT INTO db.sch.t(b) VALUES(66);
+end
+  proc  plsql
+
+statement ok
+DROP FUNCTION f(a INT);
+DROP PROCEDURE proc (a INT, b VARCHAR);
+
+#####################################################################
+#Test 6 of drop_owner: Owner of function/procedure
+userInsecure root
+
+statement ok
+CREATE USER uf;
+GRANT USAGE ON DATABASE test TO uf;
+GRANT CREATE ON SCHEMA public TO uf;
+
+userInsecure uf
+
+statement ok
+CREATE OR REPLACE FUNCTION f(a INT) RETURNS INT[]
+AS $$
+DECLARE  t1 INT [];  t2 INT ARRAY; BEGIN  t1 = ARRAY['a','b','c'];  t2 = ARRAY[1,2,3];return t1||t2 ; END
+$$ language PLPGSQL;
+
+statement ok
+CREATE OR REPLACE PROCEDURE proc(a INT, b VARCHAR)
+AS $$
+begin
+INSERT INTO db.sch.t(b) VALUES(66);
+end
+$$ language PLPGSQL;
+
+userInsecure root
+
+statement ok
+REVOKE USAGE ON DATABASE test FROM uf;
+REVOKE CREATE ON SCHEMA public FROM uf;
+
+statement error pq: role uf cannot be dropped because some objects depend on it.*\n.*owner of function test.public.f.*\n.*owner of function test.public.proc
+DROP USER uf;

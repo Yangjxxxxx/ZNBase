@@ -1,0 +1,149 @@
+subtest index_rewrites
+# Test that indexes that need to get rewritten indeed get rewritten.
+statement ok
+DROP TABLE IF EXISTS t;
+CREATE TABLE t (
+  x INT PRIMARY KEY,
+  y INT NOT NULL, -- will be new primary key.
+  z INT NOT NULL,
+  w INT,
+  v JSONB,
+  INDEX i1 (w), -- will get rewritten.
+  INDEX i2 (y), -- will get rewritten.
+  UNIQUE INDEX i3 (z) STORING (y), -- will not be rewritten.
+  UNIQUE INDEX i4 (z), -- will be rewritten.
+  UNIQUE INDEX i5 (w) STORING (y), -- will be rewritten.
+  INVERTED INDEX i6 (v), -- will be rewritten.
+  INDEX i7 (z) USING HASH WITH BUCKET_COUNT = 4, -- will be rewritten.
+  FAMILY (x, y, z, w, v)
+);
+INSERT INTO t VALUES (1, 2, 3, 4, '{}');
+ALTER TABLE t ALTER PRIMARY KEY USING COLUMNS (y)
+
+query TT
+SHOW CREATE t
+----
+t  CREATE TABLE public.t (
+   x INT NOT NULL,
+   y INT NOT NULL,
+   z INT NOT NULL,
+   w INT NULL,
+   v JSONB NULL,
+   CONSTRAINT "primary" PRIMARY KEY (y ASC),
+   UNIQUE INDEX i3 (z ASC) STORING (y),
+   UNIQUE INDEX t_x_key (x ASC),
+   INDEX i1 (w ASC),
+   INDEX i2 (y ASC),
+   UNIQUE INDEX i4 (z ASC),
+   UNIQUE INDEX i5 (w ASC) STORING (y),
+   INVERTED INDEX i6 (v),
+   INDEX i7 (z ASC) USING HASH WITH BUCKET_COUNT = 4,
+   FAMILY fam_0_x_y_z_w_v_znbase_internal_z_shard_4 (x, y, z, w, v, znbase_internal_z_shard_4)
+)
+
+subtest hash_sharded
+
+statement ok
+DROP TABLE IF EXISTS t;
+CREATE TABLE t (
+  x INT PRIMARY KEY,
+  y INT NOT NULL,
+  z INT,
+  INDEX i1 (z) USING HASH WITH BUCKET_COUNT = 5,
+  FAMILY (x, y, z)
+);
+INSERT INTO t VALUES (1, 2, 3);
+ALTER TABLE t ALTER PRIMARY KEY USING COLUMNS (y) USING HASH WITH BUCKET_COUNT = 10
+
+query TT
+SHOW CREATE t
+----
+t  CREATE TABLE public.t (
+   x INT NOT NULL,
+   y INT NOT NULL,
+   z INT NULL,
+   CONSTRAINT "primary" PRIMARY KEY (y ASC) USING HASH WITH BUCKET_COUNT = 10,
+   UNIQUE INDEX t_x_key (x ASC),
+   INDEX i1 (z ASC) USING HASH WITH BUCKET_COUNT = 5,
+   FAMILY fam_0_x_y_z_znbase_internal_z_shard_5 (x, y, z, znbase_internal_z_shard_5, znbase_internal_y_shard_10)
+)
+
+statement error pq: interleaved indexes cannot also be hash sharded
+DROP TABLE IF EXISTS parent, t CASCADE;
+CREATE TABLE parent (x INT PRIMARY KEY);
+CREATE TABLE t (x INT NOT NULL, y INT NOT NULL);
+ALTER TABLE t ALTER PRIMARY KEY USING COLUMNS (x, y) USING HASH WITH BUCKET_COUNT = 10 INTERLEAVE IN PARENT parent (x)
+
+statement ok
+DROP TABLE IF EXISTS t;
+CREATE TABLE t (
+  x INT PRIMARY KEY USING HASH WITH BUCKET_COUNT=5,
+  y INT NOT NULL,
+  z INT,
+  INDEX i (z),
+  FAMILY (x, y, z)
+);
+INSERT INTO t VALUES (1, 2, 3);
+ALTER TABLE t ALTER PRIMARY KEY USING COLUMNS (y)
+
+query TT
+SHOW CREATE t
+----
+t  CREATE TABLE public.t (
+   x INT NOT NULL,
+   y INT NOT NULL,
+   z INT NULL,
+   CONSTRAINT "primary" PRIMARY KEY (y ASC),
+   UNIQUE INDEX t_znbase_internal_x_shard_5_x_key (x ASC) USING HASH WITH BUCKET_COUNT = 5,
+   INDEX i (z ASC),
+   FAMILY fam_0_x_y_z_znbase_internal_x_shard_5 (x, y, z, znbase_internal_x_shard_5)
+)
+
+statement ok
+DROP TABLE IF EXISTS t;
+CREATE TABLE t (x INT NOT NULL);
+ALTER TABLE t ADD PRIMARY KEY (x) USING HASH WITH BUCKET_COUNT=4
+
+query TT
+SHOW CREATE t
+----
+t  CREATE TABLE public.t (
+   x INT NOT NULL,
+   CONSTRAINT "primary" PRIMARY KEY (x ASC) USING HASH WITH BUCKET_COUNT = 4,
+   FAMILY "primary" (x, rowid, znbase_internal_x_shard_4)
+)
+
+# Regression for #45889.
+# Primary key changes on a hash sharded index that just change the bucket
+# count shouldn't cause the old primary key to be copied.
+statement ok
+DROP TABLE IF EXISTS t CASCADE;
+CREATE TABLE t (x INT PRIMARY KEY USING HASH WITH BUCKET_COUNT = 2);
+ALTER TABLE t ALTER PRIMARY KEY USING COLUMNS (x) USING HASH WITH BUCKET_COUNT=3
+
+query TT
+SHOW CREATE t
+----
+t  CREATE TABLE public.t (
+   x INT NOT NULL,
+   CONSTRAINT "primary" PRIMARY KEY (x ASC) USING HASH WITH BUCKET_COUNT = 3,
+   FAMILY "primary" (znbase_internal_x_shard_2, x, znbase_internal_x_shard_3)
+)
+
+# Changes on a hash sharded index that change the columns will cause the old
+# primary key to be copied.
+statement ok
+DROP TABLE t;
+CREATE TABLE t (x INT PRIMARY KEY USING HASH WITH BUCKET_COUNT = 2, y INT NOT NULL, FAMILY (x, y));
+ALTER TABLE t ALTER PRIMARY KEY USING COLUMNS (y) USING HASH WITH BUCKET_COUNT=2
+
+query TT
+SHOW CREATE t
+----
+t  CREATE TABLE public.t (
+   x INT NOT NULL,
+   y INT NOT NULL,
+   CONSTRAINT "primary" PRIMARY KEY (y ASC) USING HASH WITH BUCKET_COUNT = 2,
+   UNIQUE INDEX t_znbase_internal_x_shard_2_x_key (x ASC) USING HASH WITH BUCKET_COUNT = 2,
+   FAMILY fam_0_x_y_znbase_internal_x_shard_2 (x, y, znbase_internal_x_shard_2, znbase_internal_y_shard_2)
+)

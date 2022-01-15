@@ -1,0 +1,14 @@
+statement ok
+PREPARE abc AS UPDATE t SET b=b+$1 WHERE a=$2;
+
+statement ok
+SELECT pg_sleep(1);
+
+statement ok
+BEGIN TRANSACTION ISOLATION LEVEL READ COMMITTED;
+
+statement ok
+EXECUTE abc(1, 1);
+
+statement ok
+COMMIT;

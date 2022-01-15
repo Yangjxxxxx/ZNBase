@@ -1,0 +1,26 @@
+query I
+SELECT * FROM t;
+----
+
+sleep 48s
+
+query I
+SELECT * FROM t;
+----
+1
+
+sleep 5s
+
+query I
+SELECT * FROM t;
+----
+1
+
+# set replicate_tables_in_sysnc='on' follower read will be closed
+statement ok
+SET SESSION replicate_tables_in_sync='on';
+
+query I
+SELECT * FROM t;
+----
+3

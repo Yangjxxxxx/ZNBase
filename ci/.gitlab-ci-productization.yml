@@ -1,0 +1,50 @@
+ before_script:
+   - pwd
+   - whoami
+   - source ~/.bashrc
+   - go version
+   - docker version
+ stages:
+   - build
+   - test
+   - testlogic
+   - lint
+ build_stage:
+   stage: build
+   only:
+     - merge_request
+     - develop
+   tags:
+     - production-runner-dev
+   script:
+     - ./build/builder.sh mkrelease linux-gnu
+     - ./ci/git-check.sh
+ test_stage:
+   stage: test
+   only:
+     - merge_request
+     - develop
+   tags:
+     - production-runner-dev
+   script:
+     #- export BUILDER_HIDE_GOPATH_SRC=1
+     - ./build/builder.sh env ZNBASE_NIGHTLY_STRESS=true stdbuf -oL -eL make test TESTTIMEOUT=45m 2>&1
+ testlogic_stage:
+   stage: testlogic
+   only:
+     - merge_request
+     - develop
+   tags:
+     - production-runner-dev
+   script:
+     - ./build/builder.sh stdbuf -oL -eL make testlogic TESTTIMEOUT=45m 2>&1
+ lint_stage:
+   stage: lint
+   only:
+     - merge_request
+     - develop
+   tags:
+     - production-runner-dev
+   script:
+     #- export BUILDER_HIDE_GOPATH_SRC=1
+     - ./build/builder.sh env ZNBASE_LOGIC_TEST_SKIP=true stdbuf -oL -eL make lint TESTTIMEOUT=45m USE_ROCKSDB_ASSERTIONS=1 2>&1

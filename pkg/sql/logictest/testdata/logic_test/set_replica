@@ -1,0 +1,67 @@
+# LogicTest: 5node-dist 5node-dist-opt 5node-dist-metadata
+
+statement ok
+CREATE TABLE t1 (id INT PRIMARY KEY)
+
+# table t1 has 3 replicas
+query IT
+SELECT zone_id, config_sql FROM [SHOW ZONE CONFIGURATION FOR TABLE t1]
+----
+0  ALTER RANGE default CONFIGURE ZONE USING
+   range_min_bytes = 16777216,
+   range_max_bytes = 67108864,
+   gc.ttlseconds = 90000,
+   num_replicas = 3,
+   constraints = '[]',
+   lease_preferences = '[]'
+
+statement error pq: cannot create "defaultdb1.t1" because the target database or schema does not exist
+ALTER TABLE defaultdb1.t1 REPLICATION ENABLE
+
+statement error relation "t" does not exist
+ALTER TABLE t REPLICATION ENABLE
+
+statement error pq: schema cannot be modified: "zbdb_internal"
+ALTER TABLE zbdb_internal.ranges REPLICATION ENABLE
+
+statement ok
+ALTER TABLE t1 REPLICATION ENABLE
+
+statement error pq: table .* replication state already changed
+ALTER TABLE t1 REPLICATION ENABLE
+
+# replication table t1 has 5 replicas
+query T
+SELECT config_sql FROM [SHOW ZONE CONFIGURATION FOR TABLE t1];
+----
+ALTER TABLE t1 CONFIGURE ZONE USING
+      range_min_bytes = 16777216,
+      range_max_bytes = 67108864,
+      gc.ttlseconds = 90000,
+      num_replicas = 5,
+      constraints = '[]',
+      lease_preferences = '[]'
+
+query T colnames
+SHOW SESSION replicate_tables_in_sync
+----
+replicate_tables_in_sync
+off
+
+statement ok
+ALTER TABLE t1 REPLICATION DISABLE
+
+statement error pq: table .* replication state already changed
+ALTER TABLE t1 REPLICATION DISABLE
+
+# replication table turn into disable and t1 has 5to3 replicas
+query T
+SELECT config_sql FROM [SHOW ZONE CONFIGURATION FOR TABLE t1];
+----
+ALTER TABLE t1 CONFIGURE ZONE USING
+      range_min_bytes = 16777216,
+      range_max_bytes = 67108864,
+      gc.ttlseconds = 90000,
+      num_replicas = 3,
+      constraints = '[]',
+      lease_preferences = '[]'

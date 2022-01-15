@@ -1,0 +1,141 @@
+# LogicTest: local local-opt
+
+statement ok
+GRANT USAGE ON DATABASE test TO public;
+GRANT USAGE ON DATABASE defaultdb TO public
+
+query T colnames
+SHOW ROLES
+----
+role_name
+admin
+
+query TTT colnames
+SHOW GRANTS ON ROLE
+----
+role_name  member  is_admin
+admin      root    YES
+
+query TTT colnames
+SHOW GRANTS ON ROLE admin
+----
+role_name  member  is_admin
+admin      root    YES
+
+query TTT colnames
+SHOW GRANTS ON ROLE FOR root
+----
+role_name  member  is_admin
+admin      root    YES
+
+query TTT colnames
+SHOW GRANTS ON ROLE admin FOR root
+----
+role_name  member  is_admin
+admin      root    YES
+
+query TTT colnames
+SHOW GRANTS ON ROLE FOR testuser
+----
+role_name  member  is_admin
+
+query TTT colnames
+SHOW GRANTS ON ROLE testuser,admin FOR testuser,admin
+----
+role_name  member  is_admin
+
+# Test the "public" pseudo-role.
+
+statement error role name "public" is reserved
+CREATE USER public
+
+statement error pq: cannot drop user or role public: grants still exist on .*
+DROP USER public
+
+statement ok
+CREATE DATABASE publicdb;
+
+statement ok
+CREATE DATABASE privatedb;
+
+statement ok
+GRANT USAGE ON DATABASE privatedb TO public;
+
+statement ok
+CREATE TABLE publicdb.publictable (k int)
+
+statement ok
+CREATE TABLE publicdb.privatetable (k int)
+
+statement ok
+CREATE TABLE privatedb.publictable (k int)
+
+statement ok
+CREATE TABLE privatedb.privatetable (k int)
+
+statement ok
+GRANT USAGE ON DATABASE publicdb TO public;
+GRANT USAGE ON SCHEMA publicdb.public TO public;
+
+statement ok
+GRANT SELECT, INSERT ON publicdb.publictable TO public
+
+statement ok
+GRANT SELECT ON privatedb.publictable TO public;
+
+user testuser
+
+query TT
+SHOW DATABASES
+----
+defaultdb  root
+privatedb  root
+publicdb   root
+test       root
+
+query TT
+SHOW TABLES FROM publicdb
+----
+privatetable root
+publictable  root
+
+query TT
+SHOW TABLES FROM privatedb
+----
+privatetable root
+publictable  root
+
+statement ok
+SELECT * FROM publicdb.publictable
+
+statement error user testuser does not have SELECT privilege on relation publicdb.public.privatetable
+SELECT * FROM publicdb.privatetable
+
+statement ok
+SELECT * FROM privatedb.publictable
+
+statement error user testuser does not have SELECT privilege on relation privatedb.public.privatetable
+SELECT * FROM privatedb.privatetable
+
+# Give ourselves more permissions.
+statement error user testuser does not have GRANT INSERT privilege on relation publicdb.public.publictable
+GRANT INSERT ON publicdb.publictable TO public
+
+statement ok
+INSERT INTO publicdb.publictable VALUES (1)
+
+# Revoke public access.
+statement error user testuser does not have GRANT any privilege on relation publicdb.public.publictable
+REVOKE ALL ON publicdb.publictable FROM public
+
+statement ok
+SELECT * FROM publicdb.publictable
+
+statement ok
+INSERT INTO publicdb.publictable VALUES (1)
+
+query TT
+SHOW TABLES FROM publicdb
+----
+privatetable root
+publictable  root

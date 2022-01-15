@@ -1,0 +1,198 @@
+// Copyright 2015  The Cockroach Authors.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+// implied. See the License for the specific language governing
+// permissions and limitations under the License.
+
+syntax = "proto2";
+package znbase.sql.sqlbase;
+option go_package = "sqlbase";
+
+import "gogoproto/gogo.proto";
+
+// ScanLockingStrength controls the row-level locking mode used by scans.
+// ScanLockingStrength控制扫描使用的行级锁定模式。
+//
+// Typically, SQL scans read sequential keys from the key-value layer without
+// acquiring any locks. This means that two scans by different transactions will
+// not conflict and cause one of the two transactions to block the other. This
+// is usually desirable, as it increases concurrency between readers.
+// 通常，SQL扫描从键值层读取顺序键，而不获取任何锁。 这意味着不同事务的两次扫描不会冲突，
+// 并且不会导致两个事务之一阻塞另一个事务。 这通常是理想的，因为它增加了读者之间的并发性。
+//
+// However, there are cases where a SQL scan would like to acquire locks on each
+// of the keys that it reads to more carefully control concurrent access to the
+// data that it reads. The prototypical example of this is a scan that is used
+// to fetch the initial value of a row that its transction intends to later
+// update. In this case, it would be beneficial to acquire a lock on the row
+// during the initial scan instead of waiting until the mutation to acquire a
+// lock. This prevents the row from being modified between the scan and the
+// mutation. It also prevents situations that can lead to deadlocks.
+// 但是，在某些情况下，SQL扫描希望获取其读取的每个键的锁，以更仔细地控制对读取数据的并发访问。
+// 一个典型的例子是扫描，该扫描用于获取其转换要稍后更新的行的初始值。 在这种情况下，有益的是在
+// 初始扫描期间在行上获取锁，而不是等到突变获取锁为止。 这样可以防止在扫描和突变之间修改行。
+// 它还可以防止可能导致死锁的情况。
+//
+// Locking modes have differing levels of strength, growing from "weakest" to
+// "strongest" in the order that the variants are presented in the enumeration.
+// The "stronger" a locking mode, the more protection it provides for the lock
+// holder but the more restrictive it is to concurrent transactions attempting
+// to access the same keys.
+// 锁定模式具有不同的强度级别，从“最弱”到“最强”的增长顺序是在枚举中显示。 锁定模式“越强”，
+// 它为锁持有者提供的保护就越多，但是对尝试访问相同密钥的并发事务的限制就越大。
+//
+// The following matrix presents the compatibility of locking strengths with one
+// another.
+// 以下矩阵显示了锁定强度之间的兼容性。
+//
+//  +-------------------+---------------+-----------+-------------------+------------+
+//  |                   | FOR_KEY_SHARE | FOR_SHARE | FOR_NO_KEY_UPDATE | FOR_UPDATE |
+//  +-------------------+---------------+-----------+-------------------+------------+
+//  | FOR_KEY_SHARE     |               |           |                   |      X     |
+//  +-------------------+---------------+-----------+-------------------+------------+
+//  | FOR_SHARE         |               |           |         X         |      X     |
+//  +-------------------+---------------+-----------+-------------------+------------+
+//  | FOR_NO_KEY_UPDATE |               |     X     |         X         |      X     |
+//  +-------------------+---------------+-----------+-------------------+------------+
+//  | FOR_UPDATE        |       X       |     X     |         X         |      X     |
+//  +-------------------+---------------+-----------+-------------------+------------+
+//
+// A transaction can hold conflicting locks on the same row, but two different
+// transactions can never hold conflicting locks on the same row. Once acquired,
+// a lock is held until the end of the transaction.
+// 一个事务可以在同一行上持有冲突的锁，但是两个不同的事务永远不能在同一行上持有冲突的锁。
+// 一旦获得，锁将一直保持到交易结束。
+enum ScanLockingStrength {
+  // FOR_NONE represents the default - no row-level locking.
+  // FOR_NONE代表默认值-无行级锁定。
+  FOR_NONE = 0;
+
+  // FOR_KEY_SHARE represents the FOR KEY SHARE row-level locking mode.
+  // FOR_KEY_SHARE表示FOR KEY SHARE行级锁定模式。
+  //
+  // The mode behaves similarly to FOR SHARE, except that the lock is weaker:
+  // 该模式的行为与FOR SHARE类似，但锁较弱：
+  // SELECT FOR UPDATE is blocked, but not SELECT FOR NO KEY UPDATE. A
+  // key-shared lock blocks other transactions from performing DELETE or any
+  // UPDATE that changes the key values, but not other UPDATE, and neither does
+  // it prevent SELECT FOR NO KEY UPDATE, SELECT FOR SHARE, or SELECT FOR KEY
+  // SHARE.
+  // SELECT FOR UPDATE被阻止，但SELECT FOR NO KEY UPDATE没有被阻止。 共享密钥锁阻止
+  // 其他事务执行DELETE或任何更改键值的UPDATE操作，但不会阻止其他UPDATE操作，也不会阻止
+  // SELECT FOR NO KEY UPDATE，SELECT FOR SHARE或SELECT FOR KEY SHARE。
+  //
+  // The locking mode was introduced into Postgres as an alternative to FOR
+  // SHARE to improve concurrency between foreign key validation scans, which
+  // acquire FOR KEY SHARE locks, and UPDATEs to existing rows, which acquire
+  // FOR NO KEY UPDATE locks.
+  // 锁定模式作为FOR SHARE的替代方法引入到Postgres中，以改善外键验证扫描（获取FOR KEY
+  // SHARE锁）和对现有行的UPDATE（获取FOR NO KEY UPDATE锁）之间的并发性。
+
+  //
+  // NOTE: FOR_KEY_SHARE is currently ignored. No locks are acquired.
+  // 注意：FOR_KEY_SHARE当前被忽略。 没有锁。
+  FOR_KEY_SHARE = 1;
+
+  // FOR_SHARE represents the FOR SHARE row-level locking mode.
+  // FOR_SHARE表示FOR SHARE行级锁定模式。
+  //
+  // The mode behaves similarly to FOR NO KEY UPDATE, except that it acquires a
+  // shared lock rather than exclusive lock on each retrieved row. A shared lock
+  // blocks other transactions from performing UPDATE, DELETE, SELECT FOR UPDATE
+  // or SELECT FOR NO KEY UPDATE on these rows, but it does not prevent them
+  // from performing SELECT FOR SHARE or SELECT FOR KEY SHARE.
+  // 该模式的行为与FOR NO KEY UPDATE相似，除了它在每个检索到的行上获取一个共享锁而不是互斥锁。
+  // 共享锁可阻止其他事务在这些行上执行UPDATE，DELETE，SELECT FOR UPDATE或SELECT FOR NO
+  // KEY UPDATE，但不会阻止它们执行SELECT FOR SHARE或SELECT FOR KEY SHARE。
+  //
+  // NOTE: FOR_SHARE is currently ignored. No locks are acquired.
+  // 注意：FOR_SHARE当前被忽略。 没有锁。
+  FOR_SHARE = 2;
+
+  // FOR_NO_KEY_UPDATE represents the FOR NO KEY UPDATE row-level locking mode.
+  // FOR_NO_KEY_UPDATE表示FOR NO KEY UPDATE行级锁定模式。
+  //
+  // The mode behaves similarly to FOR UPDATE, except that the lock acquired is
+  // weaker: this lock will not block SELECT FOR KEY SHARE commands that attempt
+  // to acquire a lock on the same rows. This lock mode is also acquired by any
+  // UPDATE that does not acquire a FOR UPDATE lock.
+  // 该模式的行为与FOR UPDATE类似，不同之处在于所获取的锁较弱：此锁不会阻止试图获取同一行上
+  // 的锁的SELECT FOR KEY SHARE命令。 任何不获取FOR UPDATE锁定的UPDATE也会获取此锁定模式。
+  //
+  // The locking mode was introduced into Postgres as an alternative to FOR
+  // UDPATE to improve concurrency between foreign key validation scans, which
+  // acquire FOR KEY SHARE locks, and UPDATEs to existing rows, which acquire
+  // FOR NO KEY UPDATE locks.
+  // 锁定模式作为FOR UDPATE的替代方法引入到Postgres中，以提高外键验证扫描（获取FOR KEY
+  // SHARE锁）和对现有行的更新（获取FOR NO KEY UPDATE锁）之间的并发性。
+
+  //
+  // NOTE: FOR_NO_KEY_UPDATE is currently promoted to FOR_UPDATE.
+  // 注意：FOR_NO_KEY_UPDATE当前提升为FOR_UPDATE。
+  FOR_NO_KEY_UPDATE = 3;
+
+  // FOR_UPDATE represents the FOR UPDATE row-level locking mode.
+  // FOR_UPDATE表示FOR UPDATE行级锁定模式。
+  //
+  // The mode causes the rows retrieved by the scan to be locked as though for
+  // update. This prevents them from being locked, modified or deleted by other
+  // transactions until the current transaction ends. That is, other
+  // transactions that attempt UPDATE, DELETE, SELECT FOR UPDATE, SELECT FOR NO
+  // KEY UPDATE, SELECT FOR SHARE or SELECT FOR KEY SHARE of these rows will be
+  // blocked until the current transaction ends. Conversely, SELECT FOR UPDATE
+  // will wait for a concurrent transaction that has run any of those commands
+  // on the same row, and will then lock and return the updated row (or no row,
+  // if the row was deleted).
+  // 该模式使扫描检索到的行被锁定，好像要进行更新一样。 这样可以防止它们被其他事务锁定，修改或删除，
+  // 直到当前事务结束为止。 也就是说，将阻止这些行尝试执行UPDATE，DELETE，SELECT FOR UPDATE，
+  // SELECT FOR NO KEY UPDATE，SELECT FOR SHARE或SELECT FOR KEY SHARE的其他事务，直到当前
+  // 事务结束为止。 相反，SELECT FOR UPDATE将等待在同一行上运行了任何这些命令的并发事务，然后将
+  // 锁定并返回更新的行（如果删除了该行，则不返回任何行）。
+  //
+  // NOTE: FOR_UPDATE is currently implemented by acquiring lock.Exclusive locks
+  // on each key scanned.
+  // 注意：FOR_UPDATE当前是通过获取锁来实现的。每个扫描键上的排他锁。
+  FOR_UPDATE = 4;
+}
+
+enum ScanLockingWaitLevel {
+  // BLOCK represents the default - wait for the lock to become available.
+  // BLOCK代表默认值-等待锁可用。
+  BLOCK = 0;
+
+  // SKIP represents SKIP LOCKED - skip rows that can't be locked.
+  // SKIP 表示 SKIP LOCKED-跳过无法锁定的行。
+  //
+  // NOTE: SKIP is not currently implemented and does not make it out of the SQL
+  // optimizer without throwing an error.
+  // 注意：SKIP当前未实现，并且不会在没有引发错误的情况下从SQL优化器中删除。
+
+  SKIP  = 1;
+
+  // ERROR represents NOWAIT - raise an error if a row cannot be locked.
+  // ERROR表示NOWAIT-如果无法锁定行，则会引发错误。
+  ERROR = 2;
+
+  // ScanLockingWaitPolicy_WAIT is a lock with a wait.
+  WAIT = 3;
+}
+
+// LockingWaitPolicy controls the policy used for handling conflicting locks
+// held by other active transactions when attempting to lock rows due to FOR
+// UPDATE/SHARE clauses (i.e. it represents the NOWAIT and SKIP LOCKED options).
+// LockingWaitPolicy控制用于处理由于FOR UPDATE / SHARE子句而试图锁定行时其他活动事务持有
+// 的冲突锁的策略（即，它代表NOWAIT和SKIP LOCKED选项）。
+message ScanLockingWaitPolicy {
+  optional ScanLockingWaitLevel lock_level = 1 [(gogoproto.nullable) = false];
+  optional int64 wait_time = 2 [(gogoproto.nullable) = false];
+}
+
+

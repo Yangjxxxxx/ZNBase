@@ -1,0 +1,8 @@
+statement ok
+BEGIN;
+
+query I
+SELECT * FROM T;
+----
+1
+4

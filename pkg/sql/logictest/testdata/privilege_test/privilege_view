@@ -1,0 +1,377 @@
+# LogicTest: local-insecure local-insecure-opt
+
+statement ok
+GRANT USAGE ON DATABASE test TO public;
+
+statement ok
+CREATE USER user1;
+
+statement ok
+create schema s;
+
+statement ok
+create table s.t(a int);
+
+userInsecure user1
+
+statement error user user1 does not have CREATE privilege on schema test.s
+create view s.v as select a from s.t;
+
+userInsecure root
+
+statement ok
+grant create on schema s to user1
+
+userInsecure user1
+
+statement error pq: user user1 does not have privileges to access schema test.s
+create view s.v as select a from s.t
+
+userInsecure root
+
+statement ok
+grant usage on schema s to user1
+
+userInsecure root
+
+statement ok
+grant select on s.t to user1
+
+userInsecure user1
+
+statement ok
+create view s.v as select a from s.t
+
+query TTTTTTTT
+show grants on view s.v
+----
+
+userInsecure root
+
+query TTTTTTTT
+show grants on view s.v
+----
+test  s  v  NULL  admin  admin  DELETE      YES
+test  s  v  NULL  admin  admin  DROP        YES
+test  s  v  NULL  admin  admin  INSERT      YES
+test  s  v  NULL  admin  admin  REFERENCES  YES
+test  s  v  NULL  admin  admin  SELECT      YES
+test  s  v  NULL  admin  admin  TRIGGER     YES
+test  s  v  NULL  admin  admin  UPDATE      YES
+test  s  v  NULL  admin  root   DELETE      YES
+test  s  v  NULL  admin  root   DROP        YES
+test  s  v  NULL  admin  root   INSERT      YES
+test  s  v  NULL  admin  root   REFERENCES  YES
+test  s  v  NULL  admin  root   SELECT      YES
+test  s  v  NULL  admin  root   TRIGGER     YES
+test  s  v  NULL  admin  root   UPDATE      YES
+
+query TTTTTTTT
+show grants for user1
+----
+test  NULL                NULL                               NULL  root   public  USAGE   NO
+test  information_schema  NULL                               NULL  root   public  USAGE   NO
+test  information_schema  administrable_role_authorizations  NULL  admin  public  SELECT  NO
+test  information_schema  applicable_roles                   NULL  admin  public  SELECT  NO
+test  information_schema  check_constraints                  NULL  admin  public  SELECT  NO
+test  information_schema  column_privileges                  NULL  admin  public  SELECT  NO
+test  information_schema  columns                            NULL  admin  public  SELECT  NO
+test  information_schema  constraint_column_usage            NULL  admin  public  SELECT  NO
+test  information_schema  database_privileges                NULL  admin  public  SELECT  NO
+test  information_schema  enabled_roles                      NULL  admin  public  SELECT  NO
+test  information_schema  functions                          NULL  admin  public  SELECT  NO
+test  information_schema  index_partition                    NULL  admin  public  SELECT  NO
+test  information_schema  key_column_usage                   NULL  admin  public  SELECT  NO
+test  information_schema  parameters                         NULL  admin  public  SELECT  NO
+test  information_schema  referential_constraints            NULL  admin  public  SELECT  NO
+test  information_schema  role_table_grants                  NULL  admin  public  SELECT  NO
+test  information_schema  routines                           NULL  admin  public  SELECT  NO
+test  information_schema  schema_privileges                  NULL  admin  public  SELECT  NO
+test  information_schema  schemata                           NULL  admin  public  SELECT  NO
+test  information_schema  sequences                          NULL  admin  public  SELECT  NO
+test  information_schema  statistics                         NULL  admin  public  SELECT  NO
+test  information_schema  table_constraints                  NULL  admin  public  SELECT  NO
+test  information_schema  table_privileges                   NULL  admin  public  SELECT  NO
+test  information_schema  tables                             NULL  admin  public  SELECT  NO
+test  information_schema  trigger_privileges                 NULL  admin  public  SELECT  NO
+test  information_schema  user_privileges                    NULL  admin  public  SELECT  NO
+test  information_schema  views                              NULL  admin  public  SELECT  NO
+test  pg_catalog          NULL                               NULL  root   public  USAGE   NO
+test  pg_catalog          pg_am                              NULL  admin  public  SELECT  NO
+test  pg_catalog          pg_attrdef                         NULL  admin  public  SELECT  NO
+test  pg_catalog          pg_attribute                       NULL  admin  public  SELECT  NO
+test  pg_catalog          pg_auth_members                    NULL  admin  public  SELECT  NO
+test  pg_catalog          pg_class                           NULL  admin  public  SELECT  NO
+test  pg_catalog          pg_collation                       NULL  admin  public  SELECT  NO
+test  pg_catalog          pg_constraint                      NULL  admin  public  SELECT  NO
+test  pg_catalog          pg_database                        NULL  admin  public  SELECT  NO
+test  pg_catalog          pg_depend                          NULL  admin  public  SELECT  NO
+test  pg_catalog          pg_description                     NULL  admin  public  SELECT  NO
+test  pg_catalog          pg_enum                            NULL  admin  public  SELECT  NO
+test  pg_catalog          pg_extension                       NULL  admin  public  SELECT  NO
+test  pg_catalog          pg_foreign_data_wrapper            NULL  admin  public  SELECT  NO
+test  pg_catalog          pg_foreign_server                  NULL  admin  public  SELECT  NO
+test  pg_catalog          pg_foreign_table                   NULL  admin  public  SELECT  NO
+test  pg_catalog          pg_index                           NULL  admin  public  SELECT  NO
+test  pg_catalog          pg_indexes                         NULL  admin  public  SELECT  NO
+test  pg_catalog          pg_inherits                        NULL  admin  public  SELECT  NO
+test  pg_catalog          pg_language                        NULL  admin  public  SELECT  NO
+test  pg_catalog          pg_namespace                       NULL  admin  public  SELECT  NO
+test  pg_catalog          pg_nodestatus                      NULL  admin  public  SELECT  NO
+test  pg_catalog          pg_operator                        NULL  admin  public  SELECT  NO
+test  pg_catalog          pg_proc                            NULL  admin  public  SELECT  NO
+test  pg_catalog          pg_range                           NULL  admin  public  SELECT  NO
+test  pg_catalog          pg_rewrite                         NULL  admin  public  SELECT  NO
+test  pg_catalog          pg_roles                           NULL  admin  public  SELECT  NO
+test  pg_catalog          pg_seclabel                        NULL  admin  public  SELECT  NO
+test  pg_catalog          pg_sequence                        NULL  admin  public  SELECT  NO
+test  pg_catalog          pg_settings                        NULL  admin  public  SELECT  NO
+test  pg_catalog          pg_shdescription                   NULL  admin  public  SELECT  NO
+test  pg_catalog          pg_shseclabel                      NULL  admin  public  SELECT  NO
+test  pg_catalog          pg_stat_activity                   NULL  admin  public  SELECT  NO
+test  pg_catalog          pg_tables                          NULL  admin  public  SELECT  NO
+test  pg_catalog          pg_tablespace                      NULL  admin  public  SELECT  NO
+test  pg_catalog          pg_trigger                         NULL  admin  public  SELECT  NO
+test  pg_catalog          pg_type                            NULL  admin  public  SELECT  NO
+test  pg_catalog          pg_user                            NULL  admin  public  SELECT  NO
+test  pg_catalog          pg_user_mapping                    NULL  admin  public  SELECT  NO
+test  pg_catalog          pg_views                           NULL  admin  public  SELECT  NO
+test  public              NULL                               NULL  root   public  USAGE   NO
+test  s                   NULL                               NULL  root   user1   CREATE  NO
+test  s                   NULL                               NULL  root   user1   USAGE   NO
+test  s                   t                                  NULL  root   user1   SELECT  NO
+test  zbdb_internal       NULL                               NULL  root   public  USAGE   NO
+test  zbdb_internal       backward_dependencies              NULL  admin  public  SELECT  NO
+test  zbdb_internal       builtin_functions                  NULL  admin  public  SELECT  NO
+test  zbdb_internal       cluster_queries                    NULL  admin  public  SELECT  NO
+test  zbdb_internal       cluster_sessions                   NULL  admin  public  SELECT  NO
+test  zbdb_internal       cluster_settings                   NULL  admin  public  SELECT  NO
+test  zbdb_internal       create_statements                  NULL  admin  public  SELECT  NO
+test  zbdb_internal       databases                          NULL  admin  public  SELECT  NO
+test  zbdb_internal       feature_usage                      NULL  admin  public  SELECT  NO
+test  zbdb_internal       forward_dependencies               NULL  admin  public  SELECT  NO
+test  zbdb_internal       function_privileges                NULL  admin  public  SELECT  NO
+test  zbdb_internal       gossip_alerts                      NULL  admin  public  SELECT  NO
+test  zbdb_internal       gossip_liveness                    NULL  admin  public  SELECT  NO
+test  zbdb_internal       gossip_network                     NULL  admin  public  SELECT  NO
+test  zbdb_internal       gossip_nodes                       NULL  admin  public  SELECT  NO
+test  zbdb_internal       index_columns                      NULL  admin  public  SELECT  NO
+test  zbdb_internal       jobs                               NULL  admin  public  SELECT  NO
+test  zbdb_internal       kv_node_status                     NULL  admin  public  SELECT  NO
+test  zbdb_internal       kv_store_status                    NULL  admin  public  SELECT  NO
+test  zbdb_internal       leases                             NULL  admin  public  SELECT  NO
+test  zbdb_internal       node_build_info                    NULL  admin  public  SELECT  NO
+test  zbdb_internal       node_metrics                       NULL  admin  public  SELECT  NO
+test  zbdb_internal       node_queries                       NULL  admin  public  SELECT  NO
+test  zbdb_internal       node_runtime_info                  NULL  admin  public  SELECT  NO
+test  zbdb_internal       node_sessions                      NULL  admin  public  SELECT  NO
+test  zbdb_internal       node_statement_statistics          NULL  admin  public  SELECT  NO
+test  zbdb_internal       partition_views                    NULL  admin  public  SELECT  NO
+test  zbdb_internal       partitions                         NULL  admin  public  SELECT  NO
+test  zbdb_internal       predefined_comments                NULL  admin  public  SELECT  NO
+test  zbdb_internal       ranges                             NULL  admin  public  SELECT  NO
+test  zbdb_internal       ranges_no_leases                   NULL  admin  public  SELECT  NO
+test  zbdb_internal       savepoint_status                   NULL  admin  public  SELECT  NO
+test  zbdb_internal       schema_changes                     NULL  admin  public  SELECT  NO
+test  zbdb_internal       session_trace                      NULL  admin  public  SELECT  NO
+test  zbdb_internal       session_variables                  NULL  admin  public  SELECT  NO
+test  zbdb_internal       table_columns                      NULL  admin  public  SELECT  NO
+test  zbdb_internal       table_indexes                      NULL  admin  public  SELECT  NO
+test  zbdb_internal       table_row_statistics               NULL  admin  public  SELECT  NO
+test  zbdb_internal       tables                             NULL  admin  public  SELECT  NO
+test  zbdb_internal       zones                              NULL  admin  public  SELECT  NO
+
+statement ok
+CREATE USER user2;
+grant drop on s.t to user2;
+grant create on schema s to user2
+
+userInsecure user2
+
+statement error user user2 does not have DROP privilege on relation test.s.v
+drop table s.t cascade
+
+
+userInsecure root
+
+statement ok
+grant select on view s.v to user2;
+
+userInsecure user2
+
+statement error pq: user user2 does not have privileges to access schema test.s
+create view s.v2 as select a from s.v
+
+userInsecure root
+
+statement ok
+grant usage on schema s to user2;
+
+userInsecure user2
+
+statement ok
+create view s.v2 as select a from s.v
+
+userInsecure user1
+
+statement error user user1 does not have DROP privilege on relation test.s.v2
+drop view s.v cascade
+
+userInsecure root
+
+statement ok
+grant drop on view s.v2 to user1
+
+userInsecure user1
+
+statement ok
+drop view s.v cascade
+
+query TTTTTI
+select * from information_schema.tables;
+----
+test  information_schema  administrable_role_authorizations  SYSTEM VIEW  NO   1
+test  information_schema  applicable_roles                   SYSTEM VIEW  NO   1
+test  information_schema  check_constraints                  SYSTEM VIEW  NO   1
+test  information_schema  column_privileges                  SYSTEM VIEW  NO   1
+test  information_schema  columns                            SYSTEM VIEW  NO   1
+test  information_schema  constraint_column_usage            SYSTEM VIEW  NO   1
+test  information_schema  database_privileges                SYSTEM VIEW  NO   1
+test  information_schema  enabled_roles                      SYSTEM VIEW  NO   1
+test  information_schema  functions                          SYSTEM VIEW  NO   1
+test  information_schema  index_partition                    SYSTEM VIEW  NO   1
+test  information_schema  key_column_usage                   SYSTEM VIEW  NO   1
+test  information_schema  parameters                         SYSTEM VIEW  NO   1
+test  information_schema  referential_constraints            SYSTEM VIEW  NO   1
+test  information_schema  role_table_grants                  SYSTEM VIEW  NO   1
+test  information_schema  routines                           SYSTEM VIEW  NO   1
+test  information_schema  schema_privileges                  SYSTEM VIEW  NO   1
+test  information_schema  schemata                           SYSTEM VIEW  NO   1
+test  information_schema  sequences                          SYSTEM VIEW  NO   1
+test  information_schema  statistics                         SYSTEM VIEW  NO   1
+test  information_schema  table_constraints                  SYSTEM VIEW  NO   1
+test  information_schema  table_privileges                   SYSTEM VIEW  NO   1
+test  information_schema  tables                             SYSTEM VIEW  NO   1
+test  information_schema  trigger_privileges                 SYSTEM VIEW  NO   1
+test  information_schema  user_privileges                    SYSTEM VIEW  NO   1
+test  information_schema  views                              SYSTEM VIEW  NO   1
+test  pg_catalog          pg_am                              SYSTEM VIEW  NO   1
+test  pg_catalog          pg_attrdef                         SYSTEM VIEW  NO   1
+test  pg_catalog          pg_attribute                       SYSTEM VIEW  NO   1
+test  pg_catalog          pg_auth_members                    SYSTEM VIEW  NO   1
+test  pg_catalog          pg_class                           SYSTEM VIEW  NO   1
+test  pg_catalog          pg_collation                       SYSTEM VIEW  NO   1
+test  pg_catalog          pg_constraint                      SYSTEM VIEW  NO   1
+test  pg_catalog          pg_database                        SYSTEM VIEW  NO   1
+test  pg_catalog          pg_depend                          SYSTEM VIEW  NO   1
+test  pg_catalog          pg_description                     SYSTEM VIEW  NO   1
+test  pg_catalog          pg_enum                            SYSTEM VIEW  NO   1
+test  pg_catalog          pg_extension                       SYSTEM VIEW  NO   1
+test  pg_catalog          pg_foreign_data_wrapper            SYSTEM VIEW  NO   1
+test  pg_catalog          pg_foreign_server                  SYSTEM VIEW  NO   1
+test  pg_catalog          pg_foreign_table                   SYSTEM VIEW  NO   1
+test  pg_catalog          pg_index                           SYSTEM VIEW  NO   1
+test  pg_catalog          pg_indexes                         SYSTEM VIEW  NO   1
+test  pg_catalog          pg_inherits                        SYSTEM VIEW  NO   1
+test  pg_catalog          pg_language                        SYSTEM VIEW  NO   1
+test  pg_catalog          pg_namespace                       SYSTEM VIEW  NO   1
+test  pg_catalog          pg_nodestatus                      SYSTEM VIEW  NO   1
+test  pg_catalog          pg_operator                        SYSTEM VIEW  NO   1
+test  pg_catalog          pg_proc                            SYSTEM VIEW  NO   1
+test  pg_catalog          pg_range                           SYSTEM VIEW  NO   1
+test  pg_catalog          pg_rewrite                         SYSTEM VIEW  NO   1
+test  pg_catalog          pg_roles                           SYSTEM VIEW  NO   1
+test  pg_catalog          pg_seclabel                        SYSTEM VIEW  NO   1
+test  pg_catalog          pg_sequence                        SYSTEM VIEW  NO   1
+test  pg_catalog          pg_settings                        SYSTEM VIEW  NO   1
+test  pg_catalog          pg_shdescription                   SYSTEM VIEW  NO   1
+test  pg_catalog          pg_shseclabel                      SYSTEM VIEW  NO   1
+test  pg_catalog          pg_stat_activity                   SYSTEM VIEW  NO   1
+test  pg_catalog          pg_tables                          SYSTEM VIEW  NO   1
+test  pg_catalog          pg_tablespace                      SYSTEM VIEW  NO   1
+test  pg_catalog          pg_trigger                         SYSTEM VIEW  NO   1
+test  pg_catalog          pg_type                            SYSTEM VIEW  NO   1
+test  pg_catalog          pg_user                            SYSTEM VIEW  NO   1
+test  pg_catalog          pg_user_mapping                    SYSTEM VIEW  NO   1
+test  pg_catalog          pg_views                           SYSTEM VIEW  NO   1
+test  zbdb_internal       backward_dependencies              SYSTEM VIEW  NO   1
+test  zbdb_internal       builtin_functions                  SYSTEM VIEW  NO   1
+test  zbdb_internal       cluster_queries                    SYSTEM VIEW  NO   1
+test  zbdb_internal       cluster_sessions                   SYSTEM VIEW  NO   1
+test  zbdb_internal       cluster_settings                   SYSTEM VIEW  NO   1
+test  zbdb_internal       create_statements                  SYSTEM VIEW  NO   1
+test  zbdb_internal       databases                          SYSTEM VIEW  NO   1
+test  zbdb_internal       feature_usage                      SYSTEM VIEW  NO   1
+test  zbdb_internal       forward_dependencies               SYSTEM VIEW  NO   1
+test  zbdb_internal       function_privileges                SYSTEM VIEW  NO   1
+test  zbdb_internal       gossip_alerts                      SYSTEM VIEW  NO   1
+test  zbdb_internal       gossip_liveness                    SYSTEM VIEW  NO   1
+test  zbdb_internal       gossip_network                     SYSTEM VIEW  NO   1
+test  zbdb_internal       gossip_nodes                       SYSTEM VIEW  NO   1
+test  zbdb_internal       index_columns                      SYSTEM VIEW  NO   1
+test  zbdb_internal       jobs                               SYSTEM VIEW  NO   1
+test  zbdb_internal       kv_node_status                     SYSTEM VIEW  NO   1
+test  zbdb_internal       kv_store_status                    SYSTEM VIEW  NO   1
+test  zbdb_internal       leases                             SYSTEM VIEW  NO   1
+test  zbdb_internal       node_build_info                    SYSTEM VIEW  NO   1
+test  zbdb_internal       node_metrics                       SYSTEM VIEW  NO   1
+test  zbdb_internal       node_queries                       SYSTEM VIEW  NO   1
+test  zbdb_internal       node_runtime_info                  SYSTEM VIEW  NO   1
+test  zbdb_internal       node_sessions                      SYSTEM VIEW  NO   1
+test  zbdb_internal       node_statement_statistics          SYSTEM VIEW  NO   1
+test  zbdb_internal       partition_views                    SYSTEM VIEW  NO   1
+test  zbdb_internal       partitions                         SYSTEM VIEW  NO   1
+test  zbdb_internal       predefined_comments                SYSTEM VIEW  NO   1
+test  zbdb_internal       ranges                             SYSTEM VIEW  NO   1
+test  zbdb_internal       ranges_no_leases                   SYSTEM VIEW  NO   1
+test  zbdb_internal       savepoint_status                   SYSTEM VIEW  NO   1
+test  zbdb_internal       schema_changes                     SYSTEM VIEW  NO   1
+test  zbdb_internal       session_trace                      SYSTEM VIEW  NO   1
+test  zbdb_internal       session_variables                  SYSTEM VIEW  NO   1
+test  zbdb_internal       table_columns                      SYSTEM VIEW  NO   1
+test  zbdb_internal       table_indexes                      SYSTEM VIEW  NO   1
+test  zbdb_internal       table_row_statistics               SYSTEM VIEW  NO   1
+test  zbdb_internal       tables                             SYSTEM VIEW  NO   1
+test  zbdb_internal       zones                              SYSTEM VIEW  NO   1
+test  s                   t                                  BASE TABLE   YES  5
+
+statement error cannot create view in virtual schema: "information_schema"
+create view information_schema.v as select TABLE_CATALOG, TABLE_SCHEMA, TABLE_NAME from information_schema.tables;
+
+userInsecure root
+
+statement ok
+create view s.v as select TABLE_CATALOG, TABLE_SCHEMA, TABLE_NAME from information_schema.tables;
+
+query TTTTTTTT
+show grants on view s.v
+----
+test  s  v  NULL  admin  admin  DELETE      YES
+test  s  v  NULL  admin  admin  DROP        YES
+test  s  v  NULL  admin  admin  INSERT      YES
+test  s  v  NULL  admin  admin  REFERENCES  YES
+test  s  v  NULL  admin  admin  SELECT      YES
+test  s  v  NULL  admin  admin  TRIGGER     YES
+test  s  v  NULL  admin  admin  UPDATE      YES
+test  s  v  NULL  admin  root   DELETE      YES
+test  s  v  NULL  admin  root   DROP        YES
+test  s  v  NULL  admin  root   INSERT      YES
+test  s  v  NULL  admin  root   REFERENCES  YES
+test  s  v  NULL  admin  root   SELECT      YES
+test  s  v  NULL  admin  root   TRIGGER     YES
+test  s  v  NULL  admin  root   UPDATE      YES
+
+userInsecure user1
+
+statement error pq: user user1 does not have DROP privilege on relation test.s.v
+alter view s.v rename to v
+
+userInsecure root
+
+statement ok
+grant create on schema public to user1
+
+userInsecure user1
+
+statement error user user1 does not have DROP privilege on relation test.s.v
+alter view s.v rename to v

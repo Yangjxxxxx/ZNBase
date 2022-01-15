@@ -1,0 +1,88 @@
+# LogicTest: local-insecure local-insecure-opt
+# ------------------------------------------------------------------------------
+# grant with grant options tests.
+# ------------------------------------------------------------------------------
+
+statement ok
+CREATE DATABASE a;
+CREATE SCHEMA a.s;
+CREATE TABLE a.s.t (a INT PRIMARY KEY, b INT);
+CREATE USER user1;
+USE a;
+
+statement ok
+GRANT USAGE ON DATABASE a TO public;
+
+statement ok
+GRANT USAGE ON SCHEMA a.s TO user1;
+
+userInsecure user1
+
+statement error user user1 does not have SELECT privilege on relation a.s.t
+select * from a.s.t;
+
+user root
+
+statement ok
+GRANT USAGE ON DATABASE a TO user1;
+
+userInsecure user1
+
+statement error user user1 does not have SELECT privilege on relation a.s.t
+select * from a.s.t;
+
+# test2
+
+user root
+
+statement ok
+create database d1;
+set database = test;
+create schema s1;
+
+statement ok
+GRANT USAGE ON DATABASE d1 TO user1;
+GRANT USAGE ON DATABASE test TO user1;
+
+statement ok
+GRANT USAGE ON SCHEMA s1 TO user1;
+
+userInsecure user1
+
+query TT
+show schemas
+----
+information_schema  root
+pg_catalog          root
+public              root
+s1                  root
+zbdb_internal       root
+
+user root
+
+statement ok
+alter schema s1 rename to d1.s2;
+set database = d1;
+
+query TT
+show schemas
+----
+information_schema  root
+pg_catalog          root
+public              root
+s2                  root
+zbdb_internal       root
+
+userInsecure user1
+
+statement ok
+set database = d1;
+
+query TT
+show schemas
+----
+information_schema  root
+pg_catalog          root
+public              root
+s2                  root
+zbdb_internal       root

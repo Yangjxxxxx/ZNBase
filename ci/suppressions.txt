@@ -1,0 +1,5 @@
+// This file is used for cppcheck, where you can list the types
+// that need to be masked to skip unnecessary checks.
+
+noExplicitConstructor // suppress all noExplicitConstructor errors in all files
+unusedFunction // suppress all unusedFunction errors in all files
