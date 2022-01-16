@@ -2639,9 +2639,10 @@ func (dsp *DistSQLPlanner) createPlanForJoin(
 	}
 
 	p.ChangePlanForReplica = leftPlan.ChangePlanForReplica
-	p.AddJoinStage(
+	hjWorkArgs := distsqlplan.HashJoinWorkArgs{	HJType: distsqlplan.BASE }
+	p.AddJoinStageWithWorkArgs(
 		nodes, core, post, leftEqCols, rightEqCols, leftTypes, rightTypes,
-		leftMergeOrd, rightMergeOrd, leftRouters, rightRouters,
+		leftMergeOrd, rightMergeOrd, leftRouters, rightRouters, hjWorkArgs,
 	)
 
 	p.PlanToStreamColMap = joinToStreamColMap

@@ -31,23 +31,6 @@ import (
 	"github.com/znbasedb/znbase/pkg/util/encoding"
 )
 
-type hashJoinType int
-
-const (
-	BASE = iota
-
-	AVG_MIRROR
-
-	PRPD
-)
-
-type HashJoinWorkArgs struct {
-	HJType hashJoinType
-
-	LeftHeavyHitters 	[]distsqlpb.OutputRouterSpec_MixHashRouterRuleSpec_HeavyHitter
-	RightHeavyHitters 	[]distsqlpb.OutputRouterSpec_MixHashRouterRuleSpec_HeavyHitter
-}
-
 // joinPlanningInfo is a utility struct that contains the information needed to
 // perform the physical planning of hash and merge joins.
 type joinPlanningInfo struct {

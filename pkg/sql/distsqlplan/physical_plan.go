@@ -1380,167 +1380,184 @@ func (p *PhysicalPlan) AddJoinStage(
 	}
 }
 
-//func (p *PhysicalPlan) AddJoinStageWithWorkArgs(
-//	nodes []roachpb.NodeID,
-//	core distsqlpb.ProcessorCoreUnion,
-//	post distsqlpb.PostProcessSpec,
-//	leftEqCols, rightEqCols []uint32,
-//	leftTypes, rightTypes []sqlbase.ColumnType,
-//	leftMergeOrd, rightMergeOrd distsqlpb.Ordering,
-//	leftRouters, rightRouters []ProcessorIdx,
-//	hjWorkArgs sql.HashJoinWorkArgs,
-//) {
-//	pIdxStart := ProcessorIdx(len(p.Processors))
-//	stageID := p.NewStageID()
-//
-//	for _, n := range nodes {
-//		inputs := make([]distsqlpb.InputSyncSpec, 0, 2)
-//		inputs = append(inputs, distsqlpb.InputSyncSpec{ColumnTypes: leftTypes})
-//		inputs = append(inputs, distsqlpb.InputSyncSpec{ColumnTypes: rightTypes})
-//
-//		proc := Processor{
-//			Node: n,
-//			Spec: distsqlpb.ProcessorSpec{
-//				Input: inputs,
-//				Core:  core,
-//				Post:  post,
-//				Output: []distsqlpb.OutputRouterSpec{{Type: distsqlpb.OutputRouterSpec_PASS_THROUGH,
-//					ReplicationTable: p.HaveReplicaTable}},
-//				StageID: stageID,
-//			},
-//		}
-//		p.Processors = append(p.Processors, proc)
-//	}
-//
-//	if len(nodes) > 1 {
-//		switch hjWorkArgs.HJType {
-//		case sql.BASE:
-//			// Parallel hash or merge join: we distribute rows (by hash of
-//			// equality columns) to len(nodes) join processors.
-//
-//			// Set up the left routers.
-//			for _, resultProc := range leftRouters {
-//				if p.ChangePlanForReplica && p.HaveReplicaTable {
-//					p.Processors[resultProc].Spec.Output[0] = distsqlpb.OutputRouterSpec{
-//						Type:             distsqlpb.OutputRouterSpec_PASS_THROUGH,
-//						ReplicationTable: true,
-//					}
-//					continue
-//				}
-//				p.Processors[resultProc].Spec.Output[0] = distsqlpb.OutputRouterSpec{
-//					Type:        distsqlpb.OutputRouterSpec_BY_HASH,
-//					HashColumns: leftEqCols,
-//				}
-//			}
-//			// Set up the right routers.
-//			for _, resultProc := range rightRouters {
-//				if p.ChangePlanForReplica && p.HaveReplicaTable {
-//					p.Processors[resultProc].Spec.Output[0] = distsqlpb.OutputRouterSpec{
-//						Type:             distsqlpb.OutputRouterSpec_PASS_THROUGH,
-//						ReplicationTable: true,
-//					}
-//					continue
-//				}
-//				p.Processors[resultProc].Spec.Output[0] = distsqlpb.OutputRouterSpec{
-//					Type:        distsqlpb.OutputRouterSpec_BY_HASH,
-//					HashColumns: rightEqCols,
-//				}
-//			}
-//
-//		case sql.PRPD:
-//			// Set up the left routers.
-//			leftRules := make([]distsqlpb.OutputRouterSpec_MixHashRouterRuleSpec, 2)
-//			leftRules[0] = distsqlpb.OutputRouterSpec_MixHashRouterRuleSpec{
-//				MixHashType: distsqlpb.OutputRouterSpec_MixHashRouterRuleSpec_HASH_LOCAL,
-//				SkewData: hjWorkArgs.LeftHeavyHitters,
-//			}
-//			leftRules[1] = distsqlpb.OutputRouterSpec_MixHashRouterRuleSpec{
-//				MixHashType: distsqlpb.OutputRouterSpec_MixHashRouterRuleSpec_HASH_MIRROR,
-//				SkewData: hjWorkArgs.RightHeavyHitters,
-//			}
-//			for _, resultProc := range leftRouters {
-//				p.Processors[resultProc].Spec.Output[0] = distsqlpb.OutputRouterSpec{
-//					Type:        distsqlpb.OutputRouterSpec_BY_MIX_HASH,
-//					HashColumns: leftEqCols,
-//					MixHashRules: leftRules,
-//				}
-//			}
-//			// Set up the right routers.
-//			rightRules := make([]distsqlpb.OutputRouterSpec_MixHashRouterRuleSpec, 2)
-//			rightRules[0] = distsqlpb.OutputRouterSpec_MixHashRouterRuleSpec{
-//				MixHashType: distsqlpb.OutputRouterSpec_MixHashRouterRuleSpec_HASH_LOCAL,
-//				SkewData: hjWorkArgs.RightHeavyHitters,
-//			}
-//			rightRules[1] = distsqlpb.OutputRouterSpec_MixHashRouterRuleSpec{
-//				MixHashType:distsqlpb.OutputRouterSpec_MixHashRouterRuleSpec_HASH_MIRROR,
-//				SkewData: hjWorkArgs.LeftHeavyHitters,
-//			}
-//			for _, resultProc := range rightRouters {
-//				p.Processors[resultProc].Spec.Output[0] = distsqlpb.OutputRouterSpec{
-//					Type:        distsqlpb.OutputRouterSpec_BY_MIX_HASH,
-//					HashColumns: rightEqCols,
-//					MixHashRules: rightRules,
-//				}
-//			}
-//
-//		case sql.AVG_MIRROR:
-//			// Set up the left routers.
-//			leftRules := make([]distsqlpb.OutputRouterSpec_MixHashRouterRuleSpec, 1)
-//			leftRules[0] = distsqlpb.OutputRouterSpec_MixHashRouterRuleSpec{
-//				MixHashType: distsqlpb.OutputRouterSpec_MixHashRouterRuleSpec_HASH_MIRROR,
-//				SkewData: hjWorkArgs.RightHeavyHitters,
-//			}
-//			for _, resultProc := range leftRouters {
-//				p.Processors[resultProc].Spec.Output[0] = distsqlpb.OutputRouterSpec{
-//					Type:        distsqlpb.OutputRouterSpec_BY_MIX_HASH,
-//					HashColumns: leftEqCols,
-//					MixHashRules: leftRules,
-//				}
-//			}
-//			// Set up the right routers.
-//			rightRules := make([]distsqlpb.OutputRouterSpec_MixHashRouterRuleSpec, 1)
-//			rightRules[0] = distsqlpb.OutputRouterSpec_MixHashRouterRuleSpec{
-//				MixHashType: distsqlpb.OutputRouterSpec_MixHashRouterRuleSpec_HASH_AVERAGE,
-//				SkewData: hjWorkArgs.RightHeavyHitters,
-//			}
-//			for _, resultProc := range rightRouters {
-//				p.Processors[resultProc].Spec.Output[0] = distsqlpb.OutputRouterSpec{
-//					Type:        distsqlpb.OutputRouterSpec_BY_HASH,
-//					HashColumns: rightEqCols,
-//					MixHashRules: rightRules,
-//				}
-//			}
-//
-//		}
-//	}
-//	p.ResultRouters = p.ResultRouters[:0]
-//
-//	// Connect the left and right routers to the output joiners when there is a
-//	// replication table.
-//	if p.HaveReplicaTable && p.ChangePlanForReplica {
-//		for bucket := 0; bucket < len(nodes); bucket++ {
-//			pIdx := pIdxStart + ProcessorIdx(bucket)
-//			p.MergeResultStreamsForReplica(leftRouters, bucket, leftMergeOrd, pIdx, 0)
-//			p.MergeResultStreamsForReplica(rightRouters, bucket, rightMergeOrd, pIdx, 1)
-//			p.ResultRouters = append(p.ResultRouters, pIdx)
-//		}
-//		return
-//	}
-//
-//	// Connect the left and right routers to the output joiners. Each joiner
-//	// corresponds to a hash bucket.
-//	for bucket := 0; bucket < len(nodes); bucket++ {
-//		pIdx := pIdxStart + ProcessorIdx(bucket)
-//
-//		// Connect left routers to the processor's first input. Currently the join
-//		// node doesn't care about the orderings of the left and right results.
-//		p.MergeResultStreams(leftRouters, bucket, leftMergeOrd, pIdx, 0)
-//		// Connect right routers to the processor's second input if it has one.
-//		p.MergeResultStreams(rightRouters, bucket, rightMergeOrd, pIdx, 1)
-//
-//		p.ResultRouters = append(p.ResultRouters, pIdx)
-//	}
-//}
+type hashJoinType int
+
+const (
+	BASE = iota
+
+	AVG_MIRROR
+
+	PRPD
+)
+
+type HashJoinWorkArgs struct {
+	HJType hashJoinType
+
+	LeftHeavyHitters 	[]distsqlpb.OutputRouterSpec_MixHashRouterRuleSpec_HeavyHitter
+	RightHeavyHitters 	[]distsqlpb.OutputRouterSpec_MixHashRouterRuleSpec_HeavyHitter
+}
+
+func (p *PhysicalPlan) AddJoinStageWithWorkArgs(
+	nodes []roachpb.NodeID,
+	core distsqlpb.ProcessorCoreUnion,
+	post distsqlpb.PostProcessSpec,
+	leftEqCols, rightEqCols []uint32,
+	leftTypes, rightTypes []sqlbase.ColumnType,
+	leftMergeOrd, rightMergeOrd distsqlpb.Ordering,
+	leftRouters, rightRouters []ProcessorIdx,
+	hjWorkArgs HashJoinWorkArgs,
+) {
+	pIdxStart := ProcessorIdx(len(p.Processors))
+	stageID := p.NewStageID()
+
+	for _, n := range nodes {
+		inputs := make([]distsqlpb.InputSyncSpec, 0, 2)
+		inputs = append(inputs, distsqlpb.InputSyncSpec{ColumnTypes: leftTypes})
+		inputs = append(inputs, distsqlpb.InputSyncSpec{ColumnTypes: rightTypes})
+
+		proc := Processor{
+			Node: n,
+			Spec: distsqlpb.ProcessorSpec{
+				Input: inputs,
+				Core:  core,
+				Post:  post,
+				Output: []distsqlpb.OutputRouterSpec{{Type: distsqlpb.OutputRouterSpec_PASS_THROUGH,
+					ReplicationTable: p.HaveReplicaTable}},
+				StageID: stageID,
+			},
+		}
+		p.Processors = append(p.Processors, proc)
+	}
+
+	if len(nodes) > 1 {
+		switch hjWorkArgs.HJType {
+		case BASE:
+			// Parallel hash or merge join: we distribute rows (by hash of
+			// equality columns) to len(nodes) join processors.
+
+			// Set up the left routers.
+			for _, resultProc := range leftRouters {
+				if p.ChangePlanForReplica && p.HaveReplicaTable {
+					p.Processors[resultProc].Spec.Output[0] = distsqlpb.OutputRouterSpec{
+						Type:             distsqlpb.OutputRouterSpec_PASS_THROUGH,
+						ReplicationTable: true,
+					}
+					continue
+				}
+				p.Processors[resultProc].Spec.Output[0] = distsqlpb.OutputRouterSpec{
+					Type:        distsqlpb.OutputRouterSpec_BY_HASH,
+					HashColumns: leftEqCols,
+				}
+			}
+			// Set up the right routers.
+			for _, resultProc := range rightRouters {
+				if p.ChangePlanForReplica && p.HaveReplicaTable {
+					p.Processors[resultProc].Spec.Output[0] = distsqlpb.OutputRouterSpec{
+						Type:             distsqlpb.OutputRouterSpec_PASS_THROUGH,
+						ReplicationTable: true,
+					}
+					continue
+				}
+				p.Processors[resultProc].Spec.Output[0] = distsqlpb.OutputRouterSpec{
+					Type:        distsqlpb.OutputRouterSpec_BY_HASH,
+					HashColumns: rightEqCols,
+				}
+			}
+
+		case PRPD:
+			// Set up the left routers.
+			leftRules := make([]distsqlpb.OutputRouterSpec_MixHashRouterRuleSpec, 2)
+			leftRules[0] = distsqlpb.OutputRouterSpec_MixHashRouterRuleSpec{
+				MixHashType: distsqlpb.OutputRouterSpec_MixHashRouterRuleSpec_HASH_LOCAL,
+				SkewData: hjWorkArgs.LeftHeavyHitters,
+			}
+			leftRules[1] = distsqlpb.OutputRouterSpec_MixHashRouterRuleSpec{
+				MixHashType: distsqlpb.OutputRouterSpec_MixHashRouterRuleSpec_HASH_MIRROR,
+				SkewData: hjWorkArgs.RightHeavyHitters,
+			}
+			for _, resultProc := range leftRouters {
+				p.Processors[resultProc].Spec.Output[0] = distsqlpb.OutputRouterSpec{
+					Type:        distsqlpb.OutputRouterSpec_BY_MIX_HASH,
+					HashColumns: leftEqCols,
+					MixHashRules: leftRules,
+				}
+			}
+			// Set up the right routers.
+			rightRules := make([]distsqlpb.OutputRouterSpec_MixHashRouterRuleSpec, 2)
+			rightRules[0] = distsqlpb.OutputRouterSpec_MixHashRouterRuleSpec{
+				MixHashType: distsqlpb.OutputRouterSpec_MixHashRouterRuleSpec_HASH_LOCAL,
+				SkewData: hjWorkArgs.RightHeavyHitters,
+			}
+			rightRules[1] = distsqlpb.OutputRouterSpec_MixHashRouterRuleSpec{
+				MixHashType:distsqlpb.OutputRouterSpec_MixHashRouterRuleSpec_HASH_MIRROR,
+				SkewData: hjWorkArgs.LeftHeavyHitters,
+			}
+			for _, resultProc := range rightRouters {
+				p.Processors[resultProc].Spec.Output[0] = distsqlpb.OutputRouterSpec{
+					Type:        distsqlpb.OutputRouterSpec_BY_MIX_HASH,
+					HashColumns: rightEqCols,
+					MixHashRules: rightRules,
+				}
+			}
+
+		case AVG_MIRROR:
+			// Set up the left routers.
+			leftRules := make([]distsqlpb.OutputRouterSpec_MixHashRouterRuleSpec, 1)
+			leftRules[0] = distsqlpb.OutputRouterSpec_MixHashRouterRuleSpec{
+				MixHashType: distsqlpb.OutputRouterSpec_MixHashRouterRuleSpec_HASH_MIRROR,
+				SkewData: hjWorkArgs.RightHeavyHitters,
+			}
+			for _, resultProc := range leftRouters {
+				p.Processors[resultProc].Spec.Output[0] = distsqlpb.OutputRouterSpec{
+					Type:        distsqlpb.OutputRouterSpec_BY_MIX_HASH,
+					HashColumns: leftEqCols,
+					MixHashRules: leftRules,
+				}
+			}
+			// Set up the right routers.
+			rightRules := make([]distsqlpb.OutputRouterSpec_MixHashRouterRuleSpec, 1)
+			rightRules[0] = distsqlpb.OutputRouterSpec_MixHashRouterRuleSpec{
+				MixHashType: distsqlpb.OutputRouterSpec_MixHashRouterRuleSpec_HASH_AVERAGE,
+				SkewData: hjWorkArgs.RightHeavyHitters,
+			}
+			for _, resultProc := range rightRouters {
+				p.Processors[resultProc].Spec.Output[0] = distsqlpb.OutputRouterSpec{
+					Type:        distsqlpb.OutputRouterSpec_BY_MIX_HASH,
+					HashColumns: rightEqCols,
+					MixHashRules: rightRules,
+				}
+			}
+
+		}
+	}
+	p.ResultRouters = p.ResultRouters[:0]
+
+	// Connect the left and right routers to the output joiners when there is a
+	// replication table.
+	if p.HaveReplicaTable && p.ChangePlanForReplica {
+		for bucket := 0; bucket < len(nodes); bucket++ {
+			pIdx := pIdxStart + ProcessorIdx(bucket)
+			p.MergeResultStreamsForReplica(leftRouters, bucket, leftMergeOrd, pIdx, 0)
+			p.MergeResultStreamsForReplica(rightRouters, bucket, rightMergeOrd, pIdx, 1)
+			p.ResultRouters = append(p.ResultRouters, pIdx)
+		}
+		return
+	}
+
+	// Connect the left and right routers to the output joiners. Each joiner
+	// corresponds to a hash bucket.
+	for bucket := 0; bucket < len(nodes); bucket++ {
+		pIdx := pIdxStart + ProcessorIdx(bucket)
+
+		// Connect left routers to the processor's first input. Currently the join
+		// node doesn't care about the orderings of the left and right results.
+		p.MergeResultStreams(leftRouters, bucket, leftMergeOrd, pIdx, 0)
+		// Connect right routers to the processor's second input if it has one.
+		p.MergeResultStreams(rightRouters, bucket, rightMergeOrd, pIdx, 1)
+
+		p.ResultRouters = append(p.ResultRouters, pIdx)
+	}
+}
 
 // AddDistinctSetOpStage creates a distinct stage and a join stage to implement
 // INTERSECT and EXCEPT plans.
