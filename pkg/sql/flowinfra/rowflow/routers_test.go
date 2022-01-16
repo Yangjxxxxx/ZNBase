@@ -85,6 +85,13 @@ func TestRouters(t *testing.T) {
 	diskMonitor := runbase.NewTestDiskMonitor(ctx, st)
 	defer diskMonitor.Stop(ctx)
 
+	//var a int
+	//addfunc := func () {
+	//	a++
+	//}
+	//addfunc()
+	//fmt.Println(a)
+
 	// Generate tables of possible values for each column; we have fewer possible
 	// values than rows to guarantee many occurrences of each value.
 	vals, typs := sqlbase.RandSortingEncDatumSlices(rng, numCols, numRows/10)
