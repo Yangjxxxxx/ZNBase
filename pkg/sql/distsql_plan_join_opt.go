@@ -78,9 +78,9 @@ type distJoinHelper struct {
 	processors 			[]distsqlplan.Processor
 	leftRouters 		[]distsqlplan.ProcessorIdx
 	rightRouters 		[]distsqlplan.ProcessorIdx
-	// join node' ID
+	// join node's ID
 	joinNodes			[]roachpb.NodeID
-	// getway' ID
+	// getway's ID
 	getwayID 			roachpb.NodeID
 	frequencyThreshold  int64
 
@@ -98,6 +98,7 @@ func (djh *distJoinHelper) init() {
 		return
 	}
 
+	// estimate every router' skew data size
 	calOneSide := func (routers []distsqlplan.ProcessorIdx, heavyHitters []distsqlpb.OutputRouterSpec_MixHashRouterRuleSpec_HeavyHitter) []int64 {
 		RouterRowCounts := make([]int64, len(routers))
 		var allRowCounts int64
@@ -124,7 +125,7 @@ func (djh *distJoinHelper) init() {
 	djh.leftSkewData = &util.FastIntMap{}
 	djh.rightSkewData = &util.FastIntMap{}
 	djh.intersect = &util.FastIntSet{}
-	// add left/right to map, and get interset
+	// add left/right to map, and get intersect
 	for _, item := range djh.leftHeavyHitters {
 		djh.leftSkewData.Set(int(item.Value), int(item.Frequency))
 	}
@@ -148,19 +149,25 @@ func(p PRPD) Init() {
 	p.joinInfo.init()
 
 	intersect := p.joinInfo.intersect
-	// get left/right final map, final map is not intersect
+	// get left/right final skew data, two final skew data is not intersect
+	leftSkewSize := int64(0)
 	for _, item := range p.joinInfo.leftHeavyHitters {
+		leftSkewSize += item.Frequency
 		if intersect.Contains(int(item.Value)) {
 			continue
 		}
 		p.finalLeftSkewData = append(p.finalLeftSkewData, item.Value)
 	}
+	rightSkewSize := int64(0)
 	for _, item := range p.joinInfo.rightHeavyHitters {
+		rightSkewSize += item.Frequency
 		if intersect.Contains(int(item.Value)) {
 			continue
 		}
 		p.finalRightSkewData = append(p.finalRightSkewData, item.Value)
 	}
+
+	// todo: intersect -> left or right
 }
 
 func(p PRPD) DistributeCost() int64 {
