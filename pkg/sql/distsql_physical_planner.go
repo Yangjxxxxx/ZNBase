@@ -687,6 +687,7 @@ func identityMapInPlace(slice []int) []int {
 type SpanPartition struct {
 	Node  roachpb.NodeID
 	Spans roachpb.Spans
+	Ranges []roachpb.Ranges
 }
 
 type distSQLNodeHealth struct {
@@ -744,6 +745,24 @@ func (h *distSQLNodeHealth) check(ctx context.Context, nodeID roachpb.NodeID) er
 	return nil
 }
 
+func (dsp *DistSQLPlanner) GetRanges(
+	planCtx *PlanningCtx, spans roachpb.Spans,
+) ([]roachpb.Ranges, error) {
+	it := planCtx.spanIter
+	ctx := planCtx.ctx
+	ranges := make([]roachpb.Ranges, len(spans))
+	for i, span := range spans {
+		for it.Seek(ctx, span, kv.Ascending); ; it.Next(ctx) {
+			if !it.Valid() {
+				return nil, it.Error()
+			}
+			desc := it.Desc()
+			ranges[i] = append(ranges[i], desc)
+		}
+	}
+	return ranges, nil
+}
+
 // PartitionSpans finds out which nodes are owners for ranges touching the
 // given spans, and splits the spans according to owning nodes. The result is a
 // set of SpanPartitions (guaranteed one for each relevant node), which form a
@@ -763,8 +782,9 @@ func (dsp *DistSQLPlanner) PartitionSpans(
 	partitions := make([]SpanPartition, 0, 1)
 	if planCtx.isLocal {
 		// If we're planning locally, map all spans to the local node.
+		ranges, _ := dsp.GetRanges(planCtx, spans)
 		partitions = append(partitions,
-			SpanPartition{dsp.nodeDesc.NodeID, spans})
+			SpanPartition{dsp.nodeDesc.NodeID, spans, ranges})
 		return partitions, nil
 	}
 	// nodeMap maps a nodeID to an index inside the partitions array.
@@ -866,11 +886,13 @@ func (dsp *DistSQLPlanner) PartitionSpans(
 			if lastNodeID == nodeID {
 				// Two consecutive ranges on the same node, merge the spans.
 				partition.Spans[len(partition.Spans)-1].EndKey = endKey.AsRawKey()
+				partition.Ranges[len(partition.Ranges)-1] = append(partition.Ranges[len(partition.Ranges)-1], desc)
 			} else {
 				partition.Spans = append(partition.Spans, roachpb.Span{
 					Key:    lastKey.AsRawKey(),
 					EndKey: endKey.AsRawKey(),
 				})
+				partition.Ranges = append(partition.Ranges, roachpb.Ranges{ desc })
 			}
 
 			if !endKey.Less(rspan.EndKey) {
@@ -1165,7 +1187,8 @@ func (dsp *DistSQLPlanner) createTableReaders(
 
 	var spanPartitions []SpanPartition
 	if planCtx.isLocal || spec.Table.ReplicationTable {
-		spanPartitions = []SpanPartition{{dsp.nodeDesc.NodeID, n.spans}}
+		ranges, _ := dsp.GetRanges(planCtx, n.spans)
+		spanPartitions = []SpanPartition{{dsp.nodeDesc.NodeID, n.spans, ranges}}
 	} else if n.hardLimit == 0 && n.softLimit == 0 {
 		// No limit - plan all table readers where their data live.
 		spanPartitions, err = dsp.PartitionSpans(planCtx, n.spans)
@@ -1182,7 +1205,8 @@ func (dsp *DistSQLPlanner) createTableReaders(
 		if err != nil {
 			return PhysicalPlan{}, err
 		}
-		spanPartitions = []SpanPartition{{nodeID, n.spans}}
+		ranges, _ := dsp.GetRanges(planCtx, n.spans)
+		spanPartitions = []SpanPartition{{nodeID, n.spans, ranges}}
 	}
 
 	var p PhysicalPlan
@@ -1209,7 +1233,7 @@ func (dsp *DistSQLPlanner) createTableReaders(
 			tr.Spans = newSpansSlice
 		}
 		for j := range sp.Spans {
-			tr.Spans = append(tr.Spans, distsqlpb.TableReaderSpan{Span: sp.Spans[j]})
+			tr.Spans = append(tr.Spans, distsqlpb.TableReaderSpan{Span: sp.Spans[j], Ranges: sp.Ranges[j]})
 		}
 
 		tr.MaxResults = n.maxResults
@@ -1303,7 +1327,8 @@ func (dsp *DistSQLPlanner) planTableReaders(
 		err            error
 	)
 	if planCtx.isLocal {
-		spanPartitions = []SpanPartition{{dsp.nodeDesc.NodeID, info.spans}}
+		ranges, _ := dsp.GetRanges(planCtx, info.spans)
+		spanPartitions = []SpanPartition{{dsp.nodeDesc.NodeID, info.spans, ranges}}
 	} else if info.post.Limit == 0 {
 		// No hard limit - plan all table readers where their data live. Note
 		// that we're ignoring soft limits for now since the TableReader will
@@ -1321,7 +1346,8 @@ func (dsp *DistSQLPlanner) planTableReaders(
 		if err != nil {
 			return err
 		}
-		spanPartitions = []SpanPartition{{nodeID, info.spans}}
+		ranges, _ := dsp.GetRanges(planCtx, info.spans)
+		spanPartitions = []SpanPartition{{nodeID, info.spans, ranges}}
 	}
 	corePlacement := make([]distsqlplan.ProcessorCorePlacement, len(spanPartitions))
 	for i, sp := range spanPartitions {
@@ -2639,7 +2665,9 @@ func (dsp *DistSQLPlanner) createPlanForJoin(
 	}
 
 	p.ChangePlanForReplica = leftPlan.ChangePlanForReplica
-	hjWorkArgs := distsqlplan.HashJoinWorkArgs{	HJType: distsqlplan.BASE }
+	hjWorkArgs := MakeDecisionForHashJoin(
+		n, p.Processors, leftRouters, rightRouters,
+		nodes, p.GatewayNodeID, 0.02)
 	p.AddJoinStageWithWorkArgs(
 		nodes, core, post, leftEqCols, rightEqCols, leftTypes, rightTypes,
 		leftMergeOrd, rightMergeOrd, leftRouters, rightRouters, hjWorkArgs,

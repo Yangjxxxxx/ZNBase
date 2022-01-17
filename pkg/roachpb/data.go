@@ -1813,6 +1813,7 @@ func (s Span) Valid() bool {
 
 // Spans is a slice of spans.
 type Spans []Span
+type Ranges []RangeDescriptor
 
 // implement Sort.Interface
 func (a Spans) Len() int           { return len(a) }

@@ -18,32 +18,50 @@ type CostModel interface {
 	DistributeCost() int64
 	CalculateCost() int64
 	ResultCost() int64
+	WorkArgs() distsqlplan.HashJoinWorkArgs
 }
 
 func tableReaderRowCount(tableReader *distsqlpb.TableReaderSpec) int64 {
-	var size int64
+	var size, rangeCount int64
 	pendingSpans := make([]distsqlpb.TableReaderSpan, 0)
 	for _, span := range tableReader.Spans {
-		count, ok := spanKeyCount(&span)
+		count, ok := spanKeyCount(span.Span.Key, span.Span.EndKey, true)
 		if ok {
 			size = size + count
+			rangeCount = rangeCount + int64(len(span.Ranges))
 			continue
 		}
 
 		pendingSpans = append(pendingSpans, span)
 	}
+	if rangeCount == 0 {
+		return 0
+	}
 
-	// todo : deal pending spans
+	// deal pending spans
+	rangeAvgSize := size / rangeCount
+	for _, span := range pendingSpans {
+		var spanSize int64
+		for _, r := range span.Ranges {
+			count, ok := spanKeyCount(r.StartKey, r.EndKey, true)
+			if ok {
+				spanSize += count
+				continue
+			}
+			spanSize += rangeAvgSize
+		}
+		size += spanSize
+	}
+
 	return size
 }
 
-// calculate TableReaderSpan contains key counts
-func spanKeyCount(span *distsqlpb.TableReaderSpan) (int64, bool) {
-	const KeyCap = 16
-	var startKey []byte = span.Span.Key
-	var endKey []byte = span.Span.EndKey
+// calculate TableReaderSpan contains key counts.
+// fixedKey indicate startKey/endKey has prefix.
+func spanKeyCount(startKey, endKey []byte, fixedKey bool) (int64, bool) {
+	const KeyLen = 2
 
-	if len(startKey) < KeyCap || len(endKey) < KeyCap {
+	if fixedKey && (len(startKey) < KeyLen || len(endKey) < KeyLen) {
 		return 0, false
 	}
 
@@ -81,9 +99,12 @@ type distJoinHelper struct {
 	// join node's ID
 	joinNodes			[]roachpb.NodeID
 	// getway's ID
-	getwayID 			roachpb.NodeID
-	frequencyThreshold  int64
+	gatewayID 			roachpb.NodeID
+	frequencyThreshold  float64
 
+	// left/right all size
+	allLeftSize 		int64
+	allRightSize 		int64
 	// skew size of every left or right router
 	leftRouterSkewSize    []int64
 	rightRouterSkewSize   []int64
@@ -99,7 +120,7 @@ func (djh *distJoinHelper) init() {
 	}
 
 	// estimate every router' skew data size
-	calOneSide := func (routers []distsqlplan.ProcessorIdx, heavyHitters []distsqlpb.OutputRouterSpec_MixHashRouterRuleSpec_HeavyHitter) []int64 {
+	calOneSide := func (routers []distsqlplan.ProcessorIdx, heavyHitters []distsqlpb.OutputRouterSpec_MixHashRouterRuleSpec_HeavyHitter) ([]int64, int64) {
 		RouterRowCounts := make([]int64, len(routers))
 		var allRowCounts int64
 		for i, pIdx := range routers {
@@ -116,11 +137,11 @@ func (djh *distJoinHelper) init() {
 		for i := range RouterRowCounts {
 			RouterRowCounts[i] = (RouterRowCounts[i] * skewRowCounts) / allRowCounts;
 		}
-		return RouterRowCounts
+		return RouterRowCounts, allRowCounts
 	}
 
-	djh.leftRouterSkewSize = calOneSide(djh.leftRouters, djh.leftHeavyHitters)
-	djh.rightRouterSkewSize = calOneSide(djh.rightRouters, djh.rightHeavyHitters)
+	djh.leftRouterSkewSize, djh.allLeftSize = calOneSide(djh.leftRouters, djh.leftHeavyHitters)
+	djh.rightRouterSkewSize, djh.allRightSize = calOneSide(djh.rightRouters, djh.rightHeavyHitters)
 
 	djh.leftSkewData = &util.FastIntMap{}
 	djh.rightSkewData = &util.FastIntMap{}
@@ -167,32 +188,43 @@ func(p PRPD) Init() {
 		p.finalRightSkewData = append(p.finalRightSkewData, item.Value)
 	}
 
-	// todo: intersect -> left or right
+	// intersect -> left or right
+	if p.joinInfo.allRightSize * rightSkewSize >= p.joinInfo.allLeftSize * leftSkewSize {
+		addIntersectToRight := func (value int) {
+			p.finalRightSkewData = append(p.finalRightSkewData, int64(value))
+		}
+		p.joinInfo.intersect.ForEach(addIntersectToRight)
+	} else {
+		addIntersectToLeft := func (value int) {
+			p.finalLeftSkewData = append(p.finalLeftSkewData, int64(value))
+		}
+		p.joinInfo.intersect.ForEach(addIntersectToLeft)
+	}
 }
 
 func(p PRPD) DistributeCost() int64 {
 	var cost int64
 	joinNodeNums := len(p.joinInfo.joinNodes)
-	leftSkewData, rightSkewData := p.joinInfo.leftSkewData, p.joinInfo.rightSkewData
+	leftSkewMap, rightSkewMap := p.joinInfo.leftSkewData, p.joinInfo.rightSkewData
 
 	// left mirror
 	for _, value := range p.finalRightSkewData {
-		count, ok := leftSkewData.Get(int(value))
+		count, ok := leftSkewMap.Get(int(value))
 		if ok {
 			cost += int64(count * (joinNodeNums - 1))
 			continue
 		}
-		cost += p.joinInfo.frequencyThreshold * int64((joinNodeNums - 1))
+		cost += int64(p.joinInfo.frequencyThreshold * float64(p.joinInfo.allLeftSize))
 	}
 
 	// right mirror
 	for _, value := range p.finalLeftSkewData {
-		count, ok := rightSkewData.Get(int(value))
+		count, ok := rightSkewMap.Get(int(value))
 		if ok {
 			cost += int64(count * (joinNodeNums - 1))
 			continue
 		}
-		cost += p.joinInfo.frequencyThreshold * int64((joinNodeNums - 1))
+		cost += int64(p.joinInfo.frequencyThreshold * float64(p.joinInfo.allRightSize))
 	}
 
 	return cost
@@ -223,9 +255,29 @@ func(p PRPD) CalculateCost() int64 {
 		buckets[bucketIdx] += p.joinInfo.rightRouterSkewSize[i]
 	}
 
-	// todo : part of intersect need specific handle
+	// suppose that each node has all skew data of other side.
+	// left mirror size
+	leftMirrorCount := int64(0)
+	for _, hv := range p.finalRightSkewData {
+		count, ok := p.joinInfo.leftSkewData.Get(int(hv))
+		if ok {
+			leftMirrorCount += int64(count)
+			continue;
+		}
+		leftMirrorCount += int64(p.joinInfo.frequencyThreshold * float64(p.joinInfo.allLeftSize))
+	}
+	// right mirror count
+	rightMirrorCount := int64(0)
+	for _, hv := range p.finalLeftSkewData {
+		count, ok := p.joinInfo.rightSkewData.Get(int(hv))
+		if ok {
+			rightMirrorCount += int64(count)
+			continue;
+		}
+		rightMirrorCount += int64(p.joinInfo.frequencyThreshold * float64(p.joinInfo.allRightSize))
+	}
 
-	var cost int64
+	var cost int64 = leftMirrorCount + rightMirrorCount
 	for _, count := range buckets {
 		if count > cost {
 			cost = count
@@ -246,6 +298,23 @@ func(p PRPD) ResultCost() int64 {
 	return netSkewCount * (joinNodeNums - 1) / joinNodeNums
 }
 
+func(p PRPD) WorkArgs() distsqlplan.HashJoinWorkArgs {
+	leftHeavyHitters :=	make([]distsqlpb.OutputRouterSpec_MixHashRouterRuleSpec_HeavyHitter, len(p.finalLeftSkewData))
+	rightHeavyHitters := make([]distsqlpb.OutputRouterSpec_MixHashRouterRuleSpec_HeavyHitter, len(p.finalRightSkewData))
+
+	for i, value := range p.finalLeftSkewData {
+		leftHeavyHitters[i].Value = value
+	}
+	for i, value := range p.finalRightSkewData {
+		rightHeavyHitters[i].Value = value
+	}
+	return distsqlplan.HashJoinWorkArgs{
+		HJType: 			distsqlplan.PRPD,
+		LeftHeavyHitters: 	leftHeavyHitters,
+		RightHeavyHitters: 	rightHeavyHitters,
+	}
+}
+
 type PnR struct {
 	joinInfo *distJoinHelper
 
@@ -258,6 +327,7 @@ type PnR struct {
 func(pr PnR) Init() {
 	pr.joinInfo.init()
 
+	// intersect -> right
 	pr.finalLeftSkewData = make([]int64, 0)
 	pr.finalLeftSkewData = make([]int64, 0)
 	for _, item := range pr.joinInfo.leftHeavyHitters {
@@ -316,6 +386,23 @@ func(pr PnR) ResultCost() int64 {
 	return netSkewCount * (joinNodeNums - 1) / joinNodeNums
 }
 
+func(pr PnR) WorkArgs() distsqlplan.HashJoinWorkArgs {
+	leftHeavyHitters :=	make([]distsqlpb.OutputRouterSpec_MixHashRouterRuleSpec_HeavyHitter, len(pr.finalLeftSkewData))
+	rightHeavyHitters := make([]distsqlpb.OutputRouterSpec_MixHashRouterRuleSpec_HeavyHitter, len(pr.finalRightSkewData))
+
+	for i, value := range pr.finalLeftSkewData {
+		leftHeavyHitters[i].Value = value
+	}
+	for i, value := range pr.finalRightSkewData {
+		rightHeavyHitters[i].Value = value
+	}
+	return distsqlplan.HashJoinWorkArgs{
+		HJType: 			distsqlplan.PnR,
+		LeftHeavyHitters: 	leftHeavyHitters,
+		RightHeavyHitters: 	rightHeavyHitters,
+	}
+}
+
 type BaseHash struct {
 	joinInfo *distJoinHelper
 
@@ -359,7 +446,7 @@ func(bh BaseHash) Init() {
 var crc32Table = crc32.MakeTable(crc32.Castagnoli)
 
 func(bh BaseHash) calBucketIdx(key, bucketNums int64) (int, error) {
-	encDatum := sqlbase.DatumToEncDatum(sqlbase.IntType, tree.NewDInt(tree.DInt(int64(1))))
+	encDatum := sqlbase.DatumToEncDatum(sqlbase.IntType, tree.NewDInt(tree.DInt(key)))
 	buffer := []byte{}
 	typ := sqlbase.IntType
 	var err error
@@ -371,7 +458,8 @@ func(bh BaseHash) calBucketIdx(key, bucketNums int64) (int, error) {
 }
 
 func(bh BaseHash) DistributeCost() int64 {
-	return bh.finalRightSkewSize + bh.finalLeftSkewSize
+	joinNodeNums := int64(len(bh.joinInfo.joinNodes))
+	return (bh.finalRightSkewSize + bh.finalLeftSkewSize) * (joinNodeNums - 1) / joinNodeNums
 }
 
 func(bh BaseHash) CalculateCost() int64 {
@@ -411,7 +499,7 @@ func(bh BaseHash) ResultCost() int64 {
 	var netSkewCount int64
 	addCount := func (value int) {
 		bucketIdx, err := bh.calBucketIdx(int64(value), joinNodeNums)
-		if err != nil || bucketIdx == int(bh.joinInfo.getwayID) {
+		if err != nil || bh.joinInfo.joinNodes[bucketIdx] == bh.joinInfo.gatewayID {
 			return
 		}
 		lCount, _ := bh.joinInfo.leftSkewData.Get(value)
@@ -421,4 +509,81 @@ func(bh BaseHash) ResultCost() int64 {
 	bh.joinInfo.intersect.ForEach(addCount)
 
 	return netSkewCount
+}
+
+func(bh BaseHash) WorkArgs() distsqlplan.HashJoinWorkArgs {
+	leftHeavyHitters :=	make([]distsqlpb.OutputRouterSpec_MixHashRouterRuleSpec_HeavyHitter, len(bh.finalLeftSkewData))
+	rightHeavyHitters := make([]distsqlpb.OutputRouterSpec_MixHashRouterRuleSpec_HeavyHitter, len(bh.finalRightSkewData))
+
+	for i, value := range bh.finalLeftSkewData {
+		leftHeavyHitters[i].Value = value
+	}
+	for i, value := range bh.finalRightSkewData {
+		rightHeavyHitters[i].Value = value
+	}
+	return distsqlplan.HashJoinWorkArgs{
+		HJType: 			distsqlplan.BASEHASH,
+		LeftHeavyHitters: 	leftHeavyHitters,
+		RightHeavyHitters: 	rightHeavyHitters,
+	}
+}
+
+func GetHeavyHitters(*distsqlpb.TableReaderSpec) []distsqlpb.OutputRouterSpec_MixHashRouterRuleSpec_HeavyHitter {
+
+	return nil
+}
+
+func MakeDecisionForHashJoin(
+	n					*joinNode,
+	processors 			[]distsqlplan.Processor,
+	leftRouters 		[]distsqlplan.ProcessorIdx,
+	rightRouters 		[]distsqlplan.ProcessorIdx,
+	joinNodes			[]roachpb.NodeID,
+	getewayID 			roachpb.NodeID,
+	frequencyThreshold  float64,
+) distsqlplan.HashJoinWorkArgs {
+	_, leftOk := n.left.plan.(*scanNode)
+	_, rightOk := n.right.plan.(*scanNode)
+	if !leftOk || !rightOk {
+		return distsqlplan.HashJoinWorkArgs{
+			HJType: distsqlplan.BASEHASH,
+		}
+	}
+
+	leftTableReader := processors[leftRouters[0]].Spec.Core.TableReader
+	rightTableReader := processors[rightRouters[0]].Spec.Core.TableReader
+	leftHeavyHitters := GetHeavyHitters(leftTableReader)
+	rightHeavyHitters := GetHeavyHitters(rightTableReader)
+
+	helper := &distJoinHelper{
+		leftHeavyHitters: 	leftHeavyHitters,
+		rightHeavyHitters: 	rightHeavyHitters,
+		processors: 		processors,
+		leftRouters: 		leftRouters,
+		rightRouters: 		rightRouters,
+		joinNodes: 			joinNodes,
+		gatewayID: 			getewayID,
+	}
+
+	var costModels []CostModel
+	costModels = append(costModels, PRPD{joinInfo: helper})
+	costModels = append(costModels, PnR{joinInfo: helper})
+	costModels = append(costModels, BaseHash{joinInfo: helper})
+
+	minCost := int64(-1)
+	workArgs := distsqlplan.HashJoinWorkArgs{
+		HJType: distsqlplan.BASEHASH,
+	}
+	for _, costModel := range costModels {
+		netWork1Cost := costModel.DistributeCost()
+		calculateCost := costModel.CalculateCost()
+		netWork2Cost := costModel.ResultCost()
+
+		allCost := netWork1Cost + calculateCost + netWork2Cost
+		if minCost == -1 || allCost < minCost {
+			minCost = allCost
+			workArgs = costModel.WorkArgs()
+		}
+	}
+	return workArgs
 }

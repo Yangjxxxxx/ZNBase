@@ -1383,9 +1383,9 @@ func (p *PhysicalPlan) AddJoinStage(
 type hashJoinType int
 
 const (
-	BASE = iota
+	BASEHASH = iota
 
-	AVG_MIRROR
+	PnR
 
 	PRPD
 )
@@ -1431,7 +1431,7 @@ func (p *PhysicalPlan) AddJoinStageWithWorkArgs(
 
 	if len(nodes) > 1 {
 		switch hjWorkArgs.HJType {
-		case BASE:
+		case BASEHASH:
 			// Parallel hash or merge join: we distribute rows (by hash of
 			// equality columns) to len(nodes) join processors.
 
@@ -1500,7 +1500,7 @@ func (p *PhysicalPlan) AddJoinStageWithWorkArgs(
 				}
 			}
 
-		case AVG_MIRROR:
+		case PnR:
 			// Set up the left routers.
 			leftRules := make([]distsqlpb.OutputRouterSpec_MixHashRouterRuleSpec, 1)
 			leftRules[0] = distsqlpb.OutputRouterSpec_MixHashRouterRuleSpec{
