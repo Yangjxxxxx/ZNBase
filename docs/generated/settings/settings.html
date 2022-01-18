@@ -158,6 +158,9 @@
 <tr><td><code>sql.defaults.zigzag_join.enabled</code></td><td>boolean</td><td><code>true</code></td><td>default value for enable_zigzag_join session setting; allows use of zig-zag join by default</td></tr>
 <tr><td><code>sql.distsql.distribute_index_joins</code></td><td>boolean</td><td><code>true</code></td><td>if set, for index joins we instantiate a join reader on every node that has a stream; if not set, we use a single join reader</td></tr>
 <tr><td><code>sql.distsql.flow_stream_timeout</code></td><td>duration</td><td><code>10s</code></td><td>amount of time incoming streams wait for a flow to be set up before erroring out</td></tr>
+<tr><td><code>sql.distsql.hashjoin_bashash.enabled</code></td><td>boolean</td><td><code>false</code></td><td>if set we plan interleaved table joins instead of merge joins when possible</td></tr>
+<tr><td><code>sql.distsql.hashjoin_pnr.enabled</code></td><td>boolean</td><td><code>false</code></td><td>if set we plan interleaved table joins instead of merge joins when possible</td></tr>
+<tr><td><code>sql.distsql.hashjoin_prpd.enabled</code></td><td>boolean</td><td><code>false</code></td><td>if set we plan interleaved table joins instead of merge joins when possible</td></tr>
 <tr><td><code>sql.distsql.interleaved_joins.enabled</code></td><td>boolean</td><td><code>true</code></td><td>if set we plan interleaved table joins instead of merge joins when possible</td></tr>
 <tr><td><code>sql.distsql.max_running_flows</code></td><td>integer</td><td><code>500</code></td><td>maximum number of concurrent flows that can be run on a node</td></tr>
 <tr><td><code>sql.distsql.merge_joins.enabled</code></td><td>boolean</td><td><code>true</code></td><td>if set, we plan merge joins when possible</td></tr>

@@ -3,7 +3,9 @@ package sql
 import (
 	"bytes"
 	"encoding/binary"
+	"fmt"
 	"github.com/znbasedb/znbase/pkg/roachpb"
+	"github.com/znbasedb/znbase/pkg/settings"
 	"github.com/znbasedb/znbase/pkg/sql/distsqlpb"
 	"github.com/znbasedb/znbase/pkg/sql/distsqlplan"
 	"github.com/znbasedb/znbase/pkg/sql/flowinfra"
@@ -11,6 +13,9 @@ import (
 	"github.com/znbasedb/znbase/pkg/sql/sqlbase"
 	"github.com/znbasedb/znbase/pkg/util"
 	"hash/crc32"
+	"io/ioutil"
+	"os"
+	"path/filepath"
 )
 
 type CostModel interface {
@@ -20,6 +25,24 @@ type CostModel interface {
 	ResultCost() int64
 	WorkArgs() distsqlplan.HashJoinWorkArgs
 }
+
+var planPRPD = settings.RegisterBoolSetting(
+	"sql.distsql.hashjoin_prpd.enabled",
+	"if set we plan interleaved table joins instead of merge joins when possible",
+	false,
+)
+
+var planPnR = settings.RegisterBoolSetting(
+	"sql.distsql.hashjoin_pnr.enabled",
+	"if set we plan interleaved table joins instead of merge joins when possible",
+	false,
+)
+
+var planBaseHash = settings.RegisterBoolSetting(
+	"sql.distsql.hashjoin_bashash.enabled",
+	"if set we plan interleaved table joins instead of merge joins when possible",
+	false,
+)
 
 func tableReaderRowCount(tableReader *distsqlpb.TableReaderSpec) int64 {
 	var size, rangeCount int64
@@ -528,12 +551,39 @@ func(bh BaseHash) WorkArgs() distsqlplan.HashJoinWorkArgs {
 	}
 }
 
-func GetHeavyHitters(*distsqlpb.TableReaderSpec) []distsqlpb.OutputRouterSpec_MixHashRouterRuleSpec_HeavyHitter {
+func GetHeavyHitters(tableReader *distsqlpb.TableReaderSpec, directory string) []distsqlpb.OutputRouterSpec_MixHashRouterRuleSpec_HeavyHitter {
+	fileName := directory + tableReader.Table.GetName() + ".skew"
+	f, err := ioutil.ReadFile(fileName)
+	if err != nil {
+		fmt.Println("read fail", err)
+	}
 
-	return nil
+	heavyHitters := make([]distsqlpb.OutputRouterSpec_MixHashRouterRuleSpec_HeavyHitter, 0)
+	for idx := 0; idx < len(f);  {
+		var value int64
+		for f[idx] != ',' {
+			value = value * 10 + int64(f[idx] - byte('0'))
+			idx++
+		}
+		idx++
+		var frequency int64
+		for f[idx] != '\n' {
+			frequency = frequency * 10 + int64(f[idx] - byte('0'))
+			idx++
+		}
+		idx++
+
+		heavyHitters = append(heavyHitters, distsqlpb.OutputRouterSpec_MixHashRouterRuleSpec_HeavyHitter{
+			Value: value,
+			Frequency: frequency,
+		})
+	}
+
+	return heavyHitters
 }
 
 func MakeDecisionForHashJoin(
+	dsp 				*DistSQLPlanner,
 	n					*joinNode,
 	processors 			[]distsqlplan.Processor,
 	leftRouters 		[]distsqlplan.ProcessorIdx,
@@ -552,8 +602,10 @@ func MakeDecisionForHashJoin(
 
 	leftTableReader := processors[leftRouters[0]].Spec.Core.TableReader
 	rightTableReader := processors[rightRouters[0]].Spec.Core.TableReader
-	leftHeavyHitters := GetHeavyHitters(leftTableReader)
-	rightHeavyHitters := GetHeavyHitters(rightTableReader)
+	directory, _ := filepath.Abs(filepath.Dir(os.Args[0]))
+	directory += "/zipf/csv" + leftTableReader.Table.GetName() + "_" + rightTableReader.Table.GetName() + "/"
+	leftHeavyHitters := GetHeavyHitters(leftTableReader, directory)
+	rightHeavyHitters := GetHeavyHitters(rightTableReader, directory)
 
 	helper := &distJoinHelper{
 		leftHeavyHitters: 	leftHeavyHitters,
@@ -565,6 +617,21 @@ func MakeDecisionForHashJoin(
 		gatewayID: 			getewayID,
 	}
 
+	if planBaseHash.Get(&dsp.st.SV) {
+		return distsqlplan.HashJoinWorkArgs{HJType: distsqlplan.BASEHASH}
+	}
+	if planPRPD.Get(&dsp.st.SV) {
+		prpd := PRPD{joinInfo: helper}
+		prpd.Init()
+		return prpd.WorkArgs()
+	}
+	if planPnR.Get(&dsp.st.SV) {
+		pnr := PnR{joinInfo: helper}
+		pnr.Init()
+		return pnr.WorkArgs()
+	}
+
+	// adapte select method
 	var costModels []CostModel
 	costModels = append(costModels, PRPD{joinInfo: helper})
 	costModels = append(costModels, PnR{joinInfo: helper})
@@ -575,6 +642,7 @@ func MakeDecisionForHashJoin(
 		HJType: distsqlplan.BASEHASH,
 	}
 	for _, costModel := range costModels {
+		costModel.Init()
 		netWork1Cost := costModel.DistributeCost()
 		calculateCost := costModel.CalculateCost()
 		netWork2Cost := costModel.ResultCost()

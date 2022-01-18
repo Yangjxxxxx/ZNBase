@@ -2666,8 +2666,8 @@ func (dsp *DistSQLPlanner) createPlanForJoin(
 
 	p.ChangePlanForReplica = leftPlan.ChangePlanForReplica
 	hjWorkArgs := MakeDecisionForHashJoin(
-		n, p.Processors, leftRouters, rightRouters,
-		nodes, p.GatewayNodeID, 0.02)
+		dsp, n, p.Processors, leftRouters, rightRouters,
+		nodes, p.GatewayNodeID, 0.05)
 	p.AddJoinStageWithWorkArgs(
 		nodes, core, post, leftEqCols, rightEqCols, leftTypes, rightTypes,
 		leftMergeOrd, rightMergeOrd, leftRouters, rightRouters, hjWorkArgs,
