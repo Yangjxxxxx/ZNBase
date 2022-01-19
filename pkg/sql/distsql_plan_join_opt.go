@@ -3,7 +3,6 @@ package sql
 import (
 	"bytes"
 	"encoding/binary"
-	"fmt"
 	"github.com/znbasedb/znbase/pkg/roachpb"
 	"github.com/znbasedb/znbase/pkg/settings"
 	"github.com/znbasedb/znbase/pkg/sql/distsqlpb"
@@ -555,7 +554,7 @@ func GetHeavyHitters(tableReader *distsqlpb.TableReaderSpec, directory string) [
 	fileName := directory + tableReader.Table.GetName() + ".skew"
 	f, err := ioutil.ReadFile(fileName)
 	if err != nil {
-		fmt.Println("read fail", err)
+		return nil
 	}
 
 	heavyHitters := make([]distsqlpb.OutputRouterSpec_MixHashRouterRuleSpec_HeavyHitter, 0)
@@ -606,6 +605,11 @@ func MakeDecisionForHashJoin(
 	directory += "/zipf/csv" + leftTableReader.Table.GetName() + "_" + rightTableReader.Table.GetName() + "/"
 	leftHeavyHitters := GetHeavyHitters(leftTableReader, directory)
 	rightHeavyHitters := GetHeavyHitters(rightTableReader, directory)
+	if leftHeavyHitters == nil && rightHeavyHitters == nil {
+		return distsqlplan.HashJoinWorkArgs{
+			HJType: distsqlplan.BASEHASH,
+		}
+	}
 
 	helper := &distJoinHelper{
 		leftHeavyHitters: 	leftHeavyHitters,

@@ -745,23 +745,23 @@ func (h *distSQLNodeHealth) check(ctx context.Context, nodeID roachpb.NodeID) er
 	return nil
 }
 
-func (dsp *DistSQLPlanner) GetRanges(
-	planCtx *PlanningCtx, spans roachpb.Spans,
-) ([]roachpb.Ranges, error) {
-	it := planCtx.spanIter
-	ctx := planCtx.ctx
-	ranges := make([]roachpb.Ranges, len(spans))
-	for i, span := range spans {
-		for it.Seek(ctx, span, kv.Ascending); ; it.Next(ctx) {
-			if !it.Valid() {
-				return nil, it.Error()
-			}
-			desc := it.Desc()
-			ranges[i] = append(ranges[i], desc)
-		}
-	}
-	return ranges, nil
-}
+//func (dsp *DistSQLPlanner) GetRanges(
+//	planCtx *PlanningCtx, spans roachpb.Spans,
+//) ([]roachpb.Ranges, error) {
+//	it := planCtx.spanIter
+//	ctx := planCtx.ctx
+//	ranges := make([]roachpb.Ranges, len(spans))
+//	for i, span := range spans {
+//		for it.Seek(ctx, span, kv.Ascending); ; it.Next(ctx) {
+//			if !it.Valid() {
+//				return nil, it.Error()
+//			}
+//			desc := it.Desc()
+//			ranges[i] = append(ranges[i], desc)
+//		}
+//	}
+//	return ranges, nil
+//}
 
 // PartitionSpans finds out which nodes are owners for ranges touching the
 // given spans, and splits the spans according to owning nodes. The result is a
@@ -782,9 +782,8 @@ func (dsp *DistSQLPlanner) PartitionSpans(
 	partitions := make([]SpanPartition, 0, 1)
 	if planCtx.isLocal {
 		// If we're planning locally, map all spans to the local node.
-		ranges, _ := dsp.GetRanges(planCtx, spans)
 		partitions = append(partitions,
-			SpanPartition{dsp.nodeDesc.NodeID, spans, ranges})
+			SpanPartition{dsp.nodeDesc.NodeID, spans, nil})
 		return partitions, nil
 	}
 	// nodeMap maps a nodeID to an index inside the partitions array.
@@ -1187,8 +1186,7 @@ func (dsp *DistSQLPlanner) createTableReaders(
 
 	var spanPartitions []SpanPartition
 	if planCtx.isLocal || spec.Table.ReplicationTable {
-		ranges, _ := dsp.GetRanges(planCtx, n.spans)
-		spanPartitions = []SpanPartition{{dsp.nodeDesc.NodeID, n.spans, ranges}}
+		spanPartitions = []SpanPartition{{dsp.nodeDesc.NodeID, n.spans, nil}}
 	} else if n.hardLimit == 0 && n.softLimit == 0 {
 		// No limit - plan all table readers where their data live.
 		spanPartitions, err = dsp.PartitionSpans(planCtx, n.spans)
@@ -1205,8 +1203,7 @@ func (dsp *DistSQLPlanner) createTableReaders(
 		if err != nil {
 			return PhysicalPlan{}, err
 		}
-		ranges, _ := dsp.GetRanges(planCtx, n.spans)
-		spanPartitions = []SpanPartition{{nodeID, n.spans, ranges}}
+		spanPartitions = []SpanPartition{{nodeID, n.spans, nil}}
 	}
 
 	var p PhysicalPlan
@@ -1232,8 +1229,14 @@ func (dsp *DistSQLPlanner) createTableReaders(
 			*tr = *spec
 			tr.Spans = newSpansSlice
 		}
-		for j := range sp.Spans {
-			tr.Spans = append(tr.Spans, distsqlpb.TableReaderSpan{Span: sp.Spans[j], Ranges: sp.Ranges[j]})
+		if sp.Ranges != nil {
+			for j := range sp.Spans {
+				tr.Spans = append(tr.Spans, distsqlpb.TableReaderSpan{Span: sp.Spans[j], Ranges: sp.Ranges[j]})
+			}
+		} else {
+			for j := range sp.Spans {
+				tr.Spans = append(tr.Spans, distsqlpb.TableReaderSpan{Span: sp.Spans[j]})
+			}
 		}
 
 		tr.MaxResults = n.maxResults
@@ -1327,8 +1330,7 @@ func (dsp *DistSQLPlanner) planTableReaders(
 		err            error
 	)
 	if planCtx.isLocal {
-		ranges, _ := dsp.GetRanges(planCtx, info.spans)
-		spanPartitions = []SpanPartition{{dsp.nodeDesc.NodeID, info.spans, ranges}}
+		spanPartitions = []SpanPartition{{dsp.nodeDesc.NodeID, info.spans, nil}}
 	} else if info.post.Limit == 0 {
 		// No hard limit - plan all table readers where their data live. Note
 		// that we're ignoring soft limits for now since the TableReader will
@@ -1346,8 +1348,7 @@ func (dsp *DistSQLPlanner) planTableReaders(
 		if err != nil {
 			return err
 		}
-		ranges, _ := dsp.GetRanges(planCtx, info.spans)
-		spanPartitions = []SpanPartition{{nodeID, info.spans, ranges}}
+		spanPartitions = []SpanPartition{{nodeID, info.spans, nil}}
 	}
 	corePlacement := make([]distsqlplan.ProcessorCorePlacement, len(spanPartitions))
 	for i, sp := range spanPartitions {
