@@ -12,13 +12,16 @@ import (
 	"github.com/znbasedb/znbase/pkg/sql/sqlbase"
 	"github.com/znbasedb/znbase/pkg/util"
 	"hash/crc32"
+	"io"
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"strconv"
 )
 
 type CostModel interface {
 	Init()
+	Type() string
 	DistributeCost() int64
 	CalculateCost() int64
 	ResultCost() int64
@@ -188,7 +191,7 @@ type PRPD struct {
 	finalRightSkewData []int64
 }
 
-func(p PRPD) Init() {
+func(p *PRPD) Init() {
 	p.joinInfo.init()
 
 	intersect := p.joinInfo.intersect
@@ -211,20 +214,24 @@ func(p PRPD) Init() {
 	}
 
 	// intersect -> left or right
-	if p.joinInfo.allRightSize * rightSkewSize >= p.joinInfo.allLeftSize * leftSkewSize {
-		addIntersectToRight := func (value int) {
-			p.finalRightSkewData = append(p.finalRightSkewData, int64(value))
-		}
-		p.joinInfo.intersect.ForEach(addIntersectToRight)
-	} else {
+	if p.joinInfo.allLeftSize * leftSkewSize >= p.joinInfo.allRightSize * rightSkewSize {
 		addIntersectToLeft := func (value int) {
 			p.finalLeftSkewData = append(p.finalLeftSkewData, int64(value))
 		}
 		p.joinInfo.intersect.ForEach(addIntersectToLeft)
+	} else {
+		addIntersectToRight := func (value int) {
+			p.finalRightSkewData = append(p.finalRightSkewData, int64(value))
+		}
+		p.joinInfo.intersect.ForEach(addIntersectToRight)
 	}
 }
 
-func(p PRPD) DistributeCost() int64 {
+func(p *PRPD) Type() string {
+	return "PRPD"
+}
+
+func(p *PRPD) DistributeCost() int64 {
 	var cost int64
 	joinNodeNums := len(p.joinInfo.joinNodes)
 	leftSkewMap, rightSkewMap := p.joinInfo.leftSkewData, p.joinInfo.rightSkewData
@@ -252,7 +259,7 @@ func(p PRPD) DistributeCost() int64 {
 	return cost
 }
 
-func(p PRPD) CalculateCost() int64 {
+func(p *PRPD) CalculateCost() int64 {
 	joinNodeNums := len(p.joinInfo.joinNodes)
 	buckets := make([]int64, joinNodeNums)
 
@@ -308,7 +315,7 @@ func(p PRPD) CalculateCost() int64 {
 	return cost
 }
 
-func(p PRPD) ResultCost() int64 {
+func(p *PRPD) ResultCost() int64 {
 	joinNodeNums := int64(len(p.joinInfo.joinNodes))
 	var netSkewCount int64
 	addCount := func (value int) {
@@ -320,7 +327,7 @@ func(p PRPD) ResultCost() int64 {
 	return netSkewCount * (joinNodeNums - 1) / joinNodeNums
 }
 
-func(p PRPD) WorkArgs() distsqlplan.HashJoinWorkArgs {
+func(p *PRPD) WorkArgs() distsqlplan.HashJoinWorkArgs {
 	leftHeavyHitters :=	make([]distsqlpb.OutputRouterSpec_MixHashRouterRuleSpec_HeavyHitter, len(p.finalLeftSkewData))
 	rightHeavyHitters := make([]distsqlpb.OutputRouterSpec_MixHashRouterRuleSpec_HeavyHitter, len(p.finalRightSkewData))
 
@@ -346,21 +353,21 @@ type PnR struct {
 	finalRightSkewSize 	int64
 }
 
-func(pr PnR) Init() {
+func(pr *PnR) Init() {
 	pr.joinInfo.init()
 
-	// intersect -> right
+	// intersect -> left
 	pr.finalLeftSkewData = make([]int64, 0)
 	pr.finalLeftSkewData = make([]int64, 0)
 	for _, item := range pr.joinInfo.leftHeavyHitters {
 		value := item.Value
-		if pr.joinInfo.intersect.Contains(int(value)) {
-			continue
-		}
 		pr.finalLeftSkewData = append(pr.finalLeftSkewData, value)
 	}
 	for _, item := range pr.joinInfo.rightHeavyHitters {
 		value := item.Value
+		if pr.joinInfo.intersect.Contains(int(value)) {
+			continue
+		}
 		pr.finalRightSkewData = append(pr.finalRightSkewData, value)
 	}
 
@@ -377,26 +384,30 @@ func(pr PnR) Init() {
 	}
 }
 
-func(pr PnR) DistributeCost() int64 {
+func(pr *PnR) Type() string {
+	return "PnR"
+}
+
+func(pr *PnR) DistributeCost() int64 {
 	joinNodeNums := int64(len(pr.joinInfo.joinNodes))
 
 	// right cost
 	rightCost := pr.finalRightSkewSize
-	rightCost = rightCost * (joinNodeNums - 1) / joinNodeNums
+	rightCost = rightCost * (joinNodeNums - 1)
 
 	// left cost
 	leftCost := pr.finalLeftSkewSize
-	leftCost = leftCost * (joinNodeNums - 1)
+	leftCost = leftCost * (joinNodeNums - 1)  / joinNodeNums
 
 	return leftCost + rightCost
 }
 
-func(pr PnR) CalculateCost() int64 {
+func(pr *PnR) CalculateCost() int64 {
 	joinNodeNums := int64(len(pr.joinInfo.joinNodes))
-	return pr.finalRightSkewSize / joinNodeNums + pr.finalLeftSkewSize
+	return pr.finalLeftSkewSize / joinNodeNums + pr.finalRightSkewSize
 }
 
-func(pr PnR) ResultCost() int64 {
+func(pr *PnR) ResultCost() int64 {
 	joinNodeNums := int64(len(pr.joinInfo.joinNodes))
 	var netSkewCount int64
 	addCount := func (value int) {
@@ -408,7 +419,7 @@ func(pr PnR) ResultCost() int64 {
 	return netSkewCount * (joinNodeNums - 1) / joinNodeNums
 }
 
-func(pr PnR) WorkArgs() distsqlplan.HashJoinWorkArgs {
+func(pr *PnR) WorkArgs() distsqlplan.HashJoinWorkArgs {
 	leftHeavyHitters :=	make([]distsqlpb.OutputRouterSpec_MixHashRouterRuleSpec_HeavyHitter, len(pr.finalLeftSkewData))
 	rightHeavyHitters := make([]distsqlpb.OutputRouterSpec_MixHashRouterRuleSpec_HeavyHitter, len(pr.finalRightSkewData))
 
@@ -436,7 +447,7 @@ type BaseHash struct {
 	alloc sqlbase.DatumAlloc
 }
 
-func(bh BaseHash) Init() {
+func(bh *BaseHash) Init() {
 	bh.joinInfo.init()
 	bh.finalLeftSkewData = make([]int64, 0)
 	bh.finalLeftSkewData = make([]int64, 0)
@@ -465,9 +476,14 @@ func(bh BaseHash) Init() {
 	}
 }
 
+func(bh *BaseHash) Type() string {
+	return "BaseHash"
+}
+
+
 var crc32Table = crc32.MakeTable(crc32.Castagnoli)
 
-func(bh BaseHash) calBucketIdx(key, bucketNums int64) (int, error) {
+func(bh *BaseHash) calBucketIdx(key, bucketNums int64) (int, error) {
 	encDatum := sqlbase.DatumToEncDatum(sqlbase.IntType, tree.NewDInt(tree.DInt(key)))
 	buffer := []byte{}
 	typ := sqlbase.IntType
@@ -479,12 +495,12 @@ func(bh BaseHash) calBucketIdx(key, bucketNums int64) (int, error) {
 	return int(crc32.Update(0, crc32Table, buffer) % uint32(bucketNums)), nil
 }
 
-func(bh BaseHash) DistributeCost() int64 {
+func(bh *BaseHash) DistributeCost() int64 {
 	joinNodeNums := int64(len(bh.joinInfo.joinNodes))
 	return (bh.finalRightSkewSize + bh.finalLeftSkewSize) * (joinNodeNums - 1) / joinNodeNums
 }
 
-func(bh BaseHash) CalculateCost() int64 {
+func(bh *BaseHash) CalculateCost() int64 {
 	joinNodeNums := int64(len(bh.joinInfo.joinNodes))
 	buckets := make([]int64, joinNodeNums)
 
@@ -516,7 +532,7 @@ func(bh BaseHash) CalculateCost() int64 {
 	return cost
 }
 
-func(bh BaseHash) ResultCost() int64 {
+func(bh *BaseHash) ResultCost() int64 {
 	joinNodeNums := int64(len(bh.joinInfo.joinNodes))
 	var netSkewCount int64
 	addCount := func (value int) {
@@ -533,7 +549,7 @@ func(bh BaseHash) ResultCost() int64 {
 	return netSkewCount
 }
 
-func(bh BaseHash) WorkArgs() distsqlplan.HashJoinWorkArgs {
+func(bh *BaseHash) WorkArgs() distsqlplan.HashJoinWorkArgs {
 	leftHeavyHitters :=	make([]distsqlpb.OutputRouterSpec_MixHashRouterRuleSpec_HeavyHitter, len(bh.finalLeftSkewData))
 	rightHeavyHitters := make([]distsqlpb.OutputRouterSpec_MixHashRouterRuleSpec_HeavyHitter, len(bh.finalRightSkewData))
 
@@ -602,7 +618,7 @@ func MakeDecisionForHashJoin(
 	leftTableReader := processors[leftRouters[0]].Spec.Core.TableReader
 	rightTableReader := processors[rightRouters[0]].Spec.Core.TableReader
 	directory, _ := filepath.Abs(filepath.Dir(os.Args[0]))
-	directory += "/zipf/csv" + leftTableReader.Table.GetName() + "_" + rightTableReader.Table.GetName() + "/"
+	directory += "/zipf/csv/" + rightTableReader.Table.GetName() + "_" + leftTableReader.Table.GetName() + "/"
 	leftHeavyHitters := GetHeavyHitters(leftTableReader, directory)
 	rightHeavyHitters := GetHeavyHitters(rightTableReader, directory)
 	if leftHeavyHitters == nil && rightHeavyHitters == nil {
@@ -637,14 +653,16 @@ func MakeDecisionForHashJoin(
 
 	// adapte select method
 	var costModels []CostModel
-	costModels = append(costModels, PRPD{joinInfo: helper})
-	costModels = append(costModels, PnR{joinInfo: helper})
-	costModels = append(costModels, BaseHash{joinInfo: helper})
+	costModels = append(costModels, &PRPD{joinInfo: helper})
+	costModels = append(costModels, &PnR{joinInfo: helper})
+	costModels = append(costModels, &BaseHash{joinInfo: helper})
 
 	minCost := int64(-1)
 	workArgs := distsqlplan.HashJoinWorkArgs{
 		HJType: distsqlplan.BASEHASH,
 	}
+	selectType := "BaseHash"
+	resultLog := ""
 	for _, costModel := range costModels {
 		costModel.Init()
 		netWork1Cost := costModel.DistributeCost()
@@ -655,7 +673,20 @@ func MakeDecisionForHashJoin(
 		if minCost == -1 || allCost < minCost {
 			minCost = allCost
 			workArgs = costModel.WorkArgs()
+			selectType = costModel.Type()
 		}
+		resultLog += costModel.Type() + ":\n";
+		resultLog += "netWork1Cost : "+ strconv.FormatInt(netWork1Cost, 10) + "\n"
+		resultLog += "calculateCost : "+ strconv.FormatInt(calculateCost, 10) + "\n"
+		resultLog += "netWork2Cost : "+ strconv.FormatInt(netWork2Cost, 10) + "\n"
+		resultLog += "allCost : "+ strconv.FormatInt(allCost, 10) + "\n"
+		resultLog += "\n"
 	}
+	// write result log
+	resultLog += "select methods : " + selectType + "\n"
+	f, _ := os.OpenFile(directory + "result.log", os.O_CREATE | os.O_RDWR | os.O_TRUNC, 0666)
+	io.WriteString(f, resultLog)
+	f.Close()
+
 	return workArgs
 }

@@ -1,0 +1,1 @@
+/home/yangjx/go/src/github.com/znbasedb/znbase/node3/znbase-temp562858787

@@ -1,0 +1,907 @@
+I220119 08:42:51.405483 1 util/log/clog.go:1194  [config] file created at: 2022/01/19 08:42:51
+I220119 08:42:51.405483 1 util/log/clog.go:1194  [config] running on machine: ubuntu
+I220119 08:42:51.405483 1 util/log/clog.go:1194  [config] binary: ZNBaseDB OSS 4cd474b8 (x86_64-linux-gnu, built 2022/01/19 07:14:44, go1.14)
+I220119 08:42:51.405483 1 util/log/clog.go:1194  [config] arguments: [./znbase start --insecure --store=./node1 --listen-addr=:23456 --http-addr=:8000 --join=:23456,:23457,:23458]
+I220119 08:42:51.405483 1 util/log/clog.go:1194  line format: [IWEF]yymmdd hh:mm:ss.uuuuuu goid file:line msg utf8=✓
+I220119 08:42:51.405482 1 cli/start.go:1156  logging to directory /home/yangjx/go/src/github.com/znbasedb/znbase/node1/logs
+W220119 08:42:51.405693 1 cli/start.go:1191  RUNNING IN INSECURE MODE!
+
+- Your cluster is open for any client that can access <all your IP addresses>.
+- Any user, even root, can log in without providing a password.
+- Any user, connecting as root, can read or write any data in your cluster.
+- There is no network encryption nor authentication, and thus no confidentiality.
+
+Check out how to secure your cluster: official docs about version 4cd474b8
+I220119 08:42:51.406005 1 server/status/recorder.go:610  available memory from cgroups (8.0 EiB) exceeds system memory 3.8 GiB, using system memory
+W220119 08:42:51.406047 1 cli/start.go:1067  Using the default setting for --cache (128 MiB).
+  A significantly larger value is usually needed for good performance.
+  If you have a dedicated server a reasonable setting is --cache=.25 (976 MiB).
+I220119 08:42:51.406146 1 server/status/recorder.go:610  available memory from cgroups (8.0 EiB) exceeds system memory 3.8 GiB, using system memory
+W220119 08:42:51.406156 1 cli/start.go:1080  Using the default setting for --max-sql-memory (128 MiB).
+  A significantly larger value is usually needed in production.
+  If you have a dedicated server a reasonable setting is --max-sql-memory=.25 (976 MiB).
+I220119 08:42:51.406233 1 server/status/recorder.go:610  available memory from cgroups (8.0 EiB) exceeds system memory 3.8 GiB, using system memory
+I220119 08:42:51.406243 1 cli/start.go:1205  ZNBaseDB OSS 4cd474b8 (x86_64-linux-gnu, built 2022/01/19 07:14:44, go1.14)
+I220119 08:42:51.419673 1 server/status/recorder.go:610  available memory from cgroups (8.0 EiB) exceeds system memory 3.8 GiB, using system memory
+I220119 08:42:51.419706 1 server/config.go:400  system total memory: 3.8 GiB
+I220119 08:42:51.419746 1 server/config.go:402  server configuration:
+max offset             500000000
+cache size             128 MiB
+SQL memory pool size   128 MiB
+scan interval          10m0s
+scan min idle time     10ms
+scan max idle time     1s
+event log enabled      true
+I220119 08:42:51.419764 1 cli/start.go:1045  using local environment variables: GODEBUG=cgocheck=0
+I220119 08:42:51.419773 1 cli/start.go:1052  process identity: uid 1000 euid 1000 gid 1000 egid 1000
+I220119 08:42:51.419786 1 cli/start.go:676  starting znbase node
+I220119 08:42:51.421087 37 storage/engine/rocksdb.go:721  opening rocksdb instance at "/home/yangjx/go/src/github.com/znbasedb/znbase/node1/znbase-temp199415730"
+I220119 08:42:51.432294 37 storage/engine/rocksdb.go:721  opening rocksdb instance at "/home/yangjx/go/src/github.com/znbasedb/znbase/node1/znbase-cursor-temp437912937"
+I220119 08:42:51.457068 37 server/server.go:1008  [n?] monitoring forward clock jumps based on server.clock.forward_jump_check_enabled
+W220119 08:42:51.457440 37 server/config_unix.go:92  soft open file descriptor limit 4096 is under the recommended limit 15000; this may decrease performance
+please see official docs about version 4cd474b8 for more details
+I220119 08:42:51.457511 37 storage/engine/rocksdb.go:721  opening rocksdb instance at "/home/yangjx/go/src/github.com/znbasedb/znbase/node1"
+I220119 08:42:51.466109 37 server/config.go:509  [n?] 1 storage engine initialized
+I220119 08:42:51.466122 37 server/config.go:512  [n?] rocksdb cache size: 128 MiB
+I220119 08:42:51.466130 37 server/config.go:512  [n?] store 0: rocksdb, max size 0 B, max open file limit 3840
+W220119 08:42:51.473235 37 gossip/gossip.go:1508  [n?] no incoming or outgoing connections
+W220119 08:42:51.474039 65 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23457 0  <nil>}. Err :connection error: desc = "transport: Error while dialing dial tcp 127.0.1.1:23457: connect: connection refused". Reconnecting...
+I220119 08:42:51.474160 61 vendor/github.com/znbasedb/circuitbreaker/circuitbreaker.go:322  [n?] circuitbreaker: gossip [::]:23456->ubuntu:23457 tripped: initial connection heartbeat failed: rpc error: code = Unavailable desc = all SubConns are in TransientFailure, latest connection error: connection error: desc = "transport: Error while dialing dial tcp 127.0.1.1:23457: connect: connection refused"
+I220119 08:42:51.474236 37 server/server.go:1058  [n?] Sleeping till wall time 1642581771474151025 to catches up to 1642581771957004061 to ensure monotonicity. Delta: 482.853036ms
+I220119 08:42:51.474269 61 vendor/github.com/znbasedb/circuitbreaker/circuitbreaker.go:447  [n?] circuitbreaker: gossip [::]:23456->ubuntu:23457 event: BreakerTripped
+W220119 08:42:51.474285 61 gossip/client.go:122  [n?] failed to start gossip client to ubuntu:23457: initial connection heartbeat failed: rpc error: code = Unavailable desc = all SubConns are in TransientFailure, latest connection error: connection error: desc = "transport: Error while dialing dial tcp 127.0.1.1:23457: connect: connection refused"
+I220119 08:42:51.958280 37 gossip/gossip.go:397  [n1] NodeDescriptor set to node_id:1 address:<network_field:"tcp" address_field:"ubuntu:23456" > attrs:<> locality:<> ServerVersion:<major_val:19 minor_val:1 patch:0 unstable:10 > build_tag:"4cd474b8" started_at:1642581771958083843 location_name:<> 
+I220119 08:42:51.958509 41 gossip/gossip.go:920  [n1] MaxPeers Recomputed as 3
+W220119 08:42:51.982328 154 storage/replica_range_lease.go:506  can't determine lease status due to node liveness error: node not in the liveness table
+W220119 08:42:51.982378 154 storage/store.go:1580  [n1,s1,r6/1:/Table/{SystemCon…-11}] could not gossip system config: [NotLeaseHolderError] r6: replica (n1,s1):1 not lease holder; lease holder unknown
+I220119 08:42:51.982959 37 server/node.go:457  [n1] initialized store [n1,s1]: disk (capacity=78 GiB, available=35 GiB, used=29 MiB, logicalBytes=73 MiB), ranges=107, leases=0, queries=0.00, writes=0.00, bytesPerReplica={p10=0.00 p25=35172.00 p50=524279.00 p75=524293.00 p90=524301.00 pMax=35596548.00}, writesPerReplica={p10=0.00 p25=0.00 p50=0.00 p75=0.00 p90=0.00 pMax=0.00}
+I220119 08:42:51.983084 88 vendor/github.com/znbasedb/circuitbreaker/circuitbreaker.go:322  [n1] circuitbreaker: rpc [::]:23456 [n3] tripped: failed to resolve n3: unable to look up descriptor for n3
+I220119 08:42:51.983091 87 vendor/github.com/znbasedb/circuitbreaker/circuitbreaker.go:322  [n1] circuitbreaker: rpc [::]:23456 [n2] tripped: failed to resolve n2: unable to look up descriptor for n2
+I220119 08:42:51.983092 88 vendor/github.com/znbasedb/circuitbreaker/circuitbreaker.go:447  [n1] circuitbreaker: rpc [::]:23456 [n3] event: BreakerTripped
+I220119 08:42:51.983100 87 vendor/github.com/znbasedb/circuitbreaker/circuitbreaker.go:447  [n1] circuitbreaker: rpc [::]:23456 [n2] event: BreakerTripped
+I220119 08:42:51.983330 37 storage/stores.go:238  [n1] read 2 node addresses from persistent storage
+I220119 08:42:51.983574 37 server/node.go:695  [n1] connecting to gossip network to verify cluster ID...
+I220119 08:42:51.983590 37 server/node.go:715  [n1] node connected via gossip and verified as part of cluster "3bbb8c74-c606-434f-b2eb-5e4523c470ba"
+I220119 08:42:51.983640 37 server/node.go:538  [n1] node=1: started with [<no-attributes>=/home/yangjx/go/src/github.com/znbasedb/znbase/node1] engine(s) and attributes []
+I220119 08:42:51.984489 37 server/status/recorder.go:610  [n1] available memory from cgroups (8.0 EiB) exceeds system memory 3.8 GiB, using system memory
+I220119 08:42:51.984571 37 server/server.go:1730  [n1] starting http server at [::]:8000 (use: ubuntu:8000)
+I220119 08:42:51.984580 37 server/server.go:1732  [n1] starting grpc/postgres server at [::]:23456
+I220119 08:42:51.984591 37 server/server.go:1733  [n1] advertising ZNBaseDB node at ubuntu:23456
+W220119 08:42:51.984611 37 jobs/registry.go:440  [n1] unable to get node liveness: node not in the liveness table
+W220119 08:42:52.028296 154 storage/store.go:1580  [n1,s1,r6/1:/Table/{SystemCon…-11}] could not gossip system config: [NotLeaseHolderError] r6: replica (n1,s1):1 not lease holder; lease holder unknown
+W220119 08:42:52.142346 154 storage/store.go:1580  [n1,s1,r6/1:/Table/{SystemCon…-11}] could not gossip system config: [NotLeaseHolderError] r6: replica (n1,s1):1 not lease holder; lease holder unknown
+W220119 08:42:52.369357 154 storage/store.go:1580  [n1,s1,r6/1:/Table/{SystemCon…-11}] could not gossip system config: [NotLeaseHolderError] r6: replica (n1,s1):1 not lease holder; lease holder unknown
+W220119 08:42:52.474834 65 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23457 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 08:42:52.474855 65 vendor/google.golang.org/grpc/clientconn.go:953  Failed to dial ubuntu:23457: grpc: the connection is closing; please retry.
+W220119 08:42:52.475543 215 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23459 0  <nil>}. Err :connection error: desc = "transport: Error while dialing dial tcp 127.0.1.1:23459: connect: connection refused". Reconnecting...
+I220119 08:42:52.475650 211 vendor/github.com/znbasedb/circuitbreaker/circuitbreaker.go:322  [n1] circuitbreaker: gossip [::]:23456->ubuntu:23459 tripped: initial connection heartbeat failed: rpc error: code = Unavailable desc = all SubConns are in TransientFailure, latest connection error: connection error: desc = "transport: Error while dialing dial tcp 127.0.1.1:23459: connect: connection refused"
+I220119 08:42:52.475662 211 vendor/github.com/znbasedb/circuitbreaker/circuitbreaker.go:447  [n1] circuitbreaker: gossip [::]:23456->ubuntu:23459 event: BreakerTripped
+W220119 08:42:52.475681 211 gossip/client.go:122  [n1] failed to start gossip client to ubuntu:23459: initial connection heartbeat failed: rpc error: code = Unavailable desc = all SubConns are in TransientFailure, latest connection error: connection error: desc = "transport: Error while dialing dial tcp 127.0.1.1:23459: connect: connection refused"
+W220119 08:42:52.733142 154 storage/store.go:1580  [n1,s1,r6/1:/Table/{SystemCon…-11}] could not gossip system config: [NotLeaseHolderError] r6: replica (n1,s1):1 not lease holder; lease holder unknown
+I220119 08:42:53.182366 251 vendor/github.com/znbasedb/circuitbreaker/circuitbreaker.go:322  [n1] circuitbreaker: rpc [::]:23456 [n2] tripped: failed to resolve n2: unable to look up descriptor for n2
+I220119 08:42:53.182376 251 vendor/github.com/znbasedb/circuitbreaker/circuitbreaker.go:447  [n1] circuitbreaker: rpc [::]:23456 [n2] event: BreakerTripped
+I220119 08:42:53.182390 250 vendor/github.com/znbasedb/circuitbreaker/circuitbreaker.go:322  [n1] circuitbreaker: rpc [::]:23456 [n3] tripped: failed to resolve n3: unable to look up descriptor for n3
+I220119 08:42:53.182392 250 vendor/github.com/znbasedb/circuitbreaker/circuitbreaker.go:447  [n1] circuitbreaker: rpc [::]:23456 [n3] event: BreakerTripped
+W220119 08:42:53.475478 215 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23459 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 08:42:53.475923 215 vendor/google.golang.org/grpc/clientconn.go:953  Failed to dial ubuntu:23459: context canceled; please retry.
+W220119 08:42:53.476451 259 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23457 0  <nil>}. Err :connection error: desc = "transport: Error while dialing dial tcp 127.0.1.1:23457: connect: connection refused". Reconnecting...
+W220119 08:42:53.566293 154 storage/store.go:1580  [n1,s1,r6/1:/Table/{SystemCon…-11}] could not gossip system config: [NotLeaseHolderError] r6: replica (n1,s1):1 not lease holder; lease holder unknown
+W220119 08:42:54.476434 259 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23457 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 08:42:54.476456 259 vendor/google.golang.org/grpc/clientconn.go:953  Failed to dial ubuntu:23457: context canceled; please retry.
+W220119 08:42:54.476765 235 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23458 0  <nil>}. Err :connection error: desc = "transport: Error while dialing dial tcp 127.0.1.1:23458: connect: connection refused". Reconnecting...
+I220119 08:42:54.476821 296 vendor/github.com/znbasedb/circuitbreaker/circuitbreaker.go:322  [n1] circuitbreaker: gossip [::]:23456->ubuntu:23458 tripped: initial connection heartbeat failed: rpc error: code = Unavailable desc = all SubConns are in TransientFailure, latest connection error: connection error: desc = "transport: Error while dialing dial tcp 127.0.1.1:23458: connect: connection refused"
+I220119 08:42:54.476831 296 vendor/github.com/znbasedb/circuitbreaker/circuitbreaker.go:447  [n1] circuitbreaker: gossip [::]:23456->ubuntu:23458 event: BreakerTripped
+W220119 08:42:54.476839 296 gossip/client.go:122  [n1] failed to start gossip client to ubuntu:23458: initial connection heartbeat failed: rpc error: code = Unavailable desc = all SubConns are in TransientFailure, latest connection error: connection error: desc = "transport: Error while dialing dial tcp 127.0.1.1:23458: connect: connection refused"
+W220119 08:42:54.716950 154 storage/store.go:1580  [n1,s1,r6/1:/Table/{SystemCon…-11}] could not gossip system config: [NotLeaseHolderError] r6: replica (n1,s1):1 not lease holder; lease holder unknown
+W220119 08:42:55.477581 235 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23458 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 08:42:55.477643 235 vendor/google.golang.org/grpc/clientconn.go:953  Failed to dial ubuntu:23458: context canceled; please retry.
+W220119 08:42:55.478418 322 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23458 0  <nil>}. Err :connection error: desc = "transport: Error while dialing dial tcp 127.0.1.1:23458: connect: connection refused". Reconnecting...
+W220119 08:42:55.733543 154 storage/store.go:1580  [n1,s1,r6/1:/Table/{SystemCon…-11}] could not gossip system config: [NotLeaseHolderError] r6: replica (n1,s1):1 not lease holder; lease holder unknown
+W220119 08:42:56.478613 322 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23458 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 08:42:56.478738 322 vendor/google.golang.org/grpc/clientconn.go:953  Failed to dial ubuntu:23458: context canceled; please retry.
+W220119 08:42:56.480181 362 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23459 0  <nil>}. Err :connection error: desc = "transport: Error while dialing dial tcp 127.0.1.1:23459: connect: connection refused". Reconnecting...
+W220119 08:42:56.485913 183 storage/node_liveness.go:523  [n1,hb] slow heartbeat took 4.5s
+W220119 08:42:56.485937 183 storage/node_liveness.go:463  [n1,hb] failed node liveness heartbeat: aborted in distSender: context deadline exceeded
+W220119 08:42:56.848162 154 storage/store.go:1580  [n1,s1,r6/1:/Table/{SystemCon…-11}] could not gossip system config: [NotLeaseHolderError] r6: replica (n1,s1):1 not lease holder; lease holder unknown
+W220119 08:42:56.984165 386 storage/replica_range_lease.go:506  can't determine lease status due to node liveness error: node not in the liveness table
+W220119 08:42:56.988185 184 jobs/registry.go:440  unable to get node liveness: node not in the liveness table
+W220119 08:42:57.480303 362 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23459 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 08:42:57.480558 362 vendor/google.golang.org/grpc/clientconn.go:953  Failed to dial ubuntu:23459: context canceled; please retry.
+W220119 08:42:57.480899 289 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23457 0  <nil>}. Err :connection error: desc = "transport: Error while dialing dial tcp 127.0.1.1:23457: connect: connection refused". Reconnecting...
+W220119 08:42:57.894201 154 storage/store.go:1580  [n1,s1,r6/1:/Table/{SystemCon…-11}] could not gossip system config: [NotLeaseHolderError] r6: replica (n1,s1):1 not lease holder; lease holder unknown
+W220119 08:42:57.959425 83 storage/closedts/provider/provider.go:156  [ct-closer] unable to move closed timestamp forward: node not in the liveness table
+W220119 08:42:58.480768 289 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23457 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 08:42:58.480820 289 vendor/google.golang.org/grpc/clientconn.go:953  Failed to dial ubuntu:23457: context canceled; please retry.
+W220119 08:42:58.481251 424 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23458 0  <nil>}. Err :connection error: desc = "transport: Error while dialing dial tcp 127.0.1.1:23458: connect: connection refused". Reconnecting...
+W220119 08:42:58.907548 154 storage/store.go:1580  [n1,s1,r6/1:/Table/{SystemCon…-11}] could not gossip system config: [NotLeaseHolderError] r6: replica (n1,s1):1 not lease holder; lease holder unknown
+W220119 08:42:59.481670 424 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23458 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 08:42:59.481721 424 vendor/google.golang.org/grpc/clientconn.go:953  Failed to dial ubuntu:23458: context canceled; please retry.
+W220119 08:42:59.482253 437 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23458 0  <nil>}. Err :connection error: desc = "transport: Error while dialing dial tcp 127.0.1.1:23458: connect: connection refused". Reconnecting...
+I220119 08:42:59.487504 368 internal/client/txn.go:759  [n1] async rollback failed: aborted in distSender: context deadline exceeded
+W220119 08:42:59.801915 154 storage/store.go:1580  [n1,s1,r6/1:/Table/{SystemCon…-11}] could not gossip system config: [NotLeaseHolderError] r6: replica (n1,s1):1 not lease holder; lease holder unknown
+W220119 08:43:00.482213 437 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23458 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 08:43:00.482254 437 vendor/google.golang.org/grpc/clientconn.go:953  Failed to dial ubuntu:23458: context canceled; please retry.
+W220119 08:43:00.482971 456 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23459 0  <nil>}. Err :connection error: desc = "transport: Error while dialing dial tcp 127.0.1.1:23459: connect: connection refused". Reconnecting...
+W220119 08:43:00.711280 154 storage/store.go:1580  [n1,s1,r6/1:/Table/{SystemCon…-11}] could not gossip system config: [NotLeaseHolderError] r6: replica (n1,s1):1 not lease holder; lease holder unknown
+W220119 08:43:00.986339 183 storage/node_liveness.go:523  [n1,hb] slow heartbeat took 4.5s
+W220119 08:43:00.986351 183 storage/node_liveness.go:463  [n1,hb] failed node liveness heartbeat: aborted in distSender: context deadline exceeded
+W220119 08:43:01.483077 456 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23459 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 08:43:01.483124 456 vendor/google.golang.org/grpc/clientconn.go:953  Failed to dial ubuntu:23459: context canceled; please retry.
+W220119 08:43:01.483557 514 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23457 0  <nil>}. Err :connection error: desc = "transport: Error while dialing dial tcp 127.0.1.1:23457: connect: connection refused". Reconnecting...
+W220119 08:43:01.742132 154 storage/store.go:1580  [n1,s1,r6/1:/Table/{SystemCon…-11}] could not gossip system config: [NotLeaseHolderError] r6: replica (n1,s1):1 not lease holder; lease holder unknown
+W220119 08:43:01.984709 171 storage/replica_range_lease.go:506  can't determine lease status due to node liveness error: node not in the liveness table
+W220119 08:43:01.984887 171 server/node.go:795  [n1] [n1,s1]: unable to compute metrics: [n1,s1]: system config not yet available
+I220119 08:43:01.986949 176 server/status/runtime.go:500  [n1] runtime stats: 118 MiB RSS, 152 goroutines, 96 MiB/0 B/109 MiB GO alloc/idle/total, 4.3 MiB/7.7 MiB CGO alloc/total, 0.0 CGO/sec, 0.0/0.0 %(u/s)time, 0.0 %gc (7x), 1.1 KiB/1.1 KiB (r/w)net
+W220119 08:43:01.992069 184 jobs/registry.go:440  unable to get node liveness: node not in the liveness table
+W220119 08:43:02.484203 514 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23457 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 08:43:02.484239 514 vendor/google.golang.org/grpc/clientconn.go:953  Failed to dial ubuntu:23457: context canceled; please retry.
+W220119 08:43:02.484699 353 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23458 0  <nil>}. Err :connection error: desc = "transport: Error while dialing dial tcp 127.0.1.1:23458: connect: connection refused". Reconnecting...
+W220119 08:43:02.682383 154 storage/store.go:1580  [n1,s1,r6/1:/Table/{SystemCon…-11}] could not gossip system config: [NotLeaseHolderError] r6: replica (n1,s1):1 not lease holder; lease holder unknown
+W220119 08:43:03.485432 353 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23458 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 08:43:03.485459 353 vendor/google.golang.org/grpc/clientconn.go:953  Failed to dial ubuntu:23458: context canceled; please retry.
+W220119 08:43:03.756644 154 storage/store.go:1580  [n1,s1,r6/1:/Table/{SystemCon…-11}] could not gossip system config: [NotLeaseHolderError] r6: replica (n1,s1):1 not lease holder; lease holder unknown
+I220119 08:43:03.987628 502 internal/client/txn.go:759  [n1] async rollback failed: aborted in distSender: context deadline exceeded
+W220119 08:43:04.486947 594 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23459 0  <nil>}. Err :connection error: desc = "transport: Error while dialing dial tcp 127.0.1.1:23459: connect: connection refused". Reconnecting...
+W220119 08:43:04.906381 154 storage/store.go:1580  [n1,s1,r6/1:/Table/{SystemCon…-11}] could not gossip system config: [NotLeaseHolderError] r6: replica (n1,s1):1 not lease holder; lease holder unknown
+W220119 08:43:05.487133 183 storage/node_liveness.go:523  [n1,hb] slow heartbeat took 4.5s
+W220119 08:43:05.487160 183 storage/node_liveness.go:463  [n1,hb] failed node liveness heartbeat: aborted in distSender: context deadline exceeded
+W220119 08:43:05.487715 594 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23459 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 08:43:05.487751 594 vendor/google.golang.org/grpc/clientconn.go:953  Failed to dial ubuntu:23459: context canceled; please retry.
+W220119 08:43:05.488134 633 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23457 0  <nil>}. Err :connection error: desc = "transport: Error while dialing dial tcp 127.0.1.1:23457: connect: connection refused". Reconnecting...
+W220119 08:43:05.779594 154 storage/store.go:1580  [n1,s1,r6/1:/Table/{SystemCon…-11}] could not gossip system config: [NotLeaseHolderError] r6: replica (n1,s1):1 not lease holder; lease holder unknown
+W220119 08:43:06.488118 633 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23457 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 08:43:06.488156 633 vendor/google.golang.org/grpc/clientconn.go:953  Failed to dial ubuntu:23457: context canceled; please retry.
+W220119 08:43:06.488664 653 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23458 0  <nil>}. Err :connection error: desc = "transport: Error while dialing dial tcp 127.0.1.1:23458: connect: connection refused". Reconnecting...
+W220119 08:43:06.923727 154 storage/store.go:1580  [n1,s1,r6/1:/Table/{SystemCon…-11}] could not gossip system config: [NotLeaseHolderError] r6: replica (n1,s1):1 not lease holder; lease holder unknown
+W220119 08:43:06.990434 671 storage/replica_range_lease.go:506  can't determine lease status due to node liveness error: node not in the liveness table
+W220119 08:43:06.995393 184 jobs/registry.go:440  unable to get node liveness: node not in the liveness table
+W220119 08:43:07.488718 653 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23458 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 08:43:07.488748 653 vendor/google.golang.org/grpc/clientconn.go:953  Failed to dial ubuntu:23458: grpc: the connection is closing; please retry.
+W220119 08:43:07.786476 154 storage/store.go:1580  [n1,s1,r6/1:/Table/{SystemCon…-11}] could not gossip system config: [NotLeaseHolderError] r6: replica (n1,s1):1 not lease holder; lease holder unknown
+I220119 08:43:08.488553 495 internal/client/txn.go:759  [n1] async rollback failed: aborted in distSender: context deadline exceeded
+W220119 08:43:08.490771 695 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23459 0  <nil>}. Err :connection error: desc = "transport: Error while dialing dial tcp 127.0.1.1:23459: connect: connection refused". Reconnecting...
+W220119 08:43:08.884938 154 storage/store.go:1580  [n1,s1,r6/1:/Table/{SystemCon…-11}] could not gossip system config: [NotLeaseHolderError] r6: replica (n1,s1):1 not lease holder; lease holder unknown
+W220119 08:43:09.491030 695 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23459 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 08:43:09.491139 695 vendor/google.golang.org/grpc/clientconn.go:953  Failed to dial ubuntu:23459: context canceled; please retry.
+W220119 08:43:09.492040 687 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23457 0  <nil>}. Err :connection error: desc = "transport: Error while dialing dial tcp 127.0.1.1:23457: connect: connection refused". Reconnecting...
+W220119 08:43:09.879434 154 storage/store.go:1580  [n1,s1,r6/1:/Table/{SystemCon…-11}] could not gossip system config: [NotLeaseHolderError] r6: replica (n1,s1):1 not lease holder; lease holder unknown
+W220119 08:43:09.988477 183 storage/node_liveness.go:523  [n1,hb] slow heartbeat took 4.5s
+W220119 08:43:09.988502 183 storage/node_liveness.go:463  [n1,hb] failed node liveness heartbeat: aborted in distSender: context deadline exceeded
+W220119 08:43:10.491718 687 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23457 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 08:43:10.491760 687 vendor/google.golang.org/grpc/clientconn.go:953  Failed to dial ubuntu:23457: context canceled; please retry.
+W220119 08:43:10.492125 763 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23458 0  <nil>}. Err :connection error: desc = "transport: Error while dialing dial tcp 127.0.1.1:23458: connect: connection refused". Reconnecting...
+W220119 08:43:10.815348 154 storage/store.go:1580  [n1,s1,r6/1:/Table/{SystemCon…-11}] could not gossip system config: [NotLeaseHolderError] r6: replica (n1,s1):1 not lease holder; lease holder unknown
+W220119 08:43:11.492536 763 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23458 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 08:43:11.492742 763 vendor/google.golang.org/grpc/clientconn.go:953  Failed to dial ubuntu:23458: context canceled; please retry.
+W220119 08:43:11.493576 795 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23458 0  <nil>}. Err :connection error: desc = "transport: Error while dialing dial tcp 127.0.1.1:23458: connect: connection refused". Reconnecting...
+W220119 08:43:11.668172 154 storage/store.go:1580  [n1,s1,r6/1:/Table/{SystemCon…-11}] could not gossip system config: [NotLeaseHolderError] r6: replica (n1,s1):1 not lease holder; lease holder unknown
+W220119 08:43:11.985440 171 server/node.go:795  [n1] [n1,s1]: unable to compute metrics: [n1,s1]: system config not yet available
+I220119 08:43:11.989636 176 server/status/runtime.go:500  [n1] runtime stats: 121 MiB RSS, 152 goroutines, 100 MiB/128 KiB/113 MiB GO alloc/idle/total, 4.3 MiB/7.7 MiB CGO alloc/total, 18.9 CGO/sec, 0.6/0.8 %(u/s)time, 0.0 %gc (0x), 1010 B/980 B (r/w)net
+W220119 08:43:11.994951 827 storage/replica_range_lease.go:506  can't determine lease status due to node liveness error: node not in the liveness table
+W220119 08:43:11.998730 184 jobs/registry.go:440  unable to get node liveness: node not in the liveness table
+W220119 08:43:12.493591 795 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23458 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 08:43:12.493655 795 vendor/google.golang.org/grpc/clientconn.go:953  Failed to dial ubuntu:23458: context canceled; please retry.
+W220119 08:43:12.494477 836 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23459 0  <nil>}. Err :connection error: desc = "transport: Error while dialing dial tcp 127.0.1.1:23459: connect: connection refused". Reconnecting...
+W220119 08:43:12.599860 154 storage/store.go:1580  [n1,s1,r6/1:/Table/{SystemCon…-11}] could not gossip system config: [NotLeaseHolderError] r6: replica (n1,s1):1 not lease holder; lease holder unknown
+I220119 08:43:12.990277 735 internal/client/txn.go:759  [n1] async rollback failed: aborted in distSender: context deadline exceeded
+W220119 08:43:13.494386 836 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23459 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 08:43:13.494432 836 vendor/google.golang.org/grpc/clientconn.go:953  Failed to dial ubuntu:23459: context canceled; please retry.
+W220119 08:43:13.495030 813 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23457 0  <nil>}. Err :connection error: desc = "transport: Error while dialing dial tcp 127.0.1.1:23457: connect: connection refused". Reconnecting...
+W220119 08:43:13.643473 154 storage/store.go:1580  [n1,s1,r6/1:/Table/{SystemCon…-11}] could not gossip system config: [NotLeaseHolderError] r6: replica (n1,s1):1 not lease holder; lease holder unknown
+W220119 08:43:14.489530 183 storage/node_liveness.go:523  [n1,hb] slow heartbeat took 4.5s
+W220119 08:43:14.489555 183 storage/node_liveness.go:463  [n1,hb] failed node liveness heartbeat: aborted in distSender: context deadline exceeded
+W220119 08:43:14.494815 813 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23457 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 08:43:14.494975 813 vendor/google.golang.org/grpc/clientconn.go:953  Failed to dial ubuntu:23457: context canceled; please retry.
+W220119 08:43:14.495217 865 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23458 0  <nil>}. Err :connection error: desc = "transport: Error while dialing dial tcp 127.0.1.1:23458: connect: connection refused". Reconnecting...
+W220119 08:43:14.781545 154 storage/store.go:1580  [n1,s1,r6/1:/Table/{SystemCon…-11}] could not gossip system config: [NotLeaseHolderError] r6: replica (n1,s1):1 not lease holder; lease holder unknown
+W220119 08:43:15.495568 865 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23458 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 08:43:15.495747 865 vendor/google.golang.org/grpc/clientconn.go:953  Failed to dial ubuntu:23458: context canceled; please retry.
+W220119 08:43:15.496739 927 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23458 0  <nil>}. Err :connection error: desc = "transport: Error while dialing dial tcp 127.0.1.1:23458: connect: connection refused". Reconnecting...
+W220119 08:43:15.637127 154 storage/store.go:1580  [n1,s1,r6/1:/Table/{SystemCon…-11}] could not gossip system config: [NotLeaseHolderError] r6: replica (n1,s1):1 not lease holder; lease holder unknown
+W220119 08:43:16.496519 927 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23458 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 08:43:16.496594 927 vendor/google.golang.org/grpc/clientconn.go:953  Failed to dial ubuntu:23458: context canceled; please retry.
+W220119 08:43:16.498410 904 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23459 0  <nil>}. Err :connection error: desc = "transport: Error while dialing dial tcp 127.0.1.1:23459: connect: connection refused". Reconnecting...
+W220119 08:43:16.522243 154 storage/store.go:1580  [n1,s1,r6/1:/Table/{SystemCon…-11}] could not gossip system config: [NotLeaseHolderError] r6: replica (n1,s1):1 not lease holder; lease holder unknown
+W220119 08:43:16.997655 987 storage/replica_range_lease.go:506  can't determine lease status due to node liveness error: node not in the liveness table
+W220119 08:43:17.002393 184 jobs/registry.go:440  unable to get node liveness: node not in the liveness table
+I220119 08:43:17.490531 868 internal/client/txn.go:759  [n1] async rollback failed: aborted in distSender: context deadline exceeded
+W220119 08:43:17.497489 904 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23459 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 08:43:17.497607 904 vendor/google.golang.org/grpc/clientconn.go:953  Failed to dial ubuntu:23459: context canceled; please retry.
+W220119 08:43:17.498334 957 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23457 0  <nil>}. Err :connection error: desc = "transport: Error while dialing dial tcp 127.0.1.1:23457: connect: connection refused". Reconnecting...
+W220119 08:43:17.561689 154 storage/store.go:1580  [n1,s1,r6/1:/Table/{SystemCon…-11}] could not gossip system config: [NotLeaseHolderError] r6: replica (n1,s1):1 not lease holder; lease holder unknown
+W220119 08:43:18.497999 957 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23457 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 08:43:18.498042 957 vendor/google.golang.org/grpc/clientconn.go:953  Failed to dial ubuntu:23457: context canceled; please retry.
+W220119 08:43:18.498880 1013 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23458 0  <nil>}. Err :connection error: desc = "transport: Error while dialing dial tcp 127.0.1.1:23458: connect: connection refused". Reconnecting...
+W220119 08:43:18.692651 154 storage/store.go:1580  [n1,s1,r6/1:/Table/{SystemCon…-11}] could not gossip system config: [NotLeaseHolderError] r6: replica (n1,s1):1 not lease holder; lease holder unknown
+W220119 08:43:18.990132 183 storage/node_liveness.go:523  [n1,hb] slow heartbeat took 4.5s
+W220119 08:43:18.990160 183 storage/node_liveness.go:463  [n1,hb] failed node liveness heartbeat: aborted in distSender: context deadline exceeded
+W220119 08:43:19.498718 1013 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23458 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 08:43:19.498789 1013 vendor/google.golang.org/grpc/clientconn.go:953  Failed to dial ubuntu:23458: context canceled; please retry.
+W220119 08:43:19.499358 1058 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23458 0  <nil>}. Err :connection error: desc = "transport: Error while dialing dial tcp 127.0.1.1:23458: connect: connection refused". Reconnecting...
+W220119 08:43:19.831705 154 storage/store.go:1580  [n1,s1,r6/1:/Table/{SystemCon…-11}] could not gossip system config: [NotLeaseHolderError] r6: replica (n1,s1):1 not lease holder; lease holder unknown
+W220119 08:43:20.499732 1058 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23458 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 08:43:20.499788 1058 vendor/google.golang.org/grpc/clientconn.go:953  Failed to dial ubuntu:23458: context canceled; please retry.
+W220119 08:43:20.500647 1064 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23459 0  <nil>}. Err :connection error: desc = "transport: Error while dialing dial tcp 127.0.1.1:23459: connect: connection refused". Reconnecting...
+W220119 08:43:20.753106 154 storage/store.go:1580  [n1,s1,r6/1:/Table/{SystemCon…-11}] could not gossip system config: [NotLeaseHolderError] r6: replica (n1,s1):1 not lease holder; lease holder unknown
+W220119 08:43:21.473602 1037 cli/start.go:666  The server appears to be unable to contact the other nodes in the cluster. Please try:
+
+- starting the other nodes, if you haven't already;
+- double-checking that the '--join' and '--listen'/'--advertise' flags are set up correctly;
+- running the 'znbase init' command if you are trying to initialize a new cluster.
+
+If problems persist, please see official docs about version 4cd474b8.
+W220119 08:43:21.502010 1064 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23459 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 08:43:21.502084 1064 vendor/google.golang.org/grpc/clientconn.go:953  Failed to dial ubuntu:23459: grpc: the connection is closing; please retry.
+W220119 08:43:21.503820 1117 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23457 0  <nil>}. Err :connection error: desc = "transport: Error while dialing dial tcp 127.0.1.1:23457: connect: connection refused". Reconnecting...
+W220119 08:43:21.778258 154 storage/store.go:1580  [n1,s1,r6/1:/Table/{SystemCon…-11}] could not gossip system config: [NotLeaseHolderError] r6: replica (n1,s1):1 not lease holder; lease holder unknown
+W220119 08:43:21.984323 171 server/node.go:795  [n1] [n1,s1]: unable to compute metrics: [n1,s1]: system config not yet available
+I220119 08:43:21.990944 1019 internal/client/txn.go:759  [n1] async rollback failed: aborted in distSender: context deadline exceeded
+I220119 08:43:21.991031 176 server/status/runtime.go:500  [n1] runtime stats: 124 MiB RSS, 155 goroutines, 104 MiB/32 KiB/117 MiB GO alloc/idle/total, 4.3 MiB/7.7 MiB CGO alloc/total, 18.7 CGO/sec, 0.4/1.1 %(u/s)time, 0.0 %gc (0x), 1.8 KiB/1.8 KiB (r/w)net
+W220119 08:43:22.001191 1136 storage/replica_range_lease.go:506  can't determine lease status due to node liveness error: node not in the liveness table
+W220119 08:43:22.004474 184 jobs/registry.go:440  unable to get node liveness: node not in the liveness table
+W220119 08:43:22.503809 1117 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23457 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 08:43:22.503916 1117 vendor/google.golang.org/grpc/clientconn.go:953  Failed to dial ubuntu:23457: context canceled; please retry.
+W220119 08:43:22.504781 1087 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23458 0  <nil>}. Err :connection error: desc = "transport: Error while dialing dial tcp 127.0.1.1:23458: connect: connection refused". Reconnecting...
+W220119 08:43:22.874254 154 storage/store.go:1580  [n1,s1,r6/1:/Table/{SystemCon…-11}] could not gossip system config: [NotLeaseHolderError] r6: replica (n1,s1):1 not lease holder; lease holder unknown
+W220119 08:43:23.490959 183 storage/node_liveness.go:523  [n1,hb] slow heartbeat took 4.5s
+W220119 08:43:23.491024 183 storage/node_liveness.go:463  [n1,hb] failed node liveness heartbeat: aborted in distSender: context deadline exceeded
+W220119 08:43:23.505307 1087 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23458 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 08:43:23.505475 1087 vendor/google.golang.org/grpc/clientconn.go:953  Failed to dial ubuntu:23458: context canceled; please retry.
+W220119 08:43:23.851907 154 storage/store.go:1580  [n1,s1,r6/1:/Table/{SystemCon…-11}] could not gossip system config: [NotLeaseHolderError] r6: replica (n1,s1):1 not lease holder; lease holder unknown
+W220119 08:43:24.506591 1168 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23459 0  <nil>}. Err :connection error: desc = "transport: Error while dialing dial tcp 127.0.1.1:23459: connect: connection refused". Reconnecting...
+W220119 08:43:24.857131 154 storage/store.go:1580  [n1,s1,r6/1:/Table/{SystemCon…-11}] could not gossip system config: [NotLeaseHolderError] r6: replica (n1,s1):1 not lease holder; lease holder unknown
+W220119 08:43:25.506921 1168 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23459 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 08:43:25.506963 1168 vendor/google.golang.org/grpc/clientconn.go:953  Failed to dial ubuntu:23459: context canceled; please retry.
+W220119 08:43:25.507784 1240 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23457 0  <nil>}. Err :connection error: desc = "transport: Error while dialing dial tcp 127.0.1.1:23457: connect: connection refused". Reconnecting...
+W220119 08:43:25.748653 154 storage/store.go:1580  [n1,s1,r6/1:/Table/{SystemCon…-11}] could not gossip system config: [NotLeaseHolderError] r6: replica (n1,s1):1 not lease holder; lease holder unknown
+I220119 08:43:26.492368 1186 internal/client/txn.go:759  [n1] async rollback failed: aborted in distSender: context deadline exceeded
+W220119 08:43:26.507572 1240 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23457 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 08:43:26.507617 1240 vendor/google.golang.org/grpc/clientconn.go:953  Failed to dial ubuntu:23457: context canceled; please retry.
+W220119 08:43:26.508105 1287 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23458 0  <nil>}. Err :connection error: desc = "transport: Error while dialing dial tcp 127.0.1.1:23458: connect: connection refused". Reconnecting...
+W220119 08:43:26.602747 154 storage/store.go:1580  [n1,s1,r6/1:/Table/{SystemCon…-11}] could not gossip system config: [NotLeaseHolderError] r6: replica (n1,s1):1 not lease holder; lease holder unknown
+W220119 08:43:27.004420 1299 storage/replica_range_lease.go:506  can't determine lease status due to node liveness error: node not in the liveness table
+W220119 08:43:27.007665 184 jobs/registry.go:440  unable to get node liveness: node not in the liveness table
+W220119 08:43:27.508304 1287 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23458 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 08:43:27.508343 1287 vendor/google.golang.org/grpc/clientconn.go:953  Failed to dial ubuntu:23458: context canceled; please retry.
+W220119 08:43:27.552904 154 storage/store.go:1580  [n1,s1,r6/1:/Table/{SystemCon…-11}] could not gossip system config: [NotLeaseHolderError] r6: replica (n1,s1):1 not lease holder; lease holder unknown
+W220119 08:43:27.992012 183 storage/node_liveness.go:523  [n1,hb] slow heartbeat took 4.5s
+W220119 08:43:27.992037 183 storage/node_liveness.go:463  [n1,hb] failed node liveness heartbeat: aborted in distSender: context deadline exceeded
+W220119 08:43:28.425875 154 storage/store.go:1580  [n1,s1,r6/1:/Table/{SystemCon…-11}] could not gossip system config: [NotLeaseHolderError] r6: replica (n1,s1):1 not lease holder; lease holder unknown
+W220119 08:43:28.511173 1312 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23459 0  <nil>}. Err :connection error: desc = "transport: Error while dialing dial tcp 127.0.1.1:23459: connect: connection refused". Reconnecting...
+W220119 08:43:29.420432 154 storage/store.go:1580  [n1,s1,r6/1:/Table/{SystemCon…-11}] could not gossip system config: [NotLeaseHolderError] r6: replica (n1,s1):1 not lease holder; lease holder unknown
+W220119 08:43:29.510791 1312 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23459 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 08:43:29.510869 1312 vendor/google.golang.org/grpc/clientconn.go:953  Failed to dial ubuntu:23459: context canceled; please retry.
+W220119 08:43:29.511311 1341 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23457 0  <nil>}. Err :connection error: desc = "transport: Error while dialing dial tcp 127.0.1.1:23457: connect: connection refused". Reconnecting...
+W220119 08:43:30.512343 1341 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23457 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 08:43:30.512415 1341 vendor/google.golang.org/grpc/clientconn.go:953  Failed to dial ubuntu:23457: context canceled; please retry.
+W220119 08:43:30.513591 1383 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23458 0  <nil>}. Err :connection error: desc = "transport: Error while dialing dial tcp 127.0.1.1:23458: connect: connection refused". Reconnecting...
+W220119 08:43:30.521920 154 storage/store.go:1580  [n1,s1,r6/1:/Table/{SystemCon…-11}] could not gossip system config: [NotLeaseHolderError] r6: replica (n1,s1):1 not lease holder; lease holder unknown
+I220119 08:43:30.992400 1304 internal/client/txn.go:759  [n1] async rollback failed: aborted in distSender: context deadline exceeded
+W220119 08:43:31.377703 154 storage/store.go:1580  [n1,s1,r6/1:/Table/{SystemCon…-11}] could not gossip system config: [NotLeaseHolderError] r6: replica (n1,s1):1 not lease holder; lease holder unknown
+W220119 08:43:31.513914 1383 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23458 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 08:43:31.513966 1383 vendor/google.golang.org/grpc/clientconn.go:953  Failed to dial ubuntu:23458: context canceled; please retry.
+W220119 08:43:31.514666 1430 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23458 0  <nil>}. Err :connection error: desc = "transport: Error while dialing dial tcp 127.0.1.1:23458: connect: connection refused". Reconnecting...
+W220119 08:43:31.985219 171 server/node.go:795  [n1] [n1,s1]: unable to compute metrics: [n1,s1]: system config not yet available
+I220119 08:43:31.993671 176 server/status/runtime.go:500  [n1] runtime stats: 128 MiB RSS, 154 goroutines, 108 MiB/0 B/121 MiB GO alloc/idle/total, 4.3 MiB/7.7 MiB CGO alloc/total, 18.9 CGO/sec, 0.5/0.9 %(u/s)time, 0.0 %gc (0x), 1.6 KiB/1.6 KiB (r/w)net
+W220119 08:43:32.007275 1425 storage/replica_range_lease.go:506  can't determine lease status due to node liveness error: node not in the liveness table
+W220119 08:43:32.011623 184 jobs/registry.go:440  unable to get node liveness: node not in the liveness table
+W220119 08:43:32.447759 154 storage/store.go:1580  [n1,s1,r6/1:/Table/{SystemCon…-11}] could not gossip system config: [NotLeaseHolderError] r6: replica (n1,s1):1 not lease holder; lease holder unknown
+W220119 08:43:32.492868 183 storage/node_liveness.go:523  [n1,hb] slow heartbeat took 4.5s
+W220119 08:43:32.493410 183 storage/node_liveness.go:463  [n1,hb] failed node liveness heartbeat: aborted in distSender: context deadline exceeded
+W220119 08:43:32.515318 1430 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23458 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 08:43:32.515392 1430 vendor/google.golang.org/grpc/clientconn.go:953  Failed to dial ubuntu:23458: context canceled; please retry.
+W220119 08:43:32.515835 1449 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23459 0  <nil>}. Err :connection error: desc = "transport: Error while dialing dial tcp 127.0.1.1:23459: connect: connection refused". Reconnecting...
+W220119 08:43:33.515761 1449 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23459 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 08:43:33.515835 1449 vendor/google.golang.org/grpc/clientconn.go:953  Failed to dial ubuntu:23459: context canceled; please retry.
+W220119 08:43:33.517021 1473 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23457 0  <nil>}. Err :connection error: desc = "transport: Error while dialing dial tcp 127.0.1.1:23457: connect: connection refused". Reconnecting...
+W220119 08:43:33.521654 154 storage/store.go:1580  [n1,s1,r6/1:/Table/{SystemCon…-11}] could not gossip system config: [NotLeaseHolderError] r6: replica (n1,s1):1 not lease holder; lease holder unknown
+W220119 08:43:34.406042 154 storage/store.go:1580  [n1,s1,r6/1:/Table/{SystemCon…-11}] could not gossip system config: [NotLeaseHolderError] r6: replica (n1,s1):1 not lease holder; lease holder unknown
+W220119 08:43:34.517088 1473 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23457 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 08:43:34.517140 1473 vendor/google.golang.org/grpc/clientconn.go:953  Failed to dial ubuntu:23457: context canceled; please retry.
+W220119 08:43:34.517542 1528 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23458 0  <nil>}. Err :connection error: desc = "transport: Error while dialing dial tcp 127.0.1.1:23458: connect: connection refused". Reconnecting...
+W220119 08:43:35.474154 154 storage/store.go:1580  [n1,s1,r6/1:/Table/{SystemCon…-11}] could not gossip system config: [NotLeaseHolderError] r6: replica (n1,s1):1 not lease holder; lease holder unknown
+I220119 08:43:35.494458 1459 internal/client/txn.go:759  [n1] async rollback failed: aborted in distSender: context deadline exceeded
+W220119 08:43:35.517537 1528 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23458 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 08:43:35.517630 1528 vendor/google.golang.org/grpc/clientconn.go:953  Failed to dial ubuntu:23458: context canceled; please retry.
+W220119 08:43:36.519563 1568 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23459 0  <nil>}. Err :connection error: desc = "transport: Error while dialing dial tcp 127.0.1.1:23459: connect: connection refused". Reconnecting...
+W220119 08:43:36.578184 154 storage/store.go:1580  [n1,s1,r6/1:/Table/{SystemCon…-11}] could not gossip system config: [NotLeaseHolderError] r6: replica (n1,s1):1 not lease holder; lease holder unknown
+W220119 08:43:36.994313 183 storage/node_liveness.go:523  [n1,hb] slow heartbeat took 4.5s
+W220119 08:43:36.994343 183 storage/node_liveness.go:463  [n1,hb] failed node liveness heartbeat: aborted in distSender: context deadline exceeded
+W220119 08:43:37.010807 1622 storage/replica_range_lease.go:506  can't determine lease status due to node liveness error: node not in the liveness table
+W220119 08:43:37.014870 184 jobs/registry.go:440  unable to get node liveness: node not in the liveness table
+W220119 08:43:37.519919 1568 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23459 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 08:43:37.519985 1568 vendor/google.golang.org/grpc/clientconn.go:953  Failed to dial ubuntu:23459: context canceled; please retry.
+W220119 08:43:37.520805 1613 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23457 0  <nil>}. Err :connection error: desc = "transport: Error while dialing dial tcp 127.0.1.1:23457: connect: connection refused". Reconnecting...
+W220119 08:43:37.696849 154 storage/store.go:1580  [n1,s1,r6/1:/Table/{SystemCon…-11}] could not gossip system config: [NotLeaseHolderError] r6: replica (n1,s1):1 not lease holder; lease holder unknown
+W220119 08:43:38.520522 1613 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23457 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 08:43:38.520562 1613 vendor/google.golang.org/grpc/clientconn.go:953  Failed to dial ubuntu:23457: context canceled; please retry.
+W220119 08:43:38.520941 1633 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23458 0  <nil>}. Err :connection error: desc = "transport: Error while dialing dial tcp 127.0.1.1:23458: connect: connection refused". Reconnecting...
+W220119 08:43:38.725801 154 storage/store.go:1580  [n1,s1,r6/1:/Table/{SystemCon…-11}] could not gossip system config: [NotLeaseHolderError] r6: replica (n1,s1):1 not lease holder; lease holder unknown
+W220119 08:43:39.521667 1633 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23458 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 08:43:39.521897 1633 vendor/google.golang.org/grpc/clientconn.go:953  Failed to dial ubuntu:23458: context canceled; please retry.
+W220119 08:43:39.705528 154 storage/store.go:1580  [n1,s1,r6/1:/Table/{SystemCon…-11}] could not gossip system config: [NotLeaseHolderError] r6: replica (n1,s1):1 not lease holder; lease holder unknown
+I220119 08:43:39.995070 1607 internal/client/txn.go:759  [n1] async rollback failed: aborted in distSender: context deadline exceeded
+W220119 08:43:40.523485 1672 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23459 0  <nil>}. Err :connection error: desc = "transport: Error while dialing dial tcp 127.0.1.1:23459: connect: connection refused". Reconnecting...
+W220119 08:43:40.599284 154 storage/store.go:1580  [n1,s1,r6/1:/Table/{SystemCon…-11}] could not gossip system config: [NotLeaseHolderError] r6: replica (n1,s1):1 not lease holder; lease holder unknown
+W220119 08:43:41.495058 183 storage/node_liveness.go:523  [n1,hb] slow heartbeat took 4.5s
+W220119 08:43:41.495078 183 storage/node_liveness.go:463  [n1,hb] failed node liveness heartbeat: aborted in distSender: context deadline exceeded
+W220119 08:43:41.523222 1672 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23459 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 08:43:41.523256 1672 vendor/google.golang.org/grpc/clientconn.go:953  Failed to dial ubuntu:23459: context canceled; please retry.
+W220119 08:43:41.523752 1697 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23457 0  <nil>}. Err :connection error: desc = "transport: Error while dialing dial tcp 127.0.1.1:23457: connect: connection refused". Reconnecting...
+W220119 08:43:41.618460 154 storage/store.go:1580  [n1,s1,r6/1:/Table/{SystemCon…-11}] could not gossip system config: [NotLeaseHolderError] r6: replica (n1,s1):1 not lease holder; lease holder unknown
+W220119 08:43:41.985002 171 server/node.go:795  [n1] [n1,s1]: unable to compute metrics: [n1,s1]: system config not yet available
+I220119 08:43:41.995534 176 server/status/runtime.go:500  [n1] runtime stats: 131 MiB RSS, 155 goroutines, 113 MiB/64 KiB/125 MiB GO alloc/idle/total, 4.3 MiB/7.7 MiB CGO alloc/total, 18.9 CGO/sec, 0.3/1.4 %(u/s)time, 0.0 %gc (0x), 1.2 KiB/1.2 KiB (r/w)net
+W220119 08:43:42.014208 1782 storage/replica_range_lease.go:506  can't determine lease status due to node liveness error: node not in the liveness table
+W220119 08:43:42.017794 184 jobs/registry.go:440  unable to get node liveness: node not in the liveness table
+W220119 08:43:42.481745 154 storage/store.go:1580  [n1,s1,r6/1:/Table/{SystemCon…-11}] could not gossip system config: [NotLeaseHolderError] r6: replica (n1,s1):1 not lease holder; lease holder unknown
+W220119 08:43:42.524273 1697 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23457 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 08:43:42.524402 1697 vendor/google.golang.org/grpc/clientconn.go:953  Failed to dial ubuntu:23457: context canceled; please retry.
+W220119 08:43:42.525037 1756 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23458 0  <nil>}. Err :connection error: desc = "transport: Error while dialing dial tcp 127.0.1.1:23458: connect: connection refused". Reconnecting...
+W220119 08:43:43.518642 154 storage/store.go:1580  [n1,s1,r6/1:/Table/{SystemCon…-11}] could not gossip system config: [NotLeaseHolderError] r6: replica (n1,s1):1 not lease holder; lease holder unknown
+W220119 08:43:43.524957 1756 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23458 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 08:43:43.525753 1756 vendor/google.golang.org/grpc/clientconn.go:953  Failed to dial ubuntu:23458: context canceled; please retry.
+W220119 08:43:43.526764 1742 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23458 0  <nil>}. Err :connection error: desc = "transport: Error while dialing dial tcp 127.0.1.1:23458: connect: connection refused". Reconnecting...
+W220119 08:43:44.479517 154 storage/store.go:1580  [n1,s1,r6/1:/Table/{SystemCon…-11}] could not gossip system config: [NotLeaseHolderError] r6: replica (n1,s1):1 not lease holder; lease holder unknown
+I220119 08:43:44.495407 1692 internal/client/txn.go:759  [n1] async rollback failed: aborted in distSender: context deadline exceeded
+W220119 08:43:44.526162 1742 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23458 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 08:43:44.526210 1742 vendor/google.golang.org/grpc/clientconn.go:953  Failed to dial ubuntu:23458: context canceled; please retry.
+W220119 08:43:44.526769 1818 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23459 0  <nil>}. Err :connection error: desc = "transport: Error while dialing dial tcp 127.0.1.1:23459: connect: connection refused". Reconnecting...
+W220119 08:43:45.442968 154 storage/store.go:1580  [n1,s1,r6/1:/Table/{SystemCon…-11}] could not gossip system config: [NotLeaseHolderError] r6: replica (n1,s1):1 not lease holder; lease holder unknown
+W220119 08:43:45.526933 1818 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23459 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 08:43:45.526985 1818 vendor/google.golang.org/grpc/clientconn.go:953  Failed to dial ubuntu:23459: context canceled; please retry.
+W220119 08:43:45.527309 1878 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23457 0  <nil>}. Err :connection error: desc = "transport: Error while dialing dial tcp 127.0.1.1:23457: connect: connection refused". Reconnecting...
+W220119 08:43:45.995822 183 storage/node_liveness.go:523  [n1,hb] slow heartbeat took 4.5s
+W220119 08:43:45.995843 183 storage/node_liveness.go:463  [n1,hb] failed node liveness heartbeat: aborted in distSender: context deadline exceeded
+W220119 08:43:46.452298 154 storage/store.go:1580  [n1,s1,r6/1:/Table/{SystemCon…-11}] could not gossip system config: [NotLeaseHolderError] r6: replica (n1,s1):1 not lease holder; lease holder unknown
+W220119 08:43:46.527741 1878 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23457 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 08:43:46.527768 1878 vendor/google.golang.org/grpc/clientconn.go:953  Failed to dial ubuntu:23457: context canceled; please retry.
+W220119 08:43:46.527742 1903 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23458 0  <nil>}. Err :connection error: desc = "transport: Error while dialing dial tcp 127.0.1.1:23458: connect: connection refused". Reconnecting...
+W220119 08:43:47.015972 1945 storage/replica_range_lease.go:506  can't determine lease status due to node liveness error: node not in the liveness table
+W220119 08:43:47.020130 184 jobs/registry.go:440  unable to get node liveness: node not in the liveness table
+W220119 08:43:47.349382 154 storage/store.go:1580  [n1,s1,r6/1:/Table/{SystemCon…-11}] could not gossip system config: [NotLeaseHolderError] r6: replica (n1,s1):1 not lease holder; lease holder unknown
+W220119 08:43:47.528340 1903 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23458 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 08:43:47.528386 1903 vendor/google.golang.org/grpc/clientconn.go:953  Failed to dial ubuntu:23458: context canceled; please retry.
+W220119 08:43:48.201868 154 storage/store.go:1580  [n1,s1,r6/1:/Table/{SystemCon…-11}] could not gossip system config: [NotLeaseHolderError] r6: replica (n1,s1):1 not lease holder; lease holder unknown
+W220119 08:43:48.529863 1913 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23459 0  <nil>}. Err :connection error: desc = "transport: Error while dialing dial tcp 127.0.1.1:23459: connect: connection refused". Reconnecting...
+I220119 08:43:48.996325 1833 internal/client/txn.go:759  [n1] async rollback failed: aborted in distSender: context deadline exceeded
+W220119 08:43:49.289451 154 storage/store.go:1580  [n1,s1,r6/1:/Table/{SystemCon…-11}] could not gossip system config: [NotLeaseHolderError] r6: replica (n1,s1):1 not lease holder; lease holder unknown
+W220119 08:43:49.530325 1913 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23459 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 08:43:49.530396 1913 vendor/google.golang.org/grpc/clientconn.go:953  Failed to dial ubuntu:23459: context canceled; please retry.
+W220119 08:43:49.530732 1984 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23457 0  <nil>}. Err :connection error: desc = "transport: Error while dialing dial tcp 127.0.1.1:23457: connect: connection refused". Reconnecting...
+W220119 08:43:50.146333 154 storage/store.go:1580  [n1,s1,r6/1:/Table/{SystemCon…-11}] could not gossip system config: [NotLeaseHolderError] r6: replica (n1,s1):1 not lease holder; lease holder unknown
+W220119 08:43:50.497243 183 storage/node_liveness.go:523  [n1,hb] slow heartbeat took 4.5s
+W220119 08:43:50.497264 183 storage/node_liveness.go:463  [n1,hb] failed node liveness heartbeat: aborted in distSender: context deadline exceeded
+W220119 08:43:50.531732 1984 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23457 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 08:43:50.531883 1984 vendor/google.golang.org/grpc/clientconn.go:953  Failed to dial ubuntu:23457: context canceled; please retry.
+W220119 08:43:50.532557 2016 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23458 0  <nil>}. Err :connection error: desc = "transport: Error while dialing dial tcp 127.0.1.1:23458: connect: connection refused". Reconnecting...
+W220119 08:43:50.665976 160 storage/store_rebalancer.go:226  [n1,s1,store-rebalancer] StorePool missing descriptor for local store
+W220119 08:43:51.072238 154 storage/store.go:1580  [n1,s1,r6/1:/Table/{SystemCon…-11}] could not gossip system config: [NotLeaseHolderError] r6: replica (n1,s1):1 not lease holder; lease holder unknown
+W220119 08:43:51.533127 2016 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23458 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 08:43:51.533149 2016 vendor/google.golang.org/grpc/clientconn.go:953  Failed to dial ubuntu:23458: grpc: the connection is closing; please retry.
+I220119 08:43:51.984852 172 gossip/gossip.go:562  [n1] gossip status (stalled, 1 node)
+gossip client (0/3 cur/max conns)
+gossip server (0/3 cur/max conns, infos 0/0 sent/received, bytes 0B/0B sent/received)
+gossip connectivity
+W220119 08:43:51.985304 171 server/node.go:795  [n1] [n1,s1]: unable to compute metrics: [n1,s1]: system config not yet available
+I220119 08:43:51.997347 176 server/status/runtime.go:500  [n1] runtime stats: 135 MiB RSS, 151 goroutines, 118 MiB/64 KiB/130 MiB GO alloc/idle/total, 4.3 MiB/7.7 MiB CGO alloc/total, 18.9 CGO/sec, 0.4/1.3 %(u/s)time, 0.0 %gc (0x), 800 B/800 B (r/w)net
+W220119 08:43:52.018419 2044 storage/replica_range_lease.go:506  can't determine lease status due to node liveness error: node not in the liveness table
+W220119 08:43:52.022398 184 jobs/registry.go:440  unable to get node liveness: node not in the liveness table
+W220119 08:43:52.171462 154 storage/store.go:1580  [n1,s1,r6/1:/Table/{SystemCon…-11}] could not gossip system config: [NotLeaseHolderError] r6: replica (n1,s1):1 not lease holder; lease holder unknown
+W220119 08:43:52.535106 2072 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23459 0  <nil>}. Err :connection error: desc = "transport: Error while dialing dial tcp 127.0.1.1:23459: connect: connection refused". Reconnecting...
+E220119 08:43:52.984380 112 storage/queue.go:977  [n1,replicaGC,s1,r26/1:/Table/3{0-1}] aborted in distSender: context deadline exceeded
+W220119 08:43:53.293376 154 storage/store.go:1580  [n1,s1,r6/1:/Table/{SystemCon…-11}] could not gossip system config: [NotLeaseHolderError] r6: replica (n1,s1):1 not lease holder; lease holder unknown
+I220119 08:43:53.498986 1920 internal/client/txn.go:759  [n1] async rollback failed: aborted in distSender: context deadline exceeded
+W220119 08:43:53.535419 2072 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23459 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 08:43:53.535442 2072 vendor/google.golang.org/grpc/clientconn.go:953  Failed to dial ubuntu:23459: grpc: the connection is closing; please retry.
+W220119 08:43:53.535985 2127 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23457 0  <nil>}. Err :connection error: desc = "transport: Error while dialing dial tcp 127.0.1.1:23457: connect: connection refused". Reconnecting...
+W220119 08:43:54.253601 154 storage/store.go:1580  [n1,s1,r6/1:/Table/{SystemCon…-11}] could not gossip system config: [NotLeaseHolderError] r6: replica (n1,s1):1 not lease holder; lease holder unknown
+W220119 08:43:54.536282 2127 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23457 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 08:43:54.536335 2127 vendor/google.golang.org/grpc/clientconn.go:953  Failed to dial ubuntu:23457: context canceled; please retry.
+W220119 08:43:54.537310 2113 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23458 0  <nil>}. Err :connection error: desc = "transport: Error while dialing dial tcp 127.0.1.1:23458: connect: connection refused". Reconnecting...
+W220119 08:43:54.984673 155 storage/replica_range_lease.go:986  [n1,s1,r2/1:/System/NodeLiveness{-Max}] have been waiting 1m0s attempting to acquire lease
+W220119 08:43:54.984680 204 storage/replica_write.go:191  [n1,s1,r1/1:/{Min-System/NodeL…}] have been waiting 60.00s for proposing command RequestLease [/Min,/Min).
+This range is likely unavailable.
+Please contact us with this message to ZNBaseDB technical support 
+
+along with
+
+	https://yourhost:8080/#/reports/range/1
+
+and the following Raft status: {"id":"1","term":7,"vote":"3","commit":1514,"lead":"0","raftState":"StatePreCandidate","applied":1514,"progress":{},"leadtransferee":"0"}
+W220119 08:43:54.984673 153 storage/replica_range_lease.go:986  [n1,s1,r1/1:/{Min-System/NodeL…}] have been waiting 1m0s attempting to acquire lease
+W220119 08:43:54.984739 277 storage/replica_write.go:191  [n1,s1,r2/1:/System/NodeLiveness{-Max}] have been waiting 60.00s for proposing command RequestLease [/System/NodeLiveness,/Min).
+This range is likely unavailable.
+Please contact us with this message to ZNBaseDB technical support 
+
+along with
+
+	https://yourhost:8080/#/reports/range/2
+
+and the following Raft status: {"id":"1","term":7,"vote":"3","commit":5248,"lead":"0","raftState":"StatePreCandidate","applied":5248,"progress":{},"leadtransferee":"0"}
+W220119 08:43:54.998551 183 storage/node_liveness.go:523  [n1,hb] slow heartbeat took 4.5s
+W220119 08:43:54.998595 183 storage/node_liveness.go:463  [n1,hb] failed node liveness heartbeat: aborted in distSender: context deadline exceeded
+W220119 08:43:55.179370 154 storage/store.go:1580  [n1,s1,r6/1:/Table/{SystemCon…-11}] could not gossip system config: [NotLeaseHolderError] r6: replica (n1,s1):1 not lease holder; lease holder unknown
+W220119 08:43:55.537540 2113 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23458 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 08:43:55.537582 2113 vendor/google.golang.org/grpc/clientconn.go:953  Failed to dial ubuntu:23458: context canceled; please retry.
+W220119 08:43:56.325644 154 storage/store.go:1580  [n1,s1,r6/1:/Table/{SystemCon…-11}] could not gossip system config: [NotLeaseHolderError] r6: replica (n1,s1):1 not lease holder; lease holder unknown
+W220119 08:43:56.538959 2186 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23459 0  <nil>}. Err :connection error: desc = "transport: Error while dialing dial tcp 127.0.1.1:23459: connect: connection refused". Reconnecting...
+W220119 08:43:57.021568 2230 storage/replica_range_lease.go:506  can't determine lease status due to node liveness error: node not in the liveness table
+W220119 08:43:57.026647 184 jobs/registry.go:440  unable to get node liveness: node not in the liveness table
+W220119 08:43:57.176773 154 storage/store.go:1580  [n1,s1,r6/1:/Table/{SystemCon…-11}] could not gossip system config: [NotLeaseHolderError] r6: replica (n1,s1):1 not lease holder; lease holder unknown
+W220119 08:43:57.539210 2186 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23459 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 08:43:57.539245 2186 vendor/google.golang.org/grpc/clientconn.go:953  Failed to dial ubuntu:23459: context canceled; please retry.
+W220119 08:43:57.539856 2263 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23457 0  <nil>}. Err :connection error: desc = "transport: Error while dialing dial tcp 127.0.1.1:23457: connect: connection refused". Reconnecting...
+W220119 08:43:57.966850 83 storage/closedts/provider/provider.go:156  [ct-closer] unable to move closed timestamp forward: node not in the liveness table
+I220119 08:43:57.999650 2168 internal/client/txn.go:759  [n1] async rollback failed: aborted in distSender: context deadline exceeded
+W220119 08:43:58.311510 154 storage/store.go:1580  [n1,s1,r6/1:/Table/{SystemCon…-11}] could not gossip system config: [NotLeaseHolderError] r6: replica (n1,s1):1 not lease holder; lease holder unknown
+W220119 08:43:58.540123 2263 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23457 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 08:43:58.540187 2263 vendor/google.golang.org/grpc/clientconn.go:953  Failed to dial ubuntu:23457: context canceled; please retry.
+W220119 08:43:58.540849 2277 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23458 0  <nil>}. Err :connection error: desc = "transport: Error while dialing dial tcp 127.0.1.1:23458: connect: connection refused". Reconnecting...
+W220119 08:43:59.461734 154 storage/store.go:1580  [n1,s1,r6/1:/Table/{SystemCon…-11}] could not gossip system config: [NotLeaseHolderError] r6: replica (n1,s1):1 not lease holder; lease holder unknown
+W220119 08:43:59.499777 183 storage/node_liveness.go:523  [n1,hb] slow heartbeat took 4.5s
+W220119 08:43:59.499832 183 storage/node_liveness.go:463  [n1,hb] failed node liveness heartbeat: aborted in distSender: context deadline exceeded
+W220119 08:43:59.541044 2277 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23458 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 08:43:59.541073 2277 vendor/google.golang.org/grpc/clientconn.go:953  Failed to dial ubuntu:23458: context canceled; please retry.
+W220119 08:44:00.542146 2250 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23459 0  <nil>}. Err :connection error: desc = "transport: Error while dialing dial tcp 127.0.1.1:23459: connect: connection refused". Reconnecting...
+W220119 08:44:00.609341 154 storage/store.go:1580  [n1,s1,r6/1:/Table/{SystemCon…-11}] could not gossip system config: [NotLeaseHolderError] r6: replica (n1,s1):1 not lease holder; lease holder unknown
+W220119 08:44:01.542346 2250 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23459 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 08:44:01.542376 2250 vendor/google.golang.org/grpc/clientconn.go:953  Failed to dial ubuntu:23459: context canceled; please retry.
+W220119 08:44:01.543226 2239 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23457 0  <nil>}. Err :connection error: desc = "transport: Error while dialing dial tcp 127.0.1.1:23457: connect: connection refused". Reconnecting...
+W220119 08:44:01.647462 154 storage/store.go:1580  [n1,s1,r6/1:/Table/{SystemCon…-11}] could not gossip system config: [NotLeaseHolderError] r6: replica (n1,s1):1 not lease holder; lease holder unknown
+W220119 08:44:01.985770 171 server/node.go:795  [n1] [n1,s1]: unable to compute metrics: [n1,s1]: system config not yet available
+I220119 08:44:01.999162 176 server/status/runtime.go:500  [n1] runtime stats: 140 MiB RSS, 155 goroutines, 123 MiB/64 KiB/135 MiB GO alloc/idle/total, 4.3 MiB/7.7 MiB CGO alloc/total, 18.9 CGO/sec, 0.4/1.5 %(u/s)time, 0.0 %gc (0x), 800 B/800 B (r/w)net
+W220119 08:44:02.024702 2388 storage/replica_range_lease.go:506  can't determine lease status due to node liveness error: node not in the liveness table
+W220119 08:44:02.029678 184 jobs/registry.go:440  unable to get node liveness: node not in the liveness table
+I220119 08:44:02.500309 2309 internal/client/txn.go:759  [n1] async rollback failed: aborted in distSender: context deadline exceeded
+W220119 08:44:02.524641 154 storage/store.go:1580  [n1,s1,r6/1:/Table/{SystemCon…-11}] could not gossip system config: [NotLeaseHolderError] r6: replica (n1,s1):1 not lease holder; lease holder unknown
+W220119 08:44:02.543288 2239 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23457 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 08:44:02.543321 2239 vendor/google.golang.org/grpc/clientconn.go:953  Failed to dial ubuntu:23457: context canceled; please retry.
+W220119 08:44:02.544061 2374 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23458 0  <nil>}. Err :connection error: desc = "transport: Error while dialing dial tcp 127.0.1.1:23458: connect: connection refused". Reconnecting...
+W220119 08:44:03.543788 2374 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23458 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 08:44:03.543837 2374 vendor/google.golang.org/grpc/clientconn.go:953  Failed to dial ubuntu:23458: context canceled; please retry.
+W220119 08:44:03.670911 154 storage/store.go:1580  [n1,s1,r6/1:/Table/{SystemCon…-11}] could not gossip system config: [NotLeaseHolderError] r6: replica (n1,s1):1 not lease holder; lease holder unknown
+W220119 08:44:04.000973 183 storage/node_liveness.go:523  [n1,hb] slow heartbeat took 4.5s
+W220119 08:44:04.000994 183 storage/node_liveness.go:463  [n1,hb] failed node liveness heartbeat: aborted in distSender: context deadline exceeded
+W220119 08:44:04.546334 2429 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23459 0  <nil>}. Err :connection error: desc = "transport: Error while dialing dial tcp 127.0.1.1:23459: connect: connection refused". Reconnecting...
+W220119 08:44:04.723351 154 storage/store.go:1580  [n1,s1,r6/1:/Table/{SystemCon…-11}] could not gossip system config: [NotLeaseHolderError] r6: replica (n1,s1):1 not lease holder; lease holder unknown
+W220119 08:44:05.546489 2429 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23459 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 08:44:05.546544 2429 vendor/google.golang.org/grpc/clientconn.go:953  Failed to dial ubuntu:23459: context canceled; please retry.
+W220119 08:44:05.547089 2470 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23457 0  <nil>}. Err :connection error: desc = "transport: Error while dialing dial tcp 127.0.1.1:23457: connect: connection refused". Reconnecting...
+W220119 08:44:05.855565 154 storage/store.go:1580  [n1,s1,r6/1:/Table/{SystemCon…-11}] could not gossip system config: [NotLeaseHolderError] r6: replica (n1,s1):1 not lease holder; lease holder unknown
+W220119 08:44:06.547944 2470 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23457 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 08:44:06.547985 2470 vendor/google.golang.org/grpc/clientconn.go:953  Failed to dial ubuntu:23457: context canceled; please retry.
+W220119 08:44:06.548674 2523 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23458 0  <nil>}. Err :connection error: desc = "transport: Error while dialing dial tcp 127.0.1.1:23458: connect: connection refused". Reconnecting...
+W220119 08:44:06.920040 154 storage/store.go:1580  [n1,s1,r6/1:/Table/{SystemCon…-11}] could not gossip system config: [NotLeaseHolderError] r6: replica (n1,s1):1 not lease holder; lease holder unknown
+I220119 08:44:07.001604 2423 internal/client/txn.go:759  [n1] async rollback failed: aborted in distSender: context deadline exceeded
+W220119 08:44:07.029156 2549 storage/replica_range_lease.go:506  can't determine lease status due to node liveness error: node not in the liveness table
+W220119 08:44:07.032638 184 jobs/registry.go:440  unable to get node liveness: node not in the liveness table
+W220119 08:44:07.548824 2523 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23458 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 08:44:07.548842 2523 vendor/google.golang.org/grpc/clientconn.go:953  Failed to dial ubuntu:23458: grpc: the connection is closing; please retry.
+W220119 08:44:08.063538 154 storage/store.go:1580  [n1,s1,r6/1:/Table/{SystemCon…-11}] could not gossip system config: [NotLeaseHolderError] r6: replica (n1,s1):1 not lease holder; lease holder unknown
+W220119 08:44:08.502057 183 storage/node_liveness.go:523  [n1,hb] slow heartbeat took 4.5s
+W220119 08:44:08.502083 183 storage/node_liveness.go:463  [n1,hb] failed node liveness heartbeat: aborted in distSender: context deadline exceeded
+W220119 08:44:08.550534 2564 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23459 0  <nil>}. Err :connection error: desc = "transport: Error while dialing dial tcp 127.0.1.1:23459: connect: connection refused". Reconnecting...
+W220119 08:44:09.186485 154 storage/store.go:1580  [n1,s1,r6/1:/Table/{SystemCon…-11}] could not gossip system config: [NotLeaseHolderError] r6: replica (n1,s1):1 not lease holder; lease holder unknown
+W220119 08:44:09.550616 2564 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23459 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 08:44:09.550703 2564 vendor/google.golang.org/grpc/clientconn.go:953  Failed to dial ubuntu:23459: context canceled; please retry.
+W220119 08:44:09.552767 2608 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23457 0  <nil>}. Err :connection error: desc = "transport: Error while dialing dial tcp 127.0.1.1:23457: connect: connection refused". Reconnecting...
+W220119 08:44:10.220370 154 storage/store.go:1580  [n1,s1,r6/1:/Table/{SystemCon…-11}] could not gossip system config: [NotLeaseHolderError] r6: replica (n1,s1):1 not lease holder; lease holder unknown
+W220119 08:44:10.551935 2608 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23457 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 08:44:10.551949 2644 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23458 0  <nil>}. Err :connection error: desc = "transport: Error while dialing dial tcp 127.0.1.1:23458: connect: connection refused". Reconnecting...
+W220119 08:44:10.551972 2608 vendor/google.golang.org/grpc/clientconn.go:953  Failed to dial ubuntu:23457: context canceled; please retry.
+W220119 08:44:11.140037 154 storage/store.go:1580  [n1,s1,r6/1:/Table/{SystemCon…-11}] could not gossip system config: [NotLeaseHolderError] r6: replica (n1,s1):1 not lease holder; lease holder unknown
+I220119 08:44:11.503116 2542 internal/client/txn.go:759  [n1] async rollback failed: aborted in distSender: context deadline exceeded
+W220119 08:44:11.552023 2644 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23458 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 08:44:11.552066 2644 vendor/google.golang.org/grpc/clientconn.go:953  Failed to dial ubuntu:23458: context canceled; please retry.
+W220119 08:44:11.985560 171 server/node.go:795  [n1] [n1,s1]: unable to compute metrics: [n1,s1]: system config not yet available
+I220119 08:44:12.002249 176 server/status/runtime.go:500  [n1] runtime stats: 144 MiB RSS, 150 goroutines, 127 MiB/128 KiB/142 MiB GO alloc/idle/total, 4.3 MiB/7.7 MiB CGO alloc/total, 18.1 CGO/sec, 0.6/1.1 %(u/s)time, 0.0 %gc (0x), 910 B/880 B (r/w)net
+W220119 08:44:12.031000 2698 storage/replica_range_lease.go:506  can't determine lease status due to node liveness error: node not in the liveness table
+W220119 08:44:12.036697 184 jobs/registry.go:440  unable to get node liveness: node not in the liveness table
+W220119 08:44:12.115591 154 storage/store.go:1580  [n1,s1,r6/1:/Table/{SystemCon…-11}] could not gossip system config: [NotLeaseHolderError] r6: replica (n1,s1):1 not lease holder; lease holder unknown
+W220119 08:44:12.553591 2706 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23459 0  <nil>}. Err :connection error: desc = "transport: Error while dialing dial tcp 127.0.1.1:23459: connect: connection refused". Reconnecting...
+W220119 08:44:13.003067 183 storage/node_liveness.go:523  [n1,hb] slow heartbeat took 4.5s
+W220119 08:44:13.003095 183 storage/node_liveness.go:463  [n1,hb] failed node liveness heartbeat: aborted in distSender: context deadline exceeded
+W220119 08:44:13.251078 154 storage/store.go:1580  [n1,s1,r6/1:/Table/{SystemCon…-11}] could not gossip system config: [NotLeaseHolderError] r6: replica (n1,s1):1 not lease holder; lease holder unknown
+W220119 08:44:13.553500 2706 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23459 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 08:44:13.553550 2706 vendor/google.golang.org/grpc/clientconn.go:953  Failed to dial ubuntu:23459: context canceled; please retry.
+W220119 08:44:13.554267 2639 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23457 0  <nil>}. Err :connection error: desc = "transport: Error while dialing dial tcp 127.0.1.1:23457: connect: connection refused". Reconnecting...
+W220119 08:44:14.219496 154 storage/store.go:1580  [n1,s1,r6/1:/Table/{SystemCon…-11}] could not gossip system config: [NotLeaseHolderError] r6: replica (n1,s1):1 not lease holder; lease holder unknown
+W220119 08:44:14.554413 2639 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23457 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 08:44:14.554473 2639 vendor/google.golang.org/grpc/clientconn.go:953  Failed to dial ubuntu:23457: context canceled; please retry.
+W220119 08:44:14.555088 2716 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23458 0  <nil>}. Err :connection error: desc = "transport: Error while dialing dial tcp 127.0.1.1:23458: connect: connection refused". Reconnecting...
+W220119 08:44:15.272765 154 storage/store.go:1580  [n1,s1,r6/1:/Table/{SystemCon…-11}] could not gossip system config: [NotLeaseHolderError] r6: replica (n1,s1):1 not lease holder; lease holder unknown
+W220119 08:44:15.554730 2716 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23458 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 08:44:15.554763 2716 vendor/google.golang.org/grpc/clientconn.go:953  Failed to dial ubuntu:23458: context canceled; please retry.
+I220119 08:44:16.004875 2677 internal/client/txn.go:759  [n1] async rollback failed: aborted in distSender: context deadline exceeded
+W220119 08:44:16.253471 154 storage/store.go:1580  [n1,s1,r6/1:/Table/{SystemCon…-11}] could not gossip system config: [NotLeaseHolderError] r6: replica (n1,s1):1 not lease holder; lease holder unknown
+W220119 08:44:16.555933 2782 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23459 0  <nil>}. Err :connection error: desc = "transport: Error while dialing dial tcp 127.0.1.1:23459: connect: connection refused". Reconnecting...
+W220119 08:44:17.034748 2827 storage/replica_range_lease.go:506  can't determine lease status due to node liveness error: node not in the liveness table
+W220119 08:44:17.039746 184 jobs/registry.go:440  unable to get node liveness: node not in the liveness table
+W220119 08:44:17.333654 154 storage/store.go:1580  [n1,s1,r6/1:/Table/{SystemCon…-11}] could not gossip system config: [NotLeaseHolderError] r6: replica (n1,s1):1 not lease holder; lease holder unknown
+W220119 08:44:17.504423 183 storage/node_liveness.go:523  [n1,hb] slow heartbeat took 4.5s
+W220119 08:44:17.504452 183 storage/node_liveness.go:463  [n1,hb] failed node liveness heartbeat: aborted in distSender: context deadline exceeded
+W220119 08:44:17.555999 2782 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23459 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 08:44:17.556047 2782 vendor/google.golang.org/grpc/clientconn.go:953  Failed to dial ubuntu:23459: context canceled; please retry.
+W220119 08:44:17.557736 2810 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23457 0  <nil>}. Err :connection error: desc = "transport: Error while dialing dial tcp 127.0.1.1:23457: connect: connection refused". Reconnecting...
+W220119 08:44:18.410144 154 storage/store.go:1580  [n1,s1,r6/1:/Table/{SystemCon…-11}] could not gossip system config: [NotLeaseHolderError] r6: replica (n1,s1):1 not lease holder; lease holder unknown
+W220119 08:44:18.557057 2810 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23457 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 08:44:18.557122 2810 vendor/google.golang.org/grpc/clientconn.go:953  Failed to dial ubuntu:23457: context canceled; please retry.
+W220119 08:44:18.557904 2893 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23458 0  <nil>}. Err :connection error: desc = "transport: Error while dialing dial tcp 127.0.1.1:23458: connect: connection refused". Reconnecting...
+W220119 08:44:19.420292 154 storage/store.go:1580  [n1,s1,r6/1:/Table/{SystemCon…-11}] could not gossip system config: [NotLeaseHolderError] r6: replica (n1,s1):1 not lease holder; lease holder unknown
+W220119 08:44:19.557857 2893 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23458 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 08:44:19.557913 2893 vendor/google.golang.org/grpc/clientconn.go:953  Failed to dial ubuntu:23458: context canceled; please retry.
+W220119 08:44:19.558926 2913 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23458 0  <nil>}. Err :connection error: desc = "transport: Error while dialing dial tcp 127.0.1.1:23458: connect: connection refused". Reconnecting...
+I220119 08:44:20.505662 2836 internal/client/txn.go:759  [n1] async rollback failed: aborted in distSender: context deadline exceeded
+W220119 08:44:20.548257 154 storage/store.go:1580  [n1,s1,r6/1:/Table/{SystemCon…-11}] could not gossip system config: [NotLeaseHolderError] r6: replica (n1,s1):1 not lease holder; lease holder unknown
+W220119 08:44:20.558919 2913 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23458 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 08:44:20.559047 2913 vendor/google.golang.org/grpc/clientconn.go:953  Failed to dial ubuntu:23458: context canceled; please retry.
+W220119 08:44:20.560155 2858 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23459 0  <nil>}. Err :connection error: desc = "transport: Error while dialing dial tcp 127.0.1.1:23459: connect: connection refused". Reconnecting...
+W220119 08:44:21.560201 2858 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23459 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 08:44:21.560291 2858 vendor/google.golang.org/grpc/clientconn.go:953  Failed to dial ubuntu:23459: context canceled; please retry.
+W220119 08:44:21.561959 2979 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23457 0  <nil>}. Err :connection error: desc = "transport: Error while dialing dial tcp 127.0.1.1:23457: connect: connection refused". Reconnecting...
+W220119 08:44:21.690493 154 storage/store.go:1580  [n1,s1,r6/1:/Table/{SystemCon…-11}] could not gossip system config: [NotLeaseHolderError] r6: replica (n1,s1):1 not lease holder; lease holder unknown
+W220119 08:44:21.985658 171 server/node.go:795  [n1] [n1,s1]: unable to compute metrics: [n1,s1]: system config not yet available
+W220119 08:44:22.005293 183 storage/node_liveness.go:523  [n1,hb] slow heartbeat took 4.5s
+W220119 08:44:22.005307 183 storage/node_liveness.go:463  [n1,hb] failed node liveness heartbeat: aborted in distSender: context deadline exceeded
+I220119 08:44:22.005655 176 server/status/runtime.go:500  [n1] runtime stats: 148 MiB RSS, 154 goroutines, 132 MiB/160 KiB/147 MiB GO alloc/idle/total, 4.3 MiB/7.7 MiB CGO alloc/total, 19.1 CGO/sec, 0.1/1.9 %(u/s)time, 0.0 %gc (0x), 1.2 KiB/900 B (r/w)net
+W220119 08:44:22.037235 2960 storage/replica_range_lease.go:506  can't determine lease status due to node liveness error: node not in the liveness table
+W220119 08:44:22.042162 184 jobs/registry.go:440  unable to get node liveness: node not in the liveness table
+W220119 08:44:22.561243 2979 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23457 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 08:44:22.561364 2979 vendor/google.golang.org/grpc/clientconn.go:953  Failed to dial ubuntu:23457: context canceled; please retry.
+W220119 08:44:22.561926 3014 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23458 0  <nil>}. Err :connection error: desc = "transport: Error while dialing dial tcp 127.0.1.1:23458: connect: connection refused". Reconnecting...
+W220119 08:44:22.789625 154 storage/store.go:1580  [n1,s1,r6/1:/Table/{SystemCon…-11}] could not gossip system config: [NotLeaseHolderError] r6: replica (n1,s1):1 not lease holder; lease holder unknown
+W220119 08:44:23.561762 3014 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23458 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 08:44:23.561800 3014 vendor/google.golang.org/grpc/clientconn.go:953  Failed to dial ubuntu:23458: context canceled; please retry.
+W220119 08:44:23.650675 154 storage/store.go:1580  [n1,s1,r6/1:/Table/{SystemCon…-11}] could not gossip system config: [NotLeaseHolderError] r6: replica (n1,s1):1 not lease holder; lease holder unknown
+W220119 08:44:24.565097 3047 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23459 0  <nil>}. Err :connection error: desc = "transport: Error while dialing dial tcp 127.0.1.1:23459: connect: connection refused". Reconnecting...
+W220119 08:44:24.677573 154 storage/store.go:1580  [n1,s1,r6/1:/Table/{SystemCon…-11}] could not gossip system config: [NotLeaseHolderError] r6: replica (n1,s1):1 not lease holder; lease holder unknown
+I220119 08:44:25.006473 2928 internal/client/txn.go:759  [n1] async rollback failed: aborted in distSender: context deadline exceeded
+W220119 08:44:25.564241 3047 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23459 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 08:44:25.564345 3047 vendor/google.golang.org/grpc/clientconn.go:953  Failed to dial ubuntu:23459: context canceled; please retry.
+W220119 08:44:25.564952 3092 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23457 0  <nil>}. Err :connection error: desc = "transport: Error while dialing dial tcp 127.0.1.1:23457: connect: connection refused". Reconnecting...
+W220119 08:44:25.609250 154 storage/store.go:1580  [n1,s1,r6/1:/Table/{SystemCon…-11}] could not gossip system config: [NotLeaseHolderError] r6: replica (n1,s1):1 not lease holder; lease holder unknown
+W220119 08:44:26.505955 183 storage/node_liveness.go:523  [n1,hb] slow heartbeat took 4.5s
+W220119 08:44:26.505986 183 storage/node_liveness.go:463  [n1,hb] failed node liveness heartbeat: aborted in distSender: context deadline exceeded
+W220119 08:44:26.565384 3092 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23457 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 08:44:26.565502 3092 vendor/google.golang.org/grpc/clientconn.go:953  Failed to dial ubuntu:23457: context canceled; please retry.
+W220119 08:44:26.567272 2976 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23458 0  <nil>}. Err :connection error: desc = "transport: Error while dialing dial tcp 127.0.1.1:23458: connect: connection refused". Reconnecting...
+W220119 08:44:26.631875 154 storage/store.go:1580  [n1,s1,r6/1:/Table/{SystemCon…-11}] could not gossip system config: [NotLeaseHolderError] r6: replica (n1,s1):1 not lease holder; lease holder unknown
+W220119 08:44:27.041158 3162 storage/replica_range_lease.go:506  can't determine lease status due to node liveness error: node not in the liveness table
+W220119 08:44:27.045488 184 jobs/registry.go:440  unable to get node liveness: node not in the liveness table
+W220119 08:44:27.566950 2976 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23458 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 08:44:27.566998 2976 vendor/google.golang.org/grpc/clientconn.go:953  Failed to dial ubuntu:23458: context canceled; please retry.
+W220119 08:44:27.650205 154 storage/store.go:1580  [n1,s1,r6/1:/Table/{SystemCon…-11}] could not gossip system config: [NotLeaseHolderError] r6: replica (n1,s1):1 not lease holder; lease holder unknown
+W220119 08:44:28.568763 3192 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23459 0  <nil>}. Err :connection error: desc = "transport: Error while dialing dial tcp 127.0.1.1:23459: connect: connection refused". Reconnecting...
+W220119 08:44:28.660243 154 storage/store.go:1580  [n1,s1,r6/1:/Table/{SystemCon…-11}] could not gossip system config: [NotLeaseHolderError] r6: replica (n1,s1):1 not lease holder; lease holder unknown
+I220119 08:44:29.506917 3082 internal/client/txn.go:759  [n1] async rollback failed: aborted in distSender: context deadline exceeded
+W220119 08:44:29.568739 3192 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23459 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 08:44:29.568778 3192 vendor/google.golang.org/grpc/clientconn.go:953  Failed to dial ubuntu:23459: context canceled; please retry.
+W220119 08:44:29.569249 3224 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23457 0  <nil>}. Err :connection error: desc = "transport: Error while dialing dial tcp 127.0.1.1:23457: connect: connection refused". Reconnecting...
+W220119 08:44:29.798588 154 storage/store.go:1580  [n1,s1,r6/1:/Table/{SystemCon…-11}] could not gossip system config: [NotLeaseHolderError] r6: replica (n1,s1):1 not lease holder; lease holder unknown
+W220119 08:44:30.569278 3224 vendor/google.golang.org/grpc/clientconn.go:953  Failed to dial ubuntu:23457: grpc: the connection is closing; please retry.
+W220119 08:44:30.570198 3133 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23458 0  <nil>}. Err :connection error: desc = "transport: Error while dialing dial tcp 127.0.1.1:23458: connect: connection refused". Reconnecting...
+W220119 08:44:30.837997 154 storage/store.go:1580  [n1,s1,r6/1:/Table/{SystemCon…-11}] could not gossip system config: [NotLeaseHolderError] r6: replica (n1,s1):1 not lease holder; lease holder unknown
+W220119 08:44:31.007110 183 storage/node_liveness.go:523  [n1,hb] slow heartbeat took 4.5s
+W220119 08:44:31.007122 183 storage/node_liveness.go:463  [n1,hb] failed node liveness heartbeat: aborted in distSender: context deadline exceeded
+W220119 08:44:31.570109 3133 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23458 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 08:44:31.570236 3133 vendor/google.golang.org/grpc/clientconn.go:953  Failed to dial ubuntu:23458: context canceled; please retry.
+W220119 08:44:31.828013 154 storage/store.go:1580  [n1,s1,r6/1:/Table/{SystemCon…-11}] could not gossip system config: [NotLeaseHolderError] r6: replica (n1,s1):1 not lease holder; lease holder unknown
+W220119 08:44:31.984447 171 server/node.go:795  [n1] [n1,s1]: unable to compute metrics: [n1,s1]: system config not yet available
+I220119 08:44:32.007902 176 server/status/runtime.go:500  [n1] runtime stats: 153 MiB RSS, 151 goroutines, 138 MiB/64 KiB/153 MiB GO alloc/idle/total, 4.5 MiB/7.9 MiB CGO alloc/total, 18.7 CGO/sec, 0.5/1.3 %(u/s)time, 0.0 %gc (0x), 820 B/700 B (r/w)net
+W220119 08:44:32.044544 3298 storage/replica_range_lease.go:506  can't determine lease status due to node liveness error: node not in the liveness table
+W220119 08:44:32.048957 184 jobs/registry.go:440  unable to get node liveness: node not in the liveness table
+W220119 08:44:32.571733 3294 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23459 0  <nil>}. Err :connection error: desc = "transport: Error while dialing dial tcp 127.0.1.1:23459: connect: connection refused". Reconnecting...
+W220119 08:44:32.690410 154 storage/store.go:1580  [n1,s1,r6/1:/Table/{SystemCon…-11}] could not gossip system config: [NotLeaseHolderError] r6: replica (n1,s1):1 not lease holder; lease holder unknown
+W220119 08:44:33.548068 154 storage/store.go:1580  [n1,s1,r6/1:/Table/{SystemCon…-11}] could not gossip system config: [NotLeaseHolderError] r6: replica (n1,s1):1 not lease holder; lease holder unknown
+W220119 08:44:33.571567 3294 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23459 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 08:44:33.571604 3294 vendor/google.golang.org/grpc/clientconn.go:953  Failed to dial ubuntu:23459: context canceled; please retry.
+W220119 08:44:33.572491 3321 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23457 0  <nil>}. Err :connection error: desc = "transport: Error while dialing dial tcp 127.0.1.1:23457: connect: connection refused". Reconnecting...
+I220119 08:44:34.008196 3215 internal/client/txn.go:759  [n1] async rollback failed: aborted in distSender: context deadline exceeded
+W220119 08:44:34.573002 3321 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23457 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 08:44:34.573058 3321 vendor/google.golang.org/grpc/clientconn.go:953  Failed to dial ubuntu:23457: context canceled; please retry.
+W220119 08:44:34.573718 3357 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23458 0  <nil>}. Err :connection error: desc = "transport: Error while dialing dial tcp 127.0.1.1:23458: connect: connection refused". Reconnecting...
+W220119 08:44:34.594483 154 storage/store.go:1580  [n1,s1,r6/1:/Table/{SystemCon…-11}] could not gossip system config: [NotLeaseHolderError] r6: replica (n1,s1):1 not lease holder; lease holder unknown
+W220119 08:44:35.507935 183 storage/node_liveness.go:523  [n1,hb] slow heartbeat took 4.5s
+W220119 08:44:35.507950 183 storage/node_liveness.go:463  [n1,hb] failed node liveness heartbeat: aborted in distSender: context deadline exceeded
+W220119 08:44:35.545630 154 storage/store.go:1580  [n1,s1,r6/1:/Table/{SystemCon…-11}] could not gossip system config: [NotLeaseHolderError] r6: replica (n1,s1):1 not lease holder; lease holder unknown
+W220119 08:44:35.574363 3357 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23458 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 08:44:35.574407 3357 vendor/google.golang.org/grpc/clientconn.go:953  Failed to dial ubuntu:23458: context canceled; please retry.
+W220119 08:44:35.574971 3393 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23458 0  <nil>}. Err :connection error: desc = "transport: Error while dialing dial tcp 127.0.1.1:23458: connect: connection refused". Reconnecting...
+W220119 08:44:36.556569 154 storage/store.go:1580  [n1,s1,r6/1:/Table/{SystemCon…-11}] could not gossip system config: [NotLeaseHolderError] r6: replica (n1,s1):1 not lease holder; lease holder unknown
+W220119 08:44:36.575444 3393 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23458 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 08:44:36.575503 3393 vendor/google.golang.org/grpc/clientconn.go:953  Failed to dial ubuntu:23458: context canceled; please retry.
+W220119 08:44:36.576201 3430 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23459 0  <nil>}. Err :connection error: desc = "transport: Error while dialing dial tcp 127.0.1.1:23459: connect: connection refused". Reconnecting...
+W220119 08:44:37.047400 3459 storage/replica_range_lease.go:506  can't determine lease status due to node liveness error: node not in the liveness table
+W220119 08:44:37.052386 184 jobs/registry.go:440  unable to get node liveness: node not in the liveness table
+W220119 08:44:37.508262 154 storage/store.go:1580  [n1,s1,r6/1:/Table/{SystemCon…-11}] could not gossip system config: [NotLeaseHolderError] r6: replica (n1,s1):1 not lease holder; lease holder unknown
+W220119 08:44:37.576019 3430 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23459 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 08:44:37.576058 3430 vendor/google.golang.org/grpc/clientconn.go:953  Failed to dial ubuntu:23459: context canceled; please retry.
+W220119 08:44:37.576513 3477 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23457 0  <nil>}. Err :connection error: desc = "transport: Error while dialing dial tcp 127.0.1.1:23457: connect: connection refused". Reconnecting...
+W220119 08:44:38.467559 154 storage/store.go:1580  [n1,s1,r6/1:/Table/{SystemCon…-11}] could not gossip system config: [NotLeaseHolderError] r6: replica (n1,s1):1 not lease holder; lease holder unknown
+I220119 08:44:38.508448 3383 internal/client/txn.go:759  [n1] async rollback failed: aborted in distSender: context deadline exceeded
+W220119 08:44:38.577152 3477 vendor/google.golang.org/grpc/clientconn.go:953  Failed to dial ubuntu:23457: grpc: the connection is closing; please retry.
+W220119 08:44:38.577678 3509 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23458 0  <nil>}. Err :connection error: desc = "transport: Error while dialing dial tcp 127.0.1.1:23458: connect: connection refused". Reconnecting...
+W220119 08:44:39.337176 154 storage/store.go:1580  [n1,s1,r6/1:/Table/{SystemCon…-11}] could not gossip system config: [NotLeaseHolderError] r6: replica (n1,s1):1 not lease holder; lease holder unknown
+W220119 08:44:39.577579 3509 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23458 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 08:44:39.577829 3509 vendor/google.golang.org/grpc/clientconn.go:953  Failed to dial ubuntu:23458: context canceled; please retry.
+W220119 08:44:40.008403 183 storage/node_liveness.go:523  [n1,hb] slow heartbeat took 4.5s
+W220119 08:44:40.008424 183 storage/node_liveness.go:463  [n1,hb] failed node liveness heartbeat: aborted in distSender: context deadline exceeded
+W220119 08:44:40.202171 154 storage/store.go:1580  [n1,s1,r6/1:/Table/{SystemCon…-11}] could not gossip system config: [NotLeaseHolderError] r6: replica (n1,s1):1 not lease holder; lease holder unknown
+W220119 08:44:40.579096 3559 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23459 0  <nil>}. Err :connection error: desc = "transport: Error while dialing dial tcp 127.0.1.1:23459: connect: connection refused". Reconnecting...
+W220119 08:44:41.192476 154 storage/store.go:1580  [n1,s1,r6/1:/Table/{SystemCon…-11}] could not gossip system config: [NotLeaseHolderError] r6: replica (n1,s1):1 not lease holder; lease holder unknown
+W220119 08:44:41.580348 3559 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23459 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 08:44:41.580398 3559 vendor/google.golang.org/grpc/clientconn.go:953  Failed to dial ubuntu:23459: context canceled; please retry.
+W220119 08:44:41.580847 3590 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23457 0  <nil>}. Err :connection error: desc = "transport: Error while dialing dial tcp 127.0.1.1:23457: connect: connection refused". Reconnecting...
+W220119 08:44:41.984823 171 server/node.go:795  [n1] [n1,s1]: unable to compute metrics: [n1,s1]: system config not yet available
+I220119 08:44:42.009659 176 server/status/runtime.go:500  [n1] runtime stats: 158 MiB RSS, 155 goroutines, 85 MiB/49 MiB/158 MiB GO alloc/idle/total, 4.5 MiB/7.9 MiB CGO alloc/total, 17.9 CGO/sec, 0.5/1.5 %(u/s)time, 0.0 %gc (1x), 1.4 KiB/900 B (r/w)net
+W220119 08:44:42.052512 3607 storage/replica_range_lease.go:506  can't determine lease status due to node liveness error: node not in the liveness table
+W220119 08:44:42.056525 184 jobs/registry.go:440  unable to get node liveness: node not in the liveness table
+W220119 08:44:42.093046 154 storage/store.go:1580  [n1,s1,r6/1:/Table/{SystemCon…-11}] could not gossip system config: [NotLeaseHolderError] r6: replica (n1,s1):1 not lease holder; lease holder unknown
+W220119 08:44:42.581090 3590 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23457 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 08:44:42.581247 3590 vendor/google.golang.org/grpc/clientconn.go:953  Failed to dial ubuntu:23457: context canceled; please retry.
+W220119 08:44:42.582320 3618 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23458 0  <nil>}. Err :connection error: desc = "transport: Error while dialing dial tcp 127.0.1.1:23458: connect: connection refused". Reconnecting...
+I220119 08:44:43.009755 3530 internal/client/txn.go:759  [n1] async rollback failed: aborted in distSender: context deadline exceeded
+W220119 08:44:43.065504 154 storage/store.go:1580  [n1,s1,r6/1:/Table/{SystemCon…-11}] could not gossip system config: [NotLeaseHolderError] r6: replica (n1,s1):1 not lease holder; lease holder unknown
+W220119 08:44:43.582904 3618 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23458 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 08:44:43.583489 3618 vendor/google.golang.org/grpc/clientconn.go:953  Failed to dial ubuntu:23458: context canceled; please retry.
+W220119 08:44:44.201420 154 storage/store.go:1580  [n1,s1,r6/1:/Table/{SystemCon…-11}] could not gossip system config: [NotLeaseHolderError] r6: replica (n1,s1):1 not lease holder; lease holder unknown
+W220119 08:44:44.509536 183 storage/node_liveness.go:523  [n1,hb] slow heartbeat took 4.5s
+W220119 08:44:44.509549 183 storage/node_liveness.go:463  [n1,hb] failed node liveness heartbeat: aborted in distSender: context deadline exceeded
+W220119 08:44:44.585205 3695 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23459 0  <nil>}. Err :connection error: desc = "transport: Error while dialing dial tcp 127.0.1.1:23459: connect: connection refused". Reconnecting...
+W220119 08:44:45.203432 154 storage/store.go:1580  [n1,s1,r6/1:/Table/{SystemCon…-11}] could not gossip system config: [NotLeaseHolderError] r6: replica (n1,s1):1 not lease holder; lease holder unknown
+W220119 08:44:45.585684 3695 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23459 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 08:44:45.586119 3695 vendor/google.golang.org/grpc/clientconn.go:953  Failed to dial ubuntu:23459: context canceled; please retry.
+W220119 08:44:45.586850 3717 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23457 0  <nil>}. Err :connection error: desc = "transport: Error while dialing dial tcp 127.0.1.1:23457: connect: connection refused". Reconnecting...
+W220119 08:44:46.323432 154 storage/store.go:1580  [n1,s1,r6/1:/Table/{SystemCon…-11}] could not gossip system config: [NotLeaseHolderError] r6: replica (n1,s1):1 not lease holder; lease holder unknown
+W220119 08:44:46.586561 3717 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23457 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 08:44:46.586610 3717 vendor/google.golang.org/grpc/clientconn.go:953  Failed to dial ubuntu:23457: context canceled; please retry.
+W220119 08:44:46.587046 3729 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23458 0  <nil>}. Err :connection error: desc = "transport: Error while dialing dial tcp 127.0.1.1:23458: connect: connection refused". Reconnecting...
+W220119 08:44:47.056747 3758 storage/replica_range_lease.go:506  can't determine lease status due to node liveness error: node not in the liveness table
+W220119 08:44:47.059296 184 jobs/registry.go:440  unable to get node liveness: node not in the liveness table
+W220119 08:44:47.329255 154 storage/store.go:1580  [n1,s1,r6/1:/Table/{SystemCon…-11}] could not gossip system config: [NotLeaseHolderError] r6: replica (n1,s1):1 not lease holder; lease holder unknown
+I220119 08:44:47.510617 3683 internal/client/txn.go:759  [n1] async rollback failed: aborted in distSender: context deadline exceeded
+W220119 08:44:47.587386 3729 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23458 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 08:44:47.587426 3729 vendor/google.golang.org/grpc/clientconn.go:953  Failed to dial ubuntu:23458: context canceled; please retry.
+W220119 08:44:47.588009 3675 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23458 0  <nil>}. Err :connection error: desc = "transport: Error while dialing dial tcp 127.0.1.1:23458: connect: connection refused". Reconnecting...
+W220119 08:44:48.400962 154 storage/store.go:1580  [n1,s1,r6/1:/Table/{SystemCon…-11}] could not gossip system config: [NotLeaseHolderError] r6: replica (n1,s1):1 not lease holder; lease holder unknown
+W220119 08:44:48.588716 3675 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23458 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 08:44:48.588735 3800 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23459 0  <nil>}. Err :connection error: desc = "transport: Error while dialing dial tcp 127.0.1.1:23459: connect: connection refused". Reconnecting...
+W220119 08:44:48.588743 3675 vendor/google.golang.org/grpc/clientconn.go:953  Failed to dial ubuntu:23458: context canceled; please retry.
+W220119 08:44:49.010749 183 storage/node_liveness.go:523  [n1,hb] slow heartbeat took 4.5s
+W220119 08:44:49.010768 183 storage/node_liveness.go:463  [n1,hb] failed node liveness heartbeat: aborted in distSender: context deadline exceeded
+W220119 08:44:49.527037 154 storage/store.go:1580  [n1,s1,r6/1:/Table/{SystemCon…-11}] could not gossip system config: [NotLeaseHolderError] r6: replica (n1,s1):1 not lease holder; lease holder unknown
+W220119 08:44:49.588969 3800 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23459 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 08:44:49.589009 3800 vendor/google.golang.org/grpc/clientconn.go:953  Failed to dial ubuntu:23459: context canceled; please retry.
+W220119 08:44:49.589456 3770 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23457 0  <nil>}. Err :connection error: desc = "transport: Error while dialing dial tcp 127.0.1.1:23457: connect: connection refused". Reconnecting...
+W220119 08:44:50.582129 154 storage/store.go:1580  [n1,s1,r6/1:/Table/{SystemCon…-11}] could not gossip system config: [NotLeaseHolderError] r6: replica (n1,s1):1 not lease holder; lease holder unknown
+W220119 08:44:50.589626 3770 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23457 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 08:44:50.589680 3770 vendor/google.golang.org/grpc/clientconn.go:953  Failed to dial ubuntu:23457: context canceled; please retry.
+W220119 08:44:50.591547 3874 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23458 0  <nil>}. Err :connection error: desc = "transport: Error while dialing dial tcp 127.0.1.1:23458: connect: connection refused". Reconnecting...
+W220119 08:44:51.591551 3874 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23458 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 08:44:51.591621 3874 vendor/google.golang.org/grpc/clientconn.go:953  Failed to dial ubuntu:23458: context canceled; please retry.
+W220119 08:44:51.680561 154 storage/store.go:1580  [n1,s1,r6/1:/Table/{SystemCon…-11}] could not gossip system config: [NotLeaseHolderError] r6: replica (n1,s1):1 not lease holder; lease holder unknown
+I220119 08:44:51.983911 172 gossip/gossip.go:562  [n1] gossip status (stalled, 1 node)
+gossip client (0/3 cur/max conns)
+gossip server (0/3 cur/max conns, infos 0/0 sent/received, bytes 0B/0B sent/received)
+W220119 08:44:51.985001 171 server/node.go:795  [n1] [n1,s1]: unable to compute metrics: [n1,s1]: system config not yet available
+I220119 08:44:52.011424 3807 internal/client/txn.go:759  [n1] async rollback failed: aborted in distSender: context deadline exceeded
+I220119 08:44:52.012108 176 server/status/runtime.go:500  [n1] runtime stats: 159 MiB RSS, 151 goroutines, 90 MiB/46 MiB/158 MiB GO alloc/idle/total, 4.5 MiB/7.9 MiB CGO alloc/total, 12.9 CGO/sec, 0.3/1.5 %(u/s)time, 0.0 %gc (0x), 1.9 KiB/1.8 KiB (r/w)net
+W220119 08:44:52.060682 3908 storage/replica_range_lease.go:506  can't determine lease status due to node liveness error: node not in the liveness table
+W220119 08:44:52.062310 184 jobs/registry.go:440  unable to get node liveness: node not in the liveness table
+W220119 08:44:52.593471 3917 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23459 0  <nil>}. Err :connection error: desc = "transport: Error while dialing dial tcp 127.0.1.1:23459: connect: connection refused". Reconnecting...
+W220119 08:44:52.807219 154 storage/store.go:1580  [n1,s1,r6/1:/Table/{SystemCon…-11}] could not gossip system config: [NotLeaseHolderError] r6: replica (n1,s1):1 not lease holder; lease holder unknown
+E220119 08:44:52.986156 2080 storage/queue.go:977  [n1,replicaGC,s1,r3/1:/System/{NodeLive…-tsd}] aborted in distSender: context deadline exceeded
+W220119 08:44:53.511776 183 storage/node_liveness.go:523  [n1,hb] slow heartbeat took 4.5s
+W220119 08:44:53.511795 183 storage/node_liveness.go:463  [n1,hb] failed node liveness heartbeat: aborted in distSender: context deadline exceeded
+W220119 08:44:53.593140 3917 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23459 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 08:44:53.593191 3917 vendor/google.golang.org/grpc/clientconn.go:953  Failed to dial ubuntu:23459: context canceled; please retry.
+W220119 08:44:53.593768 3976 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23457 0  <nil>}. Err :connection error: desc = "transport: Error while dialing dial tcp 127.0.1.1:23457: connect: connection refused". Reconnecting...
+W220119 08:44:53.895062 154 storage/store.go:1580  [n1,s1,r6/1:/Table/{SystemCon…-11}] could not gossip system config: [NotLeaseHolderError] r6: replica (n1,s1):1 not lease holder; lease holder unknown
+I220119 08:44:54.094609 3984 gossip/server.go:233  [n1] received initial cluster-verification connection from ubuntu:23457
+I220119 08:44:54.095148 3984 gossip/server.go:233  [n1] received initial cluster-verification connection from ubuntu:23457
+I220119 08:44:54.392480 41 gossip/gossip.go:920  [n1] MaxPeers Recomputed as 3
+I220119 08:44:54.392630 41 storage/stores.go:257  [n1] wrote 3 node addresses to persistent storage
+I220119 08:44:54.585919 3929 vendor/github.com/znbasedb/circuitbreaker/circuitbreaker.go:447  [n1] circuitbreaker: rpc [::]:23456 [n2] event: BreakerReset
+W220119 08:44:54.593785 3976 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23457 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 08:44:54.593858 3976 vendor/google.golang.org/grpc/clientconn.go:953  Failed to dial ubuntu:23457: context canceled; please retry.
+W220119 08:44:54.594680 4030 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23458 0  <nil>}. Err :connection error: desc = "transport: Error while dialing dial tcp 127.0.1.1:23458: connect: connection refused". Reconnecting...
+W220119 08:44:54.858887 154 storage/store.go:1580  [n1,s1,r6/1:/Table/{SystemCon…-11}] could not gossip system config: [NotLeaseHolderError] r6: replica (n1,s1):1 not lease holder; lease holder unknown
+W220119 08:44:55.594378 4030 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23458 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 08:44:55.594436 4030 vendor/google.golang.org/grpc/clientconn.go:953  Failed to dial ubuntu:23458: context canceled; please retry.
+W220119 08:44:55.595373 4066 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23458 0  <nil>}. Err :connection error: desc = "transport: Error while dialing dial tcp 127.0.1.1:23458: connect: connection refused". Reconnecting...
+W220119 08:44:55.734591 154 storage/store.go:1580  [n1,s1,r6/1:/Table/{SystemCon…-11}] could not gossip system config: [NotLeaseHolderError] r6: replica (n1,s1):1 not lease holder; lease holder unknown
+I220119 08:44:56.512899 3949 internal/client/txn.go:759  [n1] async rollback failed: aborted in distSender: context deadline exceeded
+W220119 08:44:56.594806 154 storage/store.go:1580  [n1,s1,r6/1:/Table/{SystemCon…-11}] could not gossip system config: [NotLeaseHolderError] r6: replica (n1,s1):1 not lease holder; lease holder unknown
+W220119 08:44:56.594956 4066 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23458 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 08:44:56.595015 4066 vendor/google.golang.org/grpc/clientconn.go:953  Failed to dial ubuntu:23458: context canceled; please retry.
+W220119 08:44:56.597118 4087 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23459 0  <nil>}. Err :connection error: desc = "transport: Error while dialing dial tcp 127.0.1.1:23459: connect: connection refused". Reconnecting...
+I220119 08:44:56.784808 4091 vendor/github.com/znbasedb/circuitbreaker/circuitbreaker.go:447  [n1] circuitbreaker: rpc [::]:23456 [n2] event: BreakerReset
+W220119 08:44:56.951352 160 storage/store_rebalancer.go:226  [n1,s1,store-rebalancer] StorePool missing descriptor for local store
+W220119 08:44:57.063571 4136 storage/replica_range_lease.go:506  can't determine lease status due to node liveness error: node not in the liveness table
+W220119 08:44:57.064449 184 jobs/registry.go:440  unable to get node liveness: node not in the liveness table
+W220119 08:44:57.557985 154 storage/store.go:1580  [n1,s1,r6/1:/Table/{SystemCon…-11}] could not gossip system config: [NotLeaseHolderError] r6: replica (n1,s1):1 not lease holder; lease holder unknown
+W220119 08:44:57.595711 4087 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23459 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 08:44:57.595740 4087 vendor/google.golang.org/grpc/clientconn.go:953  Failed to dial ubuntu:23459: context canceled; please retry.
+I220119 08:44:57.596000 4140 vendor/github.com/znbasedb/circuitbreaker/circuitbreaker.go:447  [n1] circuitbreaker: gossip [::]:23456->ubuntu:23457 event: BreakerReset
+I220119 08:44:57.596024 4140 gossip/client.go:128  [n1] started gossip client to ubuntu:23457
+I220119 08:44:57.637427 204 storage/replica_write.go:208  [n1,s1,r1/1:/{Min-System/NodeL…}] slow command RequestLease [/Min,/Min) finished after 122.65s with error cannot replace lease repl=(n2,s2):2 seq=4 start=1642581378.690519463,1 exp=1642581906.419651522,0 pro=1642581897.419668394,0 with repl=(n1,s1):1 seq=3 start=1642580639.876486841,1 exp=1642581783.984038161,0 pro=1642581774.984044713,0: proposed under invalid lease
+I220119 08:44:57.637484 153 storage/replica_range_lease.go:991  [n1,s1,r1/1:/{Min-System/NodeL…}] slow lease acquisition finished after 2m2.653398523s with error [NotLeaseHolderError] r1: replica (n1,s1):1 not lease holder; current lease is repl=(n2,s2):2 seq=4 start=1642581378.690519463,1 exp=1642581906.419651522,0 pro=1642581897.419668394,0 after 2 attempts
+W220119 08:44:57.972527 83 storage/closedts/provider/provider.go:156  [ct-closer] unable to move closed timestamp forward: node not in the liveness table
+W220119 08:44:58.012288 183 storage/node_liveness.go:523  [n1,hb] slow heartbeat took 4.5s
+W220119 08:44:58.012308 183 storage/node_liveness.go:463  [n1,hb] failed node liveness heartbeat: aborted in distSender: context deadline exceeded
+I220119 08:44:58.434813 80 gossip/gossip.go:1522  [n1] node has connected to cluster via gossip
+I220119 08:44:58.434947 80 storage/stores.go:257  [n1] wrote 1 node addresses to persistent storage
+W220119 08:44:58.600930 154 storage/store.go:1580  [n1,s1,r6/1:/Table/{SystemCon…-11}] could not gossip system config: [NotLeaseHolderError] r6: replica (n1,s1):1 not lease holder; lease holder unknown
+I220119 08:44:58.905055 4236 gossip/server.go:233  [n1] received initial cluster-verification connection from ubuntu:23458
+I220119 08:44:58.905438 4236 gossip/server.go:233  [n1] received initial cluster-verification connection from ubuntu:23458
+I220119 08:44:59.235189 277 storage/replica_write.go:208  [n1,s1,r2/1:/System/NodeLiveness{-Max}] slow command RequestLease [/System/NodeLiveness,/Min) finished after 124.25s with error cannot replace lease repl=(n2,s2):2 seq=4 start=1642581217.338964666,0 exp=1642581380.375652794,0 pro=1642581371.375657122,0 with repl=(n1,s1):1 seq=3 start=1642580639.876700412,1 exp=1642581783.983681486,0 pro=1642581774.983695402,0: proposed under invalid lease
+I220119 08:44:59.235540 155 storage/replica_range_lease.go:991  [n1,s1,r2/1:/System/NodeLiveness{-Max}] slow lease acquisition finished after 2m4.251806759s with error [NotLeaseHolderError] r2: replica (n1,s1):1 not lease holder; current lease is repl=(n2,s2):2 seq=5 start=1642581894.400995303,0 exp=1642581906.420169292,0 pro=1642581897.420171456,0 after 2 attempts
+I220119 08:44:59.236840 41 gossip/gossip.go:920  [n1] MaxPeers Recomputed as 3
+I220119 08:44:59.236956 41 storage/stores.go:257  [n1] wrote 2 node addresses to persistent storage
+W220119 08:44:59.246519 183 storage/node_liveness.go:523  [n1,hb] slow heartbeat took 1.2s
+I220119 08:44:59.246539 183 storage/node_liveness.go:453  [n1,hb] heartbeat failed on epoch increment; retrying
+I220119 08:44:59.266020 4272 vendor/github.com/znbasedb/circuitbreaker/circuitbreaker.go:447  [n1] circuitbreaker: rpc [::]:23456 [n3] event: BreakerReset
+I220119 08:44:59.353311 37 server/server.go:1802  [n1] done ensuring all necessary migrations have run
+I220119 08:44:59.353325 37 server/server.go:1805  [n1] serving sql connections
+I220119 08:44:59.353473 37 cli/start.go:813  [config] clusterID: 3bbb8c74-c606-434f-b2eb-5e4523c470ba
+I220119 08:44:59.353491 37 cli/start.go:821  node startup completed:
+ZNBaseDB node starting at 2022-01-19 08:44:59.353424425 +0000 UTC (took 127.9s)
+build:               OSS 4cd474b8 @ 2022/01/19 07:14:44 (go1.14)
+webui:               http://ubuntu:8000
+sql:                 postgresql://root@ubuntu:23456?sslmode=disable
+client flags:        ./znbase <client cmd> --host=ubuntu:23456 --insecure
+logs:                /home/yangjx/go/src/github.com/znbasedb/znbase/node1/logs
+temp dir:            /home/yangjx/go/src/github.com/znbasedb/znbase/node1/znbase-temp199415730
+external I/O path:   /home/yangjx/go/src/github.com/znbasedb/znbase/node1/extern
+store[0]:            path=/home/yangjx/go/src/github.com/znbasedb/znbase/node1,state=ENABLE
+storage engine:      rocksdb
+status:              restarted pre-existing node
+clusterID:           3bbb8c74-c606-434f-b2eb-5e4523c470ba
+nodeID:              1
+I220119 08:44:59.353801 4332 security/audit/server/audit_server.go:125  [n1] refresh audit server settings
+I220119 08:44:59.353846 4603 security/audit/task/runner.go:216  [n1] audit_server_c986e588-7903-11ec-8642-000c29793ffc monitor workers every 5 seconds
+I220119 08:44:59.353865 4602 security/audit/task/runner.go:284  [n1] audit_server_c986e588-7903-11ec-8642-000c29793ffc init, min:3, max:30
+I220119 08:44:59.376930 4326 server/server_update.go:64  [n1] failed attempt to upgrade cluster version, error: node 4 not running (DEAD), cannot determine version
+I220119 08:45:00.350478 4326 server/server_update.go:64  [n1] failed attempt to upgrade cluster version, error: node 3 not running (DEAD), cannot determine version
+I220119 08:45:00.383315 4677 vendor/github.com/znbasedb/circuitbreaker/circuitbreaker.go:447  [n1] circuitbreaker: rpc [::]:23456 [n3] event: BreakerReset
+I220119 08:45:01.457961 4337 sql/event_log.go:235  [n1] Event: "node_restart", target: 1, info: nodeID:1, lastUp:1642580629285541850, ClusterID:3bbb8c74-c606-434f-b2eb-5e4523c470ba
+I220119 08:45:01.859322 4750 sql/lease.go:2613  released orphaned table lease: {id:57 version:1 expiration:{Time:{wall:402782000 ext:63778177627 loc:<nil>}}}
+I220119 08:45:01.862513 4751 sql/lease.go:2613  released orphaned table lease: {id:58 version:1 expiration:{Time:{wall:992857000 ext:63778177616 loc:<nil>}}}
+I220119 08:45:01.862559 4749 sql/lease.go:2613  released orphaned table lease: {id:23 version:1 expiration:{Time:{wall:859284000 ext:63778177612 loc:<nil>}}}
+I220119 08:45:02.014176 176 server/status/runtime.go:500  [n1] runtime stats: 222 MiB RSS, 225 goroutines, 105 MiB/54 MiB/182 MiB GO alloc/idle/total, 24 MiB/30 MiB CGO alloc/total, 369.4 CGO/sec, 5.0/5.3 %(u/s)time, 0.0 %gc (1x), 1.6 MiB/1.6 MiB (r/w)net
+I220119 08:45:02.126207 4326 server/server_update.go:64  [n1] failed attempt to upgrade cluster version, error: node 3 not running (DEAD), cannot determine version
+I220119 08:45:03.036316 4723 storage/queue.go:1075  [n1,replicate] purgatory is now empty
+I220119 08:45:05.828391 4326 server/server_update.go:64  [n1] failed attempt to upgrade cluster version, error: node 4 not running (DEAD), cannot determine version
+W220119 08:45:09.328455 178 server/node.go:876  [n1,summaries] health alerts detected: {Alerts:[{StoreID:0 Category:METRICS Description:liveness.heartbeatfailures Value:29} {StoreID:1 Category:METRICS Description:ranges.underreplicated Value:107}]}
+I220119 08:45:09.355492 4332 security/audit/server/audit_server.go:125  [n1] refresh audit server settings
+I220119 08:45:12.019487 176 server/status/runtime.go:500  [n1] runtime stats: 225 MiB RSS, 225 goroutines, 127 MiB/35 MiB/182 MiB GO alloc/idle/total, 24 MiB/31 MiB CGO alloc/total, 237.0 CGO/sec, 1.5/3.5 %(u/s)time, 0.0 %gc (0x), 1006 KiB/1006 KiB (r/w)net
+I220119 08:45:14.393862 4326 server/server_update.go:64  [n1] failed attempt to upgrade cluster version, error: node 4 not running (DEAD), cannot determine version
+I220119 08:45:19.356109 4332 security/audit/server/audit_server.go:125  [n1] refresh audit server settings
+I220119 08:45:22.021520 176 server/status/runtime.go:500  [n1] runtime stats: 226 MiB RSS, 225 goroutines, 144 MiB/19 MiB/182 MiB GO alloc/idle/total, 24 MiB/31 MiB CGO alloc/total, 54.9 CGO/sec, 0.8/1.9 %(u/s)time, 0.0 %gc (0x), 430 KiB/430 KiB (r/w)net
+I220119 08:45:28.947526 4326 server/server_update.go:64  [n1] failed attempt to upgrade cluster version, error: node 4 not running (DEAD), cannot determine version
+I220119 08:45:29.356230 4332 security/audit/server/audit_server.go:125  [n1] refresh audit server settings
+I220119 08:45:32.023076 176 server/status/runtime.go:500  [n1] runtime stats: 231 MiB RSS, 224 goroutines, 162 MiB/1.4 MiB/182 MiB GO alloc/idle/total, 25 MiB/32 MiB CGO alloc/total, 46.7 CGO/sec, 1.1/1.9 %(u/s)time, 0.0 %gc (0x), 442 KiB/442 KiB (r/w)net
+I220119 08:45:39.357134 4332 security/audit/server/audit_server.go:125  [n1] refresh audit server settings
+I220119 08:45:42.025434 176 server/status/runtime.go:500  [n1] runtime stats: 241 MiB RSS, 224 goroutines, 178 MiB/208 KiB/196 MiB GO alloc/idle/total, 25 MiB/32 MiB CGO alloc/total, 49.6 CGO/sec, 0.7/1.9 %(u/s)time, 0.0 %gc (0x), 412 KiB/412 KiB (r/w)net
+I220119 08:45:49.357383 4332 security/audit/server/audit_server.go:125  [n1] refresh audit server settings
+I220119 08:45:51.984271 172 gossip/gossip.go:562  [n1] gossip status (ok, 3 nodes)
+gossip client (1/3 cur/max conns)
+  2: ubuntu:23457 (54s: infos 208/281 sent/received, bytes 51814B/105428B sent/received)
+gossip server (1/3 cur/max conns, infos 604/397 sent/received, bytes 177964B/132223B sent/received)
+  3: ubuntu:23458 (53s)
+gossip connectivity
+  n2 [sentinel];
+  n1 -> n2; n3 -> n1;
+I220119 08:45:52.028110 176 server/status/runtime.go:500  [n1] runtime stats: 250 MiB RSS, 224 goroutines, 98 MiB/80 MiB/207 MiB GO alloc/idle/total, 25 MiB/32 MiB CGO alloc/total, 54.9 CGO/sec, 0.9/1.9 %(u/s)time, 0.0 %gc (1x), 358 KiB/358 KiB (r/w)net
+I220119 08:45:58.366023 4326 server/server_update.go:64  [n1] failed attempt to upgrade cluster version, error: node 4 not running (DEAD), cannot determine version
+I220119 08:45:59.357825 4332 security/audit/server/audit_server.go:125  [n1] refresh audit server settings
+I220119 08:46:02.029884 176 server/status/runtime.go:500  [n1] runtime stats: 250 MiB RSS, 225 goroutines, 115 MiB/65 MiB/207 MiB GO alloc/idle/total, 25 MiB/32 MiB CGO alloc/total, 53.7 CGO/sec, 1.6/1.6 %(u/s)time, 0.0 %gc (0x), 522 KiB/522 KiB (r/w)net
+I220119 08:46:09.358299 4332 security/audit/server/audit_server.go:125  [n1] refresh audit server settings
+I220119 08:46:12.033704 176 server/status/runtime.go:500  [n1] runtime stats: 251 MiB RSS, 225 goroutines, 131 MiB/51 MiB/207 MiB GO alloc/idle/total, 33 MiB/40 MiB CGO alloc/total, 51.6 CGO/sec, 0.6/2.1 %(u/s)time, 0.0 %gc (0x), 351 KiB/351 KiB (r/w)net
+I220119 08:46:19.358578 4332 security/audit/server/audit_server.go:125  [n1] refresh audit server settings
+I220119 08:46:22.036073 176 server/status/runtime.go:500  [n1] runtime stats: 252 MiB RSS, 225 goroutines, 146 MiB/38 MiB/207 MiB GO alloc/idle/total, 33 MiB/41 MiB CGO alloc/total, 46.3 CGO/sec, 1.1/1.4 %(u/s)time, 0.0 %gc (0x), 341 KiB/341 KiB (r/w)net
+I220119 08:46:27.401378 4326 server/server_update.go:64  [n1] failed attempt to upgrade cluster version, error: node 4 not running (DEAD), cannot determine version
+I220119 08:46:29.359108 4332 security/audit/server/audit_server.go:125  [n1] refresh audit server settings
+I220119 08:46:32.038311 176 server/status/runtime.go:500  [n1] runtime stats: 254 MiB RSS, 224 goroutines, 163 MiB/22 MiB/207 MiB GO alloc/idle/total, 33 MiB/41 MiB CGO alloc/total, 47.8 CGO/sec, 0.6/2.2 %(u/s)time, 0.0 %gc (0x), 460 KiB/459 KiB (r/w)net
+I220119 08:46:39.359429 4332 security/audit/server/audit_server.go:125  [n1] refresh audit server settings
+I220119 08:46:42.040541 176 server/status/runtime.go:500  [n1] runtime stats: 259 MiB RSS, 224 goroutines, 94 MiB/83 MiB/207 MiB GO alloc/idle/total, 34 MiB/41 MiB CGO alloc/total, 1500.3 CGO/sec, 1.2/2.0 %(u/s)time, 0.0 %gc (1x), 377 KiB/377 KiB (r/w)net
+I220119 08:46:49.359953 4332 security/audit/server/audit_server.go:125  [n1] refresh audit server settings
+I220119 08:46:51.984641 172 gossip/gossip.go:562  [n1] gossip status (ok, 3 nodes)
+gossip client (1/3 cur/max conns)
+  2: ubuntu:23457 (1m54s: infos 425/371 sent/received, bytes 87651B/128757B sent/received)
+gossip server (1/3 cur/max conns, infos 977/638 sent/received, bytes 244250B/178580B sent/received)
+  3: ubuntu:23458 (1m53s)
+gossip connectivity
+  n3 [sentinel];
+  n1 -> n2; n3 -> n1;
+I220119 08:46:52.042886 176 server/status/runtime.go:500  [n1] runtime stats: 260 MiB RSS, 224 goroutines, 110 MiB/70 MiB/207 MiB GO alloc/idle/total, 34 MiB/41 MiB CGO alloc/total, 40.7 CGO/sec, 1.2/1.3 %(u/s)time, 0.0 %gc (0x), 325 KiB/325 KiB (r/w)net
+I220119 08:46:59.360993 4332 security/audit/server/audit_server.go:125  [n1] refresh audit server settings
+I220119 08:47:01.780351 4326 server/server_update.go:64  [n1] failed attempt to upgrade cluster version, error: node 4 not running (DEAD), cannot determine version
+I220119 08:47:02.044417 176 server/status/runtime.go:500  [n1] runtime stats: 262 MiB RSS, 225 goroutines, 128 MiB/55 MiB/207 MiB GO alloc/idle/total, 34 MiB/41 MiB CGO alloc/total, 47.2 CGO/sec, 1.0/1.8 %(u/s)time, 0.0 %gc (0x), 403 KiB/403 KiB (r/w)net
+I220119 08:47:09.362008 4332 security/audit/server/audit_server.go:125  [n1] refresh audit server settings
+I220119 08:47:12.048761 176 server/status/runtime.go:500  [n1] runtime stats: 262 MiB RSS, 225 goroutines, 143 MiB/40 MiB/207 MiB GO alloc/idle/total, 34 MiB/41 MiB CGO alloc/total, 41.6 CGO/sec, 0.8/1.6 %(u/s)time, 0.0 %gc (0x), 344 KiB/344 KiB (r/w)net
+I220119 08:47:19.362488 4332 security/audit/server/audit_server.go:125  [n1] refresh audit server settings
+I220119 08:47:22.051011 176 server/status/runtime.go:500  [n1] runtime stats: 263 MiB RSS, 225 goroutines, 159 MiB/26 MiB/207 MiB GO alloc/idle/total, 33 MiB/41 MiB CGO alloc/total, 40.8 CGO/sec, 0.8/1.8 %(u/s)time, 0.0 %gc (0x), 321 KiB/321 KiB (r/w)net
+I220119 08:47:29.362833 4332 security/audit/server/audit_server.go:125  [n1] refresh audit server settings
+I220119 08:47:32.054864 176 server/status/runtime.go:500  [n1] runtime stats: 264 MiB RSS, 224 goroutines, 175 MiB/11 MiB/207 MiB GO alloc/idle/total, 33 MiB/41 MiB CGO alloc/total, 41.0 CGO/sec, 1.1/1.7 %(u/s)time, 0.0 %gc (0x), 382 KiB/382 KiB (r/w)net
+I220119 08:47:32.520792 4326 server/server_update.go:64  [n1] failed attempt to upgrade cluster version, error: node 4 not running (DEAD), cannot determine version
+I220119 08:47:39.363176 4332 security/audit/server/audit_server.go:125  [n1] refresh audit server settings
+I220119 08:47:42.057282 176 server/status/runtime.go:500  [n1] runtime stats: 265 MiB RSS, 224 goroutines, 105 MiB/74 MiB/207 MiB GO alloc/idle/total, 33 MiB/41 MiB CGO alloc/total, 43.0 CGO/sec, 1.2/1.6 %(u/s)time, 0.0 %gc (1x), 356 KiB/356 KiB (r/w)net
+I220119 08:47:49.363530 4332 security/audit/server/audit_server.go:125  [n1] refresh audit server settings
+I220119 08:47:51.984367 172 gossip/gossip.go:562  [n1] gossip status (ok, 3 nodes)
+gossip client (1/3 cur/max conns)
+  2: ubuntu:23457 (2m54s: infos 632/429 sent/received, bytes 117486B/143883B sent/received)
+gossip server (1/3 cur/max conns, infos 1301/844 sent/received, bytes 294024B/213471B sent/received)
+  3: ubuntu:23458 (2m53s)
+I220119 08:47:52.060376 176 server/status/runtime.go:500  [n1] runtime stats: 266 MiB RSS, 224 goroutines, 121 MiB/60 MiB/207 MiB GO alloc/idle/total, 33 MiB/42 MiB CGO alloc/total, 39.6 CGO/sec, 0.9/1.6 %(u/s)time, 0.0 %gc (0x), 318 KiB/318 KiB (r/w)net
+I220119 08:47:58.545779 4326 server/server_update.go:64  [n1] failed attempt to upgrade cluster version, error: node 4 not running (DEAD), cannot determine version
+I220119 08:47:59.363595 4332 security/audit/server/audit_server.go:125  [n1] refresh audit server settings
+I220119 08:48:02.062246 176 server/status/runtime.go:500  [n1] runtime stats: 267 MiB RSS, 225 goroutines, 139 MiB/44 MiB/207 MiB GO alloc/idle/total, 41 MiB/50 MiB CGO alloc/total, 41.5 CGO/sec, 0.7/2.3 %(u/s)time, 0.0 %gc (0x), 396 KiB/396 KiB (r/w)net
+I220119 08:48:09.364235 4332 security/audit/server/audit_server.go:125  [n1] refresh audit server settings
+I220119 08:48:12.064628 176 server/status/runtime.go:500  [n1] runtime stats: 268 MiB RSS, 225 goroutines, 155 MiB/30 MiB/207 MiB GO alloc/idle/total, 41 MiB/50 MiB CGO alloc/total, 41.1 CGO/sec, 0.7/1.9 %(u/s)time, 0.0 %gc (0x), 368 KiB/368 KiB (r/w)net
+I220119 08:48:19.365492 4332 security/audit/server/audit_server.go:125  [n1] refresh audit server settings
+I220119 08:48:22.066635 176 server/status/runtime.go:500  [n1] runtime stats: 269 MiB RSS, 225 goroutines, 171 MiB/15 MiB/207 MiB GO alloc/idle/total, 41 MiB/50 MiB CGO alloc/total, 41.3 CGO/sec, 0.8/1.8 %(u/s)time, 0.0 %gc (0x), 327 KiB/326 KiB (r/w)net
+I220119 08:48:29.366225 4332 security/audit/server/audit_server.go:125  [n1] refresh audit server settings
+I220119 08:48:30.975110 4326 server/server_update.go:64  [n1] failed attempt to upgrade cluster version, error: node 4 not running (DEAD), cannot determine version
+I220119 08:48:32.069457 176 server/status/runtime.go:500  [n1] runtime stats: 269 MiB RSS, 224 goroutines, 105 MiB/74 MiB/207 MiB GO alloc/idle/total, 41 MiB/50 MiB CGO alloc/total, 41.3 CGO/sec, 1.5/1.4 %(u/s)time, 0.0 %gc (1x), 418 KiB/418 KiB (r/w)net
+I220119 08:48:39.366936 4332 security/audit/server/audit_server.go:125  [n1] refresh audit server settings
+I220119 08:48:42.070983 176 server/status/runtime.go:500  [n1] runtime stats: 270 MiB RSS, 224 goroutines, 120 MiB/61 MiB/207 MiB GO alloc/idle/total, 41 MiB/50 MiB CGO alloc/total, 42.4 CGO/sec, 1.3/1.3 %(u/s)time, 0.0 %gc (0x), 318 KiB/317 KiB (r/w)net
+I220119 08:48:49.367151 4332 security/audit/server/audit_server.go:125  [n1] refresh audit server settings
+I220119 08:48:51.984448 172 gossip/gossip.go:562  [n1] gossip status (ok, 3 nodes)
+gossip client (1/3 cur/max conns)
+  2: ubuntu:23457 (3m54s: infos 841/487 sent/received, bytes 147296B/158796B sent/received)
+gossip server (1/3 cur/max conns, infos 1626/1053 sent/received, bytes 343322B/248566B sent/received)
+  3: ubuntu:23458 (3m53s)
+I220119 08:48:52.074210 176 server/status/runtime.go:500  [n1] runtime stats: 271 MiB RSS, 224 goroutines, 136 MiB/47 MiB/207 MiB GO alloc/idle/total, 41 MiB/50 MiB CGO alloc/total, 40.5 CGO/sec, 1.1/1.6 %(u/s)time, 0.0 %gc (0x), 324 KiB/324 KiB (r/w)net
+I220119 08:48:59.367343 4332 security/audit/server/audit_server.go:125  [n1] refresh audit server settings
+I220119 08:49:00.378855 4326 server/server_update.go:64  [n1] failed attempt to upgrade cluster version, error: node 4 not running (DEAD), cannot determine version
+I220119 08:49:02.076814 176 server/status/runtime.go:500  [n1] runtime stats: 272 MiB RSS, 225 goroutines, 154 MiB/30 MiB/207 MiB GO alloc/idle/total, 41 MiB/50 MiB CGO alloc/total, 44.7 CGO/sec, 1.3/1.7 %(u/s)time, 0.0 %gc (0x), 393 KiB/393 KiB (r/w)net
+I220119 08:49:09.367609 4332 security/audit/server/audit_server.go:125  [n1] refresh audit server settings
+I220119 08:49:12.078263 176 server/status/runtime.go:500  [n1] runtime stats: 273 MiB RSS, 225 goroutines, 171 MiB/15 MiB/207 MiB GO alloc/idle/total, 41 MiB/50 MiB CGO alloc/total, 40.8 CGO/sec, 1.0/1.5 %(u/s)time, 0.0 %gc (0x), 403 KiB/403 KiB (r/w)net
+I220119 08:49:19.368077 4332 security/audit/server/audit_server.go:125  [n1] refresh audit server settings
+I220119 08:49:22.082186 176 server/status/runtime.go:500  [n1] runtime stats: 274 MiB RSS, 225 goroutines, 100 MiB/78 MiB/207 MiB GO alloc/idle/total, 40 MiB/50 MiB CGO alloc/total, 39.4 CGO/sec, 1.3/1.5 %(u/s)time, 0.0 %gc (1x), 320 KiB/320 KiB (r/w)net
+I220119 08:49:29.368427 4332 security/audit/server/audit_server.go:125  [n1] refresh audit server settings
+I220119 08:49:32.086195 176 server/status/runtime.go:500  [n1] runtime stats: 274 MiB RSS, 224 goroutines, 116 MiB/64 MiB/207 MiB GO alloc/idle/total, 40 MiB/50 MiB CGO alloc/total, 44.1 CGO/sec, 0.9/1.6 %(u/s)time, 0.0 %gc (0x), 384 KiB/384 KiB (r/w)net
+I220119 08:49:34.514260 4326 server/server_update.go:64  [n1] failed attempt to upgrade cluster version, error: node 4 not running (DEAD), cannot determine version
+I220119 08:49:39.368837 4332 security/audit/server/audit_server.go:125  [n1] refresh audit server settings
+I220119 08:49:42.088817 176 server/status/runtime.go:500  [n1] runtime stats: 275 MiB RSS, 224 goroutines, 133 MiB/50 MiB/207 MiB GO alloc/idle/total, 40 MiB/50 MiB CGO alloc/total, 41.9 CGO/sec, 0.9/1.7 %(u/s)time, 0.0 %gc (0x), 356 KiB/356 KiB (r/w)net
+I220119 08:49:49.369132 4332 security/audit/server/audit_server.go:125  [n1] refresh audit server settings
+I220119 08:49:51.985748 172 gossip/gossip.go:562  [n1] gossip status (ok, 3 nodes)
+gossip client (1/3 cur/max conns)
+  2: ubuntu:23457 (4m54s: infos 1052/545 sent/received, bytes 177606B/173909B sent/received)
+gossip server (1/3 cur/max conns, infos 1952/1265 sent/received, bytes 393195B/284424B sent/received)
+  3: ubuntu:23458 (4m53s)
+I220119 08:49:52.092583 176 server/status/runtime.go:500  [n1] runtime stats: 276 MiB RSS, 224 goroutines, 149 MiB/35 MiB/207 MiB GO alloc/idle/total, 48 MiB/58 MiB CGO alloc/total, 42.6 CGO/sec, 1.2/1.4 %(u/s)time, 0.0 %gc (0x), 325 KiB/325 KiB (r/w)net
+I220119 08:49:59.369675 4332 security/audit/server/audit_server.go:125  [n1] refresh audit server settings
+I220119 08:50:02.096637 176 server/status/runtime.go:500  [n1] runtime stats: 277 MiB RSS, 225 goroutines, 166 MiB/20 MiB/207 MiB GO alloc/idle/total, 48 MiB/58 MiB CGO alloc/total, 40.5 CGO/sec, 0.4/2.4 %(u/s)time, 0.0 %gc (0x), 408 KiB/408 KiB (r/w)net
+I220119 08:50:08.975735 4326 server/server_update.go:64  [n1] failed attempt to upgrade cluster version, error: node 4 not running (DEAD), cannot determine version
+I220119 08:50:09.370514 4332 security/audit/server/audit_server.go:125  [n1] refresh audit server settings
+I220119 08:50:12.098691 176 server/status/runtime.go:500  [n1] runtime stats: 278 MiB RSS, 225 goroutines, 94 MiB/83 MiB/207 MiB GO alloc/idle/total, 48 MiB/58 MiB CGO alloc/total, 37.0 CGO/sec, 1.4/1.5 %(u/s)time, 0.0 %gc (1x), 370 KiB/370 KiB (r/w)net
+I220119 08:50:19.370781 4332 security/audit/server/audit_server.go:125  [n1] refresh audit server settings
+I220119 08:50:22.102077 176 server/status/runtime.go:500  [n1] runtime stats: 279 MiB RSS, 225 goroutines, 110 MiB/70 MiB/207 MiB GO alloc/idle/total, 48 MiB/58 MiB CGO alloc/total, 38.2 CGO/sec, 0.8/1.8 %(u/s)time, 0.0 %gc (0x), 316 KiB/316 KiB (r/w)net
+I220119 08:50:29.371076 4332 security/audit/server/audit_server.go:125  [n1] refresh audit server settings
+I220119 08:50:32.105033 176 server/status/runtime.go:500  [n1] runtime stats: 279 MiB RSS, 224 goroutines, 127 MiB/55 MiB/207 MiB GO alloc/idle/total, 48 MiB/58 MiB CGO alloc/total, 40.3 CGO/sec, 1.0/1.8 %(u/s)time, 0.0 %gc (0x), 383 KiB/382 KiB (r/w)net
+I220119 08:50:39.371480 4332 security/audit/server/audit_server.go:125  [n1] refresh audit server settings
+I220119 08:50:39.737865 4335 sql/event_log.go:235  [n1] Event: "node_quit", target: 1, info: nodeID:1, lastUp:1642580629285541850, ClusterID:3bbb8c74-c606-434f-b2eb-5e4523c470ba
+I220119 08:50:40.731543 9624 storage/store.go:1161  [drain] waiting for 26 replicas to transfer their lease away
+W220119 08:50:40.748783 4272 storage/raft_transport.go:625  [n1] while processing outgoing Raft queue to node 3: rpc error: code = Unavailable desc = transport is closing:
+W220119 08:50:40.748895 4677 storage/raft_transport.go:625  [n1] while processing outgoing Raft queue to node 3: rpc error: code = Canceled desc = grpc: the client connection is closing:
+W220119 08:50:40.749029 80 gossip/gossip.go:1508  [n1] no incoming or outgoing connections
+W220119 08:50:40.749089 4091 storage/raft_transport.go:625  [n1] while processing outgoing Raft queue to node 2: rpc error: code = Canceled desc = grpc: the client connection is closing:
+W220119 08:50:40.749198 3929 storage/raft_transport.go:625  [n1] while processing outgoing Raft queue to node 2: rpc error: code = Canceled desc = grpc: the client connection is closing:
+I220119 08:50:40.750014 10001 util/stop/stopper.go:540  quiescing; tasks left:
+2      [async] closedts-subscription
+1      [async] intent_resolver_ir_batcher
+1      [async] intent_resolver_gc_batcher
+1      [async] closedts-rangefeed-subscriber
+1      [async] auto-upgrade
+I220119 08:50:40.750105 10001 util/stop/stopper.go:540  quiescing; tasks left:
+2      [async] closedts-subscription
+1      [async] closedts-rangefeed-subscriber
+I220119 08:50:40.750388 4332 security/audit/server/audit_server.go:139  [n1] stop refresh audit server settings
+I220119 08:50:40.750639 4333 security/audit/server/audit_server.go:152  [n1] stop audit server
+I220119 08:50:40.951568 4603 security/audit/task/runner.go:235  [n1] audit_server_c986e588-7903-11ec-8642-000c29793ffc stop monitor, because runner is going to stop
+I220119 08:50:40.951625 4333 security/audit/task/runner.go:373  [n1] audit_server_c986e588-7903-11ec-8642-000c29793ffc runner has been stopped
+I220119 08:50:40.951755 10001 storage/engine/rocksdb.go:861  closing rocksdb instance at "/home/yangjx/go/src/github.com/znbasedb/znbase/node1/znbase-temp199415730"
+I220119 08:50:40.952797 10001 storage/engine/rocksdb.go:861  closing rocksdb instance at "/home/yangjx/go/src/github.com/znbasedb/znbase/node1/znbase-cursor-temp437912937"
+I220119 08:50:40.954194 10001 storage/engine/rocksdb.go:861  closing rocksdb instance at "/home/yangjx/go/src/github.com/znbasedb/znbase/node1"

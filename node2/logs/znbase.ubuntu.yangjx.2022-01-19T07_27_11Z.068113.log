@@ -1,0 +1,1264 @@
+I220119 07:27:11.148978 1 util/log/clog.go:1194  [config] file created at: 2022/01/19 07:27:11
+I220119 07:27:11.148978 1 util/log/clog.go:1194  [config] running on machine: ubuntu
+I220119 07:27:11.148978 1 util/log/clog.go:1194  [config] binary: ZNBaseDB OSS 4cd474b8 (x86_64-linux-gnu, built 2022/01/19 07:14:44, go1.14)
+I220119 07:27:11.148978 1 util/log/clog.go:1194  [config] arguments: [./znbase start --insecure --store=./node2 --listen-addr=:23458 --http-addr=:8002 --join=:23457,:23458,:23459]
+I220119 07:27:11.148978 1 util/log/clog.go:1194  line format: [IWEF]yymmdd hh:mm:ss.uuuuuu goid file:line msg utf8=✓
+I220119 07:27:11.148977 1 cli/start.go:1156  logging to directory /home/yangjx/go/src/github.com/znbasedb/znbase/node2/logs
+W220119 07:27:11.149190 1 cli/start.go:1191  RUNNING IN INSECURE MODE!
+
+- Your cluster is open for any client that can access <all your IP addresses>.
+- Any user, even root, can log in without providing a password.
+- Any user, connecting as root, can read or write any data in your cluster.
+- There is no network encryption nor authentication, and thus no confidentiality.
+
+Check out how to secure your cluster: official docs about version 4cd474b8
+I220119 07:27:11.149350 1 server/status/recorder.go:610  available memory from cgroups (8.0 EiB) exceeds system memory 3.8 GiB, using system memory
+W220119 07:27:11.149382 1 cli/start.go:1067  Using the default setting for --cache (128 MiB).
+  A significantly larger value is usually needed for good performance.
+  If you have a dedicated server a reasonable setting is --cache=.25 (976 MiB).
+I220119 07:27:11.149464 1 server/status/recorder.go:610  available memory from cgroups (8.0 EiB) exceeds system memory 3.8 GiB, using system memory
+W220119 07:27:11.149520 1 cli/start.go:1080  Using the default setting for --max-sql-memory (128 MiB).
+  A significantly larger value is usually needed in production.
+  If you have a dedicated server a reasonable setting is --max-sql-memory=.25 (976 MiB).
+I220119 07:27:11.149597 1 server/status/recorder.go:610  available memory from cgroups (8.0 EiB) exceeds system memory 3.8 GiB, using system memory
+I220119 07:27:11.149607 1 cli/start.go:1205  ZNBaseDB OSS 4cd474b8 (x86_64-linux-gnu, built 2022/01/19 07:14:44, go1.14)
+I220119 07:27:11.161945 1 server/status/recorder.go:610  available memory from cgroups (8.0 EiB) exceeds system memory 3.8 GiB, using system memory
+I220119 07:27:11.161969 1 server/config.go:400  system total memory: 3.8 GiB
+I220119 07:27:11.162011 1 server/config.go:402  server configuration:
+max offset             500000000
+cache size             128 MiB
+SQL memory pool size   128 MiB
+scan interval          10m0s
+scan min idle time     10ms
+scan max idle time     1s
+event log enabled      true
+I220119 07:27:11.162026 1 cli/start.go:1045  using local environment variables: ZNBASE_BACKGROUND_RESTART=1, GODEBUG=cgocheck=0
+I220119 07:27:11.162034 1 cli/start.go:1052  process identity: uid 1000 euid 1000 gid 1000 egid 1000
+I220119 07:27:11.162041 1 cli/start.go:676  starting znbase node
+I220119 07:27:11.163062 50 storage/engine/rocksdb.go:721  opening rocksdb instance at "/home/yangjx/go/src/github.com/znbasedb/znbase/node2/znbase-temp086565590"
+I220119 07:27:11.172064 50 storage/engine/rocksdb.go:721  opening rocksdb instance at "/home/yangjx/go/src/github.com/znbasedb/znbase/node2/znbase-cursor-temp039752765"
+I220119 07:27:11.189609 50 server/server.go:1008  [n?] monitoring forward clock jumps based on server.clock.forward_jump_check_enabled
+W220119 07:27:11.189832 50 server/config_unix.go:92  soft open file descriptor limit 4096 is under the recommended limit 15000; this may decrease performance
+please see official docs about version 4cd474b8 for more details
+I220119 07:27:11.189927 50 storage/engine/rocksdb.go:721  opening rocksdb instance at "/home/yangjx/go/src/github.com/znbasedb/znbase/node2"
+I220119 07:27:11.197433 50 server/config.go:509  [n?] 1 storage engine initialized
+I220119 07:27:11.197443 50 server/config.go:512  [n?] rocksdb cache size: 128 MiB
+I220119 07:27:11.197447 50 server/config.go:512  [n?] store 0: rocksdb, max size 0 B, max open file limit 3840
+W220119 07:27:11.197593 50 gossip/gossip.go:1508  [n?] no incoming or outgoing connections
+I220119 07:27:11.197627 50 server/server.go:1602  [n?] no stores bootstrapped and --join flag specified, awaiting init command or join with an already initialized node.
+I220119 07:27:11.199847 15 gossip/client.go:128  [n?] started gossip client to ubuntu:23457
+I220119 07:27:11.200305 15 gossip/client.go:135  [n?] closing client to ubuntu:23457: stopping outgoing client to n0 (ubuntu:23457); loopback connection
+W220119 07:27:12.199553 118 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23459 0  <nil>}. Err :connection error: desc = "transport: Error while dialing dial tcp 127.0.1.1:23459: connect: connection refused". Reconnecting...
+I220119 07:27:12.199742 96 vendor/github.com/znbasedb/circuitbreaker/circuitbreaker.go:322  [n?] circuitbreaker: gossip [::]:23458->ubuntu:23459 tripped: initial connection heartbeat failed: rpc error: code = Unavailable desc = all SubConns are in TransientFailure, latest connection error: connection error: desc = "transport: Error while dialing dial tcp 127.0.1.1:23459: connect: connection refused"
+I220119 07:27:12.199777 96 vendor/github.com/znbasedb/circuitbreaker/circuitbreaker.go:447  [n?] circuitbreaker: gossip [::]:23458->ubuntu:23459 event: BreakerTripped
+W220119 07:27:12.199805 96 gossip/client.go:122  [n?] failed to start gossip client to ubuntu:23459: initial connection heartbeat failed: rpc error: code = Unavailable desc = all SubConns are in TransientFailure, latest connection error: connection error: desc = "transport: Error while dialing dial tcp 127.0.1.1:23459: connect: connection refused"
+I220119 07:27:13.048134 146 gossip/server.go:233  [n?] received initial cluster-verification connection from ubuntu:23457
+I220119 07:27:13.198148 93 cli/start.go:635  initial startup completed.
+Node will now attempt to join a running cluster, or wait for `znbase init`.
+Client connections will be accepted after this completes successfully.
+Check the log file(s) for progress. 
+W220119 07:27:13.198983 118 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23459 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 07:27:13.199916 118 vendor/google.golang.org/grpc/clientconn.go:953  Failed to dial ubuntu:23459: grpc: the connection is closing; please retry.
+I220119 07:27:13.199936 133 gossip/client.go:128  [n?] started gossip client to ubuntu:23457
+I220119 07:27:13.201429 133 gossip/client.go:135  [n?] closing client to ubuntu:23457: stopping outgoing client to n0 (ubuntu:23457); loopback connection
+I220119 07:27:14.212559 149 vendor/github.com/znbasedb/circuitbreaker/circuitbreaker.go:447  [n?] circuitbreaker: gossip [::]:23458->ubuntu:23459 event: BreakerReset
+I220119 07:27:14.212571 149 gossip/client.go:128  [n?] started gossip client to ubuntu:23459
+I220119 07:27:14.212859 149 gossip/client.go:135  [n?] closing client to ubuntu:23459: stopping outgoing client to n0 (ubuntu:23459); loopback connection
+I220119 07:27:14.346717 142 gossip/server.go:233  [n?] received initial cluster-verification connection from ubuntu:23459
+I220119 07:27:15.047189 144 gossip/server.go:233  [n?] received initial cluster-verification connection from ubuntu:23457
+I220119 07:27:15.201622 32 gossip/client.go:128  [n?] started gossip client to ubuntu:23457
+I220119 07:27:15.202702 32 gossip/client.go:135  [n?] closing client to ubuntu:23457: stopping outgoing client to n0 (ubuntu:23457); loopback connection
+I220119 07:27:16.202535 179 gossip/client.go:128  [n?] started gossip client to ubuntu:23459
+I220119 07:27:16.203924 179 gossip/client.go:135  [n?] closing client to ubuntu:23459: stopping outgoing client to n0 (ubuntu:23459); loopback connection
+I220119 07:27:16.347096 108 gossip/server.go:233  [n?] received initial cluster-verification connection from ubuntu:23459
+I220119 07:27:17.048617 165 gossip/server.go:233  [n?] received initial cluster-verification connection from ubuntu:23457
+I220119 07:27:17.202995 184 gossip/client.go:128  [n?] started gossip client to ubuntu:23457
+I220119 07:27:17.203375 184 gossip/client.go:135  [n?] closing client to ubuntu:23457: stopping outgoing client to n0 (ubuntu:23457); loopback connection
+I220119 07:27:18.203568 169 gossip/client.go:128  [n?] started gossip client to ubuntu:23459
+I220119 07:27:18.204456 169 gossip/client.go:135  [n?] closing client to ubuntu:23459: stopping outgoing client to n0 (ubuntu:23459); loopback connection
+I220119 07:27:18.348767 173 gossip/server.go:233  [n?] received initial cluster-verification connection from ubuntu:23459
+I220119 07:27:19.049516 154 gossip/server.go:233  [n?] received initial cluster-verification connection from ubuntu:23457
+I220119 07:27:19.204689 157 gossip/client.go:128  [n?] started gossip client to ubuntu:23457
+I220119 07:27:19.205566 157 gossip/client.go:135  [n?] closing client to ubuntu:23457: stopping outgoing client to n0 (ubuntu:23457); loopback connection
+I220119 07:27:20.204948 194 gossip/client.go:128  [n?] started gossip client to ubuntu:23459
+I220119 07:27:20.205730 194 gossip/client.go:135  [n?] closing client to ubuntu:23459: stopping outgoing client to n0 (ubuntu:23459); loopback connection
+I220119 07:27:20.349672 199 gossip/server.go:233  [n?] received initial cluster-verification connection from ubuntu:23459
+I220119 07:27:21.051104 188 gossip/server.go:233  [n?] received initial cluster-verification connection from ubuntu:23457
+I220119 07:27:21.206427 191 gossip/client.go:128  [n?] started gossip client to ubuntu:23457
+I220119 07:27:21.206906 191 gossip/client.go:135  [n?] closing client to ubuntu:23457: stopping outgoing client to n0 (ubuntu:23457); loopback connection
+I220119 07:27:22.206729 202 gossip/client.go:128  [n?] started gossip client to ubuntu:23459
+I220119 07:27:22.207341 202 gossip/client.go:135  [n?] closing client to ubuntu:23459: stopping outgoing client to n0 (ubuntu:23459); loopback connection
+I220119 07:27:22.351472 211 gossip/server.go:233  [n?] received initial cluster-verification connection from ubuntu:23459
+I220119 07:27:23.052443 206 gossip/server.go:233  [n?] received initial cluster-verification connection from ubuntu:23457
+I220119 07:27:23.207087 177 gossip/client.go:128  [n?] started gossip client to ubuntu:23457
+I220119 07:27:23.207431 177 gossip/client.go:135  [n?] closing client to ubuntu:23457: stopping outgoing client to n0 (ubuntu:23457); loopback connection
+I220119 07:27:24.207735 209 gossip/client.go:128  [n?] started gossip client to ubuntu:23459
+I220119 07:27:24.208457 209 gossip/client.go:135  [n?] closing client to ubuntu:23459: stopping outgoing client to n0 (ubuntu:23459); loopback connection
+I220119 07:27:24.353119 245 gossip/server.go:233  [n?] received initial cluster-verification connection from ubuntu:23459
+I220119 07:27:25.053685 248 gossip/server.go:233  [n?] received initial cluster-verification connection from ubuntu:23457
+I220119 07:27:25.208787 251 gossip/client.go:128  [n?] started gossip client to ubuntu:23457
+I220119 07:27:25.209586 251 gossip/client.go:135  [n?] closing client to ubuntu:23457: stopping outgoing client to n0 (ubuntu:23457); loopback connection
+I220119 07:27:26.209281 231 gossip/client.go:128  [n?] started gossip client to ubuntu:23459
+I220119 07:27:26.209758 231 gossip/client.go:135  [n?] closing client to ubuntu:23459: stopping outgoing client to n0 (ubuntu:23459); loopback connection
+I220119 07:27:26.355093 111 gossip/server.go:233  [n?] received initial cluster-verification connection from ubuntu:23459
+I220119 07:27:27.055320 255 gossip/server.go:233  [n?] received initial cluster-verification connection from ubuntu:23457
+I220119 07:27:27.209725 258 gossip/client.go:128  [n?] started gossip client to ubuntu:23457
+I220119 07:27:27.210483 258 gossip/client.go:135  [n?] closing client to ubuntu:23457: stopping outgoing client to n0 (ubuntu:23457); loopback connection
+I220119 07:27:28.210880 237 gossip/client.go:128  [n?] started gossip client to ubuntu:23459
+I220119 07:27:28.211653 237 gossip/client.go:135  [n?] closing client to ubuntu:23459: stopping outgoing client to n0 (ubuntu:23459); loopback connection
+I220119 07:27:28.357617 241 gossip/server.go:233  [n?] received initial cluster-verification connection from ubuntu:23459
+I220119 07:27:29.056739 275 gossip/server.go:233  [n?] received initial cluster-verification connection from ubuntu:23457
+I220119 07:27:29.212170 263 gossip/client.go:128  [n?] started gossip client to ubuntu:23457
+I220119 07:27:29.212946 263 gossip/client.go:135  [n?] closing client to ubuntu:23457: stopping outgoing client to n0 (ubuntu:23457); loopback connection
+I220119 07:27:30.213462 279 gossip/client.go:128  [n?] started gossip client to ubuntu:23459
+I220119 07:27:30.214217 279 gossip/client.go:135  [n?] closing client to ubuntu:23459: stopping outgoing client to n0 (ubuntu:23459); loopback connection
+I220119 07:27:30.359447 113 gossip/server.go:233  [n?] received initial cluster-verification connection from ubuntu:23459
+I220119 07:27:31.214759 284 gossip/client.go:128  [n?] started gossip client to ubuntu:23457
+I220119 07:27:31.216111 54 gossip/gossip.go:920  [n?] MaxPeers Recomputed as 3
+I220119 07:27:31.216478 50 server/node.go:695  [n?] connecting to gossip network to verify cluster ID...
+I220119 07:27:31.216506 50 server/node.go:715  [n?] node connected via gossip and verified as part of cluster "3bbb8c74-c606-434f-b2eb-5e4523c470ba"
+I220119 07:27:31.221978 50 server/node.go:407  [n?] new node allocated ID 2
+I220119 07:27:31.222140 50 gossip/gossip.go:397  [n2] NodeDescriptor set to node_id:2 address:<network_field:"tcp" address_field:"ubuntu:23458" > attrs:<> locality:<> ServerVersion:<major_val:19 minor_val:1 patch:0 unstable:10 > build_tag:"4cd474b8" started_at:1642577251221985513 location_name:<> 
+I220119 07:27:31.222197 50 storage/stores.go:238  [n2] read 0 node addresses from persistent storage
+I220119 07:27:31.222308 50 storage/stores.go:257  [n2] wrote 1 node addresses to persistent storage
+I220119 07:27:31.222482 54 gossip/gossip.go:920  [n2] MaxPeers Recomputed as 3
+I220119 07:27:31.229153 50 server/node.go:673  [n2] bootstrapped store [n2,s2]
+I220119 07:27:31.229432 50 server/node.go:538  [n2] node=2: started with [<no-attributes>=/home/yangjx/go/src/github.com/znbasedb/znbase/node2] engine(s) and attributes []
+I220119 07:27:31.229651 50 server/status/recorder.go:610  [n2] available memory from cgroups (8.0 EiB) exceeds system memory 3.8 GiB, using system memory
+I220119 07:27:31.229732 50 server/server.go:1730  [n2] starting http server at [::]:8002 (use: ubuntu:8002)
+I220119 07:27:31.229741 50 server/server.go:1732  [n2] starting grpc/postgres server at [::]:23458
+I220119 07:27:31.229750 50 server/server.go:1733  [n2] advertising ZNBaseDB node at ubuntu:23458
+W220119 07:27:31.229763 50 jobs/registry.go:440  [n2] unable to get node liveness: node not in the liveness table
+I220119 07:27:31.231945 50 server/server.go:1802  [n2] done ensuring all necessary migrations have run
+I220119 07:27:31.231961 50 server/server.go:1805  [n2] serving sql connections
+I220119 07:27:31.232107 50 cli/start.go:813  [config] clusterID: 3bbb8c74-c606-434f-b2eb-5e4523c470ba
+I220119 07:27:31.232128 50 cli/start.go:821  node startup completed:
+ZNBaseDB node starting at 2022-01-19 07:27:31.232047428 +0000 UTC (took 20.1s)
+build:               OSS 4cd474b8 @ 2022/01/19 07:14:44 (go1.14)
+webui:               http://ubuntu:8002
+sql:                 postgresql://root@ubuntu:23458?sslmode=disable
+client flags:        ./znbase <client cmd> --host=ubuntu:23458 --insecure
+logs:                /home/yangjx/go/src/github.com/znbasedb/znbase/node2/logs
+temp dir:            /home/yangjx/go/src/github.com/znbasedb/znbase/node2/znbase-temp086565590
+external I/O path:   /home/yangjx/go/src/github.com/znbasedb/znbase/node2/extern
+store[0]:            path=/home/yangjx/go/src/github.com/znbasedb/znbase/node2,state=ENABLE
+storage engine:      rocksdb
+status:              initialized new node, joined pre-existing cluster
+clusterID:           3bbb8c74-c606-434f-b2eb-5e4523c470ba
+nodeID:              2
+I220119 07:27:31.235488 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 07:27:31.235514 404 security/audit/task/runner.go:216  [n2] audit_server_3751163e-78f9-11ec-a95b-000c29793ffc monitor workers every 5 seconds
+I220119 07:27:31.235529 403 security/audit/task/runner.go:284  [n2] audit_server_3751163e-78f9-11ec-a95b-000c29793ffc init, min:3, max:30
+I220119 07:27:31.261248 391 server/server_update.go:67  [n2] no need to upgrade, cluster already at the newest version
+I220119 07:27:31.267519 407 sql/event_log.go:235  [n2] Event: "node_join", target: 2, info: nodeID:2, lastUp:1642577251221985513, ClusterID:3bbb8c74-c606-434f-b2eb-5e4523c470ba
+I220119 07:27:31.367766 54 gossip/gossip.go:920  [n2] MaxPeers Recomputed as 3
+I220119 07:27:31.367896 54 storage/stores.go:257  [n2] wrote 2 node addresses to persistent storage
+I220119 07:27:31.408479 439 storage/replica_raftstorage.go:817  [n2,s2,r25/?:{-}] applying PREEMPTIVE snapshot at index 13 (id=092d9f47, encoded size=226, 1 rocksdb batches, 0 log entries)
+I220119 07:27:31.409735 439 storage/replica_raftstorage.go:823  [n2,s2,r25/?:/Table/{29-30}] applied PREEMPTIVE snapshot in 1ms [clear=0ms batch=0ms entries=0ms commit=1ms]
+I220119 07:27:31.429457 289 storage/replica_raftstorage.go:817  [n2,s2,r2/?:{-}] applying PREEMPTIVE snapshot at index 18 (id=dc028e8b, encoded size=438, 1 rocksdb batches, 0 log entries)
+I220119 07:27:31.430027 289 storage/replica_raftstorage.go:823  [n2,s2,r2/?:/System/NodeLiveness{-Max}] applied PREEMPTIVE snapshot in 1ms [clear=0ms batch=0ms entries=0ms commit=0ms]
+I220119 07:27:31.445907 469 storage/replica_raftstorage.go:817  [n2,s2,r15/?:{-}] applying PREEMPTIVE snapshot at index 13 (id=e222e82d, encoded size=226, 1 rocksdb batches, 0 log entries)
+I220119 07:27:31.446723 469 storage/replica_raftstorage.go:823  [n2,s2,r15/?:/Table/{19-20}] applied PREEMPTIVE snapshot in 1ms [clear=0ms batch=0ms entries=0ms commit=1ms]
+I220119 07:27:31.453987 448 storage/replica_raftstorage.go:817  [n2,s2,r5/?:{-}] applying PREEMPTIVE snapshot at index 13 (id=49184d99, encoded size=232, 1 rocksdb batches, 0 log entries)
+I220119 07:27:31.455233 448 storage/replica_raftstorage.go:823  [n2,s2,r5/?:/{Systemtse-Table/System…}] applied PREEMPTIVE snapshot in 1ms [clear=0ms batch=0ms entries=0ms commit=1ms]
+I220119 07:27:31.469165 483 storage/replica_raftstorage.go:817  [n2,s2,r17/?:{-}] applying PREEMPTIVE snapshot at index 13 (id=1ddc09a2, encoded size=226, 1 rocksdb batches, 0 log entries)
+I220119 07:27:31.469925 483 storage/replica_raftstorage.go:823  [n2,s2,r17/?:/Table/2{1-2}] applied PREEMPTIVE snapshot in 1ms [clear=0ms batch=0ms entries=0ms commit=1ms]
+I220119 07:27:31.491763 431 storage/replica_raftstorage.go:817  [n2,s2,r22/?:{-}] applying PREEMPTIVE snapshot at index 13 (id=3587301d, encoded size=226, 1 rocksdb batches, 0 log entries)
+I220119 07:27:31.493006 431 storage/replica_raftstorage.go:823  [n2,s2,r22/?:/Table/2{6-7}] applied PREEMPTIVE snapshot in 1ms [clear=0ms batch=0ms entries=0ms commit=1ms]
+I220119 07:27:31.500525 484 storage/replica_raftstorage.go:817  [n2,s2,r29/?:{-}] applying PREEMPTIVE snapshot at index 12 (id=2a541af0, encoded size=227, 1 rocksdb batches, 0 log entries)
+I220119 07:27:31.501380 484 storage/replica_raftstorage.go:823  [n2,s2,r29/?:/{Table/53-Max}] applied PREEMPTIVE snapshot in 1ms [clear=0ms batch=0ms entries=0ms commit=1ms]
+I220119 07:27:31.525965 498 storage/replica_raftstorage.go:817  [n2,s2,r3/?:{-}] applying PREEMPTIVE snapshot at index 52 (id=d1c31a2d, encoded size=88902, 1 rocksdb batches, 0 log entries)
+I220119 07:27:31.527185 498 storage/replica_raftstorage.go:823  [n2,s2,r3/?:/System/{NodeLive…-tsd}] applied PREEMPTIVE snapshot in 1ms [clear=0ms batch=0ms entries=0ms commit=1ms]
+I220119 07:27:31.534470 488 storage/replica_raftstorage.go:817  [n2,s2,r23/?:{-}] applying PREEMPTIVE snapshot at index 13 (id=78750417, encoded size=226, 1 rocksdb batches, 0 log entries)
+I220119 07:27:31.535837 488 storage/replica_raftstorage.go:823  [n2,s2,r23/?:/Table/2{7-8}] applied PREEMPTIVE snapshot in 1ms [clear=0ms batch=0ms entries=0ms commit=1ms]
+I220119 07:27:31.536759 91 gossip/gossip.go:1522  [n2] node has connected to cluster via gossip
+I220119 07:27:31.536894 91 storage/stores.go:257  [n2] wrote 2 node addresses to persistent storage
+I220119 07:27:31.558213 501 storage/replica_raftstorage.go:817  [n2,s2,r11/?:{-}] applying PREEMPTIVE snapshot at index 13 (id=4c6cd7d5, encoded size=226, 1 rocksdb batches, 0 log entries)
+I220119 07:27:31.559069 501 storage/replica_raftstorage.go:823  [n2,s2,r11/?:/Table/1{5-6}] applied PREEMPTIVE snapshot in 1ms [clear=0ms batch=0ms entries=0ms commit=1ms]
+I220119 07:27:31.573314 471 storage/replica_raftstorage.go:817  [n2,s2,r21/?:{-}] applying PREEMPTIVE snapshot at index 16 (id=e1d73f51, encoded size=289, 1 rocksdb batches, 0 log entries)
+I220119 07:27:31.574050 471 storage/replica_raftstorage.go:823  [n2,s2,r21/?:/Table/2{5-6}] applied PREEMPTIVE snapshot in 1ms [clear=0ms batch=0ms entries=0ms commit=1ms]
+I220119 07:27:31.590621 507 storage/replica_raftstorage.go:817  [n2,s2,r20/?:{-}] applying PREEMPTIVE snapshot at index 13 (id=390873bd, encoded size=226, 1 rocksdb batches, 0 log entries)
+I220119 07:27:31.591346 507 storage/replica_raftstorage.go:823  [n2,s2,r20/?:/Table/2{4-5}] applied PREEMPTIVE snapshot in 1ms [clear=0ms batch=0ms entries=0ms commit=0ms]
+I220119 07:27:31.606902 492 storage/replica_raftstorage.go:817  [n2,s2,r1/?:{-}] applying PREEMPTIVE snapshot at index 67 (id=c9a94e52, encoded size=2892, 1 rocksdb batches, 0 log entries)
+I220119 07:27:31.607934 492 storage/replica_raftstorage.go:823  [n2,s2,r1/?:/{Min-System/NodeL…}] applied PREEMPTIVE snapshot in 1ms [clear=0ms batch=0ms entries=0ms commit=1ms]
+I220119 07:27:31.625178 480 storage/replica_raftstorage.go:817  [n2,s2,r6/?:{-}] applying PREEMPTIVE snapshot at index 44 (id=1bb6872d, encoded size=42079, 1 rocksdb batches, 0 log entries)
+I220119 07:27:31.626512 480 storage/replica_raftstorage.go:823  [n2,s2,r6/?:/Table/{SystemCon…-11}] applied PREEMPTIVE snapshot in 1ms [clear=0ms batch=0ms entries=0ms commit=1ms]
+I220119 07:27:31.634653 494 storage/replica_raftstorage.go:817  [n2,s2,r27/?:{-}] applying PREEMPTIVE snapshot at index 21 (id=103cf410, encoded size=605, 1 rocksdb batches, 0 log entries)
+I220119 07:27:31.635971 494 storage/replica_raftstorage.go:823  [n2,s2,r27/?:/Table/{31-51}] applied PREEMPTIVE snapshot in 1ms [clear=0ms batch=0ms entries=0ms commit=1ms]
+I220119 07:27:31.657735 515 storage/replica_raftstorage.go:817  [n2,s2,r24/?:{-}] applying PREEMPTIVE snapshot at index 16 (id=bbcb69de, encoded size=554, 1 rocksdb batches, 0 log entries)
+I220119 07:27:31.658535 515 storage/replica_raftstorage.go:823  [n2,s2,r24/?:/Table/2{8-9}] applied PREEMPTIVE snapshot in 1ms [clear=0ms batch=0ms entries=0ms commit=1ms]
+I220119 07:27:31.679615 518 storage/replica_raftstorage.go:817  [n2,s2,r8/?:{-}] applying PREEMPTIVE snapshot at index 44 (id=bb8b03eb, encoded size=3861, 1 rocksdb batches, 0 log entries)
+I220119 07:27:31.680802 518 storage/replica_raftstorage.go:823  [n2,s2,r8/?:/Table/1{2-3}] applied PREEMPTIVE snapshot in 1ms [clear=0ms batch=0ms entries=0ms commit=1ms]
+I220119 07:27:31.714940 520 storage/replica_raftstorage.go:817  [n2,s2,r28/?:{-}] applying PREEMPTIVE snapshot at index 20 (id=04ac3981, encoded size=605, 1 rocksdb batches, 0 log entries)
+I220119 07:27:31.715583 520 storage/replica_raftstorage.go:823  [n2,s2,r28/?:/Table/5{1-3}] applied PREEMPTIVE snapshot in 1ms [clear=0ms batch=0ms entries=0ms commit=0ms]
+I220119 07:27:31.737531 531 storage/replica_raftstorage.go:817  [n2,s2,r14/?:{-}] applying PREEMPTIVE snapshot at index 16 (id=71ffefb4, encoded size=554, 1 rocksdb batches, 0 log entries)
+I220119 07:27:31.738290 531 storage/replica_raftstorage.go:823  [n2,s2,r14/?:/Table/1{8-9}] applied PREEMPTIVE snapshot in 1ms [clear=0ms batch=0ms entries=0ms commit=1ms]
+I220119 07:27:31.750554 533 storage/replica_raftstorage.go:817  [n2,s2,r10/?:{-}] applying PREEMPTIVE snapshot at index 16 (id=a338402f, encoded size=554, 1 rocksdb batches, 0 log entries)
+I220119 07:27:31.751724 533 storage/replica_raftstorage.go:823  [n2,s2,r10/?:/Table/1{4-5}] applied PREEMPTIVE snapshot in 1ms [clear=0ms batch=0ms entries=0ms commit=1ms]
+I220119 07:27:31.784261 521 storage/replica_raftstorage.go:817  [n2,s2,r26/?:{-}] applying PREEMPTIVE snapshot at index 16 (id=f2c7a720, encoded size=554, 1 rocksdb batches, 0 log entries)
+I220119 07:27:31.785056 521 storage/replica_raftstorage.go:823  [n2,s2,r26/?:/Table/3{0-1}] applied PREEMPTIVE snapshot in 1ms [clear=0ms batch=0ms entries=0ms commit=1ms]
+I220119 07:27:31.796330 538 storage/replica_raftstorage.go:817  [n2,s2,r16/?:{-}] applying PREEMPTIVE snapshot at index 16 (id=eee2cbc3, encoded size=554, 1 rocksdb batches, 0 log entries)
+I220119 07:27:31.797414 538 storage/replica_raftstorage.go:823  [n2,s2,r16/?:/Table/2{0-1}] applied PREEMPTIVE snapshot in 1ms [clear=0ms batch=0ms entries=0ms commit=1ms]
+I220119 07:27:31.829859 513 storage/replica_raftstorage.go:817  [n2,s2,r13/?:{-}] applying PREEMPTIVE snapshot at index 16 (id=f0ab09dc, encoded size=554, 1 rocksdb batches, 0 log entries)
+I220119 07:27:31.830639 513 storage/replica_raftstorage.go:823  [n2,s2,r13/?:/Table/1{7-8}] applied PREEMPTIVE snapshot in 1ms [clear=0ms batch=0ms entries=0ms commit=1ms]
+I220119 07:27:31.839915 540 storage/replica_raftstorage.go:817  [n2,s2,r18/?:{-}] applying PREEMPTIVE snapshot at index 16 (id=80804598, encoded size=554, 1 rocksdb batches, 0 log entries)
+I220119 07:27:31.840946 540 storage/replica_raftstorage.go:823  [n2,s2,r18/?:/Table/2{2-3}] applied PREEMPTIVE snapshot in 1ms [clear=0ms batch=0ms entries=0ms commit=1ms]
+I220119 07:27:31.860479 542 storage/replica_raftstorage.go:817  [n2,s2,r12/?:{-}] applying PREEMPTIVE snapshot at index 16 (id=1a7fce74, encoded size=554, 1 rocksdb batches, 0 log entries)
+I220119 07:27:31.861130 542 storage/replica_raftstorage.go:823  [n2,s2,r12/?:/Table/1{6-7}] applied PREEMPTIVE snapshot in 1ms [clear=0ms batch=0ms entries=0ms commit=1ms]
+I220119 07:27:31.883558 545 storage/replica_raftstorage.go:817  [n2,s2,r19/?:{-}] applying PREEMPTIVE snapshot at index 17 (id=e886a275, encoded size=713, 1 rocksdb batches, 0 log entries)
+I220119 07:27:31.884295 545 storage/replica_raftstorage.go:823  [n2,s2,r19/?:/Table/2{3-4}] applied PREEMPTIVE snapshot in 1ms [clear=0ms batch=0ms entries=0ms commit=1ms]
+I220119 07:27:31.903688 525 storage/replica_raftstorage.go:817  [n2,s2,r7/?:{-}] applying PREEMPTIVE snapshot at index 19 (id=18ca78a5, encoded size=601, 1 rocksdb batches, 0 log entries)
+I220119 07:27:31.904287 525 storage/replica_raftstorage.go:823  [n2,s2,r7/?:/Table/1{1-2}] applied PREEMPTIVE snapshot in 1ms [clear=0ms batch=0ms entries=0ms commit=0ms]
+I220119 07:27:31.923770 563 storage/replica_raftstorage.go:817  [n2,s2,r9/?:{-}] applying PREEMPTIVE snapshot at index 128 (id=9557699a, encoded size=33470, 1 rocksdb batches, 0 log entries)
+I220119 07:27:31.925431 563 storage/replica_raftstorage.go:823  [n2,s2,r9/?:/Table/1{3-4}] applied PREEMPTIVE snapshot in 2ms [clear=0ms batch=0ms entries=0ms commit=1ms]
+I220119 07:27:41.234274 359 server/status/runtime.go:500  [n2] runtime stats: 140 MiB RSS, 236 goroutines, 111 MiB/224 KiB/125 MiB GO alloc/idle/total, 13 MiB/16 MiB CGO alloc/total, 0.0 CGO/sec, 0.0/0.0 %(u/s)time, 0.0 %gc (8x), 975 KiB/974 KiB (r/w)net
+I220119 07:27:41.235966 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 07:27:51.232166 354 storage/store.go:4034  [n2,s2] sstables (read amplification = 0):
+I220119 07:27:51.232258 354 storage/store.go:4035  [n2,s2] 
+** Compaction Stats [default] **
+Level    Files   Size     Score Read(GB)  Rn(GB) Rnp1(GB) Write(GB) Wnew(GB) Moved(GB) W-Amp Rd(MB/s) Wr(MB/s) Comp(sec) CompMergeCPU(sec) Comp(cnt) Avg(sec) KeyIn KeyDrop
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Sum      0/0    0.00 KB   0.0      0.0     0.0      0.0       0.0      0.0       0.0   0.0      0.0      0.0      0.00              0.00         0    0.000       0      0
+ Int      0/0    0.00 KB   0.0      0.0     0.0      0.0       0.0      0.0       0.0   0.0      0.0      0.0      0.00              0.00         0    0.000       0      0
+
+** Compaction Stats [default] **
+Priority    Files   Size     Score Read(GB)  Rn(GB) Rnp1(GB) Write(GB) Wnew(GB) Moved(GB) W-Amp Rd(MB/s) Wr(MB/s) Comp(sec) CompMergeCPU(sec) Comp(cnt) Avg(sec) KeyIn KeyDrop
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Uptime(secs): 40.0 total, 40.0 interval
+Flush(GB): cumulative 0.000, interval 0.000
+AddFile(GB): cumulative 0.000, interval 0.000
+AddFile(Total Files): cumulative 0, interval 0
+AddFile(L0 Files): cumulative 0, interval 0
+AddFile(Keys): cumulative 0, interval 0
+Cumulative compaction: 0.00 GB write, 0.00 MB/s write, 0.00 GB read, 0.00 MB/s read, 0.0 seconds
+Interval compaction: 0.00 GB write, 0.00 MB/s write, 0.00 GB read, 0.00 MB/s read, 0.0 seconds
+Stalls(count): 0 level0_slowdown, 0 level0_slowdown_with_compaction, 0 level0_numfiles, 0 level0_numfiles_with_compaction, 0 stop for pending_compaction_bytes, 0 slowdown for pending_compaction_bytes, 0 memtable_compaction, 0 memtable_slowdown, interval 0 total count
+I220119 07:27:51.235632 359 server/status/runtime.go:500  [n2] runtime stats: 150 MiB RSS, 236 goroutines, 124 MiB/496 KiB/141 MiB GO alloc/idle/total, 13 MiB/17 MiB CGO alloc/total, 112.0 CGO/sec, 0.3/1.7 %(u/s)time, 0.0 %gc (0x), 317 KiB/317 KiB (r/w)net
+I220119 07:27:51.236592 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 07:27:56.838290 979 storage/replica_raftstorage.go:817  [n2,s2,r4/?:{-}] applying PREEMPTIVE snapshot at index 46 (id=7a6407e1, encoded size=265348, 2 rocksdb batches, 0 log entries)
+I220119 07:27:56.844398 979 storage/replica_raftstorage.go:823  [n2,s2,r4/?:/System{/tsd-tse}] applied PREEMPTIVE snapshot in 6ms [clear=0ms batch=2ms entries=0ms commit=4ms]
+I220119 07:28:01.236941 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 07:28:01.238944 359 server/status/runtime.go:500  [n2] runtime stats: 167 MiB RSS, 246 goroutines, 142 MiB/200 KiB/158 MiB GO alloc/idle/total, 14 MiB/19 MiB CGO alloc/total, 336.8 CGO/sec, 0.6/1.7 %(u/s)time, 0.0 %gc (0x), 421 KiB/421 KiB (r/w)net
+I220119 07:28:11.238257 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 07:28:11.240811 359 server/status/runtime.go:500  [n2] runtime stats: 178 MiB RSS, 247 goroutines, 92 MiB/59 MiB/172 MiB GO alloc/idle/total, 14 MiB/20 MiB CGO alloc/total, 38.2 CGO/sec, 0.6/1.4 %(u/s)time, 0.0 %gc (1x), 304 KiB/304 KiB (r/w)net
+I220119 07:28:21.238376 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 07:28:21.243048 359 server/status/runtime.go:500  [n2] runtime stats: 184 MiB RSS, 247 goroutines, 108 MiB/44 MiB/172 MiB GO alloc/idle/total, 14 MiB/20 MiB CGO alloc/total, 51.3 CGO/sec, 0.6/1.1 %(u/s)time, 0.0 %gc (0x), 288 KiB/288 KiB (r/w)net
+I220119 07:28:31.230649 355 gossip/gossip.go:562  [n2] gossip status (ok, 3 nodes)
+gossip client (1/3 cur/max conns)
+  1: ubuntu:23457 (1m0s: infos 72/259 sent/received, bytes 13420B/112739B sent/received)
+gossip server (0/3 cur/max conns, infos 72/259 sent/received, bytes 14377B/113555B sent/received)
+gossip connectivity
+  n1 [sentinel];
+  n2 -> n1; n3 -> n1;
+I220119 07:28:31.239401 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 07:28:31.245099 359 server/status/runtime.go:500  [n2] runtime stats: 190 MiB RSS, 246 goroutines, 124 MiB/29 MiB/172 MiB GO alloc/idle/total, 14 MiB/20 MiB CGO alloc/total, 39.9 CGO/sec, 0.5/1.3 %(u/s)time, 0.0 %gc (0x), 286 KiB/286 KiB (r/w)net
+I220119 07:28:41.239910 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 07:28:41.247794 359 server/status/runtime.go:500  [n2] runtime stats: 195 MiB RSS, 246 goroutines, 141 MiB/13 MiB/172 MiB GO alloc/idle/total, 15 MiB/20 MiB CGO alloc/total, 42.5 CGO/sec, 0.5/1.4 %(u/s)time, 0.0 %gc (0x), 296 KiB/296 KiB (r/w)net
+I220119 07:28:51.240901 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 07:28:51.258811 359 server/status/runtime.go:500  [n2] runtime stats: 207 MiB RSS, 246 goroutines, 157 MiB/472 KiB/175 MiB GO alloc/idle/total, 15 MiB/20 MiB CGO alloc/total, 39.4 CGO/sec, 0.3/1.5 %(u/s)time, 0.0 %gc (0x), 298 KiB/298 KiB (r/w)net
+I220119 07:29:01.241631 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 07:29:01.261189 359 server/status/runtime.go:500  [n2] runtime stats: 212 MiB RSS, 247 goroutines, 98 MiB/67 MiB/186 MiB GO alloc/idle/total, 15 MiB/20 MiB CGO alloc/total, 40.2 CGO/sec, 0.6/1.3 %(u/s)time, 0.0 %gc (1x), 305 KiB/305 KiB (r/w)net
+I220119 07:29:11.242098 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 07:29:11.265837 359 server/status/runtime.go:500  [n2] runtime stats: 213 MiB RSS, 248 goroutines, 114 MiB/52 MiB/186 MiB GO alloc/idle/total, 15 MiB/20 MiB CGO alloc/total, 37.5 CGO/sec, 0.5/1.3 %(u/s)time, 0.0 %gc (0x), 295 KiB/295 KiB (r/w)net
+I220119 07:29:21.242547 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 07:29:21.267963 359 server/status/runtime.go:500  [n2] runtime stats: 214 MiB RSS, 248 goroutines, 131 MiB/37 MiB/186 MiB GO alloc/idle/total, 15 MiB/20 MiB CGO alloc/total, 42.5 CGO/sec, 0.3/1.3 %(u/s)time, 0.0 %gc (0x), 264 KiB/264 KiB (r/w)net
+I220119 07:29:31.231007 355 gossip/gossip.go:562  [n2] gossip status (ok, 3 nodes)
+gossip client (1/3 cur/max conns)
+  1: ubuntu:23457 (2m0s: infos 130/465 sent/received, bytes 22526B/139835B sent/received)
+gossip server (0/3 cur/max conns, infos 130/465 sent/received, bytes 23483B/140651B sent/received)
+I220119 07:29:31.243342 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 07:29:31.269692 359 server/status/runtime.go:500  [n2] runtime stats: 215 MiB RSS, 246 goroutines, 147 MiB/21 MiB/186 MiB GO alloc/idle/total, 23 MiB/28 MiB CGO alloc/total, 38.8 CGO/sec, 0.3/1.4 %(u/s)time, 0.0 %gc (0x), 356 KiB/356 KiB (r/w)net
+I220119 07:29:41.243793 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 07:29:41.271417 359 server/status/runtime.go:500  [n2] runtime stats: 223 MiB RSS, 246 goroutines, 164 MiB/5.6 MiB/186 MiB GO alloc/idle/total, 23 MiB/28 MiB CGO alloc/total, 44.6 CGO/sec, 0.4/1.4 %(u/s)time, 0.0 %gc (1x), 322 KiB/322 KiB (r/w)net
+I220119 07:29:51.244261 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 07:29:51.274043 359 server/status/runtime.go:500  [n2] runtime stats: 224 MiB RSS, 246 goroutines, 94 MiB/78 MiB/192 MiB GO alloc/idle/total, 23 MiB/28 MiB CGO alloc/total, 50.9 CGO/sec, 0.8/1.2 %(u/s)time, 0.0 %gc (0x), 284 KiB/284 KiB (r/w)net
+I220119 07:30:01.245277 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 07:30:01.275266 359 server/status/runtime.go:500  [n2] runtime stats: 225 MiB RSS, 247 goroutines, 110 MiB/63 MiB/192 MiB GO alloc/idle/total, 23 MiB/28 MiB CGO alloc/total, 33.9 CGO/sec, 0.5/1.1 %(u/s)time, 0.0 %gc (0x), 298 KiB/298 KiB (r/w)net
+I220119 07:30:11.245687 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 07:30:11.276761 359 server/status/runtime.go:500  [n2] runtime stats: 226 MiB RSS, 248 goroutines, 126 MiB/48 MiB/192 MiB GO alloc/idle/total, 23 MiB/28 MiB CGO alloc/total, 33.7 CGO/sec, 0.5/1.3 %(u/s)time, 0.0 %gc (0x), 282 KiB/282 KiB (r/w)net
+I220119 07:30:21.246594 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 07:30:21.279119 359 server/status/runtime.go:500  [n2] runtime stats: 226 MiB RSS, 247 goroutines, 143 MiB/32 MiB/192 MiB GO alloc/idle/total, 23 MiB/28 MiB CGO alloc/total, 42.3 CGO/sec, 0.4/1.3 %(u/s)time, 0.0 %gc (0x), 272 KiB/273 KiB (r/w)net
+I220119 07:30:31.231008 355 gossip/gossip.go:562  [n2] gossip status (ok, 3 nodes)
+gossip client (1/3 cur/max conns)
+  1: ubuntu:23457 (3m0s: infos 187/674 sent/received, bytes 31474B/167134B sent/received)
+gossip server (0/3 cur/max conns, infos 187/674 sent/received, bytes 32431B/167950B sent/received)
+I220119 07:30:31.247198 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 07:30:31.281050 359 server/status/runtime.go:500  [n2] runtime stats: 230 MiB RSS, 246 goroutines, 159 MiB/16 MiB/192 MiB GO alloc/idle/total, 23 MiB/28 MiB CGO alloc/total, 39.7 CGO/sec, 0.6/1.1 %(u/s)time, 0.0 %gc (0x), 302 KiB/302 KiB (r/w)net
+I220119 07:30:41.247325 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 07:30:41.282471 359 server/status/runtime.go:500  [n2] runtime stats: 231 MiB RSS, 246 goroutines, 92 MiB/79 MiB/192 MiB GO alloc/idle/total, 23 MiB/28 MiB CGO alloc/total, 36.9 CGO/sec, 0.8/1.1 %(u/s)time, 0.0 %gc (1x), 294 KiB/294 KiB (r/w)net
+I220119 07:30:51.257031 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 07:30:51.283701 359 server/status/runtime.go:500  [n2] runtime stats: 232 MiB RSS, 247 goroutines, 108 MiB/64 MiB/192 MiB GO alloc/idle/total, 23 MiB/28 MiB CGO alloc/total, 37.6 CGO/sec, 0.6/1.3 %(u/s)time, 0.0 %gc (0x), 341 KiB/341 KiB (r/w)net
+I220119 07:31:01.257131 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 07:31:01.285373 359 server/status/runtime.go:500  [n2] runtime stats: 232 MiB RSS, 247 goroutines, 124 MiB/49 MiB/192 MiB GO alloc/idle/total, 23 MiB/28 MiB CGO alloc/total, 37.6 CGO/sec, 0.4/1.3 %(u/s)time, 0.0 %gc (0x), 281 KiB/281 KiB (r/w)net
+I220119 07:31:11.257299 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 07:31:11.287324 359 server/status/runtime.go:500  [n2] runtime stats: 233 MiB RSS, 247 goroutines, 146 MiB/29 MiB/192 MiB GO alloc/idle/total, 23 MiB/28 MiB CGO alloc/total, 34.1 CGO/sec, 0.6/1.1 %(u/s)time, 0.0 %gc (0x), 285 KiB/285 KiB (r/w)net
+I220119 07:31:21.257465 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 07:31:21.289187 359 server/status/runtime.go:500  [n2] runtime stats: 234 MiB RSS, 247 goroutines, 162 MiB/13 MiB/192 MiB GO alloc/idle/total, 23 MiB/28 MiB CGO alloc/total, 43.5 CGO/sec, 0.3/1.5 %(u/s)time, 0.0 %gc (0x), 282 KiB/282 KiB (r/w)net
+I220119 07:31:31.230961 355 gossip/gossip.go:562  [n2] gossip status (ok, 3 nodes)
+gossip client (1/3 cur/max conns)
+  1: ubuntu:23457 (4m0s: infos 245/886 sent/received, bytes 40580B/194867B sent/received)
+gossip server (0/3 cur/max conns, infos 245/886 sent/received, bytes 41537B/195683B sent/received)
+I220119 07:31:31.257611 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 07:31:31.291144 359 server/status/runtime.go:500  [n2] runtime stats: 235 MiB RSS, 246 goroutines, 101 MiB/70 MiB/192 MiB GO alloc/idle/total, 31 MiB/36 MiB CGO alloc/total, 45.1 CGO/sec, 0.7/1.3 %(u/s)time, 0.0 %gc (1x), 409 KiB/409 KiB (r/w)net
+I220119 07:31:41.258370 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 07:31:41.293083 359 server/status/runtime.go:500  [n2] runtime stats: 236 MiB RSS, 246 goroutines, 115 MiB/58 MiB/192 MiB GO alloc/idle/total, 31 MiB/36 MiB CGO alloc/total, 37.7 CGO/sec, 0.5/1.4 %(u/s)time, 0.0 %gc (0x), 296 KiB/296 KiB (r/w)net
+I220119 07:31:51.261893 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 07:31:51.295160 359 server/status/runtime.go:500  [n2] runtime stats: 237 MiB RSS, 246 goroutines, 137 MiB/37 MiB/192 MiB GO alloc/idle/total, 31 MiB/36 MiB CGO alloc/total, 39.2 CGO/sec, 0.6/1.3 %(u/s)time, 0.0 %gc (0x), 271 KiB/271 KiB (r/w)net
+I220119 07:32:01.224473 4334 icl/load/read_import_proc.go:556  [n2] the current job has been completed or exited
+I220119 07:32:01.262110 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 07:32:01.297101 359 server/status/runtime.go:500  [n2] runtime stats: 240 MiB RSS, 263 goroutines, 161 MiB/14 MiB/192 MiB GO alloc/idle/total, 31 MiB/36 MiB CGO alloc/total, 44.5 CGO/sec, 1.3/1.4 %(u/s)time, 0.0 %gc (1x), 508 KiB/508 KiB (r/w)net
+I220119 07:32:01.356146 4365 icl/load/read_import_proc.go:556  [n2] the current job has been completed or exited
+I220119 07:32:11.266761 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 07:32:11.299659 359 server/status/runtime.go:500  [n2] runtime stats: 246 MiB RSS, 247 goroutines, 119 MiB/55 MiB/194 MiB GO alloc/idle/total, 32 MiB/40 MiB CGO alloc/total, 2149.2 CGO/sec, 1.3/1.9 %(u/s)time, 0.0 %gc (0x), 1.0 MiB/1.0 MiB (r/w)net
+I220119 07:32:21.267850 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 07:32:21.302081 359 server/status/runtime.go:500  [n2] runtime stats: 247 MiB RSS, 247 goroutines, 134 MiB/41 MiB/194 MiB GO alloc/idle/total, 32 MiB/40 MiB CGO alloc/total, 37.8 CGO/sec, 0.8/1.1 %(u/s)time, 0.0 %gc (0x), 267 KiB/267 KiB (r/w)net
+I220119 07:32:31.230731 355 gossip/gossip.go:562  [n2] gossip status (ok, 3 nodes)
+gossip client (1/3 cur/max conns)
+  1: ubuntu:23457 (5m0s: infos 305/1098 sent/received, bytes 50429B/261534B sent/received)
+gossip server (0/3 cur/max conns, infos 305/1098 sent/received, bytes 51386B/262350B sent/received)
+I220119 07:32:31.268047 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 07:32:31.304894 359 server/status/runtime.go:500  [n2] runtime stats: 248 MiB RSS, 246 goroutines, 151 MiB/25 MiB/194 MiB GO alloc/idle/total, 32 MiB/40 MiB CGO alloc/total, 39.9 CGO/sec, 0.8/1.0 %(u/s)time, 0.0 %gc (0x), 314 KiB/314 KiB (r/w)net
+I220119 07:32:41.268233 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 07:32:41.307168 359 server/status/runtime.go:500  [n2] runtime stats: 250 MiB RSS, 246 goroutines, 176 MiB/2.0 MiB/195 MiB GO alloc/idle/total, 32 MiB/40 MiB CGO alloc/total, 1146.5 CGO/sec, 0.7/2.1 %(u/s)time, 0.0 %gc (0x), 664 KiB/664 KiB (r/w)net
+I220119 07:32:51.268431 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 07:32:51.310034 359 server/status/runtime.go:500  [n2] runtime stats: 251 MiB RSS, 246 goroutines, 103 MiB/69 MiB/196 MiB GO alloc/idle/total, 32 MiB/40 MiB CGO alloc/total, 152.0 CGO/sec, 0.7/1.5 %(u/s)time, 0.0 %gc (1x), 288 KiB/288 KiB (r/w)net
+I220119 07:32:56.030966 335 storage/store.go:2590  [n2,s2,r30/2:/Table/5{6-7}] removing replica r32/2
+I220119 07:33:01.268930 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 07:33:01.313187 359 server/status/runtime.go:500  [n2] runtime stats: 252 MiB RSS, 247 goroutines, 120 MiB/54 MiB/196 MiB GO alloc/idle/total, 40 MiB/48 MiB CGO alloc/total, 60.8 CGO/sec, 0.5/1.4 %(u/s)time, 0.0 %gc (0x), 334 KiB/334 KiB (r/w)net
+I220119 07:33:11.269189 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 07:33:11.316424 359 server/status/runtime.go:500  [n2] runtime stats: 252 MiB RSS, 247 goroutines, 137 MiB/39 MiB/196 MiB GO alloc/idle/total, 40 MiB/48 MiB CGO alloc/total, 38.6 CGO/sec, 0.8/1.1 %(u/s)time, 0.0 %gc (0x), 287 KiB/287 KiB (r/w)net
+I220119 07:33:21.269579 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 07:33:21.319175 359 server/status/runtime.go:500  [n2] runtime stats: 253 MiB RSS, 247 goroutines, 153 MiB/24 MiB/196 MiB GO alloc/idle/total, 40 MiB/48 MiB CGO alloc/total, 37.0 CGO/sec, 0.6/1.2 %(u/s)time, 0.0 %gc (0x), 272 KiB/272 KiB (r/w)net
+I220119 07:33:31.230384 355 gossip/gossip.go:562  [n2] gossip status (ok, 3 nodes)
+gossip client (1/3 cur/max conns)
+  1: ubuntu:23457 (6m0s: infos 366/1317 sent/received, bytes 60862B/330384B sent/received)
+gossip server (0/3 cur/max conns, infos 366/1317 sent/received, bytes 61819B/331200B sent/received)
+I220119 07:33:31.269693 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 07:33:31.320942 359 server/status/runtime.go:500  [n2] runtime stats: 255 MiB RSS, 246 goroutines, 91 MiB/81 MiB/196 MiB GO alloc/idle/total, 39 MiB/48 MiB CGO alloc/total, 152.0 CGO/sec, 0.7/2.2 %(u/s)time, 0.0 %gc (1x), 1.0 MiB/1.0 MiB (r/w)net
+I220119 07:33:41.270111 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 07:33:41.323833 359 server/status/runtime.go:500  [n2] runtime stats: 256 MiB RSS, 246 goroutines, 108 MiB/65 MiB/196 MiB GO alloc/idle/total, 39 MiB/48 MiB CGO alloc/total, 40.7 CGO/sec, 0.8/1.1 %(u/s)time, 0.0 %gc (0x), 299 KiB/299 KiB (r/w)net
+I220119 07:33:51.270523 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 07:33:51.327081 359 server/status/runtime.go:500  [n2] runtime stats: 257 MiB RSS, 246 goroutines, 124 MiB/51 MiB/196 MiB GO alloc/idle/total, 39 MiB/48 MiB CGO alloc/total, 37.6 CGO/sec, 0.3/1.3 %(u/s)time, 0.0 %gc (0x), 266 KiB/266 KiB (r/w)net
+I220119 07:34:01.270674 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 07:34:01.329538 359 server/status/runtime.go:500  [n2] runtime stats: 257 MiB RSS, 247 goroutines, 140 MiB/36 MiB/196 MiB GO alloc/idle/total, 39 MiB/48 MiB CGO alloc/total, 38.7 CGO/sec, 0.9/1.1 %(u/s)time, 0.0 %gc (0x), 284 KiB/284 KiB (r/w)net
+I220119 07:34:11.270924 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 07:34:11.332135 359 server/status/runtime.go:500  [n2] runtime stats: 258 MiB RSS, 247 goroutines, 157 MiB/20 MiB/196 MiB GO alloc/idle/total, 39 MiB/48 MiB CGO alloc/total, 40.8 CGO/sec, 0.5/1.3 %(u/s)time, 0.0 %gc (0x), 289 KiB/289 KiB (r/w)net
+I220119 07:34:21.271093 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 07:34:21.333774 359 server/status/runtime.go:500  [n2] runtime stats: 259 MiB RSS, 247 goroutines, 173 MiB/4.9 MiB/196 MiB GO alloc/idle/total, 39 MiB/48 MiB CGO alloc/total, 35.9 CGO/sec, 0.7/1.2 %(u/s)time, 0.0 %gc (0x), 271 KiB/271 KiB (r/w)net
+I220119 07:34:31.230606 355 gossip/gossip.go:562  [n2] gossip status (ok, 3 nodes)
+gossip client (1/3 cur/max conns)
+  1: ubuntu:23457 (7m0s: infos 424/1528 sent/received, bytes 69969B/357945B sent/received)
+gossip server (0/3 cur/max conns, infos 424/1528 sent/received, bytes 70926B/358761B sent/received)
+I220119 07:34:31.271402 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 07:34:31.335554 359 server/status/runtime.go:500  [n2] runtime stats: 260 MiB RSS, 246 goroutines, 106 MiB/68 MiB/196 MiB GO alloc/idle/total, 39 MiB/48 MiB CGO alloc/total, 37.6 CGO/sec, 0.9/1.0 %(u/s)time, 0.0 %gc (1x), 316 KiB/316 KiB (r/w)net
+I220119 07:34:41.271839 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 07:34:41.338659 359 server/status/runtime.go:500  [n2] runtime stats: 260 MiB RSS, 246 goroutines, 123 MiB/53 MiB/196 MiB GO alloc/idle/total, 39 MiB/48 MiB CGO alloc/total, 66.3 CGO/sec, 0.5/1.6 %(u/s)time, 0.0 %gc (0x), 362 KiB/362 KiB (r/w)net
+I220119 07:34:51.272239 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 07:34:51.341040 359 server/status/runtime.go:500  [n2] runtime stats: 261 MiB RSS, 246 goroutines, 139 MiB/38 MiB/196 MiB GO alloc/idle/total, 47 MiB/56 MiB CGO alloc/total, 37.6 CGO/sec, 0.5/1.3 %(u/s)time, 0.0 %gc (0x), 274 KiB/274 KiB (r/w)net
+I220119 07:35:01.272552 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 07:35:01.343321 359 server/status/runtime.go:500  [n2] runtime stats: 262 MiB RSS, 247 goroutines, 156 MiB/22 MiB/196 MiB GO alloc/idle/total, 47 MiB/56 MiB CGO alloc/total, 41.8 CGO/sec, 0.9/0.8 %(u/s)time, 0.0 %gc (0x), 284 KiB/284 KiB (r/w)net
+I220119 07:35:11.272674 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 07:35:11.345077 359 server/status/runtime.go:500  [n2] runtime stats: 263 MiB RSS, 247 goroutines, 172 MiB/6.2 MiB/196 MiB GO alloc/idle/total, 47 MiB/56 MiB CGO alloc/total, 36.1 CGO/sec, 0.5/1.2 %(u/s)time, 0.0 %gc (0x), 294 KiB/294 KiB (r/w)net
+I220119 07:35:21.273479 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 07:35:21.347809 359 server/status/runtime.go:500  [n2] runtime stats: 263 MiB RSS, 247 goroutines, 102 MiB/70 MiB/196 MiB GO alloc/idle/total, 47 MiB/56 MiB CGO alloc/total, 36.4 CGO/sec, 0.5/1.3 %(u/s)time, 0.0 %gc (1x), 269 KiB/269 KiB (r/w)net
+I220119 07:35:31.230371 355 gossip/gossip.go:562  [n2] gossip status (ok, 3 nodes)
+gossip client (1/3 cur/max conns)
+  1: ubuntu:23457 (8m0s: infos 482/1734 sent/received, bytes 79076B/385143B sent/received)
+gossip server (0/3 cur/max conns, infos 482/1734 sent/received, bytes 80033B/385959B sent/received)
+I220119 07:35:31.274044 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 07:35:31.349962 359 server/status/runtime.go:500  [n2] runtime stats: 264 MiB RSS, 246 goroutines, 120 MiB/55 MiB/196 MiB GO alloc/idle/total, 47 MiB/56 MiB CGO alloc/total, 40.8 CGO/sec, 0.5/1.2 %(u/s)time, 0.0 %gc (0x), 352 KiB/352 KiB (r/w)net
+I220119 07:35:41.274493 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 07:35:41.352933 359 server/status/runtime.go:500  [n2] runtime stats: 265 MiB RSS, 246 goroutines, 137 MiB/40 MiB/196 MiB GO alloc/idle/total, 47 MiB/56 MiB CGO alloc/total, 36.5 CGO/sec, 0.4/1.4 %(u/s)time, 0.0 %gc (0x), 288 KiB/287 KiB (r/w)net
+I220119 07:35:51.274902 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 07:35:51.356469 359 server/status/runtime.go:500  [n2] runtime stats: 266 MiB RSS, 246 goroutines, 153 MiB/24 MiB/196 MiB GO alloc/idle/total, 47 MiB/56 MiB CGO alloc/total, 36.8 CGO/sec, 0.6/1.0 %(u/s)time, 0.0 %gc (0x), 275 KiB/275 KiB (r/w)net
+I220119 07:36:01.275024 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 07:36:01.359550 359 server/status/runtime.go:500  [n2] runtime stats: 266 MiB RSS, 247 goroutines, 169 MiB/9.0 MiB/196 MiB GO alloc/idle/total, 47 MiB/56 MiB CGO alloc/total, 38.2 CGO/sec, 0.5/1.0 %(u/s)time, 0.0 %gc (0x), 279 KiB/279 KiB (r/w)net
+I220119 07:36:11.275416 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 07:36:11.361409 359 server/status/runtime.go:500  [n2] runtime stats: 267 MiB RSS, 247 goroutines, 103 MiB/70 MiB/196 MiB GO alloc/idle/total, 47 MiB/56 MiB CGO alloc/total, 38.7 CGO/sec, 0.5/1.4 %(u/s)time, 0.0 %gc (1x), 286 KiB/286 KiB (r/w)net
+I220119 07:36:21.275553 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 07:36:21.364552 359 server/status/runtime.go:500  [n2] runtime stats: 268 MiB RSS, 247 goroutines, 119 MiB/55 MiB/196 MiB GO alloc/idle/total, 47 MiB/56 MiB CGO alloc/total, 40.2 CGO/sec, 0.4/1.2 %(u/s)time, 0.0 %gc (0x), 275 KiB/275 KiB (r/w)net
+I220119 07:36:31.230102 355 gossip/gossip.go:562  [n2] gossip status (ok, 3 nodes)
+gossip client (1/3 cur/max conns)
+  1: ubuntu:23457 (9m0s: infos 539/1942 sent/received, bytes 88025B/412329B sent/received)
+gossip server (0/3 cur/max conns, infos 539/1942 sent/received, bytes 88982B/413145B sent/received)
+I220119 07:36:31.275920 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 07:36:31.366915 359 server/status/runtime.go:500  [n2] runtime stats: 268 MiB RSS, 246 goroutines, 137 MiB/40 MiB/196 MiB GO alloc/idle/total, 47 MiB/56 MiB CGO alloc/total, 38.4 CGO/sec, 0.7/0.9 %(u/s)time, 0.0 %gc (0x), 458 KiB/333 KiB (r/w)net
+I220119 07:36:41.276216 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 07:36:41.369615 359 server/status/runtime.go:500  [n2] runtime stats: 269 MiB RSS, 246 goroutines, 154 MiB/24 MiB/196 MiB GO alloc/idle/total, 55 MiB/64 MiB CGO alloc/total, 38.3 CGO/sec, 0.4/1.3 %(u/s)time, 0.0 %gc (0x), 300 KiB/300 KiB (r/w)net
+I220119 07:36:51.276466 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 07:36:51.373098 359 server/status/runtime.go:500  [n2] runtime stats: 270 MiB RSS, 246 goroutines, 170 MiB/8.6 MiB/196 MiB GO alloc/idle/total, 55 MiB/64 MiB CGO alloc/total, 38.7 CGO/sec, 0.5/1.1 %(u/s)time, 0.0 %gc (0x), 265 KiB/266 KiB (r/w)net
+I220119 07:37:01.277275 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 07:37:01.375288 359 server/status/runtime.go:500  [n2] runtime stats: 271 MiB RSS, 247 goroutines, 103 MiB/70 MiB/196 MiB GO alloc/idle/total, 55 MiB/64 MiB CGO alloc/total, 38.1 CGO/sec, 0.8/1.1 %(u/s)time, 0.0 %gc (1x), 288 KiB/289 KiB (r/w)net
+I220119 07:37:11.278300 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 07:37:11.378493 359 server/status/runtime.go:500  [n2] runtime stats: 271 MiB RSS, 247 goroutines, 121 MiB/54 MiB/196 MiB GO alloc/idle/total, 55 MiB/64 MiB CGO alloc/total, 63.2 CGO/sec, 0.5/1.6 %(u/s)time, 0.0 %gc (0x), 351 KiB/352 KiB (r/w)net
+I220119 07:37:21.279019 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 07:37:21.380240 359 server/status/runtime.go:500  [n2] runtime stats: 272 MiB RSS, 247 goroutines, 137 MiB/40 MiB/196 MiB GO alloc/idle/total, 55 MiB/64 MiB CGO alloc/total, 39.6 CGO/sec, 0.6/1.0 %(u/s)time, 0.0 %gc (0x), 281 KiB/282 KiB (r/w)net
+I220119 07:37:31.231099 355 gossip/gossip.go:562  [n2] gossip status (ok, 3 nodes)
+gossip client (1/3 cur/max conns)
+  1: ubuntu:23457 (10m0s: infos 597/2153 sent/received, bytes 97132B/439940B sent/received)
+gossip server (0/3 cur/max conns, infos 597/2153 sent/received, bytes 98089B/440756B sent/received)
+I220119 07:37:31.279324 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 07:37:31.382571 359 server/status/runtime.go:500  [n2] runtime stats: 273 MiB RSS, 246 goroutines, 154 MiB/23 MiB/196 MiB GO alloc/idle/total, 55 MiB/64 MiB CGO alloc/total, 38.1 CGO/sec, 0.8/0.9 %(u/s)time, 0.0 %gc (0x), 450 KiB/387 KiB (r/w)net
+I220119 07:37:41.280153 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 07:37:41.385043 359 server/status/runtime.go:500  [n2] runtime stats: 274 MiB RSS, 246 goroutines, 171 MiB/7.3 MiB/196 MiB GO alloc/idle/total, 55 MiB/64 MiB CGO alloc/total, 34.3 CGO/sec, 0.6/1.2 %(u/s)time, 0.0 %gc (0x), 294 KiB/325 KiB (r/w)net
+I220119 07:37:51.231279 354 storage/store.go:4034  [n2,s2] sstables (read amplification = 0):
+I220119 07:37:51.231370 354 storage/store.go:4035  [n2,s2] 
+** Compaction Stats [default] **
+Level    Files   Size     Score Read(GB)  Rn(GB) Rnp1(GB) Write(GB) Wnew(GB) Moved(GB) W-Amp Rd(MB/s) Wr(MB/s) Comp(sec) CompMergeCPU(sec) Comp(cnt) Avg(sec) KeyIn KeyDrop
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Sum      0/0    0.00 KB   0.0      0.0     0.0      0.0       0.0      0.0       0.0   0.0      0.0      0.0      0.00              0.00         0    0.000       0      0
+ Int      0/0    0.00 KB   0.0      0.0     0.0      0.0       0.0      0.0       0.0   0.0      0.0      0.0      0.00              0.00         0    0.000       0      0
+
+** Compaction Stats [default] **
+Priority    Files   Size     Score Read(GB)  Rn(GB) Rnp1(GB) Write(GB) Wnew(GB) Moved(GB) W-Amp Rd(MB/s) Wr(MB/s) Comp(sec) CompMergeCPU(sec) Comp(cnt) Avg(sec) KeyIn KeyDrop
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Uptime(secs): 640.0 total, 600.0 interval
+Flush(GB): cumulative 0.000, interval 0.000
+AddFile(GB): cumulative 0.000, interval 0.000
+AddFile(Total Files): cumulative 0, interval 0
+AddFile(L0 Files): cumulative 0, interval 0
+AddFile(Keys): cumulative 0, interval 0
+Cumulative compaction: 0.00 GB write, 0.00 MB/s write, 0.00 GB read, 0.00 MB/s read, 0.0 seconds
+Interval compaction: 0.00 GB write, 0.00 MB/s write, 0.00 GB read, 0.00 MB/s read, 0.0 seconds
+Stalls(count): 0 level0_slowdown, 0 level0_slowdown_with_compaction, 0 level0_numfiles, 0 level0_numfiles_with_compaction, 0 stop for pending_compaction_bytes, 0 slowdown for pending_compaction_bytes, 0 memtable_compaction, 0 memtable_slowdown, interval 0 total count
+I220119 07:37:51.280741 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 07:37:51.387249 359 server/status/runtime.go:500  [n2] runtime stats: 274 MiB RSS, 246 goroutines, 103 MiB/70 MiB/196 MiB GO alloc/idle/total, 55 MiB/64 MiB CGO alloc/total, 36.0 CGO/sec, 0.8/1.0 %(u/s)time, 0.0 %gc (1x), 271 KiB/271 KiB (r/w)net
+I220119 07:38:01.281093 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 07:38:01.390122 359 server/status/runtime.go:500  [n2] runtime stats: 275 MiB RSS, 247 goroutines, 119 MiB/55 MiB/196 MiB GO alloc/idle/total, 55 MiB/64 MiB CGO alloc/total, 42.1 CGO/sec, 0.7/1.2 %(u/s)time, 0.0 %gc (0x), 287 KiB/287 KiB (r/w)net
+I220119 07:38:11.281252 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 07:38:11.392314 359 server/status/runtime.go:500  [n2] runtime stats: 276 MiB RSS, 247 goroutines, 136 MiB/40 MiB/196 MiB GO alloc/idle/total, 55 MiB/64 MiB CGO alloc/total, 38.0 CGO/sec, 0.5/1.2 %(u/s)time, 0.0 %gc (0x), 289 KiB/288 KiB (r/w)net
+I220119 07:38:21.282288 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 07:38:21.393674 359 server/status/runtime.go:500  [n2] runtime stats: 276 MiB RSS, 247 goroutines, 152 MiB/25 MiB/196 MiB GO alloc/idle/total, 55 MiB/64 MiB CGO alloc/total, 35.6 CGO/sec, 0.3/1.4 %(u/s)time, 0.0 %gc (0x), 264 KiB/264 KiB (r/w)net
+I220119 07:38:31.230343 355 gossip/gossip.go:562  [n2] gossip status (ok, 3 nodes)
+gossip client (1/3 cur/max conns)
+  1: ubuntu:23457 (11m0s: infos 655/2359 sent/received, bytes 106239B/466988B sent/received)
+gossip server (0/3 cur/max conns, infos 655/2359 sent/received, bytes 107196B/467804B sent/received)
+I220119 07:38:31.283835 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 07:38:31.395360 359 server/status/runtime.go:500  [n2] runtime stats: 278 MiB RSS, 246 goroutines, 170 MiB/8.4 MiB/196 MiB GO alloc/idle/total, 62 MiB/72 MiB CGO alloc/total, 40.5 CGO/sec, 0.5/1.3 %(u/s)time, 0.0 %gc (0x), 332 KiB/333 KiB (r/w)net
+I220119 07:38:41.284859 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 07:38:41.398132 359 server/status/runtime.go:500  [n2] runtime stats: 278 MiB RSS, 246 goroutines, 103 MiB/70 MiB/196 MiB GO alloc/idle/total, 62 MiB/72 MiB CGO alloc/total, 37.5 CGO/sec, 1.1/1.1 %(u/s)time, 0.0 %gc (1x), 292 KiB/288 KiB (r/w)net
+I220119 07:38:51.285569 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 07:38:51.400319 359 server/status/runtime.go:500  [n2] runtime stats: 279 MiB RSS, 247 goroutines, 119 MiB/56 MiB/196 MiB GO alloc/idle/total, 62 MiB/72 MiB CGO alloc/total, 38.8 CGO/sec, 0.9/1.0 %(u/s)time, 0.0 %gc (0x), 284 KiB/284 KiB (r/w)net
+I220119 07:39:01.286169 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 07:39:01.405635 359 server/status/runtime.go:500  [n2] runtime stats: 280 MiB RSS, 248 goroutines, 135 MiB/41 MiB/196 MiB GO alloc/idle/total, 62 MiB/72 MiB CGO alloc/total, 41.5 CGO/sec, 0.7/1.1 %(u/s)time, 0.0 %gc (0x), 316 KiB/316 KiB (r/w)net
+I220119 07:39:11.286826 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 07:39:11.407591 359 server/status/runtime.go:500  [n2] runtime stats: 280 MiB RSS, 248 goroutines, 152 MiB/25 MiB/196 MiB GO alloc/idle/total, 62 MiB/72 MiB CGO alloc/total, 37.5 CGO/sec, 0.7/1.1 %(u/s)time, 0.0 %gc (0x), 307 KiB/307 KiB (r/w)net
+I220119 07:39:21.287112 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 07:39:21.413449 359 server/status/runtime.go:500  [n2] runtime stats: 282 MiB RSS, 248 goroutines, 168 MiB/10 MiB/196 MiB GO alloc/idle/total, 62 MiB/72 MiB CGO alloc/total, 36.3 CGO/sec, 0.5/1.1 %(u/s)time, 0.0 %gc (0x), 270 KiB/270 KiB (r/w)net
+I220119 07:39:31.230996 355 gossip/gossip.go:562  [n2] gossip status (ok, 3 nodes)
+gossip client (1/3 cur/max conns)
+  1: ubuntu:23457 (12m0s: infos 712/2568 sent/received, bytes 115188B/494339B sent/received)
+gossip server (0/3 cur/max conns, infos 712/2568 sent/received, bytes 116145B/495155B sent/received)
+I220119 07:39:31.287927 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 07:39:31.416066 359 server/status/runtime.go:500  [n2] runtime stats: 282 MiB RSS, 246 goroutines, 103 MiB/70 MiB/196 MiB GO alloc/idle/total, 62 MiB/72 MiB CGO alloc/total, 47.0 CGO/sec, 1.2/0.9 %(u/s)time, 0.0 %gc (1x), 335 KiB/335 KiB (r/w)net
+I220119 07:39:41.288773 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 07:39:41.417700 359 server/status/runtime.go:500  [n2] runtime stats: 283 MiB RSS, 246 goroutines, 121 MiB/55 MiB/196 MiB GO alloc/idle/total, 62 MiB/72 MiB CGO alloc/total, 68.4 CGO/sec, 0.6/1.3 %(u/s)time, 0.0 %gc (0x), 353 KiB/353 KiB (r/w)net
+I220119 07:39:51.289526 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 07:39:51.420477 359 server/status/runtime.go:500  [n2] runtime stats: 284 MiB RSS, 246 goroutines, 137 MiB/40 MiB/196 MiB GO alloc/idle/total, 62 MiB/72 MiB CGO alloc/total, 34.5 CGO/sec, 0.7/1.1 %(u/s)time, 0.0 %gc (0x), 267 KiB/268 KiB (r/w)net
+I220119 07:40:01.290244 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 07:40:01.422760 359 server/status/runtime.go:500  [n2] runtime stats: 284 MiB RSS, 247 goroutines, 153 MiB/24 MiB/196 MiB GO alloc/idle/total, 62 MiB/72 MiB CGO alloc/total, 42.1 CGO/sec, 0.2/1.5 %(u/s)time, 0.0 %gc (0x), 289 KiB/289 KiB (r/w)net
+I220119 07:40:11.290475 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 07:40:11.425595 359 server/status/runtime.go:500  [n2] runtime stats: 285 MiB RSS, 247 goroutines, 89 MiB/83 MiB/196 MiB GO alloc/idle/total, 62 MiB/72 MiB CGO alloc/total, 30.9 CGO/sec, 0.6/1.2 %(u/s)time, 0.0 %gc (1x), 280 KiB/281 KiB (r/w)net
+I220119 07:40:21.291455 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 07:40:21.429538 359 server/status/runtime.go:500  [n2] runtime stats: 286 MiB RSS, 247 goroutines, 105 MiB/68 MiB/196 MiB GO alloc/idle/total, 70 MiB/80 MiB CGO alloc/total, 43.9 CGO/sec, 0.6/1.2 %(u/s)time, 0.0 %gc (0x), 279 KiB/280 KiB (r/w)net
+I220119 07:40:31.231171 355 gossip/gossip.go:562  [n2] gossip status (ok, 3 nodes)
+gossip client (1/3 cur/max conns)
+  1: ubuntu:23457 (13m0s: infos 770/2779 sent/received, bytes 124295B/521950B sent/received)
+gossip server (0/3 cur/max conns, infos 770/2779 sent/received, bytes 125252B/522766B sent/received)
+I220119 07:40:31.292399 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 07:40:31.431905 359 server/status/runtime.go:500  [n2] runtime stats: 286 MiB RSS, 246 goroutines, 123 MiB/52 MiB/196 MiB GO alloc/idle/total, 70 MiB/80 MiB CGO alloc/total, 39.1 CGO/sec, 0.5/1.3 %(u/s)time, 0.0 %gc (0x), 325 KiB/326 KiB (r/w)net
+I220119 07:40:41.293655 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 07:40:41.434693 359 server/status/runtime.go:500  [n2] runtime stats: 287 MiB RSS, 246 goroutines, 140 MiB/37 MiB/196 MiB GO alloc/idle/total, 70 MiB/80 MiB CGO alloc/total, 38.7 CGO/sec, 0.6/1.5 %(u/s)time, 0.0 %gc (0x), 290 KiB/290 KiB (r/w)net
+I220119 07:40:51.294870 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 07:40:51.437221 359 server/status/runtime.go:500  [n2] runtime stats: 288 MiB RSS, 246 goroutines, 156 MiB/22 MiB/196 MiB GO alloc/idle/total, 70 MiB/80 MiB CGO alloc/total, 37.9 CGO/sec, 0.8/1.1 %(u/s)time, 0.0 %gc (0x), 268 KiB/269 KiB (r/w)net
+I220119 07:41:01.295507 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 07:41:01.439671 359 server/status/runtime.go:500  [n2] runtime stats: 289 MiB RSS, 247 goroutines, 89 MiB/84 MiB/196 MiB GO alloc/idle/total, 70 MiB/80 MiB CGO alloc/total, 41.9 CGO/sec, 0.8/1.2 %(u/s)time, 0.0 %gc (1x), 470 KiB/302 KiB (r/w)net
+I220119 07:41:11.296891 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 07:41:11.441818 359 server/status/runtime.go:500  [n2] runtime stats: 290 MiB RSS, 247 goroutines, 106 MiB/68 MiB/196 MiB GO alloc/idle/total, 70 MiB/80 MiB CGO alloc/total, 36.0 CGO/sec, 0.5/1.2 %(u/s)time, 0.0 %gc (0x), 282 KiB/282 KiB (r/w)net
+I220119 07:41:21.297931 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 07:41:21.444356 359 server/status/runtime.go:500  [n2] runtime stats: 290 MiB RSS, 247 goroutines, 122 MiB/53 MiB/196 MiB GO alloc/idle/total, 70 MiB/80 MiB CGO alloc/total, 40.8 CGO/sec, 0.7/1.1 %(u/s)time, 0.0 %gc (0x), 269 KiB/269 KiB (r/w)net
+I220119 07:41:31.231125 355 gossip/gossip.go:562  [n2] gossip status (ok, 3 nodes)
+gossip client (1/3 cur/max conns)
+  1: ubuntu:23457 (14m0s: infos 828/2985 sent/received, bytes 133402B/548997B sent/received)
+gossip server (0/3 cur/max conns, infos 828/2985 sent/received, bytes 134359B/549813B sent/received)
+I220119 07:41:31.298494 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 07:41:31.446228 359 server/status/runtime.go:500  [n2] runtime stats: 291 MiB RSS, 246 goroutines, 140 MiB/37 MiB/196 MiB GO alloc/idle/total, 70 MiB/80 MiB CGO alloc/total, 40.8 CGO/sec, 0.8/1.2 %(u/s)time, 0.0 %gc (0x), 331 KiB/331 KiB (r/w)net
+I220119 07:41:41.298669 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 07:41:41.448705 359 server/status/runtime.go:500  [n2] runtime stats: 293 MiB RSS, 246 goroutines, 157 MiB/21 MiB/196 MiB GO alloc/idle/total, 78 MiB/90 MiB CGO alloc/total, 39.2 CGO/sec, 1.1/1.2 %(u/s)time, 0.0 %gc (0x), 291 KiB/291 KiB (r/w)net
+I220119 07:41:51.299272 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 07:41:51.451298 359 server/status/runtime.go:500  [n2] runtime stats: 294 MiB RSS, 246 goroutines, 90 MiB/82 MiB/196 MiB GO alloc/idle/total, 14 MiB/22 MiB CGO alloc/total, 40.0 CGO/sec, 5.7/0.0 %(u/s)time, 0.0 %gc (1x), 276 KiB/276 KiB (r/w)net
+I220119 07:42:01.299834 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 07:42:01.454242 359 server/status/runtime.go:500  [n2] runtime stats: 296 MiB RSS, 247 goroutines, 106 MiB/67 MiB/196 MiB GO alloc/idle/total, 14 MiB/22 MiB CGO alloc/total, 35.1 CGO/sec, 0.9/0.8 %(u/s)time, 0.0 %gc (0x), 279 KiB/279 KiB (r/w)net
+I220119 07:42:11.300188 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 07:42:11.456287 359 server/status/runtime.go:500  [n2] runtime stats: 296 MiB RSS, 247 goroutines, 123 MiB/52 MiB/196 MiB GO alloc/idle/total, 14 MiB/22 MiB CGO alloc/total, 39.4 CGO/sec, 0.5/1.3 %(u/s)time, 0.0 %gc (0x), 288 KiB/288 KiB (r/w)net
+I220119 07:42:21.300491 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 07:42:21.458804 359 server/status/runtime.go:500  [n2] runtime stats: 297 MiB RSS, 247 goroutines, 139 MiB/37 MiB/196 MiB GO alloc/idle/total, 14 MiB/22 MiB CGO alloc/total, 74.1 CGO/sec, 0.4/1.6 %(u/s)time, 0.0 %gc (0x), 345 KiB/345 KiB (r/w)net
+I220119 07:42:31.231039 355 gossip/gossip.go:562  [n2] gossip status (ok, 3 nodes)
+gossip client (1/3 cur/max conns)
+  1: ubuntu:23457 (15m0s: infos 885/3194 sent/received, bytes 142351B/576248B sent/received)
+gossip server (0/3 cur/max conns, infos 885/3194 sent/received, bytes 143308B/577064B sent/received)
+I220119 07:42:31.300788 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 07:42:31.461641 359 server/status/runtime.go:500  [n2] runtime stats: 298 MiB RSS, 246 goroutines, 157 MiB/21 MiB/196 MiB GO alloc/idle/total, 14 MiB/22 MiB CGO alloc/total, 41.4 CGO/sec, 0.6/1.2 %(u/s)time, 0.0 %gc (0x), 333 KiB/334 KiB (r/w)net
+I220119 07:42:41.301414 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 07:42:41.463912 359 server/status/runtime.go:500  [n2] runtime stats: 299 MiB RSS, 246 goroutines, 91 MiB/81 MiB/196 MiB GO alloc/idle/total, 14 MiB/22 MiB CGO alloc/total, 38.8 CGO/sec, 0.6/1.4 %(u/s)time, 0.0 %gc (1x), 288 KiB/288 KiB (r/w)net
+I220119 07:42:51.302502 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 07:42:51.466041 359 server/status/runtime.go:500  [n2] runtime stats: 299 MiB RSS, 246 goroutines, 107 MiB/66 MiB/196 MiB GO alloc/idle/total, 14 MiB/22 MiB CGO alloc/total, 39.4 CGO/sec, 0.6/1.1 %(u/s)time, 0.0 %gc (0x), 266 KiB/267 KiB (r/w)net
+I220119 07:43:01.303559 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 07:43:01.468067 359 server/status/runtime.go:500  [n2] runtime stats: 300 MiB RSS, 247 goroutines, 123 MiB/51 MiB/196 MiB GO alloc/idle/total, 14 MiB/22 MiB CGO alloc/total, 38.3 CGO/sec, 0.6/1.1 %(u/s)time, 0.0 %gc (0x), 288 KiB/288 KiB (r/w)net
+I220119 07:43:11.304377 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 07:43:11.469749 359 server/status/runtime.go:500  [n2] runtime stats: 301 MiB RSS, 247 goroutines, 140 MiB/37 MiB/196 MiB GO alloc/idle/total, 14 MiB/22 MiB CGO alloc/total, 36.9 CGO/sec, 0.8/1.2 %(u/s)time, 0.0 %gc (0x), 286 KiB/286 KiB (r/w)net
+I220119 07:43:21.305073 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 07:43:21.473159 359 server/status/runtime.go:500  [n2] runtime stats: 302 MiB RSS, 247 goroutines, 156 MiB/21 MiB/196 MiB GO alloc/idle/total, 14 MiB/22 MiB CGO alloc/total, 35.7 CGO/sec, 0.4/1.1 %(u/s)time, 0.0 %gc (0x), 272 KiB/272 KiB (r/w)net
+I220119 07:43:31.230622 355 gossip/gossip.go:562  [n2] gossip status (ok, 3 nodes)
+gossip client (1/3 cur/max conns)
+  1: ubuntu:23457 (16m0s: infos 943/3405 sent/received, bytes 151458B/603859B sent/received)
+gossip server (0/3 cur/max conns, infos 943/3405 sent/received, bytes 152415B/604675B sent/received)
+I220119 07:43:31.305780 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 07:43:31.475362 359 server/status/runtime.go:500  [n2] runtime stats: 302 MiB RSS, 246 goroutines, 173 MiB/5.2 MiB/196 MiB GO alloc/idle/total, 22 MiB/30 MiB CGO alloc/total, 39.3 CGO/sec, 0.4/1.7 %(u/s)time, 0.0 %gc (1x), 325 KiB/325 KiB (r/w)net
+I220119 07:43:41.306187 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 07:43:41.478505 359 server/status/runtime.go:500  [n2] runtime stats: 302 MiB RSS, 246 goroutines, 104 MiB/69 MiB/196 MiB GO alloc/idle/total, 22 MiB/30 MiB CGO alloc/total, 36.8 CGO/sec, 0.6/1.2 %(u/s)time, 0.0 %gc (0x), 286 KiB/286 KiB (r/w)net
+I220119 07:43:51.306578 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 07:43:51.480593 359 server/status/runtime.go:500  [n2] runtime stats: 302 MiB RSS, 246 goroutines, 120 MiB/54 MiB/196 MiB GO alloc/idle/total, 22 MiB/30 MiB CGO alloc/total, 35.9 CGO/sec, 0.5/1.3 %(u/s)time, 0.0 %gc (0x), 272 KiB/272 KiB (r/w)net
+I220119 07:44:01.307066 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 07:44:01.482326 359 server/status/runtime.go:500  [n2] runtime stats: 302 MiB RSS, 247 goroutines, 136 MiB/40 MiB/196 MiB GO alloc/idle/total, 22 MiB/30 MiB CGO alloc/total, 42.9 CGO/sec, 0.6/1.1 %(u/s)time, 0.0 %gc (0x), 293 KiB/293 KiB (r/w)net
+I220119 07:44:11.307738 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 07:44:11.484656 359 server/status/runtime.go:500  [n2] runtime stats: 302 MiB RSS, 247 goroutines, 153 MiB/24 MiB/196 MiB GO alloc/idle/total, 22 MiB/30 MiB CGO alloc/total, 41.0 CGO/sec, 0.6/1.4 %(u/s)time, 0.0 %gc (0x), 286 KiB/286 KiB (r/w)net
+I220119 07:44:21.310368 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 07:44:21.487034 359 server/status/runtime.go:500  [n2] runtime stats: 302 MiB RSS, 247 goroutines, 169 MiB/8.8 MiB/196 MiB GO alloc/idle/total, 22 MiB/30 MiB CGO alloc/total, 33.5 CGO/sec, 0.8/1.2 %(u/s)time, 0.0 %gc (0x), 264 KiB/264 KiB (r/w)net
+I220119 07:44:31.230910 355 gossip/gossip.go:562  [n2] gossip status (ok, 3 nodes)
+gossip client (1/3 cur/max conns)
+  1: ubuntu:23457 (17m0s: infos 1001/3611 sent/received, bytes 160565B/630957B sent/received)
+gossip server (0/3 cur/max conns, infos 1001/3611 sent/received, bytes 161522B/631773B sent/received)
+I220119 07:44:31.310864 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 07:44:31.489226 359 server/status/runtime.go:500  [n2] runtime stats: 302 MiB RSS, 246 goroutines, 102 MiB/71 MiB/196 MiB GO alloc/idle/total, 22 MiB/30 MiB CGO alloc/total, 37.0 CGO/sec, 0.8/1.5 %(u/s)time, 0.0 %gc (1x), 329 KiB/329 KiB (r/w)net
+I220119 07:44:41.311223 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 07:44:41.491385 359 server/status/runtime.go:500  [n2] runtime stats: 302 MiB RSS, 246 goroutines, 120 MiB/56 MiB/196 MiB GO alloc/idle/total, 22 MiB/30 MiB CGO alloc/total, 44.8 CGO/sec, 0.9/1.7 %(u/s)time, 0.0 %gc (0x), 293 KiB/292 KiB (r/w)net
+I220119 07:44:51.311453 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 07:44:51.494225 359 server/status/runtime.go:500  [n2] runtime stats: 302 MiB RSS, 246 goroutines, 136 MiB/40 MiB/196 MiB GO alloc/idle/total, 22 MiB/30 MiB CGO alloc/total, 71.8 CGO/sec, 0.7/1.3 %(u/s)time, 0.0 %gc (0x), 348 KiB/348 KiB (r/w)net
+I220119 07:45:01.312136 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 07:45:01.496124 359 server/status/runtime.go:500  [n2] runtime stats: 302 MiB RSS, 247 goroutines, 152 MiB/25 MiB/196 MiB GO alloc/idle/total, 22 MiB/30 MiB CGO alloc/total, 35.1 CGO/sec, 0.6/1.3 %(u/s)time, 0.0 %gc (0x), 280 KiB/279 KiB (r/w)net
+I220119 07:45:11.312740 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 07:45:11.499957 359 server/status/runtime.go:500  [n2] runtime stats: 302 MiB RSS, 247 goroutines, 88 MiB/84 MiB/196 MiB GO alloc/idle/total, 22 MiB/30 MiB CGO alloc/total, 38.3 CGO/sec, 1.2/1.0 %(u/s)time, 0.0 %gc (1x), 285 KiB/285 KiB (r/w)net
+I220119 07:45:21.313816 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 07:45:21.502337 359 server/status/runtime.go:500  [n2] runtime stats: 302 MiB RSS, 247 goroutines, 104 MiB/69 MiB/196 MiB GO alloc/idle/total, 30 MiB/38 MiB CGO alloc/total, 39.8 CGO/sec, 0.5/1.8 %(u/s)time, 0.0 %gc (0x), 274 KiB/274 KiB (r/w)net
+I220119 07:45:31.230963 355 gossip/gossip.go:562  [n2] gossip status (ok, 3 nodes)
+gossip client (1/3 cur/max conns)
+  1: ubuntu:23457 (18m0s: infos 1058/3820 sent/received, bytes 169514B/658358B sent/received)
+gossip server (0/3 cur/max conns, infos 1058/3820 sent/received, bytes 170471B/659174B sent/received)
+I220119 07:45:31.314787 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 07:45:31.505152 359 server/status/runtime.go:500  [n2] runtime stats: 303 MiB RSS, 246 goroutines, 122 MiB/54 MiB/196 MiB GO alloc/idle/total, 30 MiB/38 MiB CGO alloc/total, 42.9 CGO/sec, 0.5/1.5 %(u/s)time, 0.0 %gc (0x), 336 KiB/336 KiB (r/w)net
+I220119 07:45:41.315814 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 07:45:41.506804 359 server/status/runtime.go:500  [n2] runtime stats: 304 MiB RSS, 246 goroutines, 139 MiB/38 MiB/196 MiB GO alloc/idle/total, 30 MiB/38 MiB CGO alloc/total, 37.0 CGO/sec, 0.5/1.3 %(u/s)time, 0.0 %gc (0x), 285 KiB/286 KiB (r/w)net
+I220119 07:45:51.316183 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 07:45:51.509141 359 server/status/runtime.go:500  [n2] runtime stats: 304 MiB RSS, 246 goroutines, 155 MiB/23 MiB/196 MiB GO alloc/idle/total, 30 MiB/38 MiB CGO alloc/total, 37.5 CGO/sec, 0.9/1.5 %(u/s)time, 0.0 %gc (0x), 267 KiB/268 KiB (r/w)net
+I220119 07:46:01.317055 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 07:46:01.512864 359 server/status/runtime.go:500  [n2] runtime stats: 305 MiB RSS, 247 goroutines, 90 MiB/82 MiB/196 MiB GO alloc/idle/total, 30 MiB/38 MiB CGO alloc/total, 40.3 CGO/sec, 0.7/1.2 %(u/s)time, 0.0 %gc (1x), 294 KiB/294 KiB (r/w)net
+I220119 07:46:11.317256 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 07:46:11.515474 359 server/status/runtime.go:500  [n2] runtime stats: 306 MiB RSS, 247 goroutines, 106 MiB/67 MiB/196 MiB GO alloc/idle/total, 30 MiB/38 MiB CGO alloc/total, 34.8 CGO/sec, 0.8/1.0 %(u/s)time, 0.0 %gc (0x), 277 KiB/277 KiB (r/w)net
+I220119 07:46:21.318394 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 07:46:21.517734 359 server/status/runtime.go:500  [n2] runtime stats: 306 MiB RSS, 247 goroutines, 123 MiB/53 MiB/196 MiB GO alloc/idle/total, 30 MiB/38 MiB CGO alloc/total, 41.8 CGO/sec, 0.7/1.1 %(u/s)time, 0.0 %gc (0x), 280 KiB/280 KiB (r/w)net
+I220119 07:46:31.231367 355 gossip/gossip.go:562  [n2] gossip status (ok, 3 nodes)
+gossip client (1/3 cur/max conns)
+  1: ubuntu:23457 (19m0s: infos 1116/4031 sent/received, bytes 178621B/685969B sent/received)
+gossip server (0/3 cur/max conns, infos 1116/4031 sent/received, bytes 179578B/686785B sent/received)
+I220119 07:46:31.319526 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 07:46:31.521145 359 server/status/runtime.go:500  [n2] runtime stats: 307 MiB RSS, 246 goroutines, 140 MiB/37 MiB/196 MiB GO alloc/idle/total, 30 MiB/38 MiB CGO alloc/total, 38.2 CGO/sec, 0.8/1.1 %(u/s)time, 0.0 %gc (0x), 323 KiB/324 KiB (r/w)net
+I220119 07:46:41.319939 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 07:46:41.524003 359 server/status/runtime.go:500  [n2] runtime stats: 308 MiB RSS, 246 goroutines, 157 MiB/21 MiB/196 MiB GO alloc/idle/total, 30 MiB/38 MiB CGO alloc/total, 33.5 CGO/sec, 0.5/1.4 %(u/s)time, 0.0 %gc (0x), 281 KiB/281 KiB (r/w)net
+I220119 07:46:51.320411 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 07:46:51.526993 359 server/status/runtime.go:500  [n2] runtime stats: 308 MiB RSS, 246 goroutines, 89 MiB/83 MiB/196 MiB GO alloc/idle/total, 30 MiB/38 MiB CGO alloc/total, 40.0 CGO/sec, 0.4/1.5 %(u/s)time, 0.0 %gc (1x), 279 KiB/279 KiB (r/w)net
+I220119 07:47:01.320910 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 07:47:01.529594 359 server/status/runtime.go:500  [n2] runtime stats: 309 MiB RSS, 247 goroutines, 105 MiB/68 MiB/196 MiB GO alloc/idle/total, 30 MiB/38 MiB CGO alloc/total, 47.0 CGO/sec, 0.4/1.4 %(u/s)time, 0.0 %gc (0x), 292 KiB/292 KiB (r/w)net
+I220119 07:47:11.321748 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 07:47:11.531992 359 server/status/runtime.go:500  [n2] runtime stats: 310 MiB RSS, 247 goroutines, 122 MiB/54 MiB/196 MiB GO alloc/idle/total, 30 MiB/38 MiB CGO alloc/total, 68.6 CGO/sec, 0.7/1.3 %(u/s)time, 0.0 %gc (0x), 356 KiB/357 KiB (r/w)net
+I220119 07:47:21.322175 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 07:47:21.535092 359 server/status/runtime.go:500  [n2] runtime stats: 310 MiB RSS, 247 goroutines, 138 MiB/38 MiB/196 MiB GO alloc/idle/total, 38 MiB/46 MiB CGO alloc/total, 40.2 CGO/sec, 0.7/1.1 %(u/s)time, 0.0 %gc (0x), 270 KiB/271 KiB (r/w)net
+I220119 07:47:31.230924 355 gossip/gossip.go:562  [n2] gossip status (ok, 3 nodes)
+gossip client (1/3 cur/max conns)
+  1: ubuntu:23457 (20m0s: infos 1174/4237 sent/received, bytes 187728B/713067B sent/received)
+gossip server (0/3 cur/max conns, infos 1174/4237 sent/received, bytes 188685B/713883B sent/received)
+I220119 07:47:31.323082 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 07:47:31.537950 359 server/status/runtime.go:500  [n2] runtime stats: 310 MiB RSS, 246 goroutines, 156 MiB/22 MiB/196 MiB GO alloc/idle/total, 38 MiB/46 MiB CGO alloc/total, 38.6 CGO/sec, 0.4/1.4 %(u/s)time, 0.0 %gc (0x), 354 KiB/354 KiB (r/w)net
+I220119 07:47:41.323787 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 07:47:41.540636 359 server/status/runtime.go:500  [n2] runtime stats: 310 MiB RSS, 246 goroutines, 90 MiB/82 MiB/196 MiB GO alloc/idle/total, 38 MiB/46 MiB CGO alloc/total, 43.6 CGO/sec, 1.0/1.0 %(u/s)time, 0.0 %gc (1x), 292 KiB/291 KiB (r/w)net
+I220119 07:47:51.231679 354 storage/store.go:4034  [n2,s2] sstables (read amplification = 1):
+0 [ 642K 1 ]: 642K
+I220119 07:47:51.231752 354 storage/store.go:4035  [n2,s2] 
+** Compaction Stats [default] **
+Level    Files   Size     Score Read(GB)  Rn(GB) Rnp1(GB) Write(GB) Wnew(GB) Moved(GB) W-Amp Rd(MB/s) Wr(MB/s) Comp(sec) CompMergeCPU(sec) Comp(cnt) Avg(sec) KeyIn KeyDrop
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+  L0      1/0   642.19 KB   0.5      0.0     0.0      0.0       0.0      0.0       0.0   1.0      0.0      1.5      0.42              0.41         1    0.415       0      0
+ Sum      1/0   642.19 KB   0.0      0.0     0.0      0.0       0.0      0.0       0.0   1.0      0.0      1.5      0.42              0.41         1    0.415       0      0
+ Int      0/0    0.00 KB   0.0      0.0     0.0      0.0       0.0      0.0       0.0   1.0      0.0      1.5      0.42              0.41         1    0.415       0      0
+
+** Compaction Stats [default] **
+Priority    Files   Size     Score Read(GB)  Rn(GB) Rnp1(GB) Write(GB) Wnew(GB) Moved(GB) W-Amp Rd(MB/s) Wr(MB/s) Comp(sec) CompMergeCPU(sec) Comp(cnt) Avg(sec) KeyIn KeyDrop
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+High      0/0    0.00 KB   0.0      0.0     0.0      0.0       0.0      0.0       0.0   0.0      0.0      1.5      0.42              0.41         1    0.415       0      0
+Uptime(secs): 1240.0 total, 600.0 interval
+Flush(GB): cumulative 0.001, interval 0.001
+AddFile(GB): cumulative 0.000, interval 0.000
+AddFile(Total Files): cumulative 0, interval 0
+AddFile(L0 Files): cumulative 0, interval 0
+AddFile(Keys): cumulative 0, interval 0
+Cumulative compaction: 0.00 GB write, 0.00 MB/s write, 0.00 GB read, 0.00 MB/s read, 0.4 seconds
+Interval compaction: 0.00 GB write, 0.00 MB/s write, 0.00 GB read, 0.00 MB/s read, 0.4 seconds
+Stalls(count): 0 level0_slowdown, 0 level0_slowdown_with_compaction, 0 level0_numfiles, 0 level0_numfiles_with_compaction, 0 stop for pending_compaction_bytes, 0 slowdown for pending_compaction_bytes, 0 memtable_compaction, 0 memtable_slowdown, interval 0 total count
+I220119 07:47:51.324151 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 07:47:51.543507 359 server/status/runtime.go:500  [n2] runtime stats: 310 MiB RSS, 246 goroutines, 106 MiB/67 MiB/196 MiB GO alloc/idle/total, 38 MiB/46 MiB CGO alloc/total, 40.4 CGO/sec, 0.6/1.3 %(u/s)time, 0.0 %gc (0x), 280 KiB/280 KiB (r/w)net
+I220119 07:48:01.325062 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 07:48:01.546971 359 server/status/runtime.go:500  [n2] runtime stats: 310 MiB RSS, 247 goroutines, 122 MiB/52 MiB/196 MiB GO alloc/idle/total, 38 MiB/46 MiB CGO alloc/total, 38.0 CGO/sec, 0.5/1.2 %(u/s)time, 0.0 %gc (0x), 280 KiB/280 KiB (r/w)net
+I220119 07:48:11.325250 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 07:48:11.549591 359 server/status/runtime.go:500  [n2] runtime stats: 310 MiB RSS, 247 goroutines, 139 MiB/37 MiB/196 MiB GO alloc/idle/total, 38 MiB/46 MiB CGO alloc/total, 36.1 CGO/sec, 0.8/1.4 %(u/s)time, 0.0 %gc (0x), 285 KiB/285 KiB (r/w)net
+I220119 07:48:21.326130 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 07:48:21.552276 359 server/status/runtime.go:500  [n2] runtime stats: 310 MiB RSS, 247 goroutines, 155 MiB/22 MiB/196 MiB GO alloc/idle/total, 38 MiB/46 MiB CGO alloc/total, 40.4 CGO/sec, 0.2/1.5 %(u/s)time, 0.0 %gc (0x), 275 KiB/275 KiB (r/w)net
+I220119 07:48:31.230878 355 gossip/gossip.go:562  [n2] gossip status (ok, 3 nodes)
+gossip client (1/3 cur/max conns)
+  1: ubuntu:23457 (21m0s: infos 1231/4446 sent/received, bytes 196677B/740368B sent/received)
+gossip server (0/3 cur/max conns, infos 1231/4446 sent/received, bytes 197634B/741184B sent/received)
+I220119 07:48:31.326691 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 07:48:31.554864 359 server/status/runtime.go:500  [n2] runtime stats: 310 MiB RSS, 246 goroutines, 172 MiB/6.0 MiB/196 MiB GO alloc/idle/total, 38 MiB/46 MiB CGO alloc/total, 40.8 CGO/sec, 0.5/1.5 %(u/s)time, 0.0 %gc (1x), 332 KiB/333 KiB (r/w)net
+I220119 07:48:41.327867 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 07:48:41.556795 359 server/status/runtime.go:500  [n2] runtime stats: 310 MiB RSS, 246 goroutines, 104 MiB/70 MiB/196 MiB GO alloc/idle/total, 38 MiB/46 MiB CGO alloc/total, 39.0 CGO/sec, 0.6/1.3 %(u/s)time, 0.0 %gc (0x), 289 KiB/288 KiB (r/w)net
+I220119 07:48:51.328816 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 07:48:51.560530 359 server/status/runtime.go:500  [n2] runtime stats: 310 MiB RSS, 246 goroutines, 120 MiB/55 MiB/196 MiB GO alloc/idle/total, 38 MiB/46 MiB CGO alloc/total, 34.4 CGO/sec, 0.8/1.1 %(u/s)time, 0.0 %gc (0x), 264 KiB/264 KiB (r/w)net
+I220119 07:49:01.329815 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 07:49:01.563192 359 server/status/runtime.go:500  [n2] runtime stats: 310 MiB RSS, 247 goroutines, 136 MiB/40 MiB/196 MiB GO alloc/idle/total, 38 MiB/46 MiB CGO alloc/total, 40.4 CGO/sec, 0.6/1.1 %(u/s)time, 0.0 %gc (0x), 284 KiB/284 KiB (r/w)net
+I220119 07:49:11.330933 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 07:49:11.565781 359 server/status/runtime.go:500  [n2] runtime stats: 310 MiB RSS, 247 goroutines, 153 MiB/25 MiB/196 MiB GO alloc/idle/total, 46 MiB/54 MiB CGO alloc/total, 36.4 CGO/sec, 0.8/1.0 %(u/s)time, 0.0 %gc (0x), 284 KiB/284 KiB (r/w)net
+I220119 07:49:21.331462 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 07:49:21.568505 359 server/status/runtime.go:500  [n2] runtime stats: 310 MiB RSS, 247 goroutines, 169 MiB/9.4 MiB/196 MiB GO alloc/idle/total, 46 MiB/54 MiB CGO alloc/total, 39.6 CGO/sec, 0.7/1.1 %(u/s)time, 0.0 %gc (0x), 278 KiB/278 KiB (r/w)net
+I220119 07:49:31.230615 355 gossip/gossip.go:562  [n2] gossip status (ok, 3 nodes)
+gossip client (1/3 cur/max conns)
+  1: ubuntu:23457 (22m0s: infos 1289/4657 sent/received, bytes 205784B/767979B sent/received)
+gossip server (0/3 cur/max conns, infos 1289/4657 sent/received, bytes 206741B/768795B sent/received)
+I220119 07:49:31.331614 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 07:49:31.570762 359 server/status/runtime.go:500  [n2] runtime stats: 310 MiB RSS, 246 goroutines, 102 MiB/71 MiB/196 MiB GO alloc/idle/total, 46 MiB/54 MiB CGO alloc/total, 33.4 CGO/sec, 0.8/1.2 %(u/s)time, 0.0 %gc (1x), 318 KiB/318 KiB (r/w)net
+I220119 07:49:41.332692 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 07:49:41.573860 359 server/status/runtime.go:500  [n2] runtime stats: 310 MiB RSS, 246 goroutines, 119 MiB/56 MiB/196 MiB GO alloc/idle/total, 46 MiB/54 MiB CGO alloc/total, 34.5 CGO/sec, 0.5/1.3 %(u/s)time, 0.0 %gc (0x), 281 KiB/281 KiB (r/w)net
+I220119 07:49:51.333902 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 07:49:51.576837 359 server/status/runtime.go:500  [n2] runtime stats: 310 MiB RSS, 246 goroutines, 136 MiB/41 MiB/196 MiB GO alloc/idle/total, 46 MiB/54 MiB CGO alloc/total, 70.8 CGO/sec, 0.7/1.3 %(u/s)time, 0.0 %gc (0x), 350 KiB/350 KiB (r/w)net
+I220119 07:50:01.334467 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 07:50:01.578518 359 server/status/runtime.go:500  [n2] runtime stats: 310 MiB RSS, 247 goroutines, 152 MiB/26 MiB/196 MiB GO alloc/idle/total, 46 MiB/54 MiB CGO alloc/total, 39.3 CGO/sec, 0.9/0.9 %(u/s)time, 0.0 %gc (0x), 288 KiB/288 KiB (r/w)net
+I220119 07:50:11.335002 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 07:50:11.581040 359 server/status/runtime.go:500  [n2] runtime stats: 310 MiB RSS, 247 goroutines, 169 MiB/9.8 MiB/196 MiB GO alloc/idle/total, 46 MiB/54 MiB CGO alloc/total, 39.6 CGO/sec, 0.4/1.5 %(u/s)time, 0.0 %gc (0x), 286 KiB/286 KiB (r/w)net
+I220119 07:50:21.335828 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 07:50:21.582834 359 server/status/runtime.go:500  [n2] runtime stats: 310 MiB RSS, 247 goroutines, 102 MiB/70 MiB/196 MiB GO alloc/idle/total, 46 MiB/54 MiB CGO alloc/total, 35.6 CGO/sec, 0.7/1.1 %(u/s)time, 0.0 %gc (1x), 267 KiB/266 KiB (r/w)net
+I220119 07:50:31.230943 355 gossip/gossip.go:562  [n2] gossip status (ok, 3 nodes)
+gossip client (1/3 cur/max conns)
+  1: ubuntu:23457 (23m0s: infos 1347/4863 sent/received, bytes 214891B/795027B sent/received)
+gossip server (0/3 cur/max conns, infos 1347/4863 sent/received, bytes 215848B/795843B sent/received)
+I220119 07:50:31.336921 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 07:50:31.585791 359 server/status/runtime.go:500  [n2] runtime stats: 310 MiB RSS, 246 goroutines, 120 MiB/55 MiB/196 MiB GO alloc/idle/total, 46 MiB/54 MiB CGO alloc/total, 37.4 CGO/sec, 1.0/0.9 %(u/s)time, 0.0 %gc (0x), 328 KiB/329 KiB (r/w)net
+I220119 07:50:41.337977 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 07:50:41.587140 359 server/status/runtime.go:500  [n2] runtime stats: 310 MiB RSS, 246 goroutines, 137 MiB/39 MiB/196 MiB GO alloc/idle/total, 46 MiB/54 MiB CGO alloc/total, 38.6 CGO/sec, 0.8/1.1 %(u/s)time, 0.0 %gc (0x), 284 KiB/284 KiB (r/w)net
+I220119 07:50:51.338094 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 07:50:51.590420 359 server/status/runtime.go:500  [n2] runtime stats: 310 MiB RSS, 246 goroutines, 153 MiB/24 MiB/196 MiB GO alloc/idle/total, 46 MiB/54 MiB CGO alloc/total, 39.7 CGO/sec, 0.5/1.3 %(u/s)time, 0.0 %gc (0x), 277 KiB/277 KiB (r/w)net
+I220119 07:51:01.338518 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 07:51:01.593229 359 server/status/runtime.go:500  [n2] runtime stats: 310 MiB RSS, 247 goroutines, 169 MiB/9.0 MiB/196 MiB GO alloc/idle/total, 54 MiB/62 MiB CGO alloc/total, 38.9 CGO/sec, 0.9/1.0 %(u/s)time, 0.0 %gc (1x), 281 KiB/282 KiB (r/w)net
+I220119 07:51:11.339317 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 07:51:11.596278 359 server/status/runtime.go:500  [n2] runtime stats: 310 MiB RSS, 247 goroutines, 103 MiB/71 MiB/196 MiB GO alloc/idle/total, 54 MiB/63 MiB CGO alloc/total, 38.5 CGO/sec, 0.4/1.5 %(u/s)time, 0.0 %gc (0x), 283 KiB/283 KiB (r/w)net
+I220119 07:51:21.339747 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 07:51:21.598609 359 server/status/runtime.go:500  [n2] runtime stats: 310 MiB RSS, 247 goroutines, 119 MiB/56 MiB/196 MiB GO alloc/idle/total, 54 MiB/63 MiB CGO alloc/total, 41.9 CGO/sec, 0.5/1.1 %(u/s)time, 0.0 %gc (0x), 278 KiB/278 KiB (r/w)net
+I220119 07:51:31.231002 355 gossip/gossip.go:562  [n2] gossip status (ok, 3 nodes)
+gossip client (1/3 cur/max conns)
+  1: ubuntu:23457 (24m0s: infos 1404/5072 sent/received, bytes 223840B/822378B sent/received)
+gossip server (0/3 cur/max conns, infos 1404/5072 sent/received, bytes 224797B/823194B sent/received)
+I220119 07:51:31.340682 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 07:51:31.601019 359 server/status/runtime.go:500  [n2] runtime stats: 310 MiB RSS, 246 goroutines, 137 MiB/40 MiB/196 MiB GO alloc/idle/total, 54 MiB/63 MiB CGO alloc/total, 40.0 CGO/sec, 0.6/1.3 %(u/s)time, 0.0 %gc (0x), 330 KiB/330 KiB (r/w)net
+I220119 07:51:41.341395 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 07:51:41.603368 359 server/status/runtime.go:500  [n2] runtime stats: 310 MiB RSS, 246 goroutines, 154 MiB/24 MiB/196 MiB GO alloc/idle/total, 54 MiB/63 MiB CGO alloc/total, 39.7 CGO/sec, 0.5/1.2 %(u/s)time, 0.0 %gc (0x), 290 KiB/290 KiB (r/w)net
+I220119 07:51:51.341995 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 07:51:51.606049 359 server/status/runtime.go:500  [n2] runtime stats: 310 MiB RSS, 246 goroutines, 170 MiB/8.8 MiB/196 MiB GO alloc/idle/total, 54 MiB/63 MiB CGO alloc/total, 31.3 CGO/sec, 0.6/1.2 %(u/s)time, 0.0 %gc (1x), 260 KiB/260 KiB (r/w)net
+I220119 07:52:01.342836 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 07:52:01.608304 359 server/status/runtime.go:500  [n2] runtime stats: 310 MiB RSS, 247 goroutines, 103 MiB/70 MiB/196 MiB GO alloc/idle/total, 54 MiB/63 MiB CGO alloc/total, 40.4 CGO/sec, 0.6/1.2 %(u/s)time, 0.0 %gc (0x), 290 KiB/290 KiB (r/w)net
+I220119 07:52:11.342908 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 07:52:11.610936 359 server/status/runtime.go:500  [n2] runtime stats: 310 MiB RSS, 247 goroutines, 121 MiB/55 MiB/196 MiB GO alloc/idle/total, 54 MiB/63 MiB CGO alloc/total, 68.0 CGO/sec, 0.7/1.3 %(u/s)time, 0.0 %gc (0x), 353 KiB/353 KiB (r/w)net
+I220119 07:52:21.343365 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 07:52:21.612958 359 server/status/runtime.go:500  [n2] runtime stats: 310 MiB RSS, 247 goroutines, 137 MiB/40 MiB/196 MiB GO alloc/idle/total, 54 MiB/63 MiB CGO alloc/total, 45.3 CGO/sec, 0.6/1.2 %(u/s)time, 0.0 %gc (0x), 283 KiB/283 KiB (r/w)net
+I220119 07:52:31.230444 355 gossip/gossip.go:562  [n2] gossip status (ok, 3 nodes)
+gossip client (1/3 cur/max conns)
+  1: ubuntu:23457 (25m0s: infos 1462/5283 sent/received, bytes 232864B/849889B sent/received)
+gossip server (0/3 cur/max conns, infos 1462/5283 sent/received, bytes 233821B/850705B sent/received)
+I220119 07:52:31.344312 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 07:52:31.615379 359 server/status/runtime.go:500  [n2] runtime stats: 310 MiB RSS, 246 goroutines, 154 MiB/24 MiB/196 MiB GO alloc/idle/total, 53 MiB/63 MiB CGO alloc/total, 34.7 CGO/sec, 0.8/1.0 %(u/s)time, 0.0 %gc (0x), 320 KiB/321 KiB (r/w)net
+I220119 07:52:41.344856 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 07:52:41.617753 359 server/status/runtime.go:500  [n2] runtime stats: 310 MiB RSS, 246 goroutines, 171 MiB/7.4 MiB/196 MiB GO alloc/idle/total, 53 MiB/63 MiB CGO alloc/total, 39.0 CGO/sec, 0.7/1.3 %(u/s)time, 0.0 %gc (1x), 291 KiB/290 KiB (r/w)net
+I220119 07:52:51.345339 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 07:52:51.621217 359 server/status/runtime.go:500  [n2] runtime stats: 311 MiB RSS, 246 goroutines, 103 MiB/70 MiB/196 MiB GO alloc/idle/total, 61 MiB/71 MiB CGO alloc/total, 39.1 CGO/sec, 0.7/1.6 %(u/s)time, 0.0 %gc (0x), 276 KiB/276 KiB (r/w)net
+I220119 07:53:01.346098 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 07:53:01.624233 359 server/status/runtime.go:500  [n2] runtime stats: 312 MiB RSS, 247 goroutines, 119 MiB/55 MiB/196 MiB GO alloc/idle/total, 61 MiB/71 MiB CGO alloc/total, 37.7 CGO/sec, 0.7/0.9 %(u/s)time, 0.0 %gc (0x), 283 KiB/283 KiB (r/w)net
+I220119 07:53:11.347230 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 07:53:11.627258 359 server/status/runtime.go:500  [n2] runtime stats: 312 MiB RSS, 247 goroutines, 136 MiB/40 MiB/196 MiB GO alloc/idle/total, 61 MiB/71 MiB CGO alloc/total, 39.5 CGO/sec, 0.7/1.2 %(u/s)time, 0.0 %gc (0x), 290 KiB/288 KiB (r/w)net
+I220119 07:53:21.348293 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 07:53:21.628530 359 server/status/runtime.go:500  [n2] runtime stats: 313 MiB RSS, 247 goroutines, 152 MiB/25 MiB/196 MiB GO alloc/idle/total, 61 MiB/71 MiB CGO alloc/total, 40.6 CGO/sec, 0.5/1.4 %(u/s)time, 0.0 %gc (0x), 270 KiB/269 KiB (r/w)net
+I220119 07:53:31.230405 355 gossip/gossip.go:562  [n2] gossip status (ok, 3 nodes)
+gossip client (1/3 cur/max conns)
+  1: ubuntu:23457 (26m0s: infos 1520/5489 sent/received, bytes 241971B/876937B sent/received)
+gossip server (0/3 cur/max conns, infos 1520/5489 sent/received, bytes 242928B/877753B sent/received)
+I220119 07:53:31.348547 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 07:53:31.631716 359 server/status/runtime.go:500  [n2] runtime stats: 314 MiB RSS, 246 goroutines, 170 MiB/8.6 MiB/196 MiB GO alloc/idle/total, 61 MiB/71 MiB CGO alloc/total, 45.2 CGO/sec, 0.6/1.2 %(u/s)time, 0.0 %gc (0x), 354 KiB/354 KiB (r/w)net
+I220119 07:53:41.348778 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 07:53:41.634654 359 server/status/runtime.go:500  [n2] runtime stats: 314 MiB RSS, 246 goroutines, 103 MiB/71 MiB/196 MiB GO alloc/idle/total, 61 MiB/71 MiB CGO alloc/total, 40.0 CGO/sec, 0.9/1.1 %(u/s)time, 0.0 %gc (1x), 362 KiB/362 KiB (r/w)net
+I220119 07:53:51.349132 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 07:53:51.638273 359 server/status/runtime.go:500  [n2] runtime stats: 315 MiB RSS, 246 goroutines, 119 MiB/56 MiB/196 MiB GO alloc/idle/total, 61 MiB/71 MiB CGO alloc/total, 41.4 CGO/sec, 0.6/1.1 %(u/s)time, 0.0 %gc (0x), 304 KiB/304 KiB (r/w)net
+I220119 07:54:01.349346 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 07:54:01.641117 359 server/status/runtime.go:500  [n2] runtime stats: 316 MiB RSS, 247 goroutines, 137 MiB/40 MiB/196 MiB GO alloc/idle/total, 61 MiB/71 MiB CGO alloc/total, 71.3 CGO/sec, 0.8/1.2 %(u/s)time, 0.0 %gc (0x), 577 KiB/577 KiB (r/w)net
+I220119 07:54:11.350256 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 07:54:11.643998 359 server/status/runtime.go:500  [n2] runtime stats: 317 MiB RSS, 247 goroutines, 156 MiB/23 MiB/196 MiB GO alloc/idle/total, 61 MiB/71 MiB CGO alloc/total, 85.8 CGO/sec, 0.8/1.4 %(u/s)time, 0.0 %gc (0x), 628 KiB/628 KiB (r/w)net
+I220119 07:54:21.350641 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 07:54:21.648034 359 server/status/runtime.go:500  [n2] runtime stats: 317 MiB RSS, 247 goroutines, 90 MiB/82 MiB/196 MiB GO alloc/idle/total, 61 MiB/71 MiB CGO alloc/total, 38.2 CGO/sec, 1.0/1.0 %(u/s)time, 0.0 %gc (1x), 272 KiB/272 KiB (r/w)net
+I220119 07:54:31.230600 355 gossip/gossip.go:562  [n2] gossip status (ok, 3 nodes)
+gossip client (1/3 cur/max conns)
+  1: ubuntu:23457 (27m0s: infos 1577/5702 sent/received, bytes 250920B/1059938B sent/received)
+gossip server (0/3 cur/max conns, infos 1577/5702 sent/received, bytes 251877B/1060754B sent/received)
+I220119 07:54:31.351461 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 07:54:31.651306 359 server/status/runtime.go:500  [n2] runtime stats: 318 MiB RSS, 246 goroutines, 108 MiB/66 MiB/196 MiB GO alloc/idle/total, 61 MiB/71 MiB CGO alloc/total, 38.0 CGO/sec, 0.4/1.4 %(u/s)time, 0.0 %gc (0x), 330 KiB/330 KiB (r/w)net
+I220119 07:54:41.351811 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 07:54:41.653783 359 server/status/runtime.go:500  [n2] runtime stats: 318 MiB RSS, 246 goroutines, 125 MiB/51 MiB/196 MiB GO alloc/idle/total, 69 MiB/79 MiB CGO alloc/total, 54.5 CGO/sec, 0.6/1.3 %(u/s)time, 0.0 %gc (0x), 316 KiB/316 KiB (r/w)net
+I220119 07:54:51.352536 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 07:54:51.656732 359 server/status/runtime.go:500  [n2] runtime stats: 318 MiB RSS, 246 goroutines, 141 MiB/36 MiB/196 MiB GO alloc/idle/total, 69 MiB/79 MiB CGO alloc/total, 33.7 CGO/sec, 0.3/1.4 %(u/s)time, 0.0 %gc (0x), 266 KiB/266 KiB (r/w)net
+I220119 07:55:01.353397 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 07:55:01.658614 359 server/status/runtime.go:500  [n2] runtime stats: 318 MiB RSS, 247 goroutines, 157 MiB/20 MiB/196 MiB GO alloc/idle/total, 69 MiB/79 MiB CGO alloc/total, 42.1 CGO/sec, 0.6/1.0 %(u/s)time, 0.0 %gc (0x), 287 KiB/287 KiB (r/w)net
+I220119 07:55:11.353696 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 07:55:11.661655 359 server/status/runtime.go:500  [n2] runtime stats: 318 MiB RSS, 247 goroutines, 92 MiB/80 MiB/196 MiB GO alloc/idle/total, 69 MiB/79 MiB CGO alloc/total, 34.0 CGO/sec, 0.9/1.3 %(u/s)time, 0.0 %gc (1x), 279 KiB/280 KiB (r/w)net
+I220119 07:55:21.353928 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 07:55:21.663753 359 server/status/runtime.go:500  [n2] runtime stats: 318 MiB RSS, 247 goroutines, 109 MiB/65 MiB/196 MiB GO alloc/idle/total, 69 MiB/79 MiB CGO alloc/total, 43.7 CGO/sec, 0.8/1.0 %(u/s)time, 0.0 %gc (0x), 282 KiB/282 KiB (r/w)net
+I220119 07:55:31.231214 355 gossip/gossip.go:562  [n2] gossip status (ok, 3 nodes)
+gossip client (1/3 cur/max conns)
+  1: ubuntu:23457 (28m0s: infos 1635/5913 sent/received, bytes 260027B/1087499B sent/received)
+gossip server (0/3 cur/max conns, infos 1635/5913 sent/received, bytes 260984B/1088315B sent/received)
+I220119 07:55:31.354080 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 07:55:31.666656 359 server/status/runtime.go:500  [n2] runtime stats: 318 MiB RSS, 246 goroutines, 126 MiB/49 MiB/196 MiB GO alloc/idle/total, 69 MiB/79 MiB CGO alloc/total, 38.4 CGO/sec, 0.6/1.4 %(u/s)time, 0.0 %gc (0x), 322 KiB/321 KiB (r/w)net
+I220119 07:55:41.355083 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 07:55:41.669908 359 server/status/runtime.go:500  [n2] runtime stats: 318 MiB RSS, 246 goroutines, 143 MiB/34 MiB/196 MiB GO alloc/idle/total, 69 MiB/79 MiB CGO alloc/total, 40.3 CGO/sec, 0.5/1.3 %(u/s)time, 0.0 %gc (0x), 291 KiB/291 KiB (r/w)net
+I220119 07:55:51.355479 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 07:55:51.673367 359 server/status/runtime.go:500  [n2] runtime stats: 318 MiB RSS, 246 goroutines, 159 MiB/18 MiB/196 MiB GO alloc/idle/total, 69 MiB/79 MiB CGO alloc/total, 33.0 CGO/sec, 0.5/1.2 %(u/s)time, 0.0 %gc (0x), 268 KiB/268 KiB (r/w)net
+I220119 07:56:01.356438 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 07:56:01.675919 359 server/status/runtime.go:500  [n2] runtime stats: 321 MiB RSS, 247 goroutines, 89 MiB/83 MiB/196 MiB GO alloc/idle/total, 14 MiB/23 MiB CGO alloc/total, 48.5 CGO/sec, 6.0/0.0 %(u/s)time, 0.0 %gc (1x), 291 KiB/291 KiB (r/w)net
+I220119 07:56:11.356638 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 07:56:11.677894 359 server/status/runtime.go:500  [n2] runtime stats: 322 MiB RSS, 247 goroutines, 106 MiB/68 MiB/196 MiB GO alloc/idle/total, 14 MiB/24 MiB CGO alloc/total, 40.8 CGO/sec, 1.4/0.8 %(u/s)time, 0.0 %gc (0x), 286 KiB/286 KiB (r/w)net
+I220119 07:56:21.357300 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 07:56:21.681833 359 server/status/runtime.go:500  [n2] runtime stats: 322 MiB RSS, 247 goroutines, 122 MiB/53 MiB/196 MiB GO alloc/idle/total, 14 MiB/24 MiB CGO alloc/total, 34.8 CGO/sec, 0.6/1.2 %(u/s)time, 0.0 %gc (0x), 269 KiB/269 KiB (r/w)net
+I220119 07:56:31.231206 355 gossip/gossip.go:562  [n2] gossip status (ok, 3 nodes)
+gossip client (1/3 cur/max conns)
+  1: ubuntu:23457 (29m0s: infos 1693/6119 sent/received, bytes 269134B/1114547B sent/received)
+gossip server (0/3 cur/max conns, infos 1693/6119 sent/received, bytes 270091B/1115363B sent/received)
+I220119 07:56:31.357534 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 07:56:31.684445 359 server/status/runtime.go:500  [n2] runtime stats: 322 MiB RSS, 246 goroutines, 140 MiB/37 MiB/196 MiB GO alloc/idle/total, 14 MiB/25 MiB CGO alloc/total, 43.9 CGO/sec, 0.4/1.7 %(u/s)time, 0.0 %gc (0x), 332 KiB/332 KiB (r/w)net
+I220119 07:56:41.358190 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 07:56:41.687801 359 server/status/runtime.go:500  [n2] runtime stats: 322 MiB RSS, 246 goroutines, 157 MiB/21 MiB/196 MiB GO alloc/idle/total, 14 MiB/25 MiB CGO alloc/total, 43.9 CGO/sec, 0.6/1.4 %(u/s)time, 0.0 %gc (0x), 290 KiB/290 KiB (r/w)net
+I220119 07:56:51.358477 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 07:56:51.691240 359 server/status/runtime.go:500  [n2] runtime stats: 322 MiB RSS, 246 goroutines, 89 MiB/83 MiB/196 MiB GO alloc/idle/total, 14 MiB/25 MiB CGO alloc/total, 40.4 CGO/sec, 1.0/1.1 %(u/s)time, 0.0 %gc (1x), 280 KiB/280 KiB (r/w)net
+I220119 07:57:01.358939 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 07:57:01.694081 359 server/status/runtime.go:500  [n2] runtime stats: 322 MiB RSS, 247 goroutines, 106 MiB/68 MiB/196 MiB GO alloc/idle/total, 14 MiB/25 MiB CGO alloc/total, 52.9 CGO/sec, 0.5/1.3 %(u/s)time, 0.0 %gc (0x), 311 KiB/311 KiB (r/w)net
+I220119 07:57:11.359217 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 07:57:11.697243 359 server/status/runtime.go:500  [n2] runtime stats: 322 MiB RSS, 247 goroutines, 122 MiB/53 MiB/196 MiB GO alloc/idle/total, 14 MiB/25 MiB CGO alloc/total, 38.2 CGO/sec, 0.7/1.3 %(u/s)time, 0.0 %gc (0x), 284 KiB/284 KiB (r/w)net
+I220119 07:57:21.858909 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 07:57:21.859653 359 server/status/runtime.go:500  [n2] runtime stats: 322 MiB RSS, 247 goroutines, 134 MiB/43 MiB/196 MiB GO alloc/idle/total, 14 MiB/25 MiB CGO alloc/total, 26.2 CGO/sec, 2.4/4.8 %(u/s)time, 0.0 %gc (0x), 157 KiB/157 KiB (r/w)net
+W220119 07:57:21.862450 335 storage/store.go:3503  [n2,s2,r4/2:/System{/tsd-tse}] handle raft ready: 0.6s [applied=0, batches=0, state_assertions=0]
+I220119 07:57:31.230969 355 gossip/gossip.go:562  [n2] gossip status (ok, 3 nodes)
+gossip client (1/3 cur/max conns)
+  1: ubuntu:23457 (30m0s: infos 1750/6328 sent/received, bytes 278083B/1141848B sent/received)
+gossip server (0/3 cur/max conns, infos 1750/6328 sent/received, bytes 279040B/1142664B sent/received)
+I220119 07:57:31.860222 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 07:57:31.861252 359 server/status/runtime.go:500  [n2] runtime stats: 322 MiB RSS, 246 goroutines, 134 MiB/43 MiB/196 MiB GO alloc/idle/total, 14 MiB/25 MiB CGO alloc/total, 59.5 CGO/sec, 0.6/1.4 %(u/s)time, 0.0 %gc (0x), 474 KiB/474 KiB (r/w)net
+I220119 07:57:41.861285 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 07:57:41.864056 359 server/status/runtime.go:500  [n2] runtime stats: 322 MiB RSS, 246 goroutines, 92 MiB/80 MiB/196 MiB GO alloc/idle/total, 14 MiB/25 MiB CGO alloc/total, 37.6 CGO/sec, 0.7/1.2 %(u/s)time, 0.0 %gc (1x), 281 KiB/280 KiB (r/w)net
+I220119 07:57:51.232517 354 storage/store.go:4034  [n2,s2] sstables (read amplification = 1):
+6 [ 813K 1 ]: 813K
+I220119 07:57:51.233045 354 storage/store.go:4035  [n2,s2] 
+** Compaction Stats [default] **
+Level    Files   Size     Score Read(GB)  Rn(GB) Rnp1(GB) Write(GB) Wnew(GB) Moved(GB) W-Amp Rd(MB/s) Wr(MB/s) Comp(sec) CompMergeCPU(sec) Comp(cnt) Avg(sec) KeyIn KeyDrop
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+  L0      0/0    0.00 KB   0.0      0.0     0.0      0.0       0.0      0.0       0.0   1.0      0.0      1.2      0.80              0.79         2    0.399       0      0
+  L6      1/0   813.33 KB   0.0      0.0     0.0      0.0       0.0      0.0       0.0   0.8     32.4     25.9      0.03              0.03         1    0.031     25K   6929
+ Sum      1/0   813.33 KB   0.0      0.0     0.0      0.0       0.0      0.0       0.0   1.8      1.2      2.2      0.83              0.82         3    0.276     25K   6929
+ Int      0/0    0.00 KB   0.0      0.0     0.0      0.0       0.0      0.0       0.0   3.2      2.4      2.8      0.41              0.41         2    0.207     25K   6929
+
+** Compaction Stats [default] **
+Priority    Files   Size     Score Read(GB)  Rn(GB) Rnp1(GB) Write(GB) Wnew(GB) Moved(GB) W-Amp Rd(MB/s) Wr(MB/s) Comp(sec) CompMergeCPU(sec) Comp(cnt) Avg(sec) KeyIn KeyDrop
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Low      0/0    0.00 KB   0.0      0.0     0.0      0.0       0.0      0.0       0.0   0.0     32.4     25.9      0.03              0.03         1    0.031     25K   6929
+High      0/0    0.00 KB   0.0      0.0     0.0      0.0       0.0      0.0       0.0   0.0      0.0      1.2      0.80              0.79         2    0.399       0      0
+Uptime(secs): 1840.0 total, 600.0 interval
+Flush(GB): cumulative 0.001, interval 0.000
+AddFile(GB): cumulative 0.000, interval 0.000
+AddFile(Total Files): cumulative 0, interval 0
+AddFile(L0 Files): cumulative 0, interval 0
+AddFile(Keys): cumulative 0, interval 0
+Cumulative compaction: 0.00 GB write, 0.00 MB/s write, 0.00 GB read, 0.00 MB/s read, 0.8 seconds
+Interval compaction: 0.00 GB write, 0.00 MB/s write, 0.00 GB read, 0.00 MB/s read, 0.4 seconds
+Stalls(count): 0 level0_slowdown, 0 level0_slowdown_with_compaction, 0 level0_numfiles, 0 level0_numfiles_with_compaction, 0 stop for pending_compaction_bytes, 0 slowdown for pending_compaction_bytes, 0 memtable_compaction, 0 memtable_slowdown, interval 0 total count
+I220119 07:57:51.862291 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 07:57:51.867834 359 server/status/runtime.go:500  [n2] runtime stats: 323 MiB RSS, 246 goroutines, 108 MiB/65 MiB/196 MiB GO alloc/idle/total, 22 MiB/33 MiB CGO alloc/total, 34.7 CGO/sec, 0.8/1.0 %(u/s)time, 0.0 %gc (0x), 266 KiB/266 KiB (r/w)net
+I220119 07:58:01.863270 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 07:58:01.871436 359 server/status/runtime.go:500  [n2] runtime stats: 323 MiB RSS, 247 goroutines, 124 MiB/51 MiB/196 MiB GO alloc/idle/total, 22 MiB/33 MiB CGO alloc/total, 37.3 CGO/sec, 0.7/1.2 %(u/s)time, 0.0 %gc (0x), 288 KiB/288 KiB (r/w)net
+I220119 07:58:11.863517 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 07:58:11.873712 359 server/status/runtime.go:500  [n2] runtime stats: 324 MiB RSS, 247 goroutines, 141 MiB/36 MiB/196 MiB GO alloc/idle/total, 22 MiB/33 MiB CGO alloc/total, 39.6 CGO/sec, 0.5/1.4 %(u/s)time, 0.0 %gc (0x), 286 KiB/286 KiB (r/w)net
+I220119 07:58:21.863841 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 07:58:21.876559 359 server/status/runtime.go:500  [n2] runtime stats: 325 MiB RSS, 247 goroutines, 157 MiB/20 MiB/196 MiB GO alloc/idle/total, 22 MiB/33 MiB CGO alloc/total, 40.7 CGO/sec, 0.5/1.0 %(u/s)time, 0.0 %gc (0x), 275 KiB/275 KiB (r/w)net
+I220119 07:58:31.230411 355 gossip/gossip.go:562  [n2] gossip status (ok, 3 nodes)
+gossip client (1/3 cur/max conns)
+  1: ubuntu:23457 (31m0s: infos 1808/6539 sent/received, bytes 287107B/1169359B sent/received)
+gossip server (0/3 cur/max conns, infos 1808/6539 sent/received, bytes 288064B/1170175B sent/received)
+I220119 07:58:31.864387 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 07:58:31.879509 359 server/status/runtime.go:500  [n2] runtime stats: 325 MiB RSS, 246 goroutines, 90 MiB/82 MiB/196 MiB GO alloc/idle/total, 22 MiB/33 MiB CGO alloc/total, 42.2 CGO/sec, 1.3/0.7 %(u/s)time, 0.0 %gc (1x), 330 KiB/330 KiB (r/w)net
+I220119 07:58:41.865182 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 07:58:41.881688 359 server/status/runtime.go:500  [n2] runtime stats: 326 MiB RSS, 246 goroutines, 107 MiB/67 MiB/196 MiB GO alloc/idle/total, 22 MiB/33 MiB CGO alloc/total, 41.3 CGO/sec, 0.5/1.4 %(u/s)time, 0.0 %gc (0x), 292 KiB/292 KiB (r/w)net
+I220119 07:58:51.866389 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 07:58:51.884262 359 server/status/runtime.go:500  [n2] runtime stats: 327 MiB RSS, 246 goroutines, 123 MiB/52 MiB/196 MiB GO alloc/idle/total, 22 MiB/33 MiB CGO alloc/total, 36.3 CGO/sec, 0.6/1.1 %(u/s)time, 0.0 %gc (0x), 267 KiB/267 KiB (r/w)net
+I220119 07:59:01.866775 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 07:59:01.886345 359 server/status/runtime.go:500  [n2] runtime stats: 328 MiB RSS, 247 goroutines, 140 MiB/37 MiB/196 MiB GO alloc/idle/total, 22 MiB/33 MiB CGO alloc/total, 46.3 CGO/sec, 0.7/0.9 %(u/s)time, 0.0 %gc (0x), 292 KiB/292 KiB (r/w)net
+I220119 07:59:11.867241 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 07:59:11.889869 359 server/status/runtime.go:500  [n2] runtime stats: 328 MiB RSS, 247 goroutines, 156 MiB/22 MiB/196 MiB GO alloc/idle/total, 22 MiB/33 MiB CGO alloc/total, 40.0 CGO/sec, 0.8/1.0 %(u/s)time, 0.0 %gc (0x), 288 KiB/288 KiB (r/w)net
+I220119 07:59:21.867638 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 07:59:21.891807 359 server/status/runtime.go:500  [n2] runtime stats: 329 MiB RSS, 247 goroutines, 91 MiB/82 MiB/196 MiB GO alloc/idle/total, 22 MiB/33 MiB CGO alloc/total, 45.7 CGO/sec, 0.7/1.3 %(u/s)time, 0.0 %gc (1x), 353 KiB/353 KiB (r/w)net
+I220119 07:59:31.230164 355 gossip/gossip.go:562  [n2] gossip status (ok, 3 nodes)
+gossip client (1/3 cur/max conns)
+  1: ubuntu:23457 (32m0s: infos 1866/6745 sent/received, bytes 296214B/1196407B sent/received)
+gossip server (0/3 cur/max conns, infos 1866/6745 sent/received, bytes 297171B/1197223B sent/received)
+I220119 07:59:31.868004 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 07:59:31.893979 359 server/status/runtime.go:500  [n2] runtime stats: 330 MiB RSS, 246 goroutines, 109 MiB/65 MiB/196 MiB GO alloc/idle/total, 22 MiB/33 MiB CGO alloc/total, 49.4 CGO/sec, 0.5/1.5 %(u/s)time, 0.0 %gc (0x), 355 KiB/355 KiB (r/w)net
+I220119 07:59:41.868142 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 07:59:41.896071 359 server/status/runtime.go:500  [n2] runtime stats: 330 MiB RSS, 246 goroutines, 126 MiB/50 MiB/196 MiB GO alloc/idle/total, 30 MiB/41 MiB CGO alloc/total, 41.1 CGO/sec, 0.4/1.3 %(u/s)time, 0.0 %gc (0x), 294 KiB/294 KiB (r/w)net
+I220119 07:59:51.868359 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 07:59:51.899451 359 server/status/runtime.go:500  [n2] runtime stats: 330 MiB RSS, 246 goroutines, 142 MiB/36 MiB/196 MiB GO alloc/idle/total, 30 MiB/41 MiB CGO alloc/total, 32.6 CGO/sec, 0.5/1.0 %(u/s)time, 0.0 %gc (0x), 266 KiB/266 KiB (r/w)net
+I220119 08:00:01.868535 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 08:00:01.901486 359 server/status/runtime.go:500  [n2] runtime stats: 330 MiB RSS, 247 goroutines, 158 MiB/20 MiB/196 MiB GO alloc/idle/total, 30 MiB/41 MiB CGO alloc/total, 40.4 CGO/sec, 0.6/1.0 %(u/s)time, 0.0 %gc (0x), 283 KiB/284 KiB (r/w)net
+I220119 08:00:11.869325 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 08:00:11.904405 359 server/status/runtime.go:500  [n2] runtime stats: 334 MiB RSS, 247 goroutines, 110 MiB/66 MiB/199 MiB GO alloc/idle/total, 30 MiB/41 MiB CGO alloc/total, 183.9 CGO/sec, 1.1/1.8 %(u/s)time, 0.0 %gc (1x), 5.3 MiB/5.3 MiB (r/w)net
+I220119 08:00:21.870257 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 08:00:21.907300 359 server/status/runtime.go:500  [n2] runtime stats: 335 MiB RSS, 247 goroutines, 126 MiB/51 MiB/199 MiB GO alloc/idle/total, 34 MiB/45 MiB CGO alloc/total, 10043.8 CGO/sec, 1.1/1.3 %(u/s)time, 0.0 %gc (0x), 284 KiB/284 KiB (r/w)net
+I220119 08:00:31.230992 355 gossip/gossip.go:562  [n2] gossip status (ok, 3 nodes)
+gossip client (1/3 cur/max conns)
+  1: ubuntu:23457 (33m0s: infos 1925/6960 sent/received, bytes 305905B/1265138B sent/received)
+gossip server (0/3 cur/max conns, infos 1925/6960 sent/received, bytes 306862B/1265954B sent/received)
+I220119 08:00:31.871042 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 08:00:31.910354 359 server/status/runtime.go:500  [n2] runtime stats: 335 MiB RSS, 246 goroutines, 144 MiB/35 MiB/199 MiB GO alloc/idle/total, 34 MiB/45 MiB CGO alloc/total, 48.9 CGO/sec, 0.8/1.1 %(u/s)time, 0.0 %gc (0x), 340 KiB/340 KiB (r/w)net
+I220119 08:00:41.871664 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 08:00:41.912803 359 server/status/runtime.go:500  [n2] runtime stats: 427 MiB RSS, 246 goroutines, 197 MiB/68 MiB/292 MiB GO alloc/idle/total, 34 MiB/45 MiB CGO alloc/total, 151.2 CGO/sec, 0.3/4.8 %(u/s)time, 0.0 %gc (1x), 47 MiB/47 MiB (r/w)net
+I220119 08:00:51.871839 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 08:00:51.914380 359 server/status/runtime.go:500  [n2] runtime stats: 427 MiB RSS, 246 goroutines, 113 MiB/145 MiB/285 MiB GO alloc/idle/total, 34 MiB/46 MiB CGO alloc/total, 38.8 CGO/sec, 0.8/1.5 %(u/s)time, 0.0 %gc (1x), 280 KiB/280 KiB (r/w)net
+I220119 08:01:01.872455 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 08:01:01.916956 359 server/status/runtime.go:500  [n2] runtime stats: 427 MiB RSS, 247 goroutines, 130 MiB/97 MiB/253 MiB GO alloc/idle/total, 34 MiB/46 MiB CGO alloc/total, 40.1 CGO/sec, 1.1/5.3 %(u/s)time, 0.0 %gc (0x), 288 KiB/288 KiB (r/w)net
+I220119 08:01:11.872872 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 08:01:11.919963 359 server/status/runtime.go:500  [n2] runtime stats: 427 MiB RSS, 247 goroutines, 146 MiB/82 MiB/253 MiB GO alloc/idle/total, 34 MiB/46 MiB CGO alloc/total, 42.7 CGO/sec, 0.6/1.2 %(u/s)time, 0.0 %gc (0x), 291 KiB/291 KiB (r/w)net
+I220119 08:01:21.873547 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 08:01:21.922090 359 server/status/runtime.go:500  [n2] runtime stats: 427 MiB RSS, 247 goroutines, 162 MiB/74 MiB/260 MiB GO alloc/idle/total, 34 MiB/46 MiB CGO alloc/total, 39.3 CGO/sec, 0.4/1.1 %(u/s)time, 0.0 %gc (0x), 276 KiB/276 KiB (r/w)net
+I220119 08:01:31.230436 355 gossip/gossip.go:562  [n2] gossip status (ok, 3 nodes)
+gossip client (1/3 cur/max conns)
+  1: ubuntu:23457 (34m0s: infos 1985/7176 sent/received, bytes 315671B/1334711B sent/received)
+gossip server (0/3 cur/max conns, infos 1985/7176 sent/received, bytes 316628B/1335527B sent/received)
+I220119 08:01:31.873751 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 08:01:31.923737 359 server/status/runtime.go:500  [n2] runtime stats: 427 MiB RSS, 246 goroutines, 182 MiB/74 MiB/278 MiB GO alloc/idle/total, 42 MiB/54 MiB CGO alloc/total, 90.8 CGO/sec, 0.8/1.1 %(u/s)time, 0.0 %gc (0x), 629 KiB/629 KiB (r/w)net
+I220119 08:01:41.874155 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 08:01:41.925953 359 server/status/runtime.go:500  [n2] runtime stats: 427 MiB RSS, 246 goroutines, 200 MiB/71 MiB/292 MiB GO alloc/idle/total, 42 MiB/54 MiB CGO alloc/total, 113.8 CGO/sec, 0.7/1.5 %(u/s)time, 0.0 %gc (0x), 787 KiB/780 KiB (r/w)net
+I220119 08:01:51.874927 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 08:01:51.928423 359 server/status/runtime.go:500  [n2] runtime stats: 427 MiB RSS, 246 goroutines, 101 MiB/87 MiB/215 MiB GO alloc/idle/total, 42 MiB/54 MiB CGO alloc/total, 39.5 CGO/sec, 1.0/0.7 %(u/s)time, 0.0 %gc (1x), 282 KiB/277 KiB (r/w)net
+I220119 08:02:01.875805 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 08:02:01.931260 359 server/status/runtime.go:500  [n2] runtime stats: 427 MiB RSS, 247 goroutines, 117 MiB/72 MiB/215 MiB GO alloc/idle/total, 42 MiB/54 MiB CGO alloc/total, 41.6 CGO/sec, 0.9/0.9 %(u/s)time, 0.0 %gc (0x), 290 KiB/290 KiB (r/w)net
+I220119 08:02:11.876600 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 08:02:11.934826 359 server/status/runtime.go:500  [n2] runtime stats: 427 MiB RSS, 247 goroutines, 134 MiB/56 MiB/215 MiB GO alloc/idle/total, 42 MiB/54 MiB CGO alloc/total, 77.3 CGO/sec, 0.5/1.4 %(u/s)time, 0.0 %gc (0x), 378 KiB/378 KiB (r/w)net
+I220119 08:02:21.877511 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 08:02:21.937348 359 server/status/runtime.go:500  [n2] runtime stats: 427 MiB RSS, 247 goroutines, 150 MiB/41 MiB/215 MiB GO alloc/idle/total, 42 MiB/54 MiB CGO alloc/total, 38.1 CGO/sec, 0.7/1.1 %(u/s)time, 0.0 %gc (0x), 274 KiB/274 KiB (r/w)net
+I220119 08:02:31.233899 355 gossip/gossip.go:562  [n2] gossip status (ok, 3 nodes)
+gossip client (1/3 cur/max conns)
+  1: ubuntu:23457 (35m0s: infos 2043/7384 sent/received, bytes 324778B/1362045B sent/received)
+gossip server (0/3 cur/max conns, infos 2043/7384 sent/received, bytes 325735B/1362861B sent/received)
+I220119 08:02:31.878087 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 08:02:31.940779 359 server/status/runtime.go:500  [n2] runtime stats: 427 MiB RSS, 246 goroutines, 168 MiB/24 MiB/215 MiB GO alloc/idle/total, 42 MiB/54 MiB CGO alloc/total, 43.8 CGO/sec, 1.3/0.9 %(u/s)time, 0.0 %gc (0x), 329 KiB/329 KiB (r/w)net
+I220119 08:02:41.878230 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 08:02:41.943649 359 server/status/runtime.go:500  [n2] runtime stats: 427 MiB RSS, 246 goroutines, 97 MiB/86 MiB/211 MiB GO alloc/idle/total, 42 MiB/54 MiB CGO alloc/total, 38.4 CGO/sec, 0.9/1.9 %(u/s)time, 0.0 %gc (1x), 279 KiB/279 KiB (r/w)net
+I220119 08:02:51.878604 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 08:02:51.946721 359 server/status/runtime.go:500  [n2] runtime stats: 427 MiB RSS, 246 goroutines, 114 MiB/71 MiB/211 MiB GO alloc/idle/total, 42 MiB/54 MiB CGO alloc/total, 37.2 CGO/sec, 0.6/1.1 %(u/s)time, 0.0 %gc (0x), 271 KiB/271 KiB (r/w)net
+I220119 08:03:01.879304 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 08:03:01.949439 359 server/status/runtime.go:500  [n2] runtime stats: 427 MiB RSS, 247 goroutines, 130 MiB/56 MiB/211 MiB GO alloc/idle/total, 42 MiB/54 MiB CGO alloc/total, 41.5 CGO/sec, 0.7/1.0 %(u/s)time, 0.0 %gc (0x), 284 KiB/284 KiB (r/w)net
+I220119 08:03:11.879849 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 08:03:11.951581 359 server/status/runtime.go:500  [n2] runtime stats: 427 MiB RSS, 247 goroutines, 146 MiB/41 MiB/211 MiB GO alloc/idle/total, 42 MiB/54 MiB CGO alloc/total, 41.4 CGO/sec, 0.8/1.0 %(u/s)time, 0.0 %gc (0x), 283 KiB/283 KiB (r/w)net
+I220119 08:03:21.880412 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 08:03:21.952892 359 server/status/runtime.go:500  [n2] runtime stats: 427 MiB RSS, 247 goroutines, 163 MiB/26 MiB/211 MiB GO alloc/idle/total, 50 MiB/62 MiB CGO alloc/total, 34.0 CGO/sec, 0.3/1.3 %(u/s)time, 0.0 %gc (0x), 270 KiB/270 KiB (r/w)net
+I220119 08:03:31.230338 355 gossip/gossip.go:562  [n2] gossip status (ok, 3 nodes)
+gossip client (1/3 cur/max conns)
+  1: ubuntu:23457 (36m0s: infos 2100/7593 sent/received, bytes 333727B/1389346B sent/received)
+gossip server (0/3 cur/max conns, infos 2100/7593 sent/received, bytes 334684B/1390162B sent/received)
+I220119 08:03:31.880521 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 08:03:31.955918 359 server/status/runtime.go:500  [n2] runtime stats: 427 MiB RSS, 246 goroutines, 96 MiB/89 MiB/211 MiB GO alloc/idle/total, 50 MiB/62 MiB CGO alloc/total, 41.9 CGO/sec, 0.8/1.4 %(u/s)time, 0.0 %gc (1x), 335 KiB/335 KiB (r/w)net
+I220119 08:03:41.881155 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 08:03:41.958180 359 server/status/runtime.go:500  [n2] runtime stats: 427 MiB RSS, 246 goroutines, 112 MiB/73 MiB/211 MiB GO alloc/idle/total, 50 MiB/62 MiB CGO alloc/total, 40.2 CGO/sec, 0.7/1.1 %(u/s)time, 0.0 %gc (0x), 276 KiB/276 KiB (r/w)net
+I220119 08:03:51.881602 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 08:03:51.961994 359 server/status/runtime.go:500  [n2] runtime stats: 427 MiB RSS, 246 goroutines, 128 MiB/58 MiB/211 MiB GO alloc/idle/total, 50 MiB/62 MiB CGO alloc/total, 36.3 CGO/sec, 0.6/1.1 %(u/s)time, 0.0 %gc (0x), 271 KiB/271 KiB (r/w)net
+I220119 08:04:01.882467 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 08:04:01.964623 359 server/status/runtime.go:500  [n2] runtime stats: 427 MiB RSS, 247 goroutines, 145 MiB/43 MiB/211 MiB GO alloc/idle/total, 50 MiB/62 MiB CGO alloc/total, 41.8 CGO/sec, 0.4/1.3 %(u/s)time, 0.0 %gc (0x), 288 KiB/288 KiB (r/w)net
+I220119 08:04:11.882880 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 08:04:11.967393 359 server/status/runtime.go:500  [n2] runtime stats: 427 MiB RSS, 247 goroutines, 161 MiB/28 MiB/211 MiB GO alloc/idle/total, 50 MiB/62 MiB CGO alloc/total, 40.6 CGO/sec, 0.7/1.0 %(u/s)time, 0.0 %gc (0x), 286 KiB/286 KiB (r/w)net
+I220119 08:04:21.883227 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 08:04:21.970480 359 server/status/runtime.go:500  [n2] runtime stats: 427 MiB RSS, 247 goroutines, 90 MiB/90 MiB/207 MiB GO alloc/idle/total, 50 MiB/62 MiB CGO alloc/total, 36.3 CGO/sec, 0.6/1.6 %(u/s)time, 0.0 %gc (1x), 270 KiB/270 KiB (r/w)net
+I220119 08:04:31.230433 355 gossip/gossip.go:562  [n2] gossip status (ok, 3 nodes)
+gossip client (1/3 cur/max conns)
+  1: ubuntu:23457 (37m0s: infos 2158/7804 sent/received, bytes 342834B/1416957B sent/received)
+gossip server (0/3 cur/max conns, infos 2158/7804 sent/received, bytes 343791B/1417773B sent/received)
+I220119 08:04:31.884135 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 08:04:31.974778 359 server/status/runtime.go:500  [n2] runtime stats: 427 MiB RSS, 246 goroutines, 108 MiB/74 MiB/207 MiB GO alloc/idle/total, 50 MiB/62 MiB CGO alloc/total, 42.0 CGO/sec, 0.4/1.5 %(u/s)time, 0.0 %gc (0x), 326 KiB/326 KiB (r/w)net
+I220119 08:04:41.885003 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 08:04:41.976910 359 server/status/runtime.go:500  [n2] runtime stats: 427 MiB RSS, 246 goroutines, 125 MiB/58 MiB/207 MiB GO alloc/idle/total, 50 MiB/62 MiB CGO alloc/total, 72.7 CGO/sec, 0.7/1.4 %(u/s)time, 0.0 %gc (0x), 355 KiB/355 KiB (r/w)net
+I220119 08:04:51.885978 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 08:04:51.980564 359 server/status/runtime.go:500  [n2] runtime stats: 427 MiB RSS, 246 goroutines, 141 MiB/43 MiB/207 MiB GO alloc/idle/total, 50 MiB/62 MiB CGO alloc/total, 34.8 CGO/sec, 0.8/1.0 %(u/s)time, 0.0 %gc (0x), 267 KiB/267 KiB (r/w)net
+I220119 08:05:01.886289 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 08:05:01.983805 359 server/status/runtime.go:500  [n2] runtime stats: 427 MiB RSS, 247 goroutines, 158 MiB/27 MiB/207 MiB GO alloc/idle/total, 49 MiB/62 MiB CGO alloc/total, 45.6 CGO/sec, 0.7/1.1 %(u/s)time, 0.0 %gc (0x), 296 KiB/296 KiB (r/w)net
+I220119 08:05:11.888291 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 08:05:11.987358 359 server/status/runtime.go:500  [n2] runtime stats: 427 MiB RSS, 247 goroutines, 92 MiB/87 MiB/207 MiB GO alloc/idle/total, 57 MiB/70 MiB CGO alloc/total, 35.8 CGO/sec, 0.7/1.4 %(u/s)time, 0.0 %gc (1x), 274 KiB/274 KiB (r/w)net
+I220119 08:05:21.888504 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 08:05:21.990384 359 server/status/runtime.go:500  [n2] runtime stats: 428 MiB RSS, 247 goroutines, 109 MiB/72 MiB/207 MiB GO alloc/idle/total, 57 MiB/70 MiB CGO alloc/total, 38.8 CGO/sec, 0.6/1.2 %(u/s)time, 0.0 %gc (0x), 274 KiB/273 KiB (r/w)net
+I220119 08:05:31.230742 355 gossip/gossip.go:562  [n2] gossip status (ok, 3 nodes)
+gossip client (1/3 cur/max conns)
+  1: ubuntu:23457 (38m0s: infos 2216/8010 sent/received, bytes 351941B/1444055B sent/received)
+gossip server (0/3 cur/max conns, infos 2216/8010 sent/received, bytes 352898B/1444871B sent/received)
+I220119 08:05:31.888809 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 08:05:31.992986 359 server/status/runtime.go:500  [n2] runtime stats: 429 MiB RSS, 246 goroutines, 127 MiB/55 MiB/207 MiB GO alloc/idle/total, 57 MiB/70 MiB CGO alloc/total, 43.0 CGO/sec, 0.6/1.4 %(u/s)time, 0.0 %gc (0x), 334 KiB/333 KiB (r/w)net
+I220119 08:05:41.889603 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 08:05:41.996493 359 server/status/runtime.go:500  [n2] runtime stats: 430 MiB RSS, 246 goroutines, 144 MiB/40 MiB/207 MiB GO alloc/idle/total, 57 MiB/70 MiB CGO alloc/total, 39.7 CGO/sec, 0.7/1.1 %(u/s)time, 0.0 %gc (0x), 283 KiB/282 KiB (r/w)net
+I220119 08:05:51.890126 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 08:05:51.998780 359 server/status/runtime.go:500  [n2] runtime stats: 430 MiB RSS, 246 goroutines, 160 MiB/25 MiB/207 MiB GO alloc/idle/total, 57 MiB/70 MiB CGO alloc/total, 40.1 CGO/sec, 0.8/1.0 %(u/s)time, 0.0 %gc (0x), 273 KiB/272 KiB (r/w)net
+I220119 08:06:01.890603 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 08:06:02.001589 359 server/status/runtime.go:500  [n2] runtime stats: 431 MiB RSS, 247 goroutines, 91 MiB/89 MiB/207 MiB GO alloc/idle/total, 57 MiB/70 MiB CGO alloc/total, 39.5 CGO/sec, 1.0/1.7 %(u/s)time, 0.0 %gc (1x), 284 KiB/284 KiB (r/w)net
+I220119 08:06:11.891424 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 08:06:12.003874 359 server/status/runtime.go:500  [n2] runtime stats: 432 MiB RSS, 247 goroutines, 108 MiB/74 MiB/207 MiB GO alloc/idle/total, 57 MiB/70 MiB CGO alloc/total, 42.3 CGO/sec, 0.7/1.3 %(u/s)time, 0.0 %gc (0x), 286 KiB/285 KiB (r/w)net
+I220119 08:06:21.891658 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 08:06:22.006301 359 server/status/runtime.go:500  [n2] runtime stats: 432 MiB RSS, 247 goroutines, 124 MiB/59 MiB/207 MiB GO alloc/idle/total, 57 MiB/70 MiB CGO alloc/total, 42.9 CGO/sec, 0.7/1.1 %(u/s)time, 0.0 %gc (0x), 277 KiB/277 KiB (r/w)net
+I220119 08:06:31.230548 355 gossip/gossip.go:562  [n2] gossip status (ok, 3 nodes)
+gossip client (1/3 cur/max conns)
+  1: ubuntu:23457 (39m0s: infos 2273/8219 sent/received, bytes 360890B/1471406B sent/received)
+gossip server (0/3 cur/max conns, infos 2273/8219 sent/received, bytes 361847B/1472222B sent/received)
+I220119 08:06:31.892257 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 08:06:32.008704 359 server/status/runtime.go:500  [n2] runtime stats: 433 MiB RSS, 246 goroutines, 142 MiB/43 MiB/207 MiB GO alloc/idle/total, 57 MiB/70 MiB CGO alloc/total, 41.4 CGO/sec, 0.5/1.4 %(u/s)time, 0.0 %gc (0x), 333 KiB/333 KiB (r/w)net
+I220119 08:06:41.893105 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 08:06:42.010671 359 server/status/runtime.go:500  [n2] runtime stats: 434 MiB RSS, 246 goroutines, 158 MiB/27 MiB/207 MiB GO alloc/idle/total, 57 MiB/70 MiB CGO alloc/total, 40.0 CGO/sec, 0.5/1.2 %(u/s)time, 0.0 %gc (0x), 277 KiB/277 KiB (r/w)net
+I220119 08:06:51.894024 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 08:06:52.013662 359 server/status/runtime.go:500  [n2] runtime stats: 435 MiB RSS, 246 goroutines, 91 MiB/88 MiB/207 MiB GO alloc/idle/total, 57 MiB/70 MiB CGO alloc/total, 37.6 CGO/sec, 1.0/0.9 %(u/s)time, 0.0 %gc (1x), 272 KiB/272 KiB (r/w)net
+I220119 08:07:01.894236 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 08:07:02.016121 359 server/status/runtime.go:500  [n2] runtime stats: 435 MiB RSS, 247 goroutines, 107 MiB/73 MiB/207 MiB GO alloc/idle/total, 65 MiB/78 MiB CGO alloc/total, 42.6 CGO/sec, 0.6/1.0 %(u/s)time, 0.0 %gc (0x), 290 KiB/290 KiB (r/w)net
+I220119 08:07:11.894853 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 08:07:12.019268 359 server/status/runtime.go:500  [n2] runtime stats: 435 MiB RSS, 247 goroutines, 124 MiB/58 MiB/207 MiB GO alloc/idle/total, 66 MiB/78 MiB CGO alloc/total, 67.3 CGO/sec, 0.7/1.4 %(u/s)time, 0.0 %gc (0x), 353 KiB/353 KiB (r/w)net
+I220119 08:07:21.895110 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 08:07:22.021127 359 server/status/runtime.go:500  [n2] runtime stats: 435 MiB RSS, 247 goroutines, 141 MiB/43 MiB/207 MiB GO alloc/idle/total, 65 MiB/78 MiB CGO alloc/total, 42.4 CGO/sec, 0.7/1.3 %(u/s)time, 0.0 %gc (0x), 275 KiB/274 KiB (r/w)net
+I220119 08:07:31.231109 355 gossip/gossip.go:562  [n2] gossip status (ok, 3 nodes)
+gossip client (1/3 cur/max conns)
+  1: ubuntu:23457 (40m0s: infos 2331/8430 sent/received, bytes 369997B/1499017B sent/received)
+gossip server (0/3 cur/max conns, infos 2331/8430 sent/received, bytes 370954B/1499833B sent/received)
+I220119 08:07:31.895240 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 08:07:32.024207 359 server/status/runtime.go:500  [n2] runtime stats: 435 MiB RSS, 246 goroutines, 159 MiB/26 MiB/207 MiB GO alloc/idle/total, 65 MiB/78 MiB CGO alloc/total, 43.7 CGO/sec, 0.6/1.3 %(u/s)time, 0.0 %gc (0x), 359 KiB/359 KiB (r/w)net
+I220119 08:07:41.895693 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 08:07:42.027856 359 server/status/runtime.go:500  [n2] runtime stats: 435 MiB RSS, 246 goroutines, 92 MiB/87 MiB/207 MiB GO alloc/idle/total, 65 MiB/78 MiB CGO alloc/total, 40.4 CGO/sec, 1.4/2.9 %(u/s)time, 0.0 %gc (1x), 282 KiB/281 KiB (r/w)net
+I220119 08:07:51.232389 354 storage/store.go:4034  [n2,s2] sstables (read amplification = 1):
+6 [ 18M 3 ]: 15M 2M 813K
+I220119 08:07:51.232523 354 storage/store.go:4035  [n2,s2] 
+** Compaction Stats [default] **
+Level    Files   Size     Score Read(GB)  Rn(GB) Rnp1(GB) Write(GB) Wnew(GB) Moved(GB) W-Amp Rd(MB/s) Wr(MB/s) Comp(sec) CompMergeCPU(sec) Comp(cnt) Avg(sec) KeyIn KeyDrop
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+  L0      0/0    0.00 KB   0.0      0.0     0.0      0.0       0.0      0.0       0.0   0.1      0.0      1.2      0.80              0.79         2    0.399       0      0
+  L6      3/0   17.70 MB   0.0      0.0     0.0      0.0       0.0      0.0       0.0   0.8     30.3     24.2      0.03              0.03         3    0.011     25K   6929
+ Sum      3/0   17.70 MB   0.0      0.0     0.0      0.0       0.0      0.0       0.0   0.1      1.2      2.2      0.83              0.82         5    0.166     25K   6929
+ Int      0/0    0.00 KB   0.0      0.0     0.0      0.0       0.0      0.0       0.0   0.0      0.0      0.0      0.00              0.00         2    0.001       0      0
+
+** Compaction Stats [default] **
+Priority    Files   Size     Score Read(GB)  Rn(GB) Rnp1(GB) Write(GB) Wnew(GB) Moved(GB) W-Amp Rd(MB/s) Wr(MB/s) Comp(sec) CompMergeCPU(sec) Comp(cnt) Avg(sec) KeyIn KeyDrop
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Low      0/0    0.00 KB   0.0      0.0     0.0      0.0       0.0      0.0       0.0   0.0     32.4     25.9      0.03              0.03         1    0.031     25K   6929
+High      0/0    0.00 KB   0.0      0.0     0.0      0.0       0.0      0.0       0.0   0.0      0.0      1.2      0.80              0.79         2    0.399       0      0
+User      0/0    0.00 KB   0.0      0.0     0.0      0.0       0.0      0.0       0.0   0.0      0.0      0.0      0.00              0.00         2    0.001       0      0
+Uptime(secs): 2440.0 total, 600.0 interval
+Flush(GB): cumulative 0.001, interval 0.000
+AddFile(GB): cumulative 0.017, interval 0.017
+AddFile(Total Files): cumulative 2, interval 2
+AddFile(L0 Files): cumulative 0, interval 0
+AddFile(Keys): cumulative 1100000, interval 1100000
+Cumulative compaction: 0.00 GB write, 0.00 MB/s write, 0.00 GB read, 0.00 MB/s read, 0.8 seconds
+Interval compaction: 0.00 GB write, 0.00 MB/s write, 0.00 GB read, 0.00 MB/s read, 0.0 seconds
+Stalls(count): 0 level0_slowdown, 0 level0_slowdown_with_compaction, 0 level0_numfiles, 0 level0_numfiles_with_compaction, 0 stop for pending_compaction_bytes, 0 slowdown for pending_compaction_bytes, 0 memtable_compaction, 0 memtable_slowdown, interval 0 total count
+I220119 08:07:51.895807 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 08:07:52.030600 359 server/status/runtime.go:500  [n2] runtime stats: 435 MiB RSS, 246 goroutines, 108 MiB/72 MiB/207 MiB GO alloc/idle/total, 66 MiB/78 MiB CGO alloc/total, 39.0 CGO/sec, 0.8/1.8 %(u/s)time, 0.0 %gc (0x), 271 KiB/271 KiB (r/w)net
+I220119 08:08:01.896599 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 08:08:02.032015 359 server/status/runtime.go:500  [n2] runtime stats: 435 MiB RSS, 247 goroutines, 124 MiB/57 MiB/207 MiB GO alloc/idle/total, 65 MiB/78 MiB CGO alloc/total, 43.0 CGO/sec, 0.9/0.8 %(u/s)time, 0.0 %gc (0x), 291 KiB/291 KiB (r/w)net
+I220119 08:08:11.896793 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 08:08:12.034077 359 server/status/runtime.go:500  [n2] runtime stats: 435 MiB RSS, 247 goroutines, 141 MiB/42 MiB/207 MiB GO alloc/idle/total, 65 MiB/78 MiB CGO alloc/total, 38.0 CGO/sec, 0.5/1.2 %(u/s)time, 0.0 %gc (0x), 278 KiB/277 KiB (r/w)net
+I220119 08:08:21.897439 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 08:08:22.037390 359 server/status/runtime.go:500  [n2] runtime stats: 435 MiB RSS, 247 goroutines, 157 MiB/27 MiB/207 MiB GO alloc/idle/total, 65 MiB/78 MiB CGO alloc/total, 38.4 CGO/sec, 0.7/1.2 %(u/s)time, 0.0 %gc (0x), 272 KiB/272 KiB (r/w)net
+I220119 08:08:31.230475 355 gossip/gossip.go:562  [n2] gossip status (ok, 3 nodes)
+gossip client (1/3 cur/max conns)
+  1: ubuntu:23457 (41m0s: infos 2389/8636 sent/received, bytes 379104B/1526015B sent/received)
+gossip server (0/3 cur/max conns, infos 2389/8636 sent/received, bytes 380061B/1526831B sent/received)
+I220119 08:08:31.897872 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 08:08:32.040945 359 server/status/runtime.go:500  [n2] runtime stats: 435 MiB RSS, 246 goroutines, 90 MiB/89 MiB/207 MiB GO alloc/idle/total, 65 MiB/78 MiB CGO alloc/total, 44.7 CGO/sec, 0.8/1.4 %(u/s)time, 0.0 %gc (1x), 334 KiB/334 KiB (r/w)net
+I220119 08:08:41.899029 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 08:08:42.044422 359 server/status/runtime.go:500  [n2] runtime stats: 435 MiB RSS, 246 goroutines, 107 MiB/74 MiB/207 MiB GO alloc/idle/total, 65 MiB/78 MiB CGO alloc/total, 38.0 CGO/sec, 0.7/1.1 %(u/s)time, 0.0 %gc (0x), 281 KiB/281 KiB (r/w)net
+I220119 08:08:51.899278 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 08:08:52.045967 359 server/status/runtime.go:500  [n2] runtime stats: 435 MiB RSS, 246 goroutines, 123 MiB/59 MiB/207 MiB GO alloc/idle/total, 65 MiB/78 MiB CGO alloc/total, 41.4 CGO/sec, 0.6/1.2 %(u/s)time, 0.0 %gc (0x), 278 KiB/278 KiB (r/w)net
+I220119 08:09:01.900053 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 08:09:02.049716 359 server/status/runtime.go:500  [n2] runtime stats: 435 MiB RSS, 247 goroutines, 139 MiB/44 MiB/207 MiB GO alloc/idle/total, 73 MiB/86 MiB CGO alloc/total, 38.9 CGO/sec, 0.3/1.1 %(u/s)time, 0.0 %gc (0x), 282 KiB/282 KiB (r/w)net
+I220119 08:09:11.900822 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 08:09:12.052336 359 server/status/runtime.go:500  [n2] runtime stats: 436 MiB RSS, 247 goroutines, 156 MiB/29 MiB/207 MiB GO alloc/idle/total, 73 MiB/86 MiB CGO alloc/total, 44.5 CGO/sec, 0.8/1.2 %(u/s)time, 0.0 %gc (0x), 287 KiB/287 KiB (r/w)net
+I220119 08:09:21.901460 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 08:09:22.055382 359 server/status/runtime.go:500  [n2] runtime stats: 437 MiB RSS, 247 goroutines, 90 MiB/90 MiB/207 MiB GO alloc/idle/total, 73 MiB/86 MiB CGO alloc/total, 37.1 CGO/sec, 1.0/0.8 %(u/s)time, 0.0 %gc (1x), 271 KiB/271 KiB (r/w)net
+I220119 08:09:31.231100 355 gossip/gossip.go:562  [n2] gossip status (ok, 3 nodes)
+gossip client (1/3 cur/max conns)
+  1: ubuntu:23457 (42m0s: infos 2446/8845 sent/received, bytes 387970B/1553316B sent/received)
+gossip server (0/3 cur/max conns, infos 2446/8845 sent/received, bytes 388927B/1554132B sent/received)
+I220119 08:09:31.901609 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 08:09:32.058850 359 server/status/runtime.go:500  [n2] runtime stats: 437 MiB RSS, 246 goroutines, 107 MiB/74 MiB/207 MiB GO alloc/idle/total, 73 MiB/86 MiB CGO alloc/total, 41.9 CGO/sec, 0.6/1.3 %(u/s)time, 0.0 %gc (0x), 334 KiB/334 KiB (r/w)net
+I220119 08:09:41.902108 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 08:09:42.061511 359 server/status/runtime.go:500  [n2] runtime stats: 438 MiB RSS, 246 goroutines, 125 MiB/58 MiB/207 MiB GO alloc/idle/total, 73 MiB/86 MiB CGO alloc/total, 79.2 CGO/sec, 1.2/1.1 %(u/s)time, 0.0 %gc (0x), 361 KiB/361 KiB (r/w)net
+I220119 08:09:51.902523 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 08:09:52.065385 359 server/status/runtime.go:500  [n2] runtime stats: 439 MiB RSS, 246 goroutines, 141 MiB/43 MiB/207 MiB GO alloc/idle/total, 73 MiB/86 MiB CGO alloc/total, 33.4 CGO/sec, 0.7/1.1 %(u/s)time, 0.0 %gc (0x), 278 KiB/278 KiB (r/w)net
+I220119 08:10:01.902743 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 08:10:02.068775 359 server/status/runtime.go:500  [n2] runtime stats: 440 MiB RSS, 247 goroutines, 158 MiB/28 MiB/207 MiB GO alloc/idle/total, 73 MiB/86 MiB CGO alloc/total, 42.1 CGO/sec, 1.0/0.8 %(u/s)time, 0.0 %gc (0x), 331 KiB/295 KiB (r/w)net
+I220119 08:10:11.903171 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 08:10:12.070938 359 server/status/runtime.go:500  [n2] runtime stats: 440 MiB RSS, 247 goroutines, 93 MiB/87 MiB/207 MiB GO alloc/idle/total, 73 MiB/86 MiB CGO alloc/total, 42.6 CGO/sec, 0.9/1.2 %(u/s)time, 0.0 %gc (1x), 288 KiB/287 KiB (r/w)net
+I220119 08:10:21.903891 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 08:10:22.073601 359 server/status/runtime.go:500  [n2] runtime stats: 441 MiB RSS, 247 goroutines, 109 MiB/71 MiB/207 MiB GO alloc/idle/total, 18 MiB/28 MiB CGO alloc/total, 42.8 CGO/sec, 5.1/0.0 %(u/s)time, 0.0 %gc (0x), 303 KiB/303 KiB (r/w)net
+I220119 08:10:31.230567 355 gossip/gossip.go:562  [n2] gossip status (ok, 3 nodes)
+gossip client (1/3 cur/max conns)
+  1: ubuntu:23457 (43m0s: infos 2504/9056 sent/received, bytes 397077B/1580977B sent/received)
+gossip server (0/3 cur/max conns, infos 2504/9056 sent/received, bytes 398034B/1581793B sent/received)
+I220119 08:10:31.904896 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 08:10:32.076864 359 server/status/runtime.go:500  [n2] runtime stats: 441 MiB RSS, 246 goroutines, 127 MiB/56 MiB/207 MiB GO alloc/idle/total, 18 MiB/29 MiB CGO alloc/total, 47.9 CGO/sec, 0.8/1.2 %(u/s)time, 0.0 %gc (0x), 408 KiB/408 KiB (r/w)net
+I220119 08:10:41.905858 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 08:10:42.079710 359 server/status/runtime.go:500  [n2] runtime stats: 441 MiB RSS, 246 goroutines, 144 MiB/40 MiB/207 MiB GO alloc/idle/total, 18 MiB/29 MiB CGO alloc/total, 39.7 CGO/sec, 0.7/1.1 %(u/s)time, 0.0 %gc (0x), 284 KiB/284 KiB (r/w)net
+I220119 08:10:51.906534 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 08:10:52.082901 359 server/status/runtime.go:500  [n2] runtime stats: 441 MiB RSS, 246 goroutines, 160 MiB/25 MiB/207 MiB GO alloc/idle/total, 18 MiB/29 MiB CGO alloc/total, 35.6 CGO/sec, 0.7/1.1 %(u/s)time, 0.0 %gc (0x), 272 KiB/272 KiB (r/w)net
+I220119 08:11:01.906813 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 08:11:02.084470 359 server/status/runtime.go:500  [n2] runtime stats: 441 MiB RSS, 247 goroutines, 91 MiB/88 MiB/207 MiB GO alloc/idle/total, 18 MiB/29 MiB CGO alloc/total, 43.8 CGO/sec, 0.9/1.0 %(u/s)time, 0.0 %gc (1x), 293 KiB/293 KiB (r/w)net
+I220119 08:11:11.907539 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 08:11:12.086815 359 server/status/runtime.go:500  [n2] runtime stats: 441 MiB RSS, 247 goroutines, 108 MiB/73 MiB/207 MiB GO alloc/idle/total, 18 MiB/29 MiB CGO alloc/total, 40.5 CGO/sec, 0.6/1.1 %(u/s)time, 0.0 %gc (0x), 276 KiB/276 KiB (r/w)net
+I220119 08:11:21.908104 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 08:11:22.089405 359 server/status/runtime.go:500  [n2] runtime stats: 441 MiB RSS, 247 goroutines, 124 MiB/58 MiB/207 MiB GO alloc/idle/total, 18 MiB/29 MiB CGO alloc/total, 40.6 CGO/sec, 0.8/1.0 %(u/s)time, 0.0 %gc (0x), 276 KiB/276 KiB (r/w)net
+I220119 08:11:31.231046 355 gossip/gossip.go:562  [n2] gossip status (ok, 3 nodes)
+gossip client (1/3 cur/max conns)
+  1: ubuntu:23457 (44m0s: infos 2562/9262 sent/received, bytes 406184B/1608025B sent/received)
+gossip server (0/3 cur/max conns, infos 2562/9262 sent/received, bytes 407141B/1608841B sent/received)
+I220119 08:11:31.909051 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 08:11:32.091599 359 server/status/runtime.go:500  [n2] runtime stats: 441 MiB RSS, 246 goroutines, 142 MiB/42 MiB/207 MiB GO alloc/idle/total, 18 MiB/29 MiB CGO alloc/total, 50.8 CGO/sec, 0.8/1.2 %(u/s)time, 0.0 %gc (0x), 338 KiB/338 KiB (r/w)net
+I220119 08:11:41.909992 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 08:11:42.093677 359 server/status/runtime.go:500  [n2] runtime stats: 441 MiB RSS, 246 goroutines, 159 MiB/26 MiB/207 MiB GO alloc/idle/total, 18 MiB/29 MiB CGO alloc/total, 39.2 CGO/sec, 0.7/1.1 %(u/s)time, 0.0 %gc (0x), 285 KiB/285 KiB (r/w)net
+I220119 08:11:51.911092 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 08:11:52.095920 359 server/status/runtime.go:500  [n2] runtime stats: 441 MiB RSS, 246 goroutines, 91 MiB/87 MiB/207 MiB GO alloc/idle/total, 18 MiB/29 MiB CGO alloc/total, 34.8 CGO/sec, 0.6/1.4 %(u/s)time, 0.0 %gc (1x), 271 KiB/271 KiB (r/w)net
+I220119 08:12:01.911307 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 08:12:02.098081 359 server/status/runtime.go:500  [n2] runtime stats: 441 MiB RSS, 247 goroutines, 108 MiB/73 MiB/207 MiB GO alloc/idle/total, 18 MiB/29 MiB CGO alloc/total, 40.8 CGO/sec, 0.6/1.1 %(u/s)time, 0.0 %gc (0x), 286 KiB/286 KiB (r/w)net
+I220119 08:12:11.911612 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 08:12:12.101374 359 server/status/runtime.go:500  [n2] runtime stats: 441 MiB RSS, 247 goroutines, 125 MiB/58 MiB/207 MiB GO alloc/idle/total, 26 MiB/37 MiB CGO alloc/total, 67.7 CGO/sec, 0.5/1.4 %(u/s)time, 0.0 %gc (0x), 349 KiB/349 KiB (r/w)net
+I220119 08:12:21.911905 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 08:12:22.103928 359 server/status/runtime.go:500  [n2] runtime stats: 441 MiB RSS, 247 goroutines, 141 MiB/42 MiB/207 MiB GO alloc/idle/total, 26 MiB/37 MiB CGO alloc/total, 34.4 CGO/sec, 0.8/1.0 %(u/s)time, 0.0 %gc (0x), 268 KiB/267 KiB (r/w)net
+I220119 08:12:31.231053 355 gossip/gossip.go:562  [n2] gossip status (ok, 3 nodes)
+gossip client (1/3 cur/max conns)
+  1: ubuntu:23457 (45m0s: infos 2619/9471 sent/received, bytes 415133B/1635426B sent/received)
+gossip server (0/3 cur/max conns, infos 2619/9471 sent/received, bytes 416090B/1636242B sent/received)
+I220119 08:12:31.912117 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 08:12:32.107031 359 server/status/runtime.go:500  [n2] runtime stats: 441 MiB RSS, 246 goroutines, 159 MiB/26 MiB/207 MiB GO alloc/idle/total, 26 MiB/37 MiB CGO alloc/total, 48.3 CGO/sec, 0.6/1.5 %(u/s)time, 0.0 %gc (0x), 342 KiB/342 KiB (r/w)net
+I220119 08:12:41.912955 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 08:12:42.110427 359 server/status/runtime.go:500  [n2] runtime stats: 441 MiB RSS, 246 goroutines, 92 MiB/87 MiB/207 MiB GO alloc/idle/total, 26 MiB/37 MiB CGO alloc/total, 38.4 CGO/sec, 1.2/0.9 %(u/s)time, 0.0 %gc (1x), 277 KiB/276 KiB (r/w)net
+I220119 08:12:51.913376 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 08:12:52.112551 359 server/status/runtime.go:500  [n2] runtime stats: 441 MiB RSS, 246 goroutines, 108 MiB/72 MiB/207 MiB GO alloc/idle/total, 26 MiB/37 MiB CGO alloc/total, 39.6 CGO/sec, 0.6/1.2 %(u/s)time, 0.0 %gc (0x), 275 KiB/275 KiB (r/w)net
+I220119 08:13:01.914424 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 08:13:02.116110 359 server/status/runtime.go:500  [n2] runtime stats: 441 MiB RSS, 247 goroutines, 125 MiB/57 MiB/207 MiB GO alloc/idle/total, 26 MiB/38 MiB CGO alloc/total, 92.5 CGO/sec, 0.8/1.0 %(u/s)time, 0.0 %gc (0x), 294 KiB/294 KiB (r/w)net
+I220119 08:13:11.915056 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 08:13:12.119466 359 server/status/runtime.go:500  [n2] runtime stats: 441 MiB RSS, 247 goroutines, 142 MiB/42 MiB/207 MiB GO alloc/idle/total, 26 MiB/38 MiB CGO alloc/total, 43.1 CGO/sec, 0.6/1.4 %(u/s)time, 0.0 %gc (0x), 293 KiB/293 KiB (r/w)net
+I220119 08:13:21.915411 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 08:13:22.122393 359 server/status/runtime.go:500  [n2] runtime stats: 441 MiB RSS, 247 goroutines, 158 MiB/27 MiB/207 MiB GO alloc/idle/total, 26 MiB/38 MiB CGO alloc/total, 36.1 CGO/sec, 0.8/1.0 %(u/s)time, 0.0 %gc (0x), 269 KiB/269 KiB (r/w)net
+I220119 08:13:31.231050 355 gossip/gossip.go:562  [n2] gossip status (ok, 3 nodes)
+gossip client (1/3 cur/max conns)
+  1: ubuntu:23457 (46m0s: infos 2677/9682 sent/received, bytes 424157B/1663037B sent/received)
+gossip server (0/3 cur/max conns, infos 2677/9682 sent/received, bytes 425114B/1663853B sent/received)
+I220119 08:13:31.915931 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 08:13:32.125268 359 server/status/runtime.go:500  [n2] runtime stats: 441 MiB RSS, 246 goroutines, 94 MiB/86 MiB/207 MiB GO alloc/idle/total, 26 MiB/38 MiB CGO alloc/total, 39.8 CGO/sec, 0.8/1.2 %(u/s)time, 0.0 %gc (1x), 328 KiB/328 KiB (r/w)net
+I220119 08:13:41.916543 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 08:13:42.128287 359 server/status/runtime.go:500  [n2] runtime stats: 441 MiB RSS, 246 goroutines, 110 MiB/71 MiB/207 MiB GO alloc/idle/total, 26 MiB/38 MiB CGO alloc/total, 36.7 CGO/sec, 0.4/1.3 %(u/s)time, 0.0 %gc (0x), 284 KiB/284 KiB (r/w)net
+I220119 08:13:51.916832 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 08:13:52.130177 359 server/status/runtime.go:500  [n2] runtime stats: 441 MiB RSS, 246 goroutines, 127 MiB/56 MiB/207 MiB GO alloc/idle/total, 26 MiB/38 MiB CGO alloc/total, 37.3 CGO/sec, 0.7/1.2 %(u/s)time, 0.0 %gc (0x), 272 KiB/272 KiB (r/w)net
+I220119 08:14:01.917476 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 08:14:02.133592 359 server/status/runtime.go:500  [n2] runtime stats: 441 MiB RSS, 247 goroutines, 143 MiB/41 MiB/207 MiB GO alloc/idle/total, 34 MiB/46 MiB CGO alloc/total, 45.9 CGO/sec, 0.5/1.4 %(u/s)time, 0.0 %gc (0x), 296 KiB/296 KiB (r/w)net
+I220119 08:14:11.918568 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 08:14:12.136729 359 server/status/runtime.go:500  [n2] runtime stats: 441 MiB RSS, 247 goroutines, 160 MiB/25 MiB/207 MiB GO alloc/idle/total, 34 MiB/46 MiB CGO alloc/total, 36.6 CGO/sec, 0.6/1.1 %(u/s)time, 0.0 %gc (0x), 277 KiB/277 KiB (r/w)net
+I220119 08:14:21.919704 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 08:14:22.140144 359 server/status/runtime.go:500  [n2] runtime stats: 441 MiB RSS, 247 goroutines, 91 MiB/88 MiB/207 MiB GO alloc/idle/total, 34 MiB/46 MiB CGO alloc/total, 41.0 CGO/sec, 0.6/1.3 %(u/s)time, 0.0 %gc (1x), 274 KiB/274 KiB (r/w)net
+I220119 08:14:31.230353 355 gossip/gossip.go:562  [n2] gossip status (ok, 3 nodes)
+gossip client (1/3 cur/max conns)
+  1: ubuntu:23457 (47m0s: infos 2735/9888 sent/received, bytes 433264B/1690085B sent/received)
+gossip server (0/3 cur/max conns, infos 2735/9888 sent/received, bytes 434221B/1690901B sent/received)
+I220119 08:14:31.920359 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 08:14:32.143039 359 server/status/runtime.go:500  [n2] runtime stats: 441 MiB RSS, 246 goroutines, 109 MiB/72 MiB/207 MiB GO alloc/idle/total, 34 MiB/46 MiB CGO alloc/total, 39.8 CGO/sec, 0.8/1.3 %(u/s)time, 0.0 %gc (0x), 329 KiB/329 KiB (r/w)net
+I220119 08:14:41.921192 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 08:14:42.145453 359 server/status/runtime.go:500  [n2] runtime stats: 441 MiB RSS, 246 goroutines, 126 MiB/56 MiB/207 MiB GO alloc/idle/total, 34 MiB/46 MiB CGO alloc/total, 72.3 CGO/sec, 0.7/1.4 %(u/s)time, 0.0 %gc (0x), 361 KiB/361 KiB (r/w)net
+I220119 08:14:51.922106 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 08:14:52.148471 359 server/status/runtime.go:500  [n2] runtime stats: 441 MiB RSS, 246 goroutines, 142 MiB/42 MiB/207 MiB GO alloc/idle/total, 34 MiB/46 MiB CGO alloc/total, 37.4 CGO/sec, 0.6/1.2 %(u/s)time, 0.0 %gc (0x), 273 KiB/273 KiB (r/w)net
+I220119 08:15:01.922403 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 08:15:02.151612 359 server/status/runtime.go:500  [n2] runtime stats: 441 MiB RSS, 247 goroutines, 159 MiB/26 MiB/207 MiB GO alloc/idle/total, 34 MiB/46 MiB CGO alloc/total, 42.2 CGO/sec, 0.8/1.2 %(u/s)time, 0.0 %gc (0x), 287 KiB/287 KiB (r/w)net
+I220119 08:15:11.923232 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 08:15:12.154692 359 server/status/runtime.go:500  [n2] runtime stats: 441 MiB RSS, 247 goroutines, 92 MiB/88 MiB/207 MiB GO alloc/idle/total, 34 MiB/46 MiB CGO alloc/total, 40.2 CGO/sec, 0.8/1.1 %(u/s)time, 0.0 %gc (1x), 282 KiB/282 KiB (r/w)net
+I220119 08:15:21.923813 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 08:15:22.158103 359 server/status/runtime.go:500  [n2] runtime stats: 441 MiB RSS, 247 goroutines, 108 MiB/72 MiB/207 MiB GO alloc/idle/total, 34 MiB/46 MiB CGO alloc/total, 33.3 CGO/sec, 0.7/0.9 %(u/s)time, 0.0 %gc (0x), 268 KiB/268 KiB (r/w)net
+I220119 08:15:31.230867 355 gossip/gossip.go:562  [n2] gossip status (ok, 3 nodes)
+gossip client (1/3 cur/max conns)
+  1: ubuntu:23457 (48m0s: infos 2792/10097 sent/received, bytes 442213B/1717386B sent/received)
+gossip server (0/3 cur/max conns, infos 2792/10097 sent/received, bytes 443170B/1718202B sent/received)
+I220119 08:15:31.924065 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 08:15:32.161156 359 server/status/runtime.go:500  [n2] runtime stats: 441 MiB RSS, 246 goroutines, 126 MiB/57 MiB/207 MiB GO alloc/idle/total, 34 MiB/46 MiB CGO alloc/total, 47.2 CGO/sec, 0.7/1.5 %(u/s)time, 0.0 %gc (0x), 338 KiB/338 KiB (r/w)net
+I220119 08:15:41.924227 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 08:15:42.164103 359 server/status/runtime.go:500  [n2] runtime stats: 441 MiB RSS, 246 goroutines, 142 MiB/42 MiB/207 MiB GO alloc/idle/total, 34 MiB/46 MiB CGO alloc/total, 38.1 CGO/sec, 0.7/1.1 %(u/s)time, 0.0 %gc (0x), 277 KiB/277 KiB (r/w)net
+I220119 08:15:51.924735 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 08:15:52.167931 359 server/status/runtime.go:500  [n2] runtime stats: 441 MiB RSS, 246 goroutines, 158 MiB/26 MiB/207 MiB GO alloc/idle/total, 42 MiB/54 MiB CGO alloc/total, 39.6 CGO/sec, 0.8/1.0 %(u/s)time, 0.0 %gc (0x), 275 KiB/275 KiB (r/w)net
+I220119 08:16:01.925293 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 08:16:02.170097 359 server/status/runtime.go:500  [n2] runtime stats: 441 MiB RSS, 247 goroutines, 92 MiB/87 MiB/207 MiB GO alloc/idle/total, 42 MiB/54 MiB CGO alloc/total, 42.9 CGO/sec, 0.9/1.1 %(u/s)time, 0.0 %gc (1x), 289 KiB/289 KiB (r/w)net
+I220119 08:16:11.925501 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 08:16:12.173199 359 server/status/runtime.go:500  [n2] runtime stats: 441 MiB RSS, 247 goroutines, 109 MiB/72 MiB/207 MiB GO alloc/idle/total, 42 MiB/54 MiB CGO alloc/total, 39.3 CGO/sec, 0.5/1.4 %(u/s)time, 0.0 %gc (0x), 291 KiB/291 KiB (r/w)net
+I220119 08:16:21.926450 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 08:16:22.176256 359 server/status/runtime.go:500  [n2] runtime stats: 441 MiB RSS, 247 goroutines, 125 MiB/57 MiB/207 MiB GO alloc/idle/total, 42 MiB/54 MiB CGO alloc/total, 39.0 CGO/sec, 0.7/1.2 %(u/s)time, 0.0 %gc (0x), 273 KiB/272 KiB (r/w)net
+I220119 08:16:31.230688 355 gossip/gossip.go:562  [n2] gossip status (ok, 3 nodes)
+gossip client (1/3 cur/max conns)
+  1: ubuntu:23457 (49m0s: infos 2850/10308 sent/received, bytes 451237B/1744947B sent/received)
+gossip server (0/3 cur/max conns, infos 2850/10308 sent/received, bytes 452194B/1745763B sent/received)
+I220119 08:16:31.927037 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 08:16:32.177946 359 server/status/runtime.go:500  [n2] runtime stats: 441 MiB RSS, 246 goroutines, 143 MiB/41 MiB/207 MiB GO alloc/idle/total, 42 MiB/54 MiB CGO alloc/total, 39.7 CGO/sec, 0.5/1.4 %(u/s)time, 0.0 %gc (0x), 324 KiB/324 KiB (r/w)net
+I220119 08:16:41.927636 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 08:16:42.180853 359 server/status/runtime.go:500  [n2] runtime stats: 441 MiB RSS, 246 goroutines, 160 MiB/26 MiB/207 MiB GO alloc/idle/total, 42 MiB/54 MiB CGO alloc/total, 40.0 CGO/sec, 0.8/1.2 %(u/s)time, 0.0 %gc (0x), 282 KiB/282 KiB (r/w)net
+I220119 08:16:51.927766 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 08:16:52.184803 359 server/status/runtime.go:500  [n2] runtime stats: 441 MiB RSS, 246 goroutines, 90 MiB/89 MiB/207 MiB GO alloc/idle/total, 42 MiB/54 MiB CGO alloc/total, 35.8 CGO/sec, 0.6/1.3 %(u/s)time, 0.0 %gc (1x), 273 KiB/273 KiB (r/w)net
+I220119 08:17:01.928965 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 08:17:02.188145 359 server/status/runtime.go:500  [n2] runtime stats: 441 MiB RSS, 247 goroutines, 106 MiB/74 MiB/207 MiB GO alloc/idle/total, 42 MiB/54 MiB CGO alloc/total, 69.4 CGO/sec, 0.7/1.2 %(u/s)time, 0.0 %gc (0x), 357 KiB/357 KiB (r/w)net
+I220119 08:17:11.930006 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 08:17:12.191093 359 server/status/runtime.go:500  [n2] runtime stats: 441 MiB RSS, 247 goroutines, 123 MiB/59 MiB/207 MiB GO alloc/idle/total, 42 MiB/54 MiB CGO alloc/total, 37.5 CGO/sec, 1.0/1.1 %(u/s)time, 0.0 %gc (0x), 279 KiB/278 KiB (r/w)net
+I220119 08:17:21.930464 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 08:17:22.193656 359 server/status/runtime.go:500  [n2] runtime stats: 441 MiB RSS, 247 goroutines, 139 MiB/44 MiB/207 MiB GO alloc/idle/total, 42 MiB/54 MiB CGO alloc/total, 35.9 CGO/sec, 0.7/1.0 %(u/s)time, 0.0 %gc (0x), 270 KiB/270 KiB (r/w)net
+I220119 08:17:31.230540 355 gossip/gossip.go:562  [n2] gossip status (ok, 3 nodes)
+gossip client (1/3 cur/max conns)
+  1: ubuntu:23457 (50m0s: infos 2908/10514 sent/received, bytes 460344B/1771945B sent/received)
+gossip server (0/3 cur/max conns, infos 2908/10514 sent/received, bytes 461301B/1772761B sent/received)
+I220119 08:17:31.931198 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 08:17:32.195962 359 server/status/runtime.go:500  [n2] runtime stats: 441 MiB RSS, 246 goroutines, 157 MiB/28 MiB/207 MiB GO alloc/idle/total, 42 MiB/54 MiB CGO alloc/total, 42.9 CGO/sec, 0.9/1.0 %(u/s)time, 0.0 %gc (0x), 359 KiB/359 KiB (r/w)net
+I220119 08:17:41.932098 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 08:17:42.197558 359 server/status/runtime.go:500  [n2] runtime stats: 441 MiB RSS, 246 goroutines, 91 MiB/88 MiB/207 MiB GO alloc/idle/total, 50 MiB/62 MiB CGO alloc/total, 47.3 CGO/sec, 0.7/1.5 %(u/s)time, 0.0 %gc (1x), 294 KiB/294 KiB (r/w)net
+I220119 08:17:51.231842 354 storage/store.go:4034  [n2,s2] sstables (read amplification = 2):
+0 [ 426K 1 ]: 426K
+6 [  18M 3 ]: 15M 2M 813K
+I220119 08:17:51.231998 354 storage/store.go:4035  [n2,s2] 
+** Compaction Stats [default] **
+Level    Files   Size     Score Read(GB)  Rn(GB) Rnp1(GB) Write(GB) Wnew(GB) Moved(GB) W-Amp Rd(MB/s) Wr(MB/s) Comp(sec) CompMergeCPU(sec) Comp(cnt) Avg(sec) KeyIn KeyDrop
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+  L0      1/0   425.98 KB   0.5      0.0     0.0      0.0       0.0      0.0       0.0   0.1      0.0      1.2      1.13              1.12         3    0.377       0      0
+  L6      3/0   17.70 MB   0.0      0.0     0.0      0.0       0.0      0.0       0.0   0.8     30.3     24.2      0.03              0.03         3    0.011     25K   6929
+ Sum      4/0   18.11 MB   0.0      0.0     0.0      0.0       0.0      0.0       0.0   0.1      0.9      1.9      1.16              1.15         6    0.194     25K   6929
+ Int      0/0    0.00 KB   0.0      0.0     0.0      0.0       0.0      0.0       0.0   1.0      0.0      1.2      0.33              0.33         1    0.333       0      0
+
+** Compaction Stats [default] **
+Priority    Files   Size     Score Read(GB)  Rn(GB) Rnp1(GB) Write(GB) Wnew(GB) Moved(GB) W-Amp Rd(MB/s) Wr(MB/s) Comp(sec) CompMergeCPU(sec) Comp(cnt) Avg(sec) KeyIn KeyDrop
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Low      0/0    0.00 KB   0.0      0.0     0.0      0.0       0.0      0.0       0.0   0.0     32.4     25.9      0.03              0.03         1    0.031     25K   6929
+High      0/0    0.00 KB   0.0      0.0     0.0      0.0       0.0      0.0       0.0   0.0      0.0      1.2      1.13              1.12         3    0.377       0      0
+User      0/0    0.00 KB   0.0      0.0     0.0      0.0       0.0      0.0       0.0   0.0      0.0      0.0      0.00              0.00         2    0.001       0      0
+Uptime(secs): 3040.0 total, 600.0 interval
+Flush(GB): cumulative 0.001, interval 0.000
+AddFile(GB): cumulative 0.017, interval 0.000
+AddFile(Total Files): cumulative 2, interval 0
+AddFile(L0 Files): cumulative 0, interval 0
+AddFile(Keys): cumulative 1100000, interval 0
+Cumulative compaction: 0.00 GB write, 0.00 MB/s write, 0.00 GB read, 0.00 MB/s read, 1.2 seconds
+Interval compaction: 0.00 GB write, 0.00 MB/s write, 0.00 GB read, 0.00 MB/s read, 0.3 seconds
+Stalls(count): 0 level0_slowdown, 0 level0_slowdown_with_compaction, 0 level0_numfiles, 0 level0_numfiles_with_compaction, 0 stop for pending_compaction_bytes, 0 slowdown for pending_compaction_bytes, 0 memtable_compaction, 0 memtable_slowdown, interval 0 total count
+I220119 08:17:51.932232 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 08:17:52.200138 359 server/status/runtime.go:500  [n2] runtime stats: 441 MiB RSS, 246 goroutines, 107 MiB/73 MiB/207 MiB GO alloc/idle/total, 50 MiB/62 MiB CGO alloc/total, 40.4 CGO/sec, 0.4/1.4 %(u/s)time, 0.0 %gc (0x), 272 KiB/272 KiB (r/w)net
+I220119 08:18:01.933337 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 08:18:02.204001 359 server/status/runtime.go:500  [n2] runtime stats: 441 MiB RSS, 247 goroutines, 123 MiB/58 MiB/207 MiB GO alloc/idle/total, 50 MiB/62 MiB CGO alloc/total, 37.2 CGO/sec, 1.0/0.8 %(u/s)time, 0.0 %gc (0x), 284 KiB/284 KiB (r/w)net
+I220119 08:18:11.933880 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 08:18:12.207380 359 server/status/runtime.go:500  [n2] runtime stats: 441 MiB RSS, 247 goroutines, 140 MiB/43 MiB/207 MiB GO alloc/idle/total, 50 MiB/62 MiB CGO alloc/total, 38.0 CGO/sec, 0.6/1.4 %(u/s)time, 0.0 %gc (0x), 280 KiB/280 KiB (r/w)net
+I220119 08:18:21.934427 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 08:18:22.209279 359 server/status/runtime.go:500  [n2] runtime stats: 441 MiB RSS, 247 goroutines, 156 MiB/28 MiB/207 MiB GO alloc/idle/total, 50 MiB/62 MiB CGO alloc/total, 39.6 CGO/sec, 1.0/0.7 %(u/s)time, 0.0 %gc (0x), 270 KiB/270 KiB (r/w)net
+I220119 08:18:31.231105 355 gossip/gossip.go:562  [n2] gossip status (ok, 3 nodes)
+gossip client (1/3 cur/max conns)
+  1: ubuntu:23457 (51m0s: infos 2965/10723 sent/received, bytes 469293B/1799246B sent/received)
+gossip server (0/3 cur/max conns, infos 2965/10723 sent/received, bytes 470250B/1800062B sent/received)
+I220119 08:18:31.935276 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 08:18:32.211980 359 server/status/runtime.go:500  [n2] runtime stats: 441 MiB RSS, 246 goroutines, 90 MiB/89 MiB/207 MiB GO alloc/idle/total, 50 MiB/62 MiB CGO alloc/total, 46.6 CGO/sec, 0.5/1.7 %(u/s)time, 0.0 %gc (1x), 368 KiB/368 KiB (r/w)net
+I220119 08:18:41.936269 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 08:18:42.214371 359 server/status/runtime.go:500  [n2] runtime stats: 441 MiB RSS, 246 goroutines, 107 MiB/74 MiB/207 MiB GO alloc/idle/total, 50 MiB/62 MiB CGO alloc/total, 38.9 CGO/sec, 0.5/1.3 %(u/s)time, 0.0 %gc (0x), 276 KiB/276 KiB (r/w)net
+I220119 08:18:51.936822 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 08:18:52.217017 359 server/status/runtime.go:500  [n2] runtime stats: 441 MiB RSS, 246 goroutines, 124 MiB/59 MiB/207 MiB GO alloc/idle/total, 50 MiB/62 MiB CGO alloc/total, 42.5 CGO/sec, 1.0/0.9 %(u/s)time, 0.0 %gc (0x), 277 KiB/277 KiB (r/w)net
+I220119 08:19:01.937418 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 08:19:02.221081 359 server/status/runtime.go:500  [n2] runtime stats: 441 MiB RSS, 247 goroutines, 140 MiB/44 MiB/207 MiB GO alloc/idle/total, 50 MiB/62 MiB CGO alloc/total, 37.7 CGO/sec, 0.6/1.3 %(u/s)time, 0.0 %gc (0x), 284 KiB/284 KiB (r/w)net
+I220119 08:19:11.937915 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 08:19:12.223682 359 server/status/runtime.go:500  [n2] runtime stats: 441 MiB RSS, 247 goroutines, 157 MiB/28 MiB/207 MiB GO alloc/idle/total, 50 MiB/62 MiB CGO alloc/total, 40.7 CGO/sec, 0.5/1.2 %(u/s)time, 0.0 %gc (0x), 288 KiB/288 KiB (r/w)net
+I220119 08:19:21.938951 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 08:19:22.226199 359 server/status/runtime.go:500  [n2] runtime stats: 441 MiB RSS, 247 goroutines, 91 MiB/88 MiB/207 MiB GO alloc/idle/total, 50 MiB/62 MiB CGO alloc/total, 39.2 CGO/sec, 0.7/1.3 %(u/s)time, 0.0 %gc (1x), 272 KiB/272 KiB (r/w)net
+I220119 08:19:31.230294 355 gossip/gossip.go:562  [n2] gossip status (ok, 3 nodes)
+gossip client (1/3 cur/max conns)
+  1: ubuntu:23457 (52m0s: infos 3033/10955 sent/received, bytes 482110B/1875050B sent/received)
+gossip server (0/3 cur/max conns, infos 3033/10955 sent/received, bytes 483067B/1875866B sent/received)
+I220119 08:19:31.939331 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 08:19:32.227870 359 server/status/runtime.go:500  [n2] runtime stats: 442 MiB RSS, 246 goroutines, 116 MiB/68 MiB/207 MiB GO alloc/idle/total, 57 MiB/70 MiB CGO alloc/total, 1161.7 CGO/sec, 1.3/4.7 %(u/s)time, 0.0 %gc (0x), 1.6 MiB/1.6 MiB (r/w)net
+I220119 08:19:41.939844 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 08:19:42.230409 359 server/status/runtime.go:500  [n2] runtime stats: 442 MiB RSS, 246 goroutines, 146 MiB/39 MiB/207 MiB GO alloc/idle/total, 57 MiB/70 MiB CGO alloc/total, 1415.3 CGO/sec, 2.8/4.7 %(u/s)time, 0.0 %gc (0x), 1.8 MiB/1.8 MiB (r/w)net
+I220119 08:19:51.940721 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 08:19:52.232587 359 server/status/runtime.go:500  [n2] runtime stats: 442 MiB RSS, 246 goroutines, 163 MiB/23 MiB/208 MiB GO alloc/idle/total, 57 MiB/70 MiB CGO alloc/total, 37.0 CGO/sec, 0.5/1.2 %(u/s)time, 0.0 %gc (0x), 275 KiB/275 KiB (r/w)net
+I220119 08:20:01.941095 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 08:20:02.235602 359 server/status/runtime.go:500  [n2] runtime stats: 392 MiB RSS, 247 goroutines, 96 MiB/79 MiB/208 MiB GO alloc/idle/total, 57 MiB/70 MiB CGO alloc/total, 42.4 CGO/sec, 0.4/1.4 %(u/s)time, 0.0 %gc (1x), 315 KiB/302 KiB (r/w)net
+I220119 08:20:11.942253 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 08:20:12.237663 359 server/status/runtime.go:500  [n2] runtime stats: 395 MiB RSS, 247 goroutines, 113 MiB/64 MiB/208 MiB GO alloc/idle/total, 61 MiB/72 MiB CGO alloc/total, 10199.1 CGO/sec, 1.3/1.4 %(u/s)time, 0.0 %gc (0x), 318 KiB/318 KiB (r/w)net
+I220119 08:20:21.942610 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 08:20:22.241529 359 server/status/runtime.go:500  [n2] runtime stats: 398 MiB RSS, 247 goroutines, 130 MiB/49 MiB/208 MiB GO alloc/idle/total, 64 MiB/76 MiB CGO alloc/total, 11648.1 CGO/sec, 1.7/1.3 %(u/s)time, 0.0 %gc (0x), 321 KiB/321 KiB (r/w)net
+I220119 08:20:31.231115 355 gossip/gossip.go:562  [n2] gossip status (ok, 3 nodes)
+gossip client (1/3 cur/max conns)
+  1: ubuntu:23457 (53m0s: infos 3152/11282 sent/received, bytes 513848B/1945936B sent/received)
+gossip server (0/3 cur/max conns, infos 3152/11282 sent/received, bytes 514805B/1946752B sent/received)
+I220119 08:20:31.943625 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 08:20:32.243720 359 server/status/runtime.go:500  [n2] runtime stats: 402 MiB RSS, 246 goroutines, 148 MiB/33 MiB/208 MiB GO alloc/idle/total, 68 MiB/81 MiB CGO alloc/total, 11665.0 CGO/sec, 1.9/1.3 %(u/s)time, 0.0 %gc (0x), 413 KiB/413 KiB (r/w)net
+I220119 08:20:41.944807 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 08:20:42.245183 359 server/status/runtime.go:500  [n2] runtime stats: 405 MiB RSS, 246 goroutines, 166 MiB/17 MiB/208 MiB GO alloc/idle/total, 71 MiB/84 MiB CGO alloc/total, 10221.6 CGO/sec, 1.5/1.7 %(u/s)time, 0.0 %gc (0x), 362 KiB/362 KiB (r/w)net
+I220119 08:20:51.945517 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 08:20:52.247866 359 server/status/runtime.go:500  [n2] runtime stats: 406 MiB RSS, 246 goroutines, 94 MiB/81 MiB/208 MiB GO alloc/idle/total, 74 MiB/87 MiB CGO alloc/total, 7319.1 CGO/sec, 1.5/1.5 %(u/s)time, 0.0 %gc (1x), 348 KiB/348 KiB (r/w)net
+I220119 08:21:01.945879 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 08:21:02.250782 359 server/status/runtime.go:500  [n2] runtime stats: 410 MiB RSS, 247 goroutines, 111 MiB/66 MiB/208 MiB GO alloc/idle/total, 76 MiB/91 MiB CGO alloc/total, 11590.3 CGO/sec, 1.6/1.5 %(u/s)time, 0.0 %gc (0x), 355 KiB/355 KiB (r/w)net
+I220119 08:21:11.946638 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 08:21:12.253616 359 server/status/runtime.go:500  [n2] runtime stats: 414 MiB RSS, 247 goroutines, 129 MiB/51 MiB/208 MiB GO alloc/idle/total, 88 MiB/102 MiB CGO alloc/total, 8769.1 CGO/sec, 1.5/1.4 %(u/s)time, 0.0 %gc (0x), 351 KiB/351 KiB (r/w)net
+I220119 08:21:21.947024 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 08:21:22.255102 359 server/status/runtime.go:500  [n2] runtime stats: 418 MiB RSS, 247 goroutines, 123 MiB/62 MiB/217 MiB GO alloc/idle/total, 91 MiB/108 MiB CGO alloc/total, 4422.4 CGO/sec, 6.9/5.0 %(u/s)time, 0.0 %gc (2x), 9.6 MiB/9.6 MiB (r/w)net
+I220119 08:21:31.230464 355 gossip/gossip.go:562  [n2] gossip status (ok, 3 nodes)
+gossip client (1/3 cur/max conns)
+  1: ubuntu:23457 (54m0s: infos 3226/11532 sent/received, bytes 529104B/1987595B sent/received)
+gossip server (0/3 cur/max conns, infos 3226/11532 sent/received, bytes 530061B/1988411B sent/received)
+gossip connectivity
+  n3 [sentinel];
+  n2 -> n1; n3 -> n1;
+I220119 08:21:31.947912 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 08:21:32.257839 359 server/status/runtime.go:500  [n2] runtime stats: 421 MiB RSS, 246 goroutines, 141 MiB/46 MiB/217 MiB GO alloc/idle/total, 93 MiB/109 MiB CGO alloc/total, 5861.6 CGO/sec, 1.3/1.4 %(u/s)time, 0.0 %gc (0x), 389 KiB/391 KiB (r/w)net
+I220119 08:21:41.948698 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 08:21:42.260284 359 server/status/runtime.go:500  [n2] runtime stats: 423 MiB RSS, 246 goroutines, 159 MiB/29 MiB/217 MiB GO alloc/idle/total, 94 MiB/111 MiB CGO alloc/total, 5865.1 CGO/sec, 0.9/1.7 %(u/s)time, 0.0 %gc (0x), 344 KiB/344 KiB (r/w)net
+I220119 08:21:51.949874 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 08:21:52.263420 359 server/status/runtime.go:500  [n2] runtime stats: 427 MiB RSS, 246 goroutines, 176 MiB/13 MiB/217 MiB GO alloc/idle/total, 97 MiB/114 MiB CGO alloc/total, 7313.4 CGO/sec, 1.2/1.3 %(u/s)time, 0.0 %gc (0x), 352 KiB/341 KiB (r/w)net
+I220119 08:22:01.950066 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 08:22:02.265099 359 server/status/runtime.go:500  [n2] runtime stats: 429 MiB RSS, 247 goroutines, 100 MiB/84 MiB/217 MiB GO alloc/idle/total, 98 MiB/115 MiB CGO alloc/total, 4440.9 CGO/sec, 1.1/1.8 %(u/s)time, 0.0 %gc (1x), 386 KiB/387 KiB (r/w)net
+I220119 08:22:11.950594 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 08:22:12.267212 359 server/status/runtime.go:500  [n2] runtime stats: 431 MiB RSS, 247 goroutines, 118 MiB/68 MiB/217 MiB GO alloc/idle/total, 98 MiB/116 MiB CGO alloc/total, 1514.4 CGO/sec, 0.6/1.4 %(u/s)time, 0.0 %gc (0x), 319 KiB/320 KiB (r/w)net
+I220119 08:22:21.951739 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 08:22:22.269754 359 server/status/runtime.go:500  [n2] runtime stats: 432 MiB RSS, 247 goroutines, 135 MiB/52 MiB/217 MiB GO alloc/idle/total, 98 MiB/116 MiB CGO alloc/total, 1507.7 CGO/sec, 0.9/1.5 %(u/s)time, 0.0 %gc (0x), 311 KiB/312 KiB (r/w)net
+I220119 08:22:31.231431 355 gossip/gossip.go:562  [n2] gossip status (ok, 3 nodes)
+gossip client (1/3 cur/max conns)
+  1: ubuntu:23457 (55m0s: infos 3293/11774 sent/received, bytes 541550B/2026398B sent/received)
+gossip server (0/3 cur/max conns, infos 3293/11774 sent/received, bytes 542507B/2027214B sent/received)
+I220119 08:22:31.952140 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 08:22:32.272759 359 server/status/runtime.go:500  [n2] runtime stats: 432 MiB RSS, 246 goroutines, 154 MiB/35 MiB/217 MiB GO alloc/idle/total, 99 MiB/117 MiB CGO alloc/total, 1507.1 CGO/sec, 0.6/1.6 %(u/s)time, 0.0 %gc (0x), 364 KiB/364 KiB (r/w)net
+I220119 08:22:41.953072 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 08:22:42.274709 359 server/status/runtime.go:500  [n2] runtime stats: 433 MiB RSS, 246 goroutines, 171 MiB/19 MiB/217 MiB GO alloc/idle/total, 99 MiB/117 MiB CGO alloc/total, 50.4 CGO/sec, 1.1/1.0 %(u/s)time, 0.0 %gc (0x), 293 KiB/294 KiB (r/w)net
+I220119 08:22:51.954125 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 08:22:52.277856 359 server/status/runtime.go:500  [n2] runtime stats: 434 MiB RSS, 244 goroutines, 100 MiB/84 MiB/217 MiB GO alloc/idle/total, 99 MiB/117 MiB CGO alloc/total, 1489.8 CGO/sec, 0.9/1.2 %(u/s)time, 0.0 %gc (1x), 287 KiB/291 KiB (r/w)net
+I220119 08:23:01.954828 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 08:23:02.280321 359 server/status/runtime.go:500  [n2] runtime stats: 434 MiB RSS, 245 goroutines, 117 MiB/68 MiB/217 MiB GO alloc/idle/total, 107 MiB/125 MiB CGO alloc/total, 46.0 CGO/sec, 0.8/0.9 %(u/s)time, 0.0 %gc (0x), 290 KiB/309 KiB (r/w)net
+I220119 08:23:11.955262 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 08:23:12.283491 359 server/status/runtime.go:500  [n2] runtime stats: 436 MiB RSS, 245 goroutines, 135 MiB/53 MiB/217 MiB GO alloc/idle/total, 107 MiB/125 MiB CGO alloc/total, 41.7 CGO/sec, 0.2/1.5 %(u/s)time, 0.0 %gc (0x), 280 KiB/339 KiB (r/w)net
+I220119 08:23:21.955501 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 08:23:22.291080 359 server/status/runtime.go:500  [n2] runtime stats: 436 MiB RSS, 245 goroutines, 151 MiB/37 MiB/217 MiB GO alloc/idle/total, 107 MiB/125 MiB CGO alloc/total, 43.8 CGO/sec, 0.6/1.3 %(u/s)time, 0.0 %gc (0x), 296 KiB/297 KiB (r/w)net
+I220119 08:23:31.230600 355 gossip/gossip.go:562  [n2] gossip status (ok, 3 nodes)
+gossip client (1/3 cur/max conns)
+  1: ubuntu:23457 (56m0s: infos 3351/11984 sent/received, bytes 550657B/2054418B sent/received)
+gossip server (0/3 cur/max conns, infos 3351/11984 sent/received, bytes 551614B/2055234B sent/received)
+I220119 08:23:31.955796 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 08:23:32.294186 359 server/status/runtime.go:500  [n2] runtime stats: 437 MiB RSS, 244 goroutines, 170 MiB/20 MiB/217 MiB GO alloc/idle/total, 107 MiB/125 MiB CGO alloc/total, 50.3 CGO/sec, 0.8/0.9 %(u/s)time, 0.0 %gc (0x), 326 KiB/325 KiB (r/w)net
+I220119 08:23:41.956223 397 security/audit/server/audit_server.go:125  [n2] refresh audit server settings
+I220119 08:23:42.296691 359 server/status/runtime.go:500  [n2] runtime stats: 438 MiB RSS, 244 goroutines, 99 MiB/85 MiB/217 MiB GO alloc/idle/total, 108 MiB/125 MiB CGO alloc/total, 1498.8 CGO/sec, 1.2/1.2 %(u/s)time, 0.0 %gc (1x), 291 KiB/291 KiB (r/w)net

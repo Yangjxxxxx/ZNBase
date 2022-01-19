@@ -1,0 +1,6 @@
+I220119 08:39:51.317870 1 util/log/clog.go:1194  [config] file created at: 2022/01/19 08:39:51
+I220119 08:39:51.317870 1 util/log/clog.go:1194  [config] running on machine: ubuntu
+I220119 08:39:51.317870 1 util/log/clog.go:1194  [config] binary: ZNBaseDB OSS 4cd474b8 (x86_64-linux-gnu, built 2022/01/19 07:14:44, go1.14)
+I220119 08:39:51.317870 1 util/log/clog.go:1194  [config] arguments: [./znbase start --insecure --store=./node1 --listen-addr=:23456 --http-addr=:8000 --join=:23456,:23457,:23458]
+I220119 08:39:51.317870 1 util/log/clog.go:1194  line format: [IWEF]yymmdd hh:mm:ss.uuuuuu goid file:line msg utf8=✓
+Error: could not cleanup temporary directories from record file: could not lock temporary directory /home/yangjx/go/src/github.com/znbasedb/znbase/node1/znbase-cursor-temp929803348, may still be in use: IO error: While lock file: /home/yangjx/go/src/github.com/znbasedb/znbase/node1/znbase-cursor-temp929803348/TEMP_DIR.LOCK: Resource temporarily unavailable

@@ -1504,8 +1504,8 @@ func (p *PhysicalPlan) AddJoinStageWithWorkArgs(
 			// Set up the left routers.
 			leftRules := make([]distsqlpb.OutputRouterSpec_MixHashRouterRuleSpec, 1)
 			leftRules[0] = distsqlpb.OutputRouterSpec_MixHashRouterRuleSpec{
-				MixHashType: distsqlpb.OutputRouterSpec_MixHashRouterRuleSpec_HASH_MIRROR,
-				SkewData: hjWorkArgs.RightHeavyHitters,
+				MixHashType: distsqlpb.OutputRouterSpec_MixHashRouterRuleSpec_HASH_AVERAGE,
+				SkewData: hjWorkArgs.LeftHeavyHitters,
 			}
 			for _, resultProc := range leftRouters {
 				p.Processors[resultProc].Spec.Output[0] = distsqlpb.OutputRouterSpec{
@@ -1517,8 +1517,8 @@ func (p *PhysicalPlan) AddJoinStageWithWorkArgs(
 			// Set up the right routers.
 			rightRules := make([]distsqlpb.OutputRouterSpec_MixHashRouterRuleSpec, 1)
 			rightRules[0] = distsqlpb.OutputRouterSpec_MixHashRouterRuleSpec{
-				MixHashType: distsqlpb.OutputRouterSpec_MixHashRouterRuleSpec_HASH_AVERAGE,
-				SkewData: hjWorkArgs.RightHeavyHitters,
+				MixHashType: distsqlpb.OutputRouterSpec_MixHashRouterRuleSpec_HASH_MIRROR,
+				SkewData: hjWorkArgs.LeftHeavyHitters,
 			}
 			for _, resultProc := range rightRouters {
 				p.Processors[resultProc].Spec.Output[0] = distsqlpb.OutputRouterSpec{
