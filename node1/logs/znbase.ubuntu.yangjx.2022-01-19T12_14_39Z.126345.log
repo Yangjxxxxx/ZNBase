@@ -1,0 +1,183 @@
+I220119 12:14:39.384863 1 util/log/clog.go:1194  [config] file created at: 2022/01/19 12:14:39
+I220119 12:14:39.384863 1 util/log/clog.go:1194  [config] running on machine: ubuntu
+I220119 12:14:39.384863 1 util/log/clog.go:1194  [config] binary: ZNBaseDB OSS a077da02 (x86_64-linux-gnu, built 2022/01/19 12:01:15, go1.14)
+I220119 12:14:39.384863 1 util/log/clog.go:1194  [config] arguments: [./znbase start --insecure --store=./node1 --listen-addr=:23456 --http-addr=:8000 --join=:23456,:23457,:23458]
+I220119 12:14:39.384863 1 util/log/clog.go:1194  line format: [IWEF]yymmdd hh:mm:ss.uuuuuu goid file:line msg utf8=✓
+I220119 12:14:39.384862 1 cli/start.go:1156  logging to directory /home/yangjx/go/src/github.com/znbasedb/znbase/node1/logs
+W220119 12:14:39.385293 1 cli/start.go:1191  RUNNING IN INSECURE MODE!
+
+- Your cluster is open for any client that can access <all your IP addresses>.
+- Any user, even root, can log in without providing a password.
+- Any user, connecting as root, can read or write any data in your cluster.
+- There is no network encryption nor authentication, and thus no confidentiality.
+
+Check out how to secure your cluster: official docs about version a077da02
+I220119 12:14:39.385456 1 server/status/recorder.go:610  available memory from cgroups (8.0 EiB) exceeds system memory 3.8 GiB, using system memory
+W220119 12:14:39.385493 1 cli/start.go:1067  Using the default setting for --cache (128 MiB).
+  A significantly larger value is usually needed for good performance.
+  If you have a dedicated server a reasonable setting is --cache=.25 (976 MiB).
+I220119 12:14:39.385646 1 server/status/recorder.go:610  available memory from cgroups (8.0 EiB) exceeds system memory 3.8 GiB, using system memory
+W220119 12:14:39.385658 1 cli/start.go:1080  Using the default setting for --max-sql-memory (128 MiB).
+  A significantly larger value is usually needed in production.
+  If you have a dedicated server a reasonable setting is --max-sql-memory=.25 (976 MiB).
+I220119 12:14:39.385739 1 server/status/recorder.go:610  available memory from cgroups (8.0 EiB) exceeds system memory 3.8 GiB, using system memory
+I220119 12:14:39.385902 1 cli/start.go:1205  ZNBaseDB OSS a077da02 (x86_64-linux-gnu, built 2022/01/19 12:01:15, go1.14)
+I220119 12:14:39.400931 1 server/status/recorder.go:610  available memory from cgroups (8.0 EiB) exceeds system memory 3.8 GiB, using system memory
+I220119 12:14:39.400947 1 server/config.go:400  system total memory: 3.8 GiB
+I220119 12:14:39.400986 1 server/config.go:402  server configuration:
+max offset             500000000
+cache size             128 MiB
+SQL memory pool size   128 MiB
+scan interval          10m0s
+scan min idle time     10ms
+scan max idle time     1s
+event log enabled      true
+I220119 12:14:39.400998 1 cli/start.go:1045  using local environment variables: ZNBASE_BACKGROUND_RESTART=1, GODEBUG=cgocheck=0
+I220119 12:14:39.401005 1 cli/start.go:1052  process identity: uid 1000 euid 1000 gid 1000 egid 1000
+I220119 12:14:39.401018 1 cli/start.go:676  starting znbase node
+I220119 12:14:39.401725 40 storage/engine/rocksdb.go:721  opening rocksdb instance at "/home/yangjx/go/src/github.com/znbasedb/znbase/node1/znbase-temp112951041"
+I220119 12:14:39.410240 40 storage/engine/rocksdb.go:721  opening rocksdb instance at "/home/yangjx/go/src/github.com/znbasedb/znbase/node1/znbase-cursor-temp947009644"
+I220119 12:14:39.429276 40 server/server.go:1008  [n?] monitoring forward clock jumps based on server.clock.forward_jump_check_enabled
+W220119 12:14:39.429980 40 server/config_unix.go:92  soft open file descriptor limit 4096 is under the recommended limit 15000; this may decrease performance
+please see official docs about version a077da02 for more details
+I220119 12:14:39.430159 40 storage/engine/rocksdb.go:721  opening rocksdb instance at "/home/yangjx/go/src/github.com/znbasedb/znbase/node1"
+I220119 12:14:39.616482 40 server/config.go:509  [n?] 1 storage engine initialized
+I220119 12:14:39.616495 40 server/config.go:512  [n?] rocksdb cache size: 128 MiB
+I220119 12:14:39.616499 40 server/config.go:512  [n?] store 0: rocksdb, max size 0 B, max open file limit 3840
+W220119 12:14:39.618139 40 gossip/gossip.go:1508  [n?] no incoming or outgoing connections
+I220119 12:14:39.619829 40 server/server.go:1058  [n?] Sleeping till wall time 1642594479619772168 to catches up to 1642594479929192791 to ensure monotonicity. Delta: 309.420623ms
+I220119 12:14:39.622473 99 gossip/client.go:128  [n?] started gossip client to ubuntu:23457
+I220119 12:14:39.623801 44 gossip/gossip.go:920  [n?] MaxPeers Recomputed as 3
+I220119 12:14:39.623858 44 gossip/gossip.go:920  [n?] MaxPeers Recomputed as 3
+I220119 12:14:39.930722 40 gossip/gossip.go:397  [n1] NodeDescriptor set to node_id:1 address:<network_field:"tcp" address_field:"ubuntu:23456" > attrs:<> locality:<> ServerVersion:<major_val:19 minor_val:1 patch:0 unstable:10 > build_tag:"a077da02" started_at:1642594479930374777 location_name:<> 
+I220119 12:14:39.931003 44 gossip/gossip.go:920  [n1] MaxPeers Recomputed as 3
+I220119 12:14:39.965992 40 server/node.go:457  [n1] initialized store [n1,s1]: disk (capacity=78 GiB, available=34 GiB, used=32 MiB, logicalBytes=84 MiB), ranges=107, leases=0, queries=0.00, writes=0.00, bytesPerReplica={p10=0.00 p25=41144.00 p50=524279.00 p75=524293.00 p90=524301.00 pMax=47035084.00}, writesPerReplica={p10=0.00 p25=0.00 p50=0.00 p75=0.00 p90=0.00 pMax=0.00}
+I220119 12:14:39.966170 40 storage/stores.go:238  [n1] read 2 node addresses from persistent storage
+I220119 12:14:39.966499 40 server/node.go:695  [n1] connecting to gossip network to verify cluster ID...
+I220119 12:14:39.966518 40 server/node.go:715  [n1] node connected via gossip and verified as part of cluster "3bbb8c74-c606-434f-b2eb-5e4523c470ba"
+I220119 12:14:39.966565 40 server/node.go:538  [n1] node=1: started with [<no-attributes>=/home/yangjx/go/src/github.com/znbasedb/znbase/node1] engine(s) and attributes []
+I220119 12:14:39.966767 40 server/status/recorder.go:610  [n1] available memory from cgroups (8.0 EiB) exceeds system memory 3.8 GiB, using system memory
+I220119 12:14:39.969006 40 server/server.go:1730  [n1] starting http server at [::]:8000 (use: ubuntu:8000)
+I220119 12:14:39.969021 40 server/server.go:1732  [n1] starting grpc/postgres server at [::]:23456
+I220119 12:14:39.969030 40 server/server.go:1733  [n1] advertising ZNBaseDB node at ubuntu:23456
+I220119 12:14:39.970121 133 storage/queue.go:468  [n1,s1,r1/1:/{Min-System/NodeL…}] rate limited in MaybeAdd (merge): throttled on async limiting semaphore
+I220119 12:14:41.332412 90 gossip/gossip.go:1522  [n1] node has connected to cluster via gossip
+I220119 12:14:41.332570 90 storage/stores.go:257  [n1] wrote 2 node addresses to persistent storage
+I220119 12:14:42.578274 40 server/server.go:1802  [n1] done ensuring all necessary migrations have run
+I220119 12:14:42.578300 40 server/server.go:1805  [n1] serving sql connections
+I220119 12:14:42.578473 40 cli/start.go:813  [config] clusterID: 3bbb8c74-c606-434f-b2eb-5e4523c470ba
+I220119 12:14:42.578510 40 cli/start.go:821  node startup completed:
+ZNBaseDB node starting at 2022-01-19 12:14:42.578383732 +0000 UTC (took 3.2s)
+build:               OSS a077da02 @ 2022/01/19 12:01:15 (go1.14)
+webui:               http://ubuntu:8000
+sql:                 postgresql://root@ubuntu:23456?sslmode=disable
+client flags:        ./znbase <client cmd> --host=ubuntu:23456 --insecure
+logs:                /home/yangjx/go/src/github.com/znbasedb/znbase/node1/logs
+temp dir:            /home/yangjx/go/src/github.com/znbasedb/znbase/node1/znbase-temp112951041
+external I/O path:   /home/yangjx/go/src/github.com/znbasedb/znbase/node1/extern
+store[0]:            path=/home/yangjx/go/src/github.com/znbasedb/znbase/node1,state=ENABLE
+storage engine:      rocksdb
+status:              restarted pre-existing node
+clusterID:           3bbb8c74-c606-434f-b2eb-5e4523c470ba
+nodeID:              1
+I220119 12:14:42.580261 544 security/audit/server/audit_server.go:125  [n1] refresh audit server settings
+I220119 12:14:42.580293 561 security/audit/task/runner.go:216  [n1] audit_server_6011897e-7921-11ec-9c21-000c29793ffc monitor workers every 5 seconds
+I220119 12:14:42.580313 560 security/audit/task/runner.go:284  [n1] audit_server_6011897e-7921-11ec-9c21-000c29793ffc init, min:3, max:30
+W220119 12:14:42.583358 304 storage/node_liveness.go:523  [n1,hb] slow heartbeat took 2.6s
+W220119 12:14:42.583420 536 storage/node_liveness.go:523  [n1,s1,r50/1:/Table/58/1/-92233497859710…] slow heartbeat took 1.6s
+I220119 12:14:42.623332 595 sql/lease.go:2613  released orphaned table lease: {id:57 version:1 expiration:{Time:{wall:676099000 ext:63778190216 loc:<nil>}}}
+I220119 12:14:42.624236 538 server/server_update.go:64  [n1] failed attempt to upgrade cluster version, error: node 4 not running (DEAD), cannot determine version
+I220119 12:14:42.626721 596 sql/lease.go:2613  released orphaned table lease: {id:58 version:1 expiration:{Time:{wall:840618000 ext:63778190207 loc:<nil>}}}
+I220119 12:14:42.637828 615 sql/event_log.go:235  [n1] Event: "node_restart", target: 1, info: nodeID:1, lastUp:1642593221913214137, ClusterID:3bbb8c74-c606-434f-b2eb-5e4523c470ba
+I220119 12:14:43.526492 538 server/server_update.go:64  [n1] failed attempt to upgrade cluster version, error: node 4 not running (DEAD), cannot determine version
+I220119 12:14:45.593387 538 server/server_update.go:64  [n1] failed attempt to upgrade cluster version, error: node 4 not running (DEAD), cannot determine version
+I220119 12:14:49.546420 538 server/server_update.go:64  [n1] failed attempt to upgrade cluster version, error: node 4 not running (DEAD), cannot determine version
+I220119 12:14:49.970903 62 server/status/runtime.go:500  [n1] runtime stats: 209 MiB RSS, 226 goroutines, 94 MiB/49 MiB/160 MiB GO alloc/idle/total, 16 MiB/21 MiB CGO alloc/total, 0.0 CGO/sec, 0.0/0.0 %(u/s)time, 0.0 %gc (9x), 1.4 MiB/1.4 MiB (r/w)net
+I220119 12:14:50.465462 613 sql/event_log.go:235  [n1] Event: "user_login", target: 1, info: User name:root  Client Info:127.0.0.1:39186  Login time:2022-01-19 12:14:50.440286553 +0000 UTC
+I220119 12:14:50.475924 614 sql/event_log.go:235  [n1] Event: "set_var", target: 0, info: User name:root SHOW SYNTAX:SET sql_safe_updates = true
+I220119 12:14:52.589339 544 security/audit/server/audit_server.go:125  [n1] refresh audit server settings
+I220119 12:14:57.478745 538 server/server_update.go:64  [n1] failed attempt to upgrade cluster version, error: node 4 not running (DEAD), cannot determine version
+I220119 12:14:59.969232 57 storage/store.go:4034  [n1,s1] sstables (read amplification = 2):
+0 [ 250K 1 ]: 250K
+6 [  21M 3 ]: 15M 4M 2M
+I220119 12:14:59.969297 57 storage/store.go:4035  [n1,s1] 
+** Compaction Stats [default] **
+Level    Files   Size     Score Read(GB)  Rn(GB) Rnp1(GB) Write(GB) Wnew(GB) Moved(GB) W-Amp Rd(MB/s) Wr(MB/s) Comp(sec) CompMergeCPU(sec) Comp(cnt) Avg(sec) KeyIn KeyDrop
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+  L0      1/0   250.39 KB   0.5      0.0     0.0      0.0       0.0      0.0       0.0   1.0      0.0      3.5      0.07              0.00         1    0.070       0      0
+  L6      3/0   20.59 MB   0.0      0.0     0.0      0.0       0.0      0.0       0.0   0.0      0.0      0.0      0.00              0.00         0    0.000       0      0
+ Sum      4/0   20.83 MB   0.0      0.0     0.0      0.0       0.0      0.0       0.0   1.0      0.0      3.5      0.07              0.00         1    0.070       0      0
+ Int      0/0    0.00 KB   0.0      0.0     0.0      0.0       0.0      0.0       0.0   1.0      0.0      3.5      0.07              0.00         1    0.070       0      0
+
+** Compaction Stats [default] **
+Priority    Files   Size     Score Read(GB)  Rn(GB) Rnp1(GB) Write(GB) Wnew(GB) Moved(GB) W-Amp Rd(MB/s) Wr(MB/s) Comp(sec) CompMergeCPU(sec) Comp(cnt) Avg(sec) KeyIn KeyDrop
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+User      0/0    0.00 KB   0.0      0.0     0.0      0.0       0.0      0.0       0.0   0.0      0.0      3.5      0.07              0.00         1    0.070       0      0
+Uptime(secs): 20.5 total, 20.5 interval
+Flush(GB): cumulative 0.000, interval 0.000
+AddFile(GB): cumulative 0.000, interval 0.000
+AddFile(Total Files): cumulative 0, interval 0
+AddFile(L0 Files): cumulative 0, interval 0
+AddFile(Keys): cumulative 0, interval 0
+Cumulative compaction: 0.00 GB write, 0.01 MB/s write, 0.00 GB read, 0.00 MB/s read, 0.1 seconds
+Interval compaction: 0.00 GB write, 0.01 MB/s write, 0.00 GB read, 0.00 MB/s read, 0.1 seconds
+Stalls(count): 0 level0_slowdown, 0 level0_slowdown_with_compaction, 0 level0_numfiles, 0 level0_numfiles_with_compaction, 0 stop for pending_compaction_bytes, 0 slowdown for pending_compaction_bytes, 0 memtable_compaction, 0 memtable_slowdown, interval 0 total count
+I220119 12:14:59.973541 62 server/status/runtime.go:500  [n1] runtime stats: 216 MiB RSS, 225 goroutines, 116 MiB/28 MiB/160 MiB GO alloc/idle/total, 24 MiB/29 MiB CGO alloc/total, 85.1 CGO/sec, 0.9/2.8 %(u/s)time, 0.0 %gc (0x), 608 KiB/610 KiB (r/w)net
+I220119 12:15:02.590094 544 security/audit/server/audit_server.go:125  [n1] refresh audit server settings
+I220119 12:15:05.364603 615 sql/event_log.go:235  [n1] Event: "user_logout", target: 1, info: User name:root  Client Info:127.0.0.1:39186  Logout time:2022-01-19 12:15:05.341641952 +0000 UTC
+I220119 12:15:09.975597 62 server/status/runtime.go:500  [n1] runtime stats: 218 MiB RSS, 223 goroutines, 134 MiB/9.9 MiB/160 MiB GO alloc/idle/total, 24 MiB/29 MiB CGO alloc/total, 57.2 CGO/sec, 0.8/1.8 %(u/s)time, 0.0 %gc (0x), 399 KiB/399 KiB (r/w)net
+I220119 12:15:12.590191 544 security/audit/server/audit_server.go:125  [n1] refresh audit server settings
+I220119 12:15:14.781981 538 server/server_update.go:64  [n1] failed attempt to upgrade cluster version, error: node 4 not running (DEAD), cannot determine version
+I220119 12:15:19.977583 62 server/status/runtime.go:500  [n1] runtime stats: 230 MiB RSS, 224 goroutines, 154 MiB/224 KiB/171 MiB GO alloc/idle/total, 24 MiB/29 MiB CGO alloc/total, 56.2 CGO/sec, 0.8/2.3 %(u/s)time, 0.0 %gc (0x), 457 KiB/457 KiB (r/w)net
+I220119 12:15:22.590651 544 security/audit/server/audit_server.go:125  [n1] refresh audit server settings
+I220119 12:15:23.753899 613 sql/event_log.go:235  [n1] Event: "node_quit", target: 1, info: nodeID:1, lastUp:1642593221913214137, ClusterID:3bbb8c74-c606-434f-b2eb-5e4523c470ba
+I220119 12:15:24.771938 1235 storage/store.go:1161  [drain] waiting for 25 replicas to transfer their lease away
+W220119 12:15:25.544835 169 storage/store_rebalancer.go:226  [n1,s1,store-rebalancer] StorePool missing descriptor for local store
+I220119 12:15:26.131115 1235 storage/store.go:1161  [drain] waiting for 21 replicas to transfer their lease away
+I220119 12:15:27.915316 1235 storage/store.go:1161  [drain] waiting for 22 replicas to transfer their lease away
+W220119 12:15:29.771366 1235 storage/store.go:1170  [drain] unable to drain cleanly within 5s, service might briefly deteriorate: waiting for 22 replicas to transfer their lease away
+W220119 12:15:29.771769 27 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23456 0  <nil>}. Err :connection error: desc = "transport: failed to write client preface: io: read/write on closed pipe". Reconnecting...
+I220119 12:15:29.772321 2385 util/stop/stopper.go:540  quiescing; tasks left:
+2      [async] closedts-subscription
+1      [async] stats.Refresher: maybeRefreshStats
+1      [async] intent_resolver_ir_batcher
+1      [async] intent_resolver_gc_batcher
+1      [async] closedts-rangefeed-subscriber
+1      [async] auto-upgrade
+I220119 12:15:29.772569 2385 util/stop/stopper.go:540  quiescing; tasks left:
+2      [async] closedts-subscription
+1      [async] stats.Refresher: maybeRefreshStats
+1      [async] intent_resolver_ir_batcher
+1      [async] closedts-rangefeed-subscriber
+1      [async] auto-upgrade
+I220119 12:15:29.772582 2385 util/stop/stopper.go:540  quiescing; tasks left:
+2      [async] closedts-subscription
+1      [async] stats.Refresher: maybeRefreshStats
+1      [async] closedts-rangefeed-subscriber
+1      [async] auto-upgrade
+W220119 12:15:29.772606 27 vendor/google.golang.org/grpc/clientconn.go:1440  grpc: addrConn.transportMonitor exits due to: context canceled
+W220119 12:15:29.772703 172 storage/raft_transport.go:625  [n1] while processing outgoing Raft queue to node 2: rpc error: code = Unavailable desc = transport is closing:
+W220119 12:15:29.772770 92 storage/raft_transport.go:625  [n1] while processing outgoing Raft queue to node 2: rpc error: code = Canceled desc = grpc: the client connection is closing:
+W220119 12:15:29.772785 173 storage/raft_transport.go:625  [n1] while processing outgoing Raft queue to node 3: rpc error: code = Canceled desc = context canceled:
+I220119 12:15:29.772883 2385 util/stop/stopper.go:540  quiescing; tasks left:
+2      [async] closedts-subscription
+1      [async] closedts-rangefeed-subscriber
+1      [async] auto-upgrade
+W220119 12:15:29.772954 93 storage/raft_transport.go:625  [n1] while processing outgoing Raft queue to node 3: rpc error: code = Unavailable desc = transport is closing:
+I220119 12:15:29.772974 2385 util/stop/stopper.go:540  quiescing; tasks left:
+1      [async] closedts-subscription
+1      [async] closedts-rangefeed-subscriber
+1      [async] auto-upgrade
+I220119 12:15:29.772995 2385 util/stop/stopper.go:540  quiescing; tasks left:
+1      [async] closedts-subscription
+1      [async] auto-upgrade
+I220119 12:15:29.773000 2385 util/stop/stopper.go:540  quiescing; tasks left:
+1      [async] auto-upgrade
+W220119 12:15:29.773431 90 gossip/gossip.go:1508  [n1] no incoming or outgoing connections
+I220119 12:15:29.773832 544 security/audit/server/audit_server.go:139  [n1] stop refresh audit server settings
+I220119 12:15:29.773876 545 security/audit/server/audit_server.go:152  [n1] stop audit server
+I220119 12:15:29.974108 561 security/audit/task/runner.go:235  [n1] audit_server_6011897e-7921-11ec-9c21-000c29793ffc stop monitor, because runner is going to stop
+I220119 12:15:29.974132 545 security/audit/task/runner.go:373  [n1] audit_server_6011897e-7921-11ec-9c21-000c29793ffc runner has been stopped
+I220119 12:15:29.974215 2385 storage/engine/rocksdb.go:861  closing rocksdb instance at "/home/yangjx/go/src/github.com/znbasedb/znbase/node1/znbase-temp112951041"
+I220119 12:15:29.975101 2385 storage/engine/rocksdb.go:861  closing rocksdb instance at "/home/yangjx/go/src/github.com/znbasedb/znbase/node1/znbase-cursor-temp947009644"
+I220119 12:15:29.976298 2385 storage/engine/rocksdb.go:861  closing rocksdb instance at "/home/yangjx/go/src/github.com/znbasedb/znbase/node1"

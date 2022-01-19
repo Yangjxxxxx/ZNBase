@@ -1,0 +1,504 @@
+I220119 11:50:45.655527 1 util/log/clog.go:1194  [config] file created at: 2022/01/19 11:50:45
+I220119 11:50:45.655527 1 util/log/clog.go:1194  [config] running on machine: ubuntu
+I220119 11:50:45.655527 1 util/log/clog.go:1194  [config] binary: ZNBaseDB OSS a077da02 (x86_64-linux-gnu, built 2022/01/19 11:08:07, go1.14)
+I220119 11:50:45.655527 1 util/log/clog.go:1194  [config] arguments: [./znbase start --insecure --store=./node3 --listen-addr=:23458 --http-addr=:8002 --join=:23456,:23457,:23458]
+I220119 11:50:45.655527 1 util/log/clog.go:1194  line format: [IWEF]yymmdd hh:mm:ss.uuuuuu goid file:line msg utf8=✓
+I220119 11:50:45.655526 1 cli/start.go:1156  logging to directory /home/yangjx/go/src/github.com/znbasedb/znbase/node3/logs
+W220119 11:50:45.655767 1 cli/start.go:1191  RUNNING IN INSECURE MODE!
+
+- Your cluster is open for any client that can access <all your IP addresses>.
+- Any user, even root, can log in without providing a password.
+- Any user, connecting as root, can read or write any data in your cluster.
+- There is no network encryption nor authentication, and thus no confidentiality.
+
+Check out how to secure your cluster: official docs about version a077da02
+I220119 11:50:45.655894 1 server/status/recorder.go:610  available memory from cgroups (8.0 EiB) exceeds system memory 3.8 GiB, using system memory
+W220119 11:50:45.655930 1 cli/start.go:1067  Using the default setting for --cache (128 MiB).
+  A significantly larger value is usually needed for good performance.
+  If you have a dedicated server a reasonable setting is --cache=.25 (976 MiB).
+I220119 11:50:45.655975 1 server/status/recorder.go:610  available memory from cgroups (8.0 EiB) exceeds system memory 3.8 GiB, using system memory
+W220119 11:50:45.655983 1 cli/start.go:1080  Using the default setting for --max-sql-memory (128 MiB).
+  A significantly larger value is usually needed in production.
+  If you have a dedicated server a reasonable setting is --max-sql-memory=.25 (976 MiB).
+I220119 11:50:45.656022 1 server/status/recorder.go:610  available memory from cgroups (8.0 EiB) exceeds system memory 3.8 GiB, using system memory
+I220119 11:50:45.656030 1 cli/start.go:1205  ZNBaseDB OSS a077da02 (x86_64-linux-gnu, built 2022/01/19 11:08:07, go1.14)
+I220119 11:50:45.668930 1 server/status/recorder.go:610  available memory from cgroups (8.0 EiB) exceeds system memory 3.8 GiB, using system memory
+I220119 11:50:45.668958 1 server/config.go:400  system total memory: 3.8 GiB
+I220119 11:50:45.668991 1 server/config.go:402  server configuration:
+max offset             500000000
+cache size             128 MiB
+SQL memory pool size   128 MiB
+scan interval          10m0s
+scan min idle time     10ms
+scan max idle time     1s
+event log enabled      true
+I220119 11:50:45.669003 1 cli/start.go:1045  using local environment variables: ZNBASE_BACKGROUND_RESTART=1, GODEBUG=cgocheck=0
+I220119 11:50:45.669011 1 cli/start.go:1052  process identity: uid 1000 euid 1000 gid 1000 egid 1000
+I220119 11:50:45.669026 1 cli/start.go:676  starting znbase node
+I220119 11:50:45.669849 54 storage/engine/rocksdb.go:721  opening rocksdb instance at "/home/yangjx/go/src/github.com/znbasedb/znbase/node3/znbase-temp836891443"
+I220119 11:50:45.682946 54 storage/engine/rocksdb.go:721  opening rocksdb instance at "/home/yangjx/go/src/github.com/znbasedb/znbase/node3/znbase-cursor-temp553780982"
+I220119 11:50:45.699415 54 server/server.go:1008  [n?] monitoring forward clock jumps based on server.clock.forward_jump_check_enabled
+W220119 11:50:45.699745 54 server/config_unix.go:92  soft open file descriptor limit 4096 is under the recommended limit 15000; this may decrease performance
+please see official docs about version a077da02 for more details
+I220119 11:50:45.699841 54 storage/engine/rocksdb.go:721  opening rocksdb instance at "/home/yangjx/go/src/github.com/znbasedb/znbase/node3"
+I220119 11:50:46.556844 54 server/config.go:509  [n?] 1 storage engine initialized
+I220119 11:50:46.556856 54 server/config.go:512  [n?] rocksdb cache size: 128 MiB
+I220119 11:50:46.556860 54 server/config.go:512  [n?] store 0: rocksdb, max size 0 B, max open file limit 3840
+W220119 11:50:46.558202 54 gossip/gossip.go:1508  [n?] no incoming or outgoing connections
+I220119 11:50:46.560151 54 gossip/gossip.go:397  [n3] NodeDescriptor set to node_id:3 address:<network_field:"tcp" address_field:"ubuntu:23458" > attrs:<> locality:<> ServerVersion:<major_val:19 minor_val:1 patch:0 unstable:10 > build_tag:"a077da02" started_at:1642593046559966405 location_name:<> 
+W220119 11:50:46.562978 30 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23456 0  <nil>}. Err :connection error: desc = "transport: Error while dialing dial tcp 127.0.1.1:23456: connect: connection refused". Reconnecting...
+I220119 11:50:46.563119 26 vendor/github.com/znbasedb/circuitbreaker/circuitbreaker.go:322  [n3] circuitbreaker: gossip [::]:23458->ubuntu:23456 tripped: initial connection heartbeat failed: rpc error: code = Unavailable desc = all SubConns are in TransientFailure, latest connection error: connection error: desc = "transport: Error while dialing dial tcp 127.0.1.1:23456: connect: connection refused"
+I220119 11:50:46.563191 26 vendor/github.com/znbasedb/circuitbreaker/circuitbreaker.go:447  [n3] circuitbreaker: gossip [::]:23458->ubuntu:23456 event: BreakerTripped
+W220119 11:50:46.563217 26 gossip/client.go:122  [n3] failed to start gossip client to ubuntu:23456: initial connection heartbeat failed: rpc error: code = Unavailable desc = all SubConns are in TransientFailure, latest connection error: connection error: desc = "transport: Error while dialing dial tcp 127.0.1.1:23456: connect: connection refused"
+I220119 11:50:46.565024 58 gossip/gossip.go:920  [n3] MaxPeers Recomputed as 3
+W220119 11:50:46.585699 141 storage/replica_range_lease.go:506  can't determine lease status due to node liveness error: node not in the liveness table
+W220119 11:50:46.585750 141 storage/store.go:1580  [n3,s3,r6/3:/Table/{SystemCon…-11}] could not gossip system config: [NotLeaseHolderError] r6: replica (n3,s3):3 not lease holder; lease holder unknown
+I220119 11:50:46.586288 44 vendor/github.com/znbasedb/circuitbreaker/circuitbreaker.go:322  [n3] circuitbreaker: rpc [::]:23458 [n2] tripped: failed to resolve n2: unable to look up descriptor for n2
+I220119 11:50:46.586295 44 vendor/github.com/znbasedb/circuitbreaker/circuitbreaker.go:447  [n3] circuitbreaker: rpc [::]:23458 [n2] event: BreakerTripped
+I220119 11:50:46.586305 43 vendor/github.com/znbasedb/circuitbreaker/circuitbreaker.go:322  [n3] circuitbreaker: rpc [::]:23458 [n1] tripped: failed to resolve n1: unable to look up descriptor for n1
+I220119 11:50:46.586307 43 vendor/github.com/znbasedb/circuitbreaker/circuitbreaker.go:447  [n3] circuitbreaker: rpc [::]:23458 [n1] event: BreakerTripped
+I220119 11:50:46.586500 54 server/node.go:457  [n3] initialized store [n3,s3]: disk (capacity=78 GiB, available=34 GiB, used=35 MiB, logicalBytes=82 MiB), ranges=107, leases=0, queries=0.00, writes=0.00, bytesPerReplica={p10=0.00 p25=37959.00 p50=524279.00 p75=524293.00 p90=524301.00 pMax=45621324.00}, writesPerReplica={p10=0.00 p25=0.00 p50=0.00 p75=0.00 p90=0.00 pMax=0.00}
+I220119 11:50:46.586649 54 storage/stores.go:238  [n3] read 2 node addresses from persistent storage
+I220119 11:50:46.586877 54 server/node.go:695  [n3] connecting to gossip network to verify cluster ID...
+I220119 11:50:46.586891 54 server/node.go:715  [n3] node connected via gossip and verified as part of cluster "3bbb8c74-c606-434f-b2eb-5e4523c470ba"
+I220119 11:50:46.586924 54 server/node.go:538  [n3] node=3: started with [<no-attributes>=/home/yangjx/go/src/github.com/znbasedb/znbase/node3] engine(s) and attributes []
+I220119 11:50:46.587135 54 server/status/recorder.go:610  [n3] available memory from cgroups (8.0 EiB) exceeds system memory 3.8 GiB, using system memory
+I220119 11:50:46.587190 54 server/server.go:1730  [n3] starting http server at [::]:8002 (use: ubuntu:8002)
+I220119 11:50:46.587199 54 server/server.go:1732  [n3] starting grpc/postgres server at [::]:23458
+I220119 11:50:46.587207 54 server/server.go:1733  [n3] advertising ZNBaseDB node at ubuntu:23458
+W220119 11:50:46.587220 54 jobs/registry.go:440  [n3] unable to get node liveness: node not in the liveness table
+W220119 11:50:46.632347 141 storage/store.go:1580  [n3,s3,r6/3:/Table/{SystemCon…-11}] could not gossip system config: [NotLeaseHolderError] r6: replica (n3,s3):3 not lease holder; lease holder unknown
+W220119 11:50:46.743168 141 storage/store.go:1580  [n3,s3,r6/3:/Table/{SystemCon…-11}] could not gossip system config: [NotLeaseHolderError] r6: replica (n3,s3):3 not lease holder; lease holder unknown
+W220119 11:50:46.921563 141 storage/store.go:1580  [n3,s3,r6/3:/Table/{SystemCon…-11}] could not gossip system config: [NotLeaseHolderError] r6: replica (n3,s3):3 not lease holder; lease holder unknown
+W220119 11:50:47.319292 141 storage/store.go:1580  [n3,s3,r6/3:/Table/{SystemCon…-11}] could not gossip system config: [NotLeaseHolderError] r6: replica (n3,s3):3 not lease holder; lease holder unknown
+W220119 11:50:47.560142 30 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23456 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 11:50:47.560253 30 vendor/google.golang.org/grpc/clientconn.go:953  Failed to dial ubuntu:23456: context canceled; please retry.
+W220119 11:50:47.561892 46 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23456 0  <nil>}. Err :connection error: desc = "transport: Error while dialing dial tcp 127.0.1.1:23456: connect: connection refused". Reconnecting...
+I220119 11:50:47.786991 260 vendor/github.com/znbasedb/circuitbreaker/circuitbreaker.go:322  [n3] circuitbreaker: rpc [::]:23458 [n2] tripped: failed to resolve n2: unable to look up descriptor for n2
+I220119 11:50:47.787018 260 vendor/github.com/znbasedb/circuitbreaker/circuitbreaker.go:447  [n3] circuitbreaker: rpc [::]:23458 [n2] event: BreakerTripped
+I220119 11:50:47.787042 259 vendor/github.com/znbasedb/circuitbreaker/circuitbreaker.go:322  [n3] circuitbreaker: rpc [::]:23458 [n1] tripped: failed to resolve n1: unable to look up descriptor for n1
+I220119 11:50:47.787048 259 vendor/github.com/znbasedb/circuitbreaker/circuitbreaker.go:447  [n3] circuitbreaker: rpc [::]:23458 [n1] event: BreakerTripped
+W220119 11:50:48.090683 141 storage/store.go:1580  [n3,s3,r6/3:/Table/{SystemCon…-11}] could not gossip system config: [NotLeaseHolderError] r6: replica (n3,s3):3 not lease holder; lease holder unknown
+W220119 11:50:48.561024 46 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23456 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 11:50:48.561167 46 vendor/google.golang.org/grpc/clientconn.go:953  Failed to dial ubuntu:23456: context canceled; please retry.
+W220119 11:50:48.563783 282 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23456 0  <nil>}. Err :connection error: desc = "transport: Error while dialing dial tcp 127.0.1.1:23456: connect: connection refused". Reconnecting...
+I220119 11:50:48.651525 58 gossip/gossip.go:920  [n3] MaxPeers Recomputed as 3
+I220119 11:50:48.788847 291 vendor/github.com/znbasedb/circuitbreaker/circuitbreaker.go:447  [n3] circuitbreaker: rpc [::]:23458 [n2] event: BreakerReset
+W220119 11:50:48.970282 141 storage/store.go:1580  [n3,s3,r6/3:/Table/{SystemCon…-11}] could not gossip system config: [NotLeaseHolderError] r6: replica (n3,s3):3 not lease holder; lease holder unknown
+W220119 11:50:49.561829 282 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23456 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 11:50:49.561865 282 vendor/google.golang.org/grpc/clientconn.go:953  Failed to dial ubuntu:23456: context canceled; please retry.
+I220119 11:50:49.563273 318 gossip/client.go:128  [n3] started gossip client to ubuntu:23457
+I220119 11:50:49.564083 318 gossip/client.go:133  [n3] closing client to n2 (ubuntu:23457): stopping outgoing client to n2 (ubuntu:23457); already have incoming
+W220119 11:50:49.877524 141 storage/store.go:1580  [n3,s3,r6/3:/Table/{SystemCon…-11}] could not gossip system config: [NotLeaseHolderError] r6: replica (n3,s3):3 not lease holder; lease holder unknown
+I220119 11:50:49.887521 345 vendor/github.com/znbasedb/circuitbreaker/circuitbreaker.go:447  [n3] circuitbreaker: rpc [::]:23458 [n2] event: BreakerReset
+I220119 11:50:50.563118 388 gossip/client.go:128  [n3] started gossip client to ubuntu:23457
+I220119 11:50:50.563858 388 gossip/client.go:133  [n3] closing client to n2 (ubuntu:23457): stopping outgoing client to n2 (ubuntu:23457); already have incoming
+W220119 11:50:50.754858 141 storage/store.go:1580  [n3,s3,r6/3:/Table/{SystemCon…-11}] could not gossip system config: [NotLeaseHolderError] r6: replica (n3,s3):3 not lease holder; lease holder unknown
+W220119 11:50:51.087766 176 storage/node_liveness.go:523  [n3,hb] slow heartbeat took 4.5s
+W220119 11:50:51.087787 176 storage/node_liveness.go:463  [n3,hb] failed node liveness heartbeat: aborted in distSender: context deadline exceeded
+W220119 11:50:51.563859 436 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23456 0  <nil>}. Err :connection error: desc = "transport: Error while dialing dial tcp 127.0.1.1:23456: connect: connection refused". Reconnecting...
+I220119 11:50:51.563936 95 gossip/gossip.go:1522  [n3] node has connected to cluster via gossip
+I220119 11:50:51.564068 95 storage/stores.go:257  [n3] wrote 1 node addresses to persistent storage
+W220119 11:50:51.586458 107 storage/replica_range_lease.go:506  can't determine lease status due to node liveness error: node not in the liveness table
+W220119 11:50:51.589718 177 jobs/registry.go:440  unable to get node liveness: node not in the liveness table
+W220119 11:50:51.800737 141 storage/store.go:1580  [n3,s3,r6/3:/Table/{SystemCon…-11}] could not gossip system config: [NotLeaseHolderError] r6: replica (n3,s3):3 not lease holder; lease holder unknown
+W220119 11:50:52.202838 176 storage/node_liveness.go:523  [n3,hb] slow heartbeat took 1.1s
+I220119 11:50:52.202855 176 storage/node_liveness.go:453  [n3,hb] heartbeat failed on epoch increment; retrying
+W220119 11:50:52.563731 436 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23456 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 11:50:52.563770 436 vendor/google.golang.org/grpc/clientconn.go:953  Failed to dial ubuntu:23456: context canceled; please retry.
+I220119 11:50:55.090571 54 server/server.go:1802  [n3] done ensuring all necessary migrations have run
+I220119 11:50:55.090584 54 server/server.go:1805  [n3] serving sql connections
+I220119 11:50:55.090718 54 cli/start.go:813  [config] clusterID: 3bbb8c74-c606-434f-b2eb-5e4523c470ba
+I220119 11:50:55.090735 54 cli/start.go:821  node startup completed:
+ZNBaseDB node starting at 2022-01-19 11:50:55.0906626 +0000 UTC (took 9.4s)
+build:               OSS a077da02 @ 2022/01/19 11:08:07 (go1.14)
+webui:               http://ubuntu:8002
+sql:                 postgresql://root@ubuntu:23458?sslmode=disable
+client flags:        ./znbase <client cmd> --host=ubuntu:23458 --insecure
+logs:                /home/yangjx/go/src/github.com/znbasedb/znbase/node3/logs
+temp dir:            /home/yangjx/go/src/github.com/znbasedb/znbase/node3/znbase-temp836891443
+external I/O path:   /home/yangjx/go/src/github.com/znbasedb/znbase/node3/extern
+store[0]:            path=/home/yangjx/go/src/github.com/znbasedb/znbase/node3,state=ENABLE
+storage engine:      rocksdb
+status:              restarted pre-existing node
+clusterID:           3bbb8c74-c606-434f-b2eb-5e4523c470ba
+nodeID:              3
+I220119 11:50:55.092171 552 security/audit/server/audit_server.go:125  [n3] refresh audit server settings
+I220119 11:50:55.092192 529 security/audit/task/runner.go:216  [n3] audit_server_097fbce0-791e-11ec-8425-000c29793ffc monitor workers every 5 seconds
+I220119 11:50:55.092202 528 security/audit/task/runner.go:284  [n3] audit_server_097fbce0-791e-11ec-8425-000c29793ffc init, min:3, max:30
+I220119 11:50:55.414712 514 server/server_update.go:64  [n3] failed attempt to upgrade cluster version, error: node 1 not running (UNAVAILABLE), cannot determine version
+I220119 11:50:55.441396 563 sql/event_log.go:235  [n3] Event: "node_restart", target: 3, info: nodeID:3, lastUp:1642593010221243998, ClusterID:3bbb8c74-c606-434f-b2eb-5e4523c470ba
+I220119 11:50:56.468116 514 server/server_update.go:64  [n3] failed attempt to upgrade cluster version, error: node 4 not running (DEAD), cannot determine version
+I220119 11:50:56.588927 169 server/status/runtime.go:500  [n3] runtime stats: 203 MiB RSS, 190 goroutines, 0 B/0 B/0 B GO alloc/idle/total, 19 MiB/23 MiB CGO alloc/total, 0.0 CGO/sec, 0.0/0.0 %(u/s)time, 0.0 %gc (7x), 432 KiB/432 KiB (r/w)net
+I220119 11:50:58.193399 514 server/server_update.go:64  [n3] failed attempt to upgrade cluster version, error: node 4 not running (DEAD), cannot determine version
+I220119 11:51:02.362535 514 server/server_update.go:64  [n3] failed attempt to upgrade cluster version, error: node 4 not running (DEAD), cannot determine version
+I220119 11:51:05.099116 552 security/audit/server/audit_server.go:125  [n3] refresh audit server settings
+W220119 11:51:05.108859 171 server/node.go:876  [n3,summaries] health alerts detected: {Alerts:[{StoreID:0 Category:METRICS Description:liveness.heartbeatfailures Value:2} {StoreID:3 Category:METRICS Description:ranges.underreplicated Value:14}]}
+I220119 11:51:06.589140 164 storage/store.go:4034  [n3,s3] sstables (read amplification = 1):
+6 [ 21M 4 ]: 15M 4M 2M 12K
+I220119 11:51:06.589224 164 storage/store.go:4035  [n3,s3] 
+** Compaction Stats [default] **
+Level    Files   Size     Score Read(GB)  Rn(GB) Rnp1(GB) Write(GB) Wnew(GB) Moved(GB) W-Amp Rd(MB/s) Wr(MB/s) Comp(sec) CompMergeCPU(sec) Comp(cnt) Avg(sec) KeyIn KeyDrop
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+  L0      0/0    0.00 KB   0.0      0.0     0.0      0.0       0.0      0.0       0.0   1.0      0.0      2.2      0.32              0.00         1    0.318       0      0
+  L6      4/0   20.93 MB   0.0      0.0     0.0      0.0       0.0      0.0       0.0   3.6     49.7     42.4      0.10              0.09         1    0.095     43K   7194
+ Sum      4/0   20.93 MB   0.0      0.0     0.0      0.0       0.0      0.0       0.0   6.8     11.4     11.4      0.41              0.09         2    0.207     43K   7194
+ Int      0/0    0.00 KB   0.0      0.0     0.0      0.0       0.0      0.0       0.0   6.8     11.4     11.4      0.41              0.09         2    0.207     43K   7194
+
+** Compaction Stats [default] **
+Priority    Files   Size     Score Read(GB)  Rn(GB) Rnp1(GB) Write(GB) Wnew(GB) Moved(GB) W-Amp Rd(MB/s) Wr(MB/s) Comp(sec) CompMergeCPU(sec) Comp(cnt) Avg(sec) KeyIn KeyDrop
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Low      0/0    0.00 KB   0.0      0.0     0.0      0.0       0.0      0.0       0.0   0.0     49.7     42.4      0.10              0.09         1    0.095     43K   7194
+User      0/0    0.00 KB   0.0      0.0     0.0      0.0       0.0      0.0       0.0   0.0      0.0      2.2      0.32              0.00         1    0.318       0      0
+Uptime(secs): 20.9 total, 20.9 interval
+Flush(GB): cumulative 0.001, interval 0.001
+AddFile(GB): cumulative 0.000, interval 0.000
+AddFile(Total Files): cumulative 0, interval 0
+AddFile(L0 Files): cumulative 0, interval 0
+AddFile(Keys): cumulative 0, interval 0
+Cumulative compaction: 0.00 GB write, 0.23 MB/s write, 0.00 GB read, 0.23 MB/s read, 0.4 seconds
+Interval compaction: 0.00 GB write, 0.23 MB/s write, 0.00 GB read, 0.23 MB/s read, 0.4 seconds
+Stalls(count): 0 level0_slowdown, 0 level0_slowdown_with_compaction, 0 level0_numfiles, 0 level0_numfiles_with_compaction, 0 stop for pending_compaction_bytes, 0 slowdown for pending_compaction_bytes, 0 memtable_compaction, 0 memtable_slowdown, interval 0 total count
+I220119 11:51:06.590580 169 server/status/runtime.go:500  [n3] runtime stats: 221 MiB RSS, 190 goroutines, 135 MiB/96 KiB/151 MiB GO alloc/idle/total, 19 MiB/24 MiB CGO alloc/total, 82.3 CGO/sec, 1.3/1.3 %(u/s)time, 0.0 %gc (0x), 218 KiB/219 KiB (r/w)net
+I220119 11:51:07.853819 58 gossip/gossip.go:920  [n3] MaxPeers Recomputed as 3
+I220119 11:51:07.853948 58 storage/stores.go:257  [n3] wrote 2 node addresses to persistent storage
+I220119 11:51:08.886197 1164 vendor/github.com/znbasedb/circuitbreaker/circuitbreaker.go:447  [n3] circuitbreaker: rpc [::]:23458 [n1] event: BreakerReset
+I220119 11:51:08.972997 1227 vendor/github.com/znbasedb/circuitbreaker/circuitbreaker.go:447  [n3] circuitbreaker: rpc [::]:23458 [n1] event: BreakerReset
+I220119 11:51:09.492739 514 server/server_update.go:64  [n3] failed attempt to upgrade cluster version, error: node 4 not running (DEAD), cannot determine version
+I220119 11:51:15.099509 552 security/audit/server/audit_server.go:125  [n3] refresh audit server settings
+W220119 11:51:15.108419 171 server/node.go:876  [n3,summaries] health alerts detected: {Alerts:[{StoreID:3 Category:METRICS Description:ranges.underreplicated Value:14}]}
+I220119 11:51:16.592156 169 server/status/runtime.go:500  [n3] runtime stats: 217 MiB RSS, 227 goroutines, 153 MiB/10 MiB/185 MiB GO alloc/idle/total, 20 MiB/27 MiB CGO alloc/total, 177.6 CGO/sec, 1.9/2.4 %(u/s)time, 0.0 %gc (1x), 1.5 MiB/1.5 MiB (r/w)net
+I220119 11:51:25.100181 552 security/audit/server/audit_server.go:125  [n3] refresh audit server settings
+I220119 11:51:25.616880 514 server/server_update.go:64  [n3] failed attempt to upgrade cluster version, error: node 4 not running (DEAD), cannot determine version
+I220119 11:51:26.594129 169 server/status/runtime.go:500  [n3] runtime stats: 218 MiB RSS, 226 goroutines, 104 MiB/62 MiB/188 MiB GO alloc/idle/total, 20 MiB/27 MiB CGO alloc/total, 136.4 CGO/sec, 1.4/2.2 %(u/s)time, 0.0 %gc (1x), 602 KiB/602 KiB (r/w)net
+W220119 11:51:34.980870 1131 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23456 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 11:51:34.980899 1131 vendor/google.golang.org/grpc/clientconn.go:1440  grpc: addrConn.transportMonitor exits due to: grpc: the connection is closing
+W220119 11:51:34.980902 1227 storage/raft_transport.go:625  [n3] while processing outgoing Raft queue to node 1: rpc error: code = Unavailable desc = transport is closing:
+I220119 11:51:35.101060 552 security/audit/server/audit_server.go:125  [n3] refresh audit server settings
+W220119 11:51:35.590351 1192 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23456 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 11:51:35.590399 1164 storage/raft_transport.go:625  [n3] while processing outgoing Raft queue to node 1: rpc error: code = Unavailable desc = transport is closing:
+W220119 11:51:35.590440 1192 vendor/google.golang.org/grpc/clientconn.go:1440  grpc: addrConn.transportMonitor exits due to: context canceled
+I220119 11:51:36.596553 169 server/status/runtime.go:500  [n3] runtime stats: 218 MiB RSS, 208 goroutines, 122 MiB/46 MiB/188 MiB GO alloc/idle/total, 20 MiB/28 MiB CGO alloc/total, 51.1 CGO/sec, 0.7/1.6 %(u/s)time, 0.0 %gc (0x), 314 KiB/314 KiB (r/w)net
+I220119 11:51:45.101412 552 security/audit/server/audit_server.go:125  [n3] refresh audit server settings
+W220119 11:51:45.108635 171 server/node.go:876  [n3,summaries] health alerts detected: {Alerts:[{StoreID:3 Category:METRICS Description:ranges.underreplicated Value:14}]}
+I220119 11:51:46.589176 165 gossip/gossip.go:562  [n3] gossip status (ok, 3 nodes)
+gossip client (0/3 cur/max conns)
+gossip server (1/3 cur/max conns, infos 121/175 sent/received, bytes 61583B/27814B sent/received)
+  2: ubuntu:23457 (58s)
+gossip connectivity
+  n2 [sentinel];
+  n1 -> n2; n2 -> n3;
+I220119 11:51:46.598003 169 server/status/runtime.go:500  [n3] runtime stats: 220 MiB RSS, 228 goroutines, 148 MiB/22 MiB/188 MiB GO alloc/idle/total, 20 MiB/28 MiB CGO alloc/total, 110.5 CGO/sec, 1.7/2.0 %(u/s)time, 0.0 %gc (0x), 879 KiB/879 KiB (r/w)net
+I220119 11:51:53.627302 514 server/server_update.go:64  [n3] failed attempt to upgrade cluster version, error: node 4 not running (DEAD), cannot determine version
+I220119 11:51:55.102229 552 security/audit/server/audit_server.go:125  [n3] refresh audit server settings
+I220119 11:51:56.600115 169 server/status/runtime.go:500  [n3] runtime stats: 228 MiB RSS, 225 goroutines, 174 MiB/240 KiB/192 MiB GO alloc/idle/total, 20 MiB/26 MiB CGO alloc/total, 115.6 CGO/sec, 1.2/2.1 %(u/s)time, 0.0 %gc (0x), 1.3 MiB/1.3 MiB (r/w)net
+W220119 11:52:04.993340 1939 storage/raft_transport.go:625  [n3] while processing outgoing Raft queue to node 1: rpc error: code = Unavailable desc = transport is closing:
+W220119 11:52:04.993386 1857 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23456 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 11:52:04.993435 1857 vendor/google.golang.org/grpc/clientconn.go:1440  grpc: addrConn.transportMonitor exits due to: context canceled
+I220119 11:52:05.102378 552 security/audit/server/audit_server.go:125  [n3] refresh audit server settings
+W220119 11:52:05.109700 171 server/node.go:876  [n3,summaries] health alerts detected: {Alerts:[{StoreID:0 Category:METRICS Description:round-trip-latency-p90 Value:1.207959551e+09}]}
+W220119 11:52:05.621531 1930 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23456 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 11:52:05.621593 1938 storage/raft_transport.go:625  [n3] while processing outgoing Raft queue to node 1: rpc error: code = Unavailable desc = transport is closing:
+W220119 11:52:05.621639 1930 vendor/google.golang.org/grpc/clientconn.go:1440  grpc: addrConn.transportMonitor exits due to: context canceled
+I220119 11:52:06.602116 169 server/status/runtime.go:500  [n3] runtime stats: 228 MiB RSS, 220 goroutines, 105 MiB/67 MiB/195 MiB GO alloc/idle/total, 20 MiB/26 MiB CGO alloc/total, 44.7 CGO/sec, 1.4/1.4 %(u/s)time, 0.0 %gc (1x), 609 KiB/609 KiB (r/w)net
+I220119 11:52:11.111710 2593 rpc/nodedialer/nodedialer.go:149  [n3] unable to connect to n1: failed to connect to n1 at ubuntu:23456: initial connection heartbeat failed: rpc error: code = DeadlineExceeded desc = context deadline exceeded
+W220119 11:52:11.112523 2525 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23456 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 11:52:11.112544 2525 vendor/google.golang.org/grpc/clientconn.go:1440  grpc: addrConn.transportMonitor exits due to: context canceled
+I220119 11:52:11.688411 2571 vendor/github.com/znbasedb/circuitbreaker/circuitbreaker.go:322  [n3] circuitbreaker: rpc [::]:23458 [n1] tripped: failed to connect to n1 at ubuntu:23456: initial connection heartbeat failed: rpc error: code = Unavailable desc = transport is closing
+I220119 11:52:11.688424 2571 vendor/github.com/znbasedb/circuitbreaker/circuitbreaker.go:447  [n3] circuitbreaker: rpc [::]:23458 [n1] event: BreakerTripped
+W220119 11:52:11.688434 2573 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23456 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 11:52:11.688467 2573 vendor/google.golang.org/grpc/clientconn.go:1440  grpc: addrConn.transportMonitor exits due to: context canceled
+I220119 11:52:11.688435 2571 rpc/nodedialer/nodedialer.go:149  [n3] unable to connect to n1: failed to connect to n1 at ubuntu:23456: initial connection heartbeat failed: rpc error: code = Unavailable desc = transport is closing
+I220119 11:52:15.108679 552 security/audit/server/audit_server.go:125  [n3] refresh audit server settings
+I220119 11:52:16.603467 169 server/status/runtime.go:500  [n3] runtime stats: 228 MiB RSS, 206 goroutines, 125 MiB/49 MiB/195 MiB GO alloc/idle/total, 20 MiB/26 MiB CGO alloc/total, 49.0 CGO/sec, 0.9/1.7 %(u/s)time, 0.0 %gc (0x), 166 KiB/165 KiB (r/w)net
+W220119 11:52:17.789565 2684 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23456 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 11:52:17.789607 2684 vendor/google.golang.org/grpc/clientconn.go:1440  grpc: addrConn.transportMonitor exits due to: context canceled
+W220119 11:52:18.787515 2711 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23456 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 11:52:18.787541 2711 vendor/google.golang.org/grpc/clientconn.go:1440  grpc: addrConn.transportMonitor exits due to: context canceled
+I220119 11:52:21.535992 514 server/server_update.go:64  [n3] failed attempt to upgrade cluster version, error: node 4 not running (DEAD), cannot determine version
+W220119 11:52:23.977060 2838 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23456 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 11:52:23.977091 2838 vendor/google.golang.org/grpc/clientconn.go:1440  grpc: addrConn.transportMonitor exits due to: context canceled
+W220119 11:52:25.108487 171 server/node.go:876  [n3,summaries] health alerts detected: {Alerts:[{StoreID:3 Category:METRICS Description:ranges.underreplicated Value:14}]}
+I220119 11:52:25.108881 552 security/audit/server/audit_server.go:125  [n3] refresh audit server settings
+W220119 11:52:26.087035 2857 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23456 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 11:52:26.087152 2857 vendor/google.golang.org/grpc/clientconn.go:1440  grpc: addrConn.transportMonitor exits due to: context canceled
+I220119 11:52:26.605508 169 server/status/runtime.go:500  [n3] runtime stats: 228 MiB RSS, 199 goroutines, 146 MiB/29 MiB/195 MiB GO alloc/idle/total, 20 MiB/26 MiB CGO alloc/total, 44.7 CGO/sec, 1.0/1.7 %(u/s)time, 0.0 %gc (0x), 173 KiB/173 KiB (r/w)net
+I220119 11:52:31.109630 2934 vendor/github.com/znbasedb/circuitbreaker/circuitbreaker.go:322  [n3] circuitbreaker: rpc [::]:23458 [n1] tripped: failed to connect to n1 at ubuntu:23456: initial connection heartbeat failed: rpc error: code = DeadlineExceeded desc = context deadline exceeded
+I220119 11:52:31.109649 2934 vendor/github.com/znbasedb/circuitbreaker/circuitbreaker.go:447  [n3] circuitbreaker: rpc [::]:23458 [n1] event: BreakerTripped
+W220119 11:52:31.110342 2914 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23456 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 11:52:31.110364 2914 vendor/google.golang.org/grpc/clientconn.go:1440  grpc: addrConn.transportMonitor exits due to: context canceled
+W220119 11:52:33.588376 2987 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23456 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 11:52:33.588416 2987 vendor/google.golang.org/grpc/clientconn.go:1440  grpc: addrConn.transportMonitor exits due to: context canceled
+W220119 11:52:35.107843 171 server/node.go:876  [n3,summaries] health alerts detected: {Alerts:[{StoreID:3 Category:METRICS Description:ranges.underreplicated Value:14}]}
+I220119 11:52:35.109069 552 security/audit/server/audit_server.go:125  [n3] refresh audit server settings
+I220119 11:52:36.607682 169 server/status/runtime.go:500  [n3] runtime stats: 229 MiB RSS, 207 goroutines, 166 MiB/10 MiB/195 MiB GO alloc/idle/total, 20 MiB/26 MiB CGO alloc/total, 38.0 CGO/sec, 1.0/1.4 %(u/s)time, 0.0 %gc (0x), 159 KiB/159 KiB (r/w)net
+W220119 11:52:41.088133 3100 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23456 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 11:52:41.088166 3100 vendor/google.golang.org/grpc/clientconn.go:1440  grpc: addrConn.transportMonitor exits due to: context canceled
+I220119 11:52:41.109803 3171 vendor/github.com/znbasedb/circuitbreaker/circuitbreaker.go:322  [n3] circuitbreaker: rpc [::]:23458 [n1] tripped: failed to connect to n1 at ubuntu:23456: initial connection heartbeat failed: rpc error: code = DeadlineExceeded desc = context deadline exceeded
+I220119 11:52:41.109814 3171 vendor/github.com/znbasedb/circuitbreaker/circuitbreaker.go:447  [n3] circuitbreaker: rpc [::]:23458 [n1] event: BreakerTripped
+W220119 11:52:41.110588 3119 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23456 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 11:52:41.110619 3119 vendor/google.golang.org/grpc/clientconn.go:1440  grpc: addrConn.transportMonitor exits due to: context canceled
+W220119 11:52:45.108375 171 server/node.go:876  [n3,summaries] health alerts detected: {Alerts:[{StoreID:3 Category:METRICS Description:ranges.underreplicated Value:14}]}
+I220119 11:52:45.109491 552 security/audit/server/audit_server.go:125  [n3] refresh audit server settings
+I220119 11:52:46.587610 165 gossip/gossip.go:562  [n3] gossip status (ok, 3 nodes)
+gossip client (0/3 cur/max conns)
+gossip server (1/3 cur/max conns, infos 211/302 sent/received, bytes 76512B/44355B sent/received)
+  2: ubuntu:23457 (1m58s)
+gossip connectivity
+  n2 [sentinel];
+  n2 -> n3;
+I220119 11:52:46.610089 169 server/status/runtime.go:500  [n3] runtime stats: 230 MiB RSS, 207 goroutines, 104 MiB/68 MiB/195 MiB GO alloc/idle/total, 20 MiB/26 MiB CGO alloc/total, 38.5 CGO/sec, 1.4/1.3 %(u/s)time, 0.0 %gc (1x), 157 KiB/156 KiB (r/w)net
+W220119 11:52:48.588180 3212 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23456 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 11:52:48.588226 3212 vendor/google.golang.org/grpc/clientconn.go:1440  grpc: addrConn.transportMonitor exits due to: context canceled
+I220119 11:52:51.046358 514 server/server_update.go:64  [n3] failed attempt to upgrade cluster version, error: node 4 not running (DEAD), cannot determine version
+I220119 11:52:51.110272 3331 vendor/github.com/znbasedb/circuitbreaker/circuitbreaker.go:322  [n3] circuitbreaker: rpc [::]:23458 [n1] tripped: failed to connect to n1 at ubuntu:23456: initial connection heartbeat failed: rpc error: code = DeadlineExceeded desc = context deadline exceeded
+I220119 11:52:51.110289 3331 vendor/github.com/znbasedb/circuitbreaker/circuitbreaker.go:447  [n3] circuitbreaker: rpc [::]:23458 [n1] event: BreakerTripped
+W220119 11:52:51.112998 3305 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23456 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 11:52:51.113040 3305 vendor/google.golang.org/grpc/clientconn.go:1440  grpc: addrConn.transportMonitor exits due to: context canceled
+W220119 11:52:55.108958 171 server/node.go:876  [n3,summaries] health alerts detected: {Alerts:[{StoreID:3 Category:METRICS Description:ranges.underreplicated Value:14}]}
+I220119 11:52:55.109986 552 security/audit/server/audit_server.go:125  [n3] refresh audit server settings
+I220119 11:52:56.527640 3469 vendor/github.com/znbasedb/circuitbreaker/circuitbreaker.go:447  [n3] circuitbreaker: rpc [::]:23458 [n1] event: BreakerReset
+I220119 11:52:56.612771 169 server/status/runtime.go:500  [n3] runtime stats: 231 MiB RSS, 215 goroutines, 126 MiB/49 MiB/195 MiB GO alloc/idle/total, 20 MiB/27 MiB CGO alloc/total, 49.2 CGO/sec, 1.0/1.4 %(u/s)time, 0.0 %gc (0x), 1.0 MiB/1.0 MiB (r/w)net
+I220119 11:53:00.086548 3567 vendor/github.com/znbasedb/circuitbreaker/circuitbreaker.go:447  [n3] circuitbreaker: rpc [::]:23458 [n1] event: BreakerReset
+W220119 11:53:05.108833 171 server/node.go:876  [n3,summaries] health alerts detected: {Alerts:[{StoreID:3 Category:METRICS Description:ranges.underreplicated Value:14}]}
+I220119 11:53:05.110055 552 security/audit/server/audit_server.go:125  [n3] refresh audit server settings
+I220119 11:53:06.614644 169 server/status/runtime.go:500  [n3] runtime stats: 232 MiB RSS, 224 goroutines, 151 MiB/25 MiB/195 MiB GO alloc/idle/total, 28 MiB/35 MiB CGO alloc/total, 45.8 CGO/sec, 1.1/1.7 %(u/s)time, 0.0 %gc (0x), 2.4 MiB/2.4 MiB (r/w)net
+I220119 11:53:15.110163 552 security/audit/server/audit_server.go:125  [n3] refresh audit server settings
+W220119 11:53:15.113953 171 server/node.go:876  [n3,summaries] health alerts detected: {Alerts:[{StoreID:3 Category:METRICS Description:ranges.underreplicated Value:14}]}
+I220119 11:53:16.616984 169 server/status/runtime.go:500  [n3] runtime stats: 234 MiB RSS, 229 goroutines, 93 MiB/77 MiB/196 MiB GO alloc/idle/total, 28 MiB/35 MiB CGO alloc/total, 50.8 CGO/sec, 1.4/1.6 %(u/s)time, 0.0 %gc (1x), 601 KiB/599 KiB (r/w)net
+I220119 11:53:21.453556 514 server/server_update.go:64  [n3] failed attempt to upgrade cluster version, error: node 4 not running (DEAD), cannot determine version
+I220119 11:53:25.111836 552 security/audit/server/audit_server.go:125  [n3] refresh audit server settings
+I220119 11:53:26.619930 169 server/status/runtime.go:500  [n3] runtime stats: 235 MiB RSS, 228 goroutines, 116 MiB/58 MiB/196 MiB GO alloc/idle/total, 28 MiB/35 MiB CGO alloc/total, 47.2 CGO/sec, 1.1/1.6 %(u/s)time, 0.0 %gc (0x), 555 KiB/554 KiB (r/w)net
+W220119 11:53:28.115942 3476 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23456 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 11:53:28.115954 3476 vendor/google.golang.org/grpc/clientconn.go:1440  grpc: addrConn.transportMonitor exits due to: context canceled
+W220119 11:53:28.115959 3469 storage/raft_transport.go:625  [n3] while processing outgoing Raft queue to node 1: rpc error: code = Unavailable desc = transport is closing:
+W220119 11:53:28.796110 3324 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23456 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 11:53:28.796134 3324 vendor/google.golang.org/grpc/clientconn.go:1440  grpc: addrConn.transportMonitor exits due to: grpc: the connection is closing
+W220119 11:53:28.796164 3567 storage/raft_transport.go:625  [n3] while processing outgoing Raft queue to node 1: rpc error: code = Canceled desc = context canceled:
+I220119 11:53:34.174830 3942 vendor/github.com/znbasedb/circuitbreaker/circuitbreaker.go:322  [n3] circuitbreaker: rpc [::]:23458 [n1] tripped: failed to connect to n1 at ubuntu:23456: initial connection heartbeat failed: rpc error: code = DeadlineExceeded desc = context deadline exceeded
+I220119 11:53:34.174846 3942 vendor/github.com/znbasedb/circuitbreaker/circuitbreaker.go:447  [n3] circuitbreaker: rpc [::]:23458 [n1] event: BreakerTripped
+I220119 11:53:34.174860 3942 rpc/nodedialer/nodedialer.go:149  [ct-client] unable to connect to n1: failed to connect to n1 at ubuntu:23456: initial connection heartbeat failed: rpc error: code = DeadlineExceeded desc = context deadline exceeded
+W220119 11:53:34.176328 3999 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23456 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 11:53:34.176366 3999 vendor/google.golang.org/grpc/clientconn.go:1440  grpc: addrConn.transportMonitor exits due to: context canceled
+I220119 11:53:34.886883 3943 vendor/github.com/znbasedb/circuitbreaker/circuitbreaker.go:322  [n3] circuitbreaker: rpc [::]:23458 [n1] tripped: failed to connect to n1 at ubuntu:23456: initial connection heartbeat failed: rpc error: code = DeadlineExceeded desc = context deadline exceeded
+I220119 11:53:34.886897 3943 vendor/github.com/znbasedb/circuitbreaker/circuitbreaker.go:447  [n3] circuitbreaker: rpc [::]:23458 [n1] event: BreakerTripped
+I220119 11:53:34.886909 3943 rpc/nodedialer/nodedialer.go:149  [n3] unable to connect to n1: failed to connect to n1 at ubuntu:23456: initial connection heartbeat failed: rpc error: code = DeadlineExceeded desc = context deadline exceeded
+W220119 11:53:34.888101 3945 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23456 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 11:53:34.888148 3945 vendor/google.golang.org/grpc/clientconn.go:1440  grpc: addrConn.transportMonitor exits due to: context canceled
+I220119 11:53:35.111962 552 security/audit/server/audit_server.go:125  [n3] refresh audit server settings
+I220119 11:53:36.622509 169 server/status/runtime.go:500  [n3] runtime stats: 235 MiB RSS, 207 goroutines, 136 MiB/40 MiB/196 MiB GO alloc/idle/total, 28 MiB/35 MiB CGO alloc/total, 31.1 CGO/sec, 1.1/1.1 %(u/s)time, 0.0 %gc (0x), 159 KiB/159 KiB (r/w)net
+W220119 11:53:41.110400 4024 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23456 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 11:53:41.110425 4024 vendor/google.golang.org/grpc/clientconn.go:1440  grpc: addrConn.transportMonitor exits due to: context canceled
+W220119 11:53:45.108368 171 server/node.go:876  [n3,summaries] health alerts detected: {Alerts:[{StoreID:3 Category:METRICS Description:ranges.underreplicated Value:14}]}
+I220119 11:53:45.112388 552 security/audit/server/audit_server.go:125  [n3] refresh audit server settings
+I220119 11:53:45.816476 4298 vendor/github.com/znbasedb/circuitbreaker/circuitbreaker.go:447  [n3] circuitbreaker: rpc [::]:23458 [n1] event: BreakerReset
+I220119 11:53:46.588155 165 gossip/gossip.go:562  [n3] gossip status (ok, 3 nodes)
+gossip client (0/3 cur/max conns)
+gossip server (2/3 cur/max conns, infos 459/489 sent/received, bytes 111631B/68952B sent/received)
+  2: ubuntu:23457 (2m58s)
+  1: ubuntu:23456 (3s)
+gossip connectivity
+  n2 [sentinel];
+  n1 -> n3; n2 -> n3;
+I220119 11:53:46.623700 169 server/status/runtime.go:500  [n3] runtime stats: 236 MiB RSS, 222 goroutines, 157 MiB/20 MiB/196 MiB GO alloc/idle/total, 27 MiB/35 MiB CGO alloc/total, 50.1 CGO/sec, 1.0/1.6 %(u/s)time, 0.0 %gc (0x), 271 KiB/271 KiB (r/w)net
+W220119 11:53:50.988337 4118 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23456 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 11:53:50.988377 4118 vendor/google.golang.org/grpc/clientconn.go:1440  grpc: addrConn.transportMonitor exits due to: context canceled
+I220119 11:53:54.799101 514 server/server_update.go:64  [n3] failed attempt to upgrade cluster version, error: node 4 not running (DEAD), cannot determine version
+W220119 11:53:55.107843 171 server/node.go:876  [n3,summaries] health alerts detected: {Alerts:[{StoreID:3 Category:METRICS Description:ranges.underreplicated Value:14}]}
+I220119 11:53:55.113045 552 security/audit/server/audit_server.go:125  [n3] refresh audit server settings
+I220119 11:53:56.625535 169 server/status/runtime.go:500  [n3] runtime stats: 237 MiB RSS, 219 goroutines, 95 MiB/75 MiB/196 MiB GO alloc/idle/total, 27 MiB/35 MiB CGO alloc/total, 54.6 CGO/sec, 1.0/1.6 %(u/s)time, 0.0 %gc (1x), 269 KiB/269 KiB (r/w)net
+W220119 11:53:59.045828 4264 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23456 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 11:53:59.045865 4298 storage/raft_transport.go:625  [n3] while processing outgoing Raft queue to node 1: rpc error: code = Unavailable desc = transport is closing:
+W220119 11:53:59.045902 4264 vendor/google.golang.org/grpc/clientconn.go:1440  grpc: addrConn.transportMonitor exits due to: context canceled
+W220119 11:54:01.188761 4390 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23456 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 11:54:01.188782 4390 vendor/google.golang.org/grpc/clientconn.go:1440  grpc: addrConn.transportMonitor exits due to: grpc: the connection is closing
+I220119 11:54:05.113949 552 security/audit/server/audit_server.go:125  [n3] refresh audit server settings
+I220119 11:54:05.187315 4498 vendor/github.com/znbasedb/circuitbreaker/circuitbreaker.go:322  [n3] circuitbreaker: rpc [::]:23458 [n1] tripped: failed to connect to n1 at ubuntu:23456: initial connection heartbeat failed: rpc error: code = DeadlineExceeded desc = context deadline exceeded
+I220119 11:54:05.187325 4498 vendor/github.com/znbasedb/circuitbreaker/circuitbreaker.go:447  [n3] circuitbreaker: rpc [::]:23458 [n1] event: BreakerTripped
+W220119 11:54:05.188354 4515 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23456 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 11:54:05.188400 4515 vendor/google.golang.org/grpc/clientconn.go:1440  grpc: addrConn.transportMonitor exits due to: context canceled
+I220119 11:54:06.627454 169 server/status/runtime.go:500  [n3] runtime stats: 238 MiB RSS, 205 goroutines, 115 MiB/58 MiB/196 MiB GO alloc/idle/total, 27 MiB/35 MiB CGO alloc/total, 39.7 CGO/sec, 1.1/1.5 %(u/s)time, 0.0 %gc (0x), 150 KiB/150 KiB (r/w)net
+W220119 11:54:08.388456 4566 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23456 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 11:54:08.388497 4566 vendor/google.golang.org/grpc/clientconn.go:1440  grpc: addrConn.transportMonitor exits due to: context canceled
+W220119 11:54:11.815784 4650 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23456 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 11:54:11.815822 4650 vendor/google.golang.org/grpc/clientconn.go:1440  grpc: addrConn.transportMonitor exits due to: context canceled
+W220119 11:54:15.107829 171 server/node.go:876  [n3,summaries] health alerts detected: {Alerts:[{StoreID:3 Category:METRICS Description:ranges.underreplicated Value:14}]}
+I220119 11:54:15.114182 552 security/audit/server/audit_server.go:125  [n3] refresh audit server settings
+I220119 11:54:15.558336 4699 vendor/github.com/znbasedb/circuitbreaker/circuitbreaker.go:447  [n3] circuitbreaker: rpc [::]:23458 [n1] event: BreakerReset
+I220119 11:54:15.590710 4796 vendor/github.com/znbasedb/circuitbreaker/circuitbreaker.go:447  [n3] circuitbreaker: rpc [::]:23458 [n1] event: BreakerReset
+I220119 11:54:16.629325 169 server/status/runtime.go:500  [n3] runtime stats: 238 MiB RSS, 229 goroutines, 138 MiB/37 MiB/196 MiB GO alloc/idle/total, 27 MiB/35 MiB CGO alloc/total, 43.9 CGO/sec, 1.0/1.4 %(u/s)time, 0.0 %gc (0x), 517 KiB/517 KiB (r/w)net
+W220119 11:54:21.888594 4699 storage/raft_transport.go:625  [n3] while processing outgoing Raft queue to node 1: rpc error: code = Unavailable desc = transport is closing:
+W220119 11:54:21.888605 4703 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23456 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 11:54:21.888631 4703 vendor/google.golang.org/grpc/clientconn.go:1440  grpc: addrConn.transportMonitor exits due to: context canceled
+I220119 11:54:23.438027 514 server/server_update.go:64  [n3] failed attempt to upgrade cluster version, error: node 1 not running (UNAVAILABLE), cannot determine version
+W220119 11:54:24.113115 4769 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23456 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 11:54:24.113124 4796 storage/raft_transport.go:625  [n3] while processing outgoing Raft queue to node 1: rpc error: code = Unavailable desc = transport is closing:
+W220119 11:54:24.113149 4769 vendor/google.golang.org/grpc/clientconn.go:1440  grpc: addrConn.transportMonitor exits due to: context canceled
+I220119 11:54:25.114876 552 security/audit/server/audit_server.go:125  [n3] refresh audit server settings
+W220119 11:54:25.116652 171 server/node.go:876  [n3,summaries] health alerts detected: {Alerts:[{StoreID:3 Category:METRICS Description:ranges.underreplicated Value:14}]}
+I220119 11:54:26.631138 169 server/status/runtime.go:500  [n3] runtime stats: 239 MiB RSS, 207 goroutines, 159 MiB/18 MiB/196 MiB GO alloc/idle/total, 27 MiB/35 MiB CGO alloc/total, 46.5 CGO/sec, 1.3/1.4 %(u/s)time, 0.0 %gc (0x), 209 KiB/209 KiB (r/w)net
+I220119 11:54:27.987177 4953 vendor/github.com/znbasedb/circuitbreaker/circuitbreaker.go:322  [n3] circuitbreaker: rpc [::]:23458 [n1] tripped: failed to connect to n1 at ubuntu:23456: initial connection heartbeat failed: rpc error: code = DeadlineExceeded desc = context deadline exceeded
+I220119 11:54:27.987197 4953 vendor/github.com/znbasedb/circuitbreaker/circuitbreaker.go:447  [n3] circuitbreaker: rpc [::]:23458 [n1] event: BreakerTripped
+W220119 11:54:27.987461 4943 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23456 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 11:54:27.987526 4943 vendor/google.golang.org/grpc/clientconn.go:1440  grpc: addrConn.transportMonitor exits due to: context canceled
+I220119 11:54:30.175239 4972 vendor/github.com/znbasedb/circuitbreaker/circuitbreaker.go:322  [n3] circuitbreaker: rpc [::]:23458 [n1] tripped: failed to connect to n1 at ubuntu:23456: initial connection heartbeat failed: rpc error: code = DeadlineExceeded desc = context deadline exceeded
+I220119 11:54:30.175262 4972 vendor/github.com/znbasedb/circuitbreaker/circuitbreaker.go:447  [n3] circuitbreaker: rpc [::]:23458 [n1] event: BreakerTripped
+W220119 11:54:30.176225 4966 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23456 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 11:54:30.176279 4966 vendor/google.golang.org/grpc/clientconn.go:1440  grpc: addrConn.transportMonitor exits due to: context canceled
+W220119 11:54:35.110535 171 server/node.go:876  [n3,summaries] health alerts detected: {Alerts:[{StoreID:3 Category:METRICS Description:ranges.underreplicated Value:14}]}
+I220119 11:54:35.115441 552 security/audit/server/audit_server.go:125  [n3] refresh audit server settings
+W220119 11:54:35.186452 4977 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23456 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 11:54:35.186499 4977 vendor/google.golang.org/grpc/clientconn.go:1440  grpc: addrConn.transportMonitor exits due to: context canceled
+I220119 11:54:35.186544 5064 rpc/nodedialer/nodedialer.go:149  [n3] unable to connect to n1: failed to connect to n1 at ubuntu:23456: initial connection heartbeat failed: rpc error: code = Unavailable desc = transport is closing
+I220119 11:54:36.633143 169 server/status/runtime.go:500  [n3] runtime stats: 240 MiB RSS, 207 goroutines, 91 MiB/81 MiB/197 MiB GO alloc/idle/total, 27 MiB/35 MiB CGO alloc/total, 38.0 CGO/sec, 1.1/1.3 %(u/s)time, 0.0 %gc (1x), 150 KiB/150 KiB (r/w)net
+I220119 11:54:37.067099 5137 rpc/nodedialer/nodedialer.go:149  [n3] unable to connect to n1: failed to connect to n1 at ubuntu:23456: initial connection heartbeat failed: rpc error: code = Unavailable desc = transport is closing
+W220119 11:54:37.067124 5067 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23456 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 11:54:37.067149 5067 vendor/google.golang.org/grpc/clientconn.go:1440  grpc: addrConn.transportMonitor exits due to: context canceled
+W220119 11:54:37.287342 5162 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23456 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 11:54:37.287407 5162 vendor/google.golang.org/grpc/clientconn.go:1440  grpc: addrConn.transportMonitor exits due to: context canceled
+W220119 11:54:38.386212 5189 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23456 0  <nil>}. Err :connection error: desc = "transport: Error while dialing dial tcp 127.0.1.1:23456: connect: connection refused". Reconnecting...
+W220119 11:54:39.385935 5189 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23456 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 11:54:39.385990 5189 vendor/google.golang.org/grpc/clientconn.go:953  Failed to dial ubuntu:23456: context canceled; please retry.
+W220119 11:54:39.887272 5237 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23456 0  <nil>}. Err :connection error: desc = "transport: Error while dialing dial tcp 127.0.1.1:23456: connect: connection refused". Reconnecting...
+W220119 11:54:40.887443 5237 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23456 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 11:54:40.887479 5237 vendor/google.golang.org/grpc/clientconn.go:953  Failed to dial ubuntu:23456: context canceled; please retry.
+W220119 11:54:40.986437 5246 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23456 0  <nil>}. Err :connection error: desc = "transport: Error while dialing dial tcp 127.0.1.1:23456: connect: connection refused". Reconnecting...
+W220119 11:54:41.986622 5246 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23456 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 11:54:41.986681 5246 vendor/google.golang.org/grpc/clientconn.go:953  Failed to dial ubuntu:23456: context canceled; please retry.
+W220119 11:54:42.386897 5272 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23456 0  <nil>}. Err :connection error: desc = "transport: Error while dialing dial tcp 127.0.1.1:23456: connect: connection refused". Reconnecting...
+W220119 11:54:43.386736 5272 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23456 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 11:54:43.386788 5272 vendor/google.golang.org/grpc/clientconn.go:953  Failed to dial ubuntu:23456: context canceled; please retry.
+W220119 11:54:44.486845 5305 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23456 0  <nil>}. Err :connection error: desc = "transport: Error while dialing dial tcp 127.0.1.1:23456: connect: connection refused". Reconnecting...
+W220119 11:54:45.108036 171 server/node.go:876  [n3,summaries] health alerts detected: {Alerts:[{StoreID:3 Category:METRICS Description:ranges.underreplicated Value:14}]}
+W220119 11:54:45.108948 5312 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23456 0  <nil>}. Err :connection error: desc = "transport: Error while dialing dial tcp 127.0.1.1:23456: connect: connection refused". Reconnecting...
+I220119 11:54:45.116561 552 security/audit/server/audit_server.go:125  [n3] refresh audit server settings
+W220119 11:54:45.486978 5305 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23456 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 11:54:45.487014 5305 vendor/google.golang.org/grpc/clientconn.go:953  Failed to dial ubuntu:23456: context canceled; please retry.
+W220119 11:54:45.686310 5368 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23456 0  <nil>}. Err :connection error: desc = "transport: Error while dialing dial tcp 127.0.1.1:23456: connect: connection refused". Reconnecting...
+W220119 11:54:46.109699 5312 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23456 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 11:54:46.109748 5312 vendor/google.golang.org/grpc/clientconn.go:953  Failed to dial ubuntu:23456: context canceled; please retry.
+I220119 11:54:46.588075 165 gossip/gossip.go:562  [n3] gossip status (ok, 3 nodes)
+gossip client (0/3 cur/max conns)
+gossip server (1/3 cur/max conns, infos 609/615 sent/received, bytes 134237B/86083B sent/received)
+  2: ubuntu:23457 (3m58s)
+gossip connectivity
+  n2 [sentinel];
+  n2 -> n3;
+I220119 11:54:46.636376 169 server/status/runtime.go:500  [n3] runtime stats: 241 MiB RSS, 195 goroutines, 111 MiB/64 MiB/197 MiB GO alloc/idle/total, 27 MiB/35 MiB CGO alloc/total, 46.4 CGO/sec, 1.1/1.4 %(u/s)time, 0.0 %gc (0x), 164 KiB/164 KiB (r/w)net
+W220119 11:54:46.686491 5368 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23456 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 11:54:46.686611 5368 vendor/google.golang.org/grpc/clientconn.go:953  Failed to dial ubuntu:23456: context canceled; please retry.
+W220119 11:54:46.787228 5390 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23456 0  <nil>}. Err :connection error: desc = "transport: Error while dialing dial tcp 127.0.1.1:23456: connect: connection refused". Reconnecting...
+W220119 11:54:47.787392 5390 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23456 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 11:54:47.787454 5390 vendor/google.golang.org/grpc/clientconn.go:953  Failed to dial ubuntu:23456: context canceled; please retry.
+W220119 11:54:48.486085 5422 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23456 0  <nil>}. Err :connection error: desc = "transport: Error while dialing dial tcp 127.0.1.1:23456: connect: connection refused". Reconnecting...
+W220119 11:54:49.486231 5422 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23456 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 11:54:49.486283 5422 vendor/google.golang.org/grpc/clientconn.go:953  Failed to dial ubuntu:23456: context canceled; please retry.
+W220119 11:54:49.786476 5476 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23456 0  <nil>}. Err :connection error: desc = "transport: Error while dialing dial tcp 127.0.1.1:23456: connect: connection refused". Reconnecting...
+W220119 11:54:50.786434 5476 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23456 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 11:54:50.786475 5476 vendor/google.golang.org/grpc/clientconn.go:953  Failed to dial ubuntu:23456: context canceled; please retry.
+W220119 11:54:51.086339 5481 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23456 0  <nil>}. Err :connection error: desc = "transport: Error while dialing dial tcp 127.0.1.1:23456: connect: connection refused". Reconnecting...
+W220119 11:54:52.086221 5481 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23456 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 11:54:52.086268 5481 vendor/google.golang.org/grpc/clientconn.go:953  Failed to dial ubuntu:23456: context canceled; please retry.
+W220119 11:54:52.387438 5489 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23456 0  <nil>}. Err :connection error: desc = "transport: Error while dialing dial tcp 127.0.1.1:23456: connect: connection refused". Reconnecting...
+W220119 11:54:53.386662 5489 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23456 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 11:54:53.386699 5489 vendor/google.golang.org/grpc/clientconn.go:953  Failed to dial ubuntu:23456: context canceled; please retry.
+W220119 11:54:53.886854 5503 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23456 0  <nil>}. Err :connection error: desc = "transport: Error while dialing dial tcp 127.0.1.1:23456: connect: connection refused". Reconnecting...
+W220119 11:54:54.887224 5503 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23456 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 11:54:54.887263 5503 vendor/google.golang.org/grpc/clientconn.go:953  Failed to dial ubuntu:23456: context canceled; please retry.
+W220119 11:54:55.093545 5571 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23456 0  <nil>}. Err :connection error: desc = "transport: Error while dialing dial tcp 127.0.1.1:23456: connect: connection refused". Reconnecting...
+W220119 11:54:55.116115 171 server/node.go:876  [n3,summaries] health alerts detected: {Alerts:[{StoreID:3 Category:METRICS Description:ranges.underreplicated Value:14}]}
+I220119 11:54:55.116989 552 security/audit/server/audit_server.go:125  [n3] refresh audit server settings
+W220119 11:54:55.186977 5586 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23456 0  <nil>}. Err :connection error: desc = "transport: Error while dialing dial tcp 127.0.1.1:23456: connect: connection refused". Reconnecting...
+I220119 11:54:55.639040 514 server/server_update.go:64  [n3] failed attempt to upgrade cluster version, error: node 1 not running (UNAVAILABLE), cannot determine version
+W220119 11:54:56.093719 5571 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23456 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 11:54:56.093769 5571 vendor/google.golang.org/grpc/clientconn.go:953  Failed to dial ubuntu:23456: context canceled; please retry.
+W220119 11:54:56.186969 5586 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23456 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 11:54:56.187023 5586 vendor/google.golang.org/grpc/clientconn.go:953  Failed to dial ubuntu:23456: context canceled; please retry.
+W220119 11:54:56.388313 5629 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23456 0  <nil>}. Err :connection error: desc = "transport: Error while dialing dial tcp 127.0.1.1:23456: connect: connection refused". Reconnecting...
+I220119 11:54:56.637992 169 server/status/runtime.go:500  [n3] runtime stats: 242 MiB RSS, 194 goroutines, 134 MiB/44 MiB/197 MiB GO alloc/idle/total, 27 MiB/35 MiB CGO alloc/total, 51.6 CGO/sec, 1.3/1.4 %(u/s)time, 0.0 %gc (0x), 197 KiB/198 KiB (r/w)net
+W220119 11:54:57.387924 5629 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23456 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 11:54:57.387968 5629 vendor/google.golang.org/grpc/clientconn.go:953  Failed to dial ubuntu:23456: context canceled; please retry.
+W220119 11:54:57.787678 5676 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23456 0  <nil>}. Err :connection error: desc = "transport: Error while dialing dial tcp 127.0.1.1:23456: connect: connection refused". Reconnecting...
+W220119 11:54:58.787650 5676 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23456 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 11:54:58.787686 5676 vendor/google.golang.org/grpc/clientconn.go:953  Failed to dial ubuntu:23456: context canceled; please retry.
+W220119 11:54:59.186967 5704 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23456 0  <nil>}. Err :connection error: desc = "transport: Error while dialing dial tcp 127.0.1.1:23456: connect: connection refused". Reconnecting...
+W220119 11:55:00.187282 5704 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23456 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 11:55:00.187314 5704 vendor/google.golang.org/grpc/clientconn.go:953  Failed to dial ubuntu:23456: context canceled; please retry.
+W220119 11:55:00.387610 5655 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23456 0  <nil>}. Err :connection error: desc = "transport: Error while dialing dial tcp 127.0.1.1:23456: connect: connection refused". Reconnecting...
+W220119 11:55:01.388131 5655 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23456 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 11:55:01.388189 5655 vendor/google.golang.org/grpc/clientconn.go:953  Failed to dial ubuntu:23456: context canceled; please retry.
+W220119 11:55:02.386354 5663 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23456 0  <nil>}. Err :connection error: desc = "transport: Error while dialing dial tcp 127.0.1.1:23456: connect: connection refused". Reconnecting...
+W220119 11:55:03.386260 5663 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23456 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 11:55:03.386316 5663 vendor/google.golang.org/grpc/clientconn.go:953  Failed to dial ubuntu:23456: context canceled; please retry.
+W220119 11:55:03.886525 5729 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23456 0  <nil>}. Err :connection error: desc = "transport: Error while dialing dial tcp 127.0.1.1:23456: connect: connection refused". Reconnecting...
+W220119 11:55:04.886114 5729 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23456 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 11:55:04.886187 5729 vendor/google.golang.org/grpc/clientconn.go:953  Failed to dial ubuntu:23456: context canceled; please retry.
+W220119 11:55:05.111138 171 server/node.go:876  [n3,summaries] health alerts detected: {Alerts:[{StoreID:3 Category:METRICS Description:ranges.underreplicated Value:14}]}
+W220119 11:55:05.112542 5834 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23456 0  <nil>}. Err :connection error: desc = "transport: Error while dialing dial tcp 127.0.1.1:23456: connect: connection refused". Reconnecting...
+I220119 11:55:05.117100 552 security/audit/server/audit_server.go:125  [n3] refresh audit server settings
+W220119 11:55:05.386535 5840 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23456 0  <nil>}. Err :connection error: desc = "transport: Error while dialing dial tcp 127.0.1.1:23456: connect: connection refused". Reconnecting...
+W220119 11:55:06.112598 5834 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23456 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 11:55:06.112640 5834 vendor/google.golang.org/grpc/clientconn.go:953  Failed to dial ubuntu:23456: context canceled; please retry.
+W220119 11:55:06.386684 5840 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23456 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 11:55:06.386753 5840 vendor/google.golang.org/grpc/clientconn.go:953  Failed to dial ubuntu:23456: context canceled; please retry.
+I220119 11:55:06.641290 169 server/status/runtime.go:500  [n3] runtime stats: 242 MiB RSS, 190 goroutines, 153 MiB/25 MiB/197 MiB GO alloc/idle/total, 27 MiB/35 MiB CGO alloc/total, 34.0 CGO/sec, 1.0/1.3 %(u/s)time, 0.0 %gc (0x), 137 KiB/138 KiB (r/w)net
+W220119 11:55:06.886770 5823 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23456 0  <nil>}. Err :connection error: desc = "transport: Error while dialing dial tcp 127.0.1.1:23456: connect: connection refused". Reconnecting...
+W220119 11:55:07.886474 5823 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23456 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 11:55:07.886512 5823 vendor/google.golang.org/grpc/clientconn.go:953  Failed to dial ubuntu:23456: context canceled; please retry.
+W220119 11:55:08.387332 5892 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23456 0  <nil>}. Err :connection error: desc = "transport: Error while dialing dial tcp 127.0.1.1:23456: connect: connection refused". Reconnecting...
+W220119 11:55:09.386900 5892 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23456 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 11:55:09.386932 5892 vendor/google.golang.org/grpc/clientconn.go:953  Failed to dial ubuntu:23456: context canceled; please retry.
+W220119 11:55:09.586394 5897 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23456 0  <nil>}. Err :connection error: desc = "transport: Error while dialing dial tcp 127.0.1.1:23456: connect: connection refused". Reconnecting...
+W220119 11:55:10.586946 5897 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23456 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 11:55:10.586985 5897 vendor/google.golang.org/grpc/clientconn.go:953  Failed to dial ubuntu:23456: context canceled; please retry.
+W220119 11:55:10.786808 5944 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23456 0  <nil>}. Err :connection error: desc = "transport: Error while dialing dial tcp 127.0.1.1:23456: connect: connection refused". Reconnecting...
+W220119 11:55:11.786624 5944 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23456 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 11:55:11.786655 5944 vendor/google.golang.org/grpc/clientconn.go:953  Failed to dial ubuntu:23456: context canceled; please retry.
+W220119 11:55:11.987169 5953 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23456 0  <nil>}. Err :connection error: desc = "transport: Error while dialing dial tcp 127.0.1.1:23456: connect: connection refused". Reconnecting...
+W220119 11:55:12.986077 5953 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23456 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 11:55:12.986322 5953 vendor/google.golang.org/grpc/clientconn.go:953  Failed to dial ubuntu:23456: context canceled; please retry.
+W220119 11:55:13.887485 6024 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23456 0  <nil>}. Err :connection error: desc = "transport: Error while dialing dial tcp 127.0.1.1:23456: connect: connection refused". Reconnecting...
+W220119 11:55:14.887190 6024 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23456 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 11:55:14.887329 6024 vendor/google.golang.org/grpc/clientconn.go:953  Failed to dial ubuntu:23456: context canceled; please retry.
+W220119 11:55:15.108061 171 server/node.go:876  [n3,summaries] health alerts detected: {Alerts:[{StoreID:3 Category:METRICS Description:ranges.underreplicated Value:14}]}
+W220119 11:55:15.109946 6010 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23456 0  <nil>}. Err :connection error: desc = "transport: Error while dialing dial tcp 127.0.1.1:23456: connect: connection refused". Reconnecting...
+I220119 11:55:15.117729 552 security/audit/server/audit_server.go:125  [n3] refresh audit server settings
+W220119 11:55:16.109560 6010 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23456 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 11:55:16.109593 6010 vendor/google.golang.org/grpc/clientconn.go:953  Failed to dial ubuntu:23456: context canceled; please retry.
+W220119 11:55:16.187497 6040 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23456 0  <nil>}. Err :connection error: desc = "transport: Error while dialing dial tcp 127.0.1.1:23456: connect: connection refused". Reconnecting...
+W220119 11:55:16.637092 6046 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23456 0  <nil>}. Err :connection error: desc = "transport: Error while dialing dial tcp 127.0.1.1:23456: connect: connection refused". Reconnecting...
+I220119 11:55:16.642681 169 server/status/runtime.go:500  [n3] runtime stats: 243 MiB RSS, 202 goroutines, 173 MiB/5.6 MiB/197 MiB GO alloc/idle/total, 27 MiB/35 MiB CGO alloc/total, 48.5 CGO/sec, 1.1/1.3 %(u/s)time, 0.0 %gc (0x), 158 KiB/158 KiB (r/w)net
+W220119 11:55:17.187666 6040 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23456 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 11:55:17.187718 6040 vendor/google.golang.org/grpc/clientconn.go:953  Failed to dial ubuntu:23456: context canceled; please retry.
+W220119 11:55:17.387113 6074 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23456 0  <nil>}. Err :connection error: desc = "transport: Error while dialing dial tcp 127.0.1.1:23456: connect: connection refused". Reconnecting...
+W220119 11:55:17.637321 6046 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23456 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 11:55:17.637373 6046 vendor/google.golang.org/grpc/clientconn.go:953  Failed to dial ubuntu:23456: context canceled; please retry.
+W220119 11:55:18.386916 6074 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23456 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 11:55:18.386977 6074 vendor/google.golang.org/grpc/clientconn.go:953  Failed to dial ubuntu:23456: context canceled; please retry.
+W220119 11:55:18.786550 6117 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23456 0  <nil>}. Err :connection error: desc = "transport: Error while dialing dial tcp 127.0.1.1:23456: connect: connection refused". Reconnecting...
+W220119 11:55:19.786406 6117 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23456 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 11:55:19.786448 6117 vendor/google.golang.org/grpc/clientconn.go:953  Failed to dial ubuntu:23456: context canceled; please retry.
+W220119 11:55:20.886325 6166 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23456 0  <nil>}. Err :connection error: desc = "transport: Error while dialing dial tcp 127.0.1.1:23456: connect: connection refused". Reconnecting...
+W220119 11:55:21.886143 6166 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23456 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 11:55:21.886242 6166 vendor/google.golang.org/grpc/clientconn.go:953  Failed to dial ubuntu:23456: context canceled; please retry.
+W220119 11:55:22.387031 6135 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23456 0  <nil>}. Err :connection error: desc = "transport: Error while dialing dial tcp 127.0.1.1:23456: connect: connection refused". Reconnecting...
+W220119 11:55:23.387659 6135 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23456 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 11:55:23.387699 6135 vendor/google.golang.org/grpc/clientconn.go:953  Failed to dial ubuntu:23456: context canceled; please retry.
+W220119 11:55:23.786906 6128 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23456 0  <nil>}. Err :connection error: desc = "transport: Error while dialing dial tcp 127.0.1.1:23456: connect: connection refused". Reconnecting...
+W220119 11:55:24.786980 6128 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23456 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 11:55:24.787032 6128 vendor/google.golang.org/grpc/clientconn.go:953  Failed to dial ubuntu:23456: context canceled; please retry.
+W220119 11:55:24.886141 6208 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23456 0  <nil>}. Err :connection error: desc = "transport: Error while dialing dial tcp 127.0.1.1:23456: connect: connection refused". Reconnecting...
+W220119 11:55:25.108672 171 server/node.go:876  [n3,summaries] health alerts detected: {Alerts:[{StoreID:3 Category:METRICS Description:ranges.underreplicated Value:14}]}
+W220119 11:55:25.110771 6219 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23456 0  <nil>}. Err :connection error: desc = "transport: Error while dialing dial tcp 127.0.1.1:23456: connect: connection refused". Reconnecting...
+I220119 11:55:25.117851 552 security/audit/server/audit_server.go:125  [n3] refresh audit server settings
+W220119 11:55:25.886447 6208 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23456 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 11:55:25.886482 6208 vendor/google.golang.org/grpc/clientconn.go:953  Failed to dial ubuntu:23456: context canceled; please retry.
+W220119 11:55:26.110177 6219 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23456 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 11:55:26.110265 6219 vendor/google.golang.org/grpc/clientconn.go:953  Failed to dial ubuntu:23456: context canceled; please retry.
+I220119 11:55:26.644945 169 server/status/runtime.go:500  [n3] runtime stats: 244 MiB RSS, 191 goroutines, 110 MiB/65 MiB/197 MiB GO alloc/idle/total, 27 MiB/35 MiB CGO alloc/total, 39.5 CGO/sec, 1.0/1.2 %(u/s)time, 0.0 %gc (1x), 153 KiB/152 KiB (r/w)net
+W220119 11:55:26.986536 6307 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23456 0  <nil>}. Err :connection error: desc = "transport: Error while dialing dial tcp 127.0.1.1:23456: connect: connection refused". Reconnecting...
+W220119 11:55:27.987227 6307 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23456 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 11:55:27.987264 6307 vendor/google.golang.org/grpc/clientconn.go:953  Failed to dial ubuntu:23456: context canceled; please retry.
+W220119 11:55:29.388172 6324 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23456 0  <nil>}. Err :connection error: desc = "transport: Error while dialing dial tcp 127.0.1.1:23456: connect: connection refused". Reconnecting...
+W220119 11:55:29.400789 6355 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23456 0  <nil>}. Err :connection error: desc = "transport: Error while dialing dial tcp 127.0.1.1:23456: connect: connection refused". Reconnecting...
+I220119 11:55:29.404009 514 server/server_update.go:64  [n3] failed attempt to upgrade cluster version, error: node 1 not running (UNAVAILABLE), cannot determine version

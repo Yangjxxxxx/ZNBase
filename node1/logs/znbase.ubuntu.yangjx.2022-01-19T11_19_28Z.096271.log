@@ -1,0 +1,872 @@
+I220119 11:19:28.367149 1 util/log/clog.go:1194  [config] file created at: 2022/01/19 11:19:28
+I220119 11:19:28.367149 1 util/log/clog.go:1194  [config] running on machine: ubuntu
+I220119 11:19:28.367149 1 util/log/clog.go:1194  [config] binary: ZNBaseDB OSS a077da02 (x86_64-linux-gnu, built 2022/01/19 11:08:07, go1.14)
+I220119 11:19:28.367149 1 util/log/clog.go:1194  [config] arguments: [./znbase start --insecure --store=./node1 --listen-addr=:23456 --http-addr=:8000 --join=:23456,:23457,:23458]
+I220119 11:19:28.367149 1 util/log/clog.go:1194  line format: [IWEF]yymmdd hh:mm:ss.uuuuuu goid file:line msg utf8=✓
+I220119 11:19:28.367148 1 cli/start.go:1156  logging to directory /home/yangjx/go/src/github.com/znbasedb/znbase/node1/logs
+W220119 11:19:28.367333 1 cli/start.go:1191  RUNNING IN INSECURE MODE!
+
+- Your cluster is open for any client that can access <all your IP addresses>.
+- Any user, even root, can log in without providing a password.
+- Any user, connecting as root, can read or write any data in your cluster.
+- There is no network encryption nor authentication, and thus no confidentiality.
+
+Check out how to secure your cluster: official docs about version a077da02
+I220119 11:19:28.367473 1 server/status/recorder.go:610  available memory from cgroups (8.0 EiB) exceeds system memory 3.8 GiB, using system memory
+W220119 11:19:28.367902 1 cli/start.go:1067  Using the default setting for --cache (128 MiB).
+  A significantly larger value is usually needed for good performance.
+  If you have a dedicated server a reasonable setting is --cache=.25 (976 MiB).
+I220119 11:19:28.368028 1 server/status/recorder.go:610  available memory from cgroups (8.0 EiB) exceeds system memory 3.8 GiB, using system memory
+W220119 11:19:28.368046 1 cli/start.go:1080  Using the default setting for --max-sql-memory (128 MiB).
+  A significantly larger value is usually needed in production.
+  If you have a dedicated server a reasonable setting is --max-sql-memory=.25 (976 MiB).
+I220119 11:19:28.368101 1 server/status/recorder.go:610  available memory from cgroups (8.0 EiB) exceeds system memory 3.8 GiB, using system memory
+I220119 11:19:28.368111 1 cli/start.go:1205  ZNBaseDB OSS a077da02 (x86_64-linux-gnu, built 2022/01/19 11:08:07, go1.14)
+I220119 11:19:28.382476 1 server/status/recorder.go:610  available memory from cgroups (8.0 EiB) exceeds system memory 3.8 GiB, using system memory
+I220119 11:19:28.382492 1 server/config.go:400  system total memory: 3.8 GiB
+I220119 11:19:28.382524 1 server/config.go:402  server configuration:
+max offset             500000000
+cache size             128 MiB
+SQL memory pool size   128 MiB
+scan interval          10m0s
+scan min idle time     10ms
+scan max idle time     1s
+event log enabled      true
+I220119 11:19:28.382534 1 cli/start.go:1045  using local environment variables: GODEBUG=cgocheck=0
+I220119 11:19:28.382557 1 cli/start.go:1052  process identity: uid 1000 euid 1000 gid 1000 egid 1000
+I220119 11:19:28.382571 1 cli/start.go:676  starting znbase node
+I220119 11:19:28.383842 12 storage/engine/rocksdb.go:721  opening rocksdb instance at "/home/yangjx/go/src/github.com/znbasedb/znbase/node1/znbase-temp396272039"
+I220119 11:19:28.412715 12 storage/engine/rocksdb.go:721  opening rocksdb instance at "/home/yangjx/go/src/github.com/znbasedb/znbase/node1/znbase-cursor-temp832170202"
+I220119 11:19:28.441020 12 server/server.go:1008  [n?] monitoring forward clock jumps based on server.clock.forward_jump_check_enabled
+W220119 11:19:28.441304 12 server/config_unix.go:92  soft open file descriptor limit 4096 is under the recommended limit 15000; this may decrease performance
+please see official docs about version a077da02 for more details
+I220119 11:19:28.441362 12 storage/engine/rocksdb.go:721  opening rocksdb instance at "/home/yangjx/go/src/github.com/znbasedb/znbase/node1"
+I220119 11:19:28.776536 12 server/config.go:509  [n?] 1 storage engine initialized
+I220119 11:19:28.776598 12 server/config.go:512  [n?] rocksdb cache size: 128 MiB
+I220119 11:19:28.776605 12 server/config.go:512  [n?] store 0: rocksdb, max size 0 B, max open file limit 3840
+W220119 11:19:28.779063 12 gossip/gossip.go:1508  [n?] no incoming or outgoing connections
+I220119 11:19:28.780269 12 server/server.go:1058  [n?] Sleeping till wall time 1642591168780235908 to catches up to 1642591168940945913 to ensure monotonicity. Delta: 160.710005ms
+I220119 11:19:28.781265 62 gossip/client.go:128  [n?] started gossip client to ubuntu:23457
+I220119 11:19:28.782166 16 gossip/gossip.go:920  [n?] MaxPeers Recomputed as 3
+I220119 11:19:28.782282 16 gossip/gossip.go:920  [n?] MaxPeers Recomputed as 3
+I220119 11:19:28.942662 12 gossip/gossip.go:397  [n1] NodeDescriptor set to node_id:1 address:<network_field:"tcp" address_field:"ubuntu:23456" > attrs:<> locality:<> ServerVersion:<major_val:19 minor_val:1 patch:0 unstable:10 > build_tag:"a077da02" started_at:1642591168942528348 location_name:<> 
+I220119 11:19:28.942796 16 gossip/gossip.go:920  [n1] MaxPeers Recomputed as 3
+I220119 11:19:28.962569 12 server/node.go:457  [n1] initialized store [n1,s1]: disk (capacity=78 GiB, available=34 GiB, used=31 MiB, logicalBytes=65 MiB), ranges=107, leases=0, queries=0.00, writes=0.00, bytesPerReplica={p10=0.00 p25=35172.00 p50=524279.00 p75=524293.00 p90=524301.00 pMax=27984668.00}, writesPerReplica={p10=0.00 p25=0.00 p50=0.00 p75=0.00 p90=0.00 pMax=0.00}
+I220119 11:19:28.962670 12 storage/stores.go:238  [n1] read 2 node addresses from persistent storage
+I220119 11:19:28.962872 12 server/node.go:695  [n1] connecting to gossip network to verify cluster ID...
+I220119 11:19:28.962889 12 server/node.go:715  [n1] node connected via gossip and verified as part of cluster "3bbb8c74-c606-434f-b2eb-5e4523c470ba"
+I220119 11:19:28.962922 12 server/node.go:538  [n1] node=1: started with [<no-attributes>=/home/yangjx/go/src/github.com/znbasedb/znbase/node1] engine(s) and attributes []
+I220119 11:19:28.963098 12 server/status/recorder.go:610  [n1] available memory from cgroups (8.0 EiB) exceeds system memory 3.8 GiB, using system memory
+I220119 11:19:28.963156 12 server/server.go:1730  [n1] starting http server at [::]:8000 (use: ubuntu:8000)
+I220119 11:19:28.963164 12 server/server.go:1732  [n1] starting grpc/postgres server at [::]:23456
+I220119 11:19:28.963172 12 server/server.go:1733  [n1] advertising ZNBaseDB node at ubuntu:23456
+I220119 11:19:54.393807 549 gossip/client.go:128  [n1] started gossip client to ubuntu:23458
+W220119 11:19:54.396737 104 storage/closedts/provider/provider.go:156  [ct-closer] unable to move closed timestamp forward: not live
+W220119 11:19:54.396832 184 storage/node_liveness.go:523  [n1,hb] slow heartbeat took 25.4s
+W220119 11:19:54.397213 184 storage/node_liveness.go:463  [n1,hb] failed node liveness heartbeat: aborted in distSender: context deadline exceeded
+W220119 11:19:54.397696 227 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23457 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 11:19:54.397791 32 storage/raft_transport.go:625  [n1] while processing outgoing Raft queue to node 2: rpc error: code = Unavailable desc = transport is closing:
+W220119 11:19:54.397840 106 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23458 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 11:19:54.397862 33 storage/raft_transport.go:625  [n1] while processing outgoing Raft queue to node 3: rpc error: code = Unavailable desc = transport is closing:
+W220119 11:19:54.398991 227 vendor/google.golang.org/grpc/clientconn.go:1440  grpc: addrConn.transportMonitor exits due to: context canceled
+W220119 11:19:54.399025 106 vendor/google.golang.org/grpc/clientconn.go:1440  grpc: addrConn.transportMonitor exits due to: context canceled
+W220119 11:19:54.399482 199 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23458 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+I220119 11:19:54.399638 161 server/status/runtime.go:500  [n1] runtime stats: 123 MiB RSS, 222 goroutines, 88 MiB/8.6 MiB/111 MiB GO alloc/idle/total, 14 MiB/20 MiB CGO alloc/total, 0.0 CGO/sec, 0.0/0.0 %(u/s)time, 0.0 %gc (7x), 761 KiB/761 KiB (r/w)net
+W220119 11:19:54.400141 99 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23457 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 11:19:54.401218 343 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23457 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 11:19:54.401281 164 storage/raft_transport.go:625  [n1] while processing outgoing Raft queue to node 2: rpc error: code = Unavailable desc = transport is closing:
+W220119 11:19:54.401523 99 vendor/google.golang.org/grpc/clientconn.go:1440  grpc: addrConn.transportMonitor exits due to: context canceled
+W220119 11:19:54.401848 165 storage/raft_transport.go:625  [n1] while processing outgoing Raft queue to node 3: rpc error: code = Unavailable desc = transport is closing:
+W220119 11:19:54.401940 199 vendor/google.golang.org/grpc/clientconn.go:1440  grpc: addrConn.transportMonitor exits due to: context canceled
+W220119 11:19:54.404032 343 vendor/google.golang.org/grpc/clientconn.go:1440  grpc: addrConn.transportMonitor exits due to: context canceled
+I220119 11:19:55.394627 718 gossip/client.go:128  [n1] started gossip client to ubuntu:23457
+I220119 11:19:55.476227 12 server/server.go:1802  [n1] done ensuring all necessary migrations have run
+I220119 11:19:55.476241 12 server/server.go:1805  [n1] serving sql connections
+I220119 11:19:55.476393 12 cli/start.go:813  [config] clusterID: 3bbb8c74-c606-434f-b2eb-5e4523c470ba
+I220119 11:19:55.476415 12 cli/start.go:821  node startup completed:
+ZNBaseDB node starting at 2022-01-19 11:19:55.476329267 +0000 UTC (took 27.1s)
+build:               OSS a077da02 @ 2022/01/19 11:08:07 (go1.14)
+webui:               http://ubuntu:8000
+sql:                 postgresql://root@ubuntu:23456?sslmode=disable
+client flags:        ./znbase <client cmd> --host=ubuntu:23456 --insecure
+logs:                /home/yangjx/go/src/github.com/znbasedb/znbase/node1/logs
+temp dir:            /home/yangjx/go/src/github.com/znbasedb/znbase/node1/znbase-temp396272039
+external I/O path:   /home/yangjx/go/src/github.com/znbasedb/znbase/node1/extern
+store[0]:            path=/home/yangjx/go/src/github.com/znbasedb/znbase/node1,state=ENABLE
+storage engine:      rocksdb
+status:              restarted pre-existing node
+clusterID:           3bbb8c74-c606-434f-b2eb-5e4523c470ba
+nodeID:              1
+I220119 11:19:55.479206 787 security/audit/task/runner.go:216  [n1] audit_server_aa90dfee-7919-11ec-80fb-000c29793ffc monitor workers every 5 seconds
+I220119 11:19:55.479218 722 security/audit/task/runner.go:284  [n1] audit_server_aa90dfee-7919-11ec-80fb-000c29793ffc init, min:3, max:30
+I220119 11:19:55.482732 777 security/audit/server/audit_server.go:125  [n1] refresh audit server settings
+W220119 11:19:55.489119 184 storage/node_liveness.go:523  [n1,hb] slow heartbeat took 1.1s
+I220119 11:19:56.533208 668 storage/replica_raftstorage.go:817  [n1,s1,r4/1:/System{/tsd-tse}] applying RAFT snapshot at index 5879 (id=c7a8b9fb, encoded size=17569394, 67 rocksdb batches, 0 log entries)
+I220119 11:19:56.707084 771 server/server_update.go:64  [n1] failed attempt to upgrade cluster version, error: node 4 not running (DEAD), cannot determine version
+I220119 11:19:56.777552 814 sql/lease.go:2613  released orphaned table lease: {id:58 version:1 expiration:{Time:{wall:853968000 ext:63778186485 loc:<nil>}}}
+I220119 11:19:56.777649 813 sql/lease.go:2613  released orphaned table lease: {id:57 version:1 expiration:{Time:{wall:454828000 ext:63778186510 loc:<nil>}}}
+I220119 11:19:56.817742 790 sql/event_log.go:235  [n1] Event: "node_restart", target: 1, info: nodeID:1, lastUp:1642589539694446051, ClusterID:3bbb8c74-c606-434f-b2eb-5e4523c470ba
+E220119 11:19:56.838125 759 server/server.go:1869  [n1,client=127.0.0.1:36240] write tcp 127.0.0.1:23456->127.0.0.1:36240: write: broken pipe
+I220119 11:19:56.869053 59 gossip/gossip.go:1522  [n1] node has connected to cluster via gossip
+I220119 11:19:56.938440 59 storage/stores.go:257  [n1] wrote 2 node addresses to persistent storage
+I220119 11:19:56.959948 668 storage/replica_raftstorage.go:823  [n1,s1,r4/1:/System{/tsd-tse}] applied RAFT snapshot in 426ms [clear=2ms batch=325ms entries=0ms commit=98ms]
+I220119 11:19:56.999152 788 sql/event_log.go:235  [n1] Event: "user_login", target: 1, info: User name:root  Client Info:127.0.0.1:36240  Login time:2022-01-19 11:19:56.832747407 +0000 UTC
+I220119 11:19:57.010517 789 sql/event_log.go:235  [n1] Event: "user_logout", target: 1, info: User name:root  Client Info:127.0.0.1:36240  Logout time:2022-01-19 11:19:56.837996299 +0000 UTC
+I220119 11:19:57.729779 771 server/server_update.go:64  [n1] failed attempt to upgrade cluster version, error: node 4 not running (DEAD), cannot determine version
+I220119 11:19:58.965226 156 storage/store.go:4034  [n1,s1] sstables (read amplification = 1):
+6 [ 20M 3 ]: 15M 3M 2M
+I220119 11:19:58.966245 156 storage/store.go:4035  [n1,s1] 
+** Compaction Stats [default] **
+Level    Files   Size     Score Read(GB)  Rn(GB) Rnp1(GB) Write(GB) Wnew(GB) Moved(GB) W-Amp Rd(MB/s) Wr(MB/s) Comp(sec) CompMergeCPU(sec) Comp(cnt) Avg(sec) KeyIn KeyDrop
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+  L0      0/0    0.00 KB   0.0      0.0     0.0      0.0       0.0      0.0       0.0   1.0      0.0     19.4      0.14              0.00         1    0.139       0      0
+  L6      3/0   19.97 MB   0.0      0.0     0.0      0.0       0.0      0.0       0.0   1.0     90.2     45.1      0.07              0.06         1    0.068     46K    16K
+ Sum      3/0   19.97 MB   0.0      0.0     0.0      0.0       0.0      0.0       0.0   2.1     29.5     27.8      0.21              0.06         2    0.104     46K    16K
+ Int      0/0    0.00 KB   0.0      0.0     0.0      0.0       0.0      0.0       0.0   2.1     29.5     27.8      0.21              0.06         2    0.104     46K    16K
+
+** Compaction Stats [default] **
+Priority    Files   Size     Score Read(GB)  Rn(GB) Rnp1(GB) Write(GB) Wnew(GB) Moved(GB) W-Amp Rd(MB/s) Wr(MB/s) Comp(sec) CompMergeCPU(sec) Comp(cnt) Avg(sec) KeyIn KeyDrop
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Low      0/0    0.00 KB   0.0      0.0     0.0      0.0       0.0      0.0       0.0   0.0     90.2     45.1      0.07              0.06         1    0.068     46K    16K
+User      0/0    0.00 KB   0.0      0.0     0.0      0.0       0.0      0.0       0.0   0.0      0.0     19.4      0.14              0.00         1    0.139       0      0
+Uptime(secs): 30.5 total, 30.5 interval
+Flush(GB): cumulative 0.003, interval 0.003
+AddFile(GB): cumulative 0.000, interval 0.000
+AddFile(Total Files): cumulative 0, interval 0
+AddFile(L0 Files): cumulative 0, interval 0
+AddFile(Keys): cumulative 0, interval 0
+Cumulative compaction: 0.01 GB write, 0.19 MB/s write, 0.01 GB read, 0.20 MB/s read, 0.2 seconds
+Interval compaction: 0.01 GB write, 0.19 MB/s write, 0.01 GB read, 0.20 MB/s read, 0.2 seconds
+Stalls(count): 0 level0_slowdown, 0 level0_slowdown_with_compaction, 0 level0_numfiles, 0 level0_numfiles_with_compaction, 0 stop for pending_compaction_bytes, 0 slowdown for pending_compaction_bytes, 0 memtable_compaction, 0 memtable_slowdown, interval 0 total count
+I220119 11:19:59.192457 790 sql/event_log.go:235  [n1] Event: "user_login", target: 1, info: User name:root  Client Info:127.0.0.1:36260  Login time:2022-01-19 11:19:59.145109629 +0000 UTC
+I220119 11:19:59.222460 788 sql/event_log.go:235  [n1] Event: "set_var", target: 0, info: User name:root SHOW SYNTAX:SET sql_safe_updates = true
+I220119 11:19:59.975532 771 server/server_update.go:64  [n1] failed attempt to upgrade cluster version, error: node 4 not running (DEAD), cannot determine version
+I220119 11:20:10.690821 777 security/audit/server/audit_server.go:125  [n1] refresh audit server settings
+W220119 11:20:10.690953 59 gossip/gossip.go:1513  [n1] first range unavailable; trying remaining resolvers
+I220119 11:20:15.008141 1063 gossip/client.go:128  [n1] started gossip client to ubuntu:23458
+I220119 11:20:15.009335 161 server/status/runtime.go:500  [n1] runtime stats: 230 MiB RSS, 222 goroutines, 88 MiB/8.6 MiB/111 MiB GO alloc/idle/total, 35 MiB/42 MiB CGO alloc/total, 288.5 CGO/sec, 1.7/2.8 %(u/s)time, 0.0 %gc (2x), 3.8 MiB/3.8 MiB (r/w)net
+W220119 11:20:15.012135 639 storage/raft_transport.go:625  [n1] while processing outgoing Raft queue to node 2: rpc error: code = Unavailable desc = transport is closing:
+W220119 11:20:15.012260 640 storage/raft_transport.go:625  [n1] while processing outgoing Raft queue to node 3: rpc error: code = Unavailable desc = transport is closing:
+W220119 11:20:15.013155 696 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23457 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 11:20:15.013202 696 vendor/google.golang.org/grpc/clientconn.go:1440  grpc: addrConn.transportMonitor exits due to: context canceled
+W220119 11:20:15.014644 692 storage/raft_transport.go:625  [n1] while processing outgoing Raft queue to node 2: EOF:
+W220119 11:20:15.014668 654 storage/raft_transport.go:625  [n1] while processing outgoing Raft queue to node 3: EOF:
+W220119 11:20:15.017631 141 storage/store.go:3503  [n1,s1,r2/1:/System/NodeLiveness{-Max}] handle raft ready: 4.3s [applied=0, batches=0, state_assertions=0]
+W220119 11:20:15.024168 1025 storage/raft_transport.go:620  [n1] creating batch client for node 2 failed: rpc error: code = Unavailable desc = transport is closing
+W220119 11:20:15.025549 1048 storage/raft_transport.go:620  [n1] creating batch client for node 3 failed: rpc error: code = Unavailable desc = transport is closing
+W220119 11:20:15.031164 530 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23458 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 11:20:15.031266 530 vendor/google.golang.org/grpc/clientconn.go:1440  grpc: addrConn.transportMonitor exits due to: context canceled
+W220119 11:20:15.038120 1052 storage/raft_transport.go:620  [n1] creating batch client for node 2 failed: rpc error: code = Unavailable desc = transport is closing
+W220119 11:20:15.039589 179 server/node.go:876  [n1,summaries] health alerts detected: {Alerts:[{StoreID:0 Category:METRICS Description:liveness.heartbeatfailures Value:1}]}
+W220119 11:20:17.440641 1024 storage/raft_transport.go:620  [n1] creating batch client for node 3 failed: rpc error: code = Unavailable desc = transport is closing
+W220119 11:20:17.442832 139 storage/engine/rocksdb.go:2234  batch [1508/169858/3] commit took 2.406378967s (>= warning threshold 500ms)
+W220119 11:20:17.443964 139 storage/store.go:3503  [n1,s1,r4/1:/System{/tsd-tse}] handle raft ready: 2.4s [applied=4, batches=1, state_assertions=0]
+W220119 11:20:17.444279 136 storage/store.go:3503  [n1,s1,r3/1:/System/{NodeLive…-tsd}] handle raft ready: 2.4s [applied=4, batches=1, state_assertions=0]
+W220119 11:20:17.450516 135 storage/store.go:3503  [n1,s1,r1/1:/{Min-System/NodeL…}] handle raft ready: 2.4s [applied=4, batches=4, state_assertions=2]
+W220119 11:20:17.451415 676 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23458 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 11:20:17.451479 676 vendor/google.golang.org/grpc/clientconn.go:1440  grpc: addrConn.transportMonitor exits due to: context canceled
+I220119 11:20:17.452015 1177 gossip/client.go:128  [n1] started gossip client to ubuntu:23457
+W220119 11:20:17.454624 1191 storage/raft_transport.go:620  [n1] creating batch client for node 2 failed: rpc error: code = Unavailable desc = transport is closing
+W220119 11:20:17.456896 184 storage/node_liveness.go:523  [n1,hb] slow heartbeat took 6.8s
+W220119 11:20:17.456906 184 storage/node_liveness.go:463  [n1,hb] failed node liveness heartbeat: aborted during DistSender.Send: context deadline exceeded
+W220119 11:20:17.458317 1196 storage/raft_transport.go:620  [n1] creating batch client for node 2 failed: rpc error: code = Unavailable desc = transport is closing
+W220119 11:20:17.458405 1056 storage/raft_transport.go:620  [n1] creating batch client for node 2 failed: rpc error: code = Unavailable desc = transport is closing
+W220119 11:20:17.458475 661 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23457 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 11:20:17.458515 661 vendor/google.golang.org/grpc/clientconn.go:1440  grpc: addrConn.transportMonitor exits due to: context canceled
+W220119 11:20:17.481350 179 server/node.go:876  [n1,summaries] health alerts detected: {Alerts:[{StoreID:0 Category:METRICS Description:liveness.heartbeatfailures Value:1}]}
+I220119 11:20:20.658832 59 gossip/gossip.go:1522  [n1] node has connected to cluster via gossip
+W220119 11:20:20.661808 123 storage/store.go:3503  [n1,s1,r4/1:/System{/tsd-tse}] handle raft ready: 3.1s [applied=1, batches=1, state_assertions=0]
+I220119 11:20:20.682245 771 server/server_update.go:64  [n1] failed attempt to upgrade cluster version, error: node 4 not running (DEAD), cannot determine version
+W220119 11:20:29.478330 59 gossip/gossip.go:1511  [n1] first range unavailable; resolvers exhausted
+I220119 11:20:29.478807 777 security/audit/server/audit_server.go:125  [n1] refresh audit server settings
+I220119 11:20:29.479016 1301 gossip/client.go:128  [n1] started gossip client to ubuntu:23458
+W220119 11:20:29.479140 1194 storage/raft_transport.go:625  [n1] while processing outgoing Raft queue to node 3: rpc error: code = Unavailable desc = transport is closing:
+W220119 11:20:29.479575 1183 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23458 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 11:20:29.480973 1183 vendor/google.golang.org/grpc/clientconn.go:1440  grpc: addrConn.transportMonitor exits due to: context canceled
+I220119 11:20:29.484564 161 server/status/runtime.go:500  [n1] runtime stats: 229 MiB RSS, 208 goroutines, 199 MiB/31 MiB/249 MiB GO alloc/idle/total, 35 MiB/43 MiB CGO alloc/total, 36.3 CGO/sec, 0.8/0.6 %(u/s)time, 0.0 %gc (0x), 1.3 MiB/1.3 MiB (r/w)net
+W220119 11:20:29.484801 1198 storage/raft_transport.go:625  [n1] while processing outgoing Raft queue to node 2: rpc error: code = Unavailable desc = transport is closing:
+W220119 11:20:29.484846 994 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23457 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 11:20:29.484885 994 vendor/google.golang.org/grpc/clientconn.go:1440  grpc: addrConn.transportMonitor exits due to: context canceled
+I220119 11:20:29.486299 157 gossip/gossip.go:562  [n1] gossip status (ok, 3 nodes)
+gossip client (2/3 cur/max conns)
+  2: ubuntu:23457 (12s: infos 15/61 sent/received, bytes 2930B/8432B sent/received)
+  0: ubuntu:23458 (0s: infos 0/0 sent/received, bytes 83B/0B sent/received)
+gossip server (0/3 cur/max conns, infos 70/224 sent/received, bytes 16391B/77681B sent/received)
+gossip connectivity
+  n2 [sentinel];
+  n1 -> n2; n2 -> n3;
+I220119 11:20:29.591200 771 server/server_update.go:64  [n1] failed attempt to upgrade cluster version, error: node 4 not running (DEAD), cannot determine version
+I220119 11:20:31.798477 59 gossip/gossip.go:1522  [n1] node has connected to cluster via gossip
+I220119 11:20:39.479047 777 security/audit/server/audit_server.go:125  [n1] refresh audit server settings
+I220119 11:20:39.487866 161 server/status/runtime.go:500  [n1] runtime stats: 316 MiB RSS, 221 goroutines, 100 MiB/160 MiB/290 MiB GO alloc/idle/total, 43 MiB/54 MiB CGO alloc/total, 240.8 CGO/sec, 14.7/9.7 %(u/s)time, 0.5 %gc (3x), 11 MiB/11 MiB (r/w)net
+I220119 11:20:47.990866 771 server/server_update.go:64  [n1] failed attempt to upgrade cluster version, error: node 4 not running (DEAD), cannot determine version
+I220119 11:20:49.481464 777 security/audit/server/audit_server.go:125  [n1] refresh audit server settings
+I220119 11:20:49.503345 161 server/status/runtime.go:500  [n1] runtime stats: 207 MiB RSS, 221 goroutines, 117 MiB/76 MiB/221 MiB GO alloc/idle/total, 52 MiB/62 MiB CGO alloc/total, 51.0 CGO/sec, 1.9/5.0 %(u/s)time, 0.0 %gc (0x), 406 KiB/400 KiB (r/w)net
+I220119 11:20:59.484452 777 security/audit/server/audit_server.go:125  [n1] refresh audit server settings
+I220119 11:20:59.505850 161 server/status/runtime.go:500  [n1] runtime stats: 222 MiB RSS, 221 goroutines, 133 MiB/61 MiB/221 MiB GO alloc/idle/total, 52 MiB/62 MiB CGO alloc/total, 37.0 CGO/sec, 0.7/1.8 %(u/s)time, 0.0 %gc (0x), 421 KiB/416 KiB (r/w)net
+I220119 11:21:09.484610 777 security/audit/server/audit_server.go:125  [n1] refresh audit server settings
+I220119 11:21:09.515162 161 server/status/runtime.go:500  [n1] runtime stats: 238 MiB RSS, 222 goroutines, 149 MiB/46 MiB/221 MiB GO alloc/idle/total, 52 MiB/62 MiB CGO alloc/total, 50.2 CGO/sec, 0.9/1.6 %(u/s)time, 0.0 %gc (0x), 399 KiB/399 KiB (r/w)net
+W220119 11:21:21.286280 59 gossip/gossip.go:1511  [n1] first range unavailable; resolvers exhausted
+W220119 11:21:23.145955 121 storage/store.go:3503  [n1,s1,r2/1:/System/NodeLiveness{-Max}] handle raft ready: 1.9s [applied=3, batches=2, state_assertions=1]
+I220119 11:21:23.149490 777 security/audit/server/audit_server.go:125  [n1] refresh audit server settings
+I220119 11:21:29.387631 161 server/status/runtime.go:500  [n1] runtime stats: 241 MiB RSS, 224 goroutines, 164 MiB/32 MiB/221 MiB GO alloc/idle/total, 52 MiB/62 MiB CGO alloc/total, 18.0 CGO/sec, 0.2/0.6 %(u/s)time, 0.0 %gc (0x), 1.3 MiB/1.3 MiB (r/w)net
+W220119 11:21:30.431782 104 storage/closedts/provider/provider.go:156  [ct-closer] unable to move closed timestamp forward: not live
+I220119 11:21:30.431960 184 storage/node_liveness.go:775  [n1,hb] retrying liveness update after storage.errRetryLiveness: result is ambiguous (context done during DistSender.Send: context deadline exceeded)
+W220119 11:21:30.431981 184 storage/node_liveness.go:523  [n1,hb] slow heartbeat took 7.3s
+W220119 11:21:30.432186 184 storage/node_liveness.go:463  [n1,hb] failed node liveness heartbeat: operation "node liveness heartbeat" timed out after 4.5s
+W220119 11:21:30.432386 137 storage/store.go:3503  [n1,s1,r1/1:/{Min-System/NodeL…}] handle raft ready: 7.3s [applied=2, batches=2, state_assertions=1]
+W220119 11:21:33.411157 1136 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23458 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 11:21:33.411244 1132 storage/raft_transport.go:625  [n1] while processing outgoing Raft queue to node 3: rpc error: code = Unavailable desc = transport is closing:
+W220119 11:21:33.411297 1136 vendor/google.golang.org/grpc/clientconn.go:1440  grpc: addrConn.transportMonitor exits due to: context canceled
+W220119 11:21:33.411758 1344 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23457 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 11:21:33.411780 1367 storage/raft_transport.go:625  [n1] while processing outgoing Raft queue to node 2: rpc error: code = Unavailable desc = transport is closing:
+I220119 11:21:33.414448 59 gossip/gossip.go:1522  [n1] node has connected to cluster via gossip
+W220119 11:21:33.414522 1344 vendor/google.golang.org/grpc/clientconn.go:1440  grpc: addrConn.transportMonitor exits due to: context canceled
+W220119 11:21:33.414544 1047 storage/raft_transport.go:625  [n1] while processing outgoing Raft queue to node 2: rpc error: code = Unavailable desc = transport is closing:
+W220119 11:21:33.415759 59 gossip/gossip.go:1508  [n1] no incoming or outgoing connections
+W220119 11:21:33.415900 1119 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23457 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 11:21:33.416965 1119 vendor/google.golang.org/grpc/clientconn.go:1440  grpc: addrConn.transportMonitor exits due to: context canceled
+W220119 11:21:33.421886 119 storage/store.go:3503  [n1,s1,r2/1:/System/NodeLiveness{-Max}] handle raft ready: 10.3s [applied=1, batches=1, state_assertions=0]
+W220119 11:21:33.422233 1333 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23458 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 11:21:33.938072 119 storage/store.go:3503  [n1,s1,r2/1:/System/NodeLiveness{-Max}] handle raft ready: 0.5s [applied=1, batches=1, state_assertions=0]
+I220119 11:21:33.938310 777 security/audit/server/audit_server.go:125  [n1] refresh audit server settings
+I220119 11:21:34.251959 2148 internal/client/txn.go:759  [n1] async rollback failed: aborted during DistSender.Send: context deadline exceeded
+I220119 11:21:34.252346 157 gossip/gossip.go:562  [n1] gossip status (ok, 3 nodes)
+gossip client (1/3 cur/max conns)
+  0: ubuntu:23457 (1s: infos 0/0 sent/received, bytes 0B/0B sent/received)
+gossip server (0/3 cur/max conns, infos 461/780 sent/received, bytes 99563B/186825B sent/received)
+gossip connectivity
+  n2 [sentinel];
+W220119 11:21:34.253100 1365 storage/raft_transport.go:625  [n1] while processing outgoing Raft queue to node 3: rpc error: code = Unavailable desc = transport is closing:
+W220119 11:21:34.253488 1333 vendor/google.golang.org/grpc/clientconn.go:1440  grpc: addrConn.transportMonitor exits due to: context canceled
+I220119 11:21:34.254819 2215 gossip/client.go:128  [n1] started gossip client to ubuntu:23457
+W220119 11:21:34.254822 139 storage/store.go:3503  [n1,s1,r4/1:/System{/tsd-tse}] handle raft ready: 0.8s [applied=1, batches=1, state_assertions=0]
+W220119 11:21:34.255022 141 storage/store.go:3503  [n1,s1,r1/1:/{Min-System/NodeL…}] handle raft ready: 0.8s [applied=1, batches=1, state_assertions=1]
+W220119 11:21:34.273085 179 server/node.go:876  [n1,summaries] health alerts detected: {Alerts:[{StoreID:0 Category:METRICS Description:liveness.heartbeatfailures Value:1}]}
+W220119 11:21:48.222147 2153 storage/raft_transport.go:625  [n1] while processing outgoing Raft queue to node 2: rpc error: code = Unavailable desc = transport is closing:
+W220119 11:21:48.222586 2066 storage/raft_transport.go:625  [n1] while processing outgoing Raft queue to node 3: rpc error: code = Unavailable desc = transport is closing:
+W220119 11:21:48.222858 2173 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23458 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+I220119 11:21:48.223555 2239 vendor/github.com/znbasedb/circuitbreaker/circuitbreaker.go:322  [n1] circuitbreaker: rpc [::]:23456 [n3] tripped: failed to check for ready connection to n3 at ubuntu:23458: connection not ready: TRANSIENT_FAILURE
+I220119 11:21:48.223570 2239 vendor/github.com/znbasedb/circuitbreaker/circuitbreaker.go:447  [n1] circuitbreaker: rpc [::]:23456 [n3] event: BreakerTripped
+I220119 11:21:48.223577 2239 rpc/nodedialer/nodedialer.go:149  [n1] unable to connect to n3: failed to check for ready connection to n3 at ubuntu:23458: connection not ready: TRANSIENT_FAILURE
+W220119 11:21:48.224169 2262 storage/raft_transport.go:620  [n1] creating batch client for node 2 failed: rpc error: code = Unavailable desc = transport is closing
+W220119 11:21:48.224817 2217 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23457 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 11:21:48.224853 2217 vendor/google.golang.org/grpc/clientconn.go:1440  grpc: addrConn.transportMonitor exits due to: context canceled
+I220119 11:21:48.225569 184 storage/node_liveness.go:775  [n1,hb] retrying liveness update after storage.errRetryLiveness: result is ambiguous (context done during DistSender.Send: context deadline exceeded)
+W220119 11:21:48.225591 184 storage/node_liveness.go:523  [n1,hb] slow heartbeat took 17.8s
+W220119 11:21:48.225605 184 storage/node_liveness.go:463  [n1,hb] failed node liveness heartbeat: operation "node liveness heartbeat" timed out after 4.5s
+W220119 11:21:48.225654 2246 storage/node_liveness.go:523  [n1,s1,r3/1:/System/{NodeLive…-tsd}] slow heartbeat took 14.0s
+E220119 11:21:48.225672 2246 storage/replica_range_lease.go:292  [n1,s1,r3/1:/System/{NodeLive…-tsd}] heartbeat failed on epoch increment
+W220119 11:21:48.227713 154 storage/store_rebalancer.go:226  [n1,s1,store-rebalancer] StorePool missing descriptor for local store
+W220119 11:21:48.227827 2173 vendor/google.golang.org/grpc/clientconn.go:1440  grpc: addrConn.transportMonitor exits due to: context canceled
+I220119 11:21:48.228169 777 security/audit/server/audit_server.go:125  [n1] refresh audit server settings
+I220119 11:21:48.229730 161 server/status/runtime.go:500  [n1] runtime stats: 246 MiB RSS, 197 goroutines, 170 MiB/26 MiB/221 MiB GO alloc/idle/total, 52 MiB/63 MiB CGO alloc/total, 12.2 CGO/sec, 0.4/0.1 %(u/s)time, 0.0 %gc (1x), 1.9 MiB/1.9 MiB (r/w)net
+W220119 11:21:49.296851 2178 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23457 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+I220119 11:21:49.297021 2310 gossip/client.go:128  [n1] started gossip client to ubuntu:23457
+W220119 11:21:49.298249 119 storage/engine/rocksdb.go:2234  batch [2257/256887/4] commit took 1.070256902s (>= warning threshold 500ms)
+W220119 11:21:49.298444 119 storage/store.go:3503  [n1,s1,r4/1:/System{/tsd-tse}] handle raft ready: 15.0s [applied=4, batches=1, state_assertions=0]
+I220119 11:21:49.298818 2305 gossip/client.go:128  [n1] started gossip client to ubuntu:23458
+W220119 11:21:49.298885 2075 storage/raft_transport.go:625  [n1] while processing outgoing Raft queue to node 2: rpc error: code = Unavailable desc = transport is closing:
+W220119 11:21:49.298980 2178 vendor/google.golang.org/grpc/clientconn.go:1440  grpc: addrConn.transportMonitor exits due to: context canceled
+I220119 11:21:49.823703 2352 vendor/github.com/znbasedb/circuitbreaker/circuitbreaker.go:447  [n1] circuitbreaker: rpc [::]:23456 [n3] event: BreakerReset
+W220119 11:21:57.684478 184 storage/node_liveness.go:523  [n1,hb] slow heartbeat took 9.5s
+W220119 11:21:57.684490 184 storage/node_liveness.go:463  [n1,hb] failed node liveness heartbeat: aborted during DistSender.Send: context deadline exceeded
+I220119 11:21:57.684526 2240 internal/client/txn.go:759  [n1] async rollback failed: aborted during DistSender.Send: context deadline exceeded
+W220119 11:21:57.689035 2265 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23458 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 11:21:57.689070 2265 vendor/google.golang.org/grpc/clientconn.go:1440  grpc: addrConn.transportMonitor exits due to: context canceled
+W220119 11:21:57.689116 2296 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23457 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 11:21:57.690013 120 storage/engine/rocksdb.go:2234  batch [1513/171457/3] commit took 7.576247317s (>= warning threshold 500ms)
+W220119 11:21:57.690104 120 storage/store.go:3503  [n1,s1,r4/1:/System{/tsd-tse}] handle raft ready: 7.6s [applied=5, batches=1, state_assertions=0]
+I220119 11:21:57.695319 59 gossip/gossip.go:1522  [n1] node has connected to cluster via gossip
+W220119 11:21:57.695351 2296 vendor/google.golang.org/grpc/clientconn.go:1440  grpc: addrConn.transportMonitor exits due to: context canceled
+W220119 11:21:57.695332 2242 storage/raft_transport.go:625  [n1] while processing outgoing Raft queue to node 2: rpc error: code = Unavailable desc = transport is closing:
+W220119 11:22:04.884421 122 storage/engine/rocksdb.go:2234  batch [5/86073/0] commit took 7.175136769s (>= warning threshold 500ms)
+W220119 11:22:04.887987 2410 storage/raft_transport.go:625  [n1] while processing outgoing Raft queue to node 2: EOF:
+W220119 11:22:04.888045 2348 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23457 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 11:22:04.888065 2373 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23458 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 11:22:04.888080 2352 storage/raft_transport.go:625  [n1] while processing outgoing Raft queue to node 3: EOF:
+W220119 11:22:04.888246 2312 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23458 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 11:22:04.888282 2373 vendor/google.golang.org/grpc/clientconn.go:1440  grpc: addrConn.transportMonitor exits due to: context canceled
+W220119 11:22:04.888316 59 gossip/gossip.go:1508  [n1] no incoming or outgoing connections
+W220119 11:22:04.888377 2312 vendor/google.golang.org/grpc/clientconn.go:1440  grpc: addrConn.transportMonitor exits due to: context canceled
+W220119 11:22:04.888386 2348 vendor/google.golang.org/grpc/clientconn.go:1440  grpc: addrConn.transportMonitor exits due to: context canceled
+W220119 11:22:04.888426 184 storage/node_liveness.go:523  [n1,hb] slow heartbeat took 7.2s
+W220119 11:22:04.888435 184 storage/node_liveness.go:463  [n1,hb] failed node liveness heartbeat: operation "node liveness heartbeat" timed out after 4.5s
+W220119 11:22:04.890059 120 storage/store.go:3503  [n1,s1,r4/1:/System{/tsd-tse}] handle raft ready: 7.2s [applied=1, batches=1, state_assertions=0]
+W220119 11:22:04.890562 122 storage/store.go:3503  [n1,s1,r2/1:/System/NodeLiveness{-Max}] handle raft ready: 7.2s [applied=1, batches=1, state_assertions=0]
+I220119 11:22:04.890787 777 security/audit/server/audit_server.go:125  [n1] refresh audit server settings
+W220119 11:22:05.613719 2241 storage/node_liveness.go:523  [n1,s1,r3/1:/System/{NodeLive…-tsd}] slow heartbeat took 17.4s
+I220119 11:22:07.599188 161 server/status/runtime.go:500  [n1] runtime stats: 249 MiB RSS, 213 goroutines, 116 MiB/77 MiB/221 MiB GO alloc/idle/total, 52 MiB/63 MiB CGO alloc/total, 17.8 CGO/sec, 0.4/0.2 %(u/s)time, 0.0 %gc (0x), 1.6 MiB/1.6 MiB (r/w)net
+W220119 11:22:07.602142 141 storage/store.go:3503  [n1,s1,r34/1:/Table/57{-/1/-9223…}] handle raft ready: 2.7s [applied=0, batches=0, state_assertions=0]
+W220119 11:22:07.602385 119 storage/store.go:3503  [n1,s1,r48/1:/Table/58/1/-92233497859710…] handle raft ready: 2.7s [applied=0, batches=0, state_assertions=0]
+W220119 11:22:07.602529 138 storage/store.go:3503  [n1,s1,r101/1:/Table/58/1/-92233497859702…] handle raft ready: 2.7s [applied=0, batches=0, state_assertions=0]
+W220119 11:22:07.602618 140 storage/store.go:3503  [n1,s1,r49/1:/Table/58/1/-92233497859710…] handle raft ready: 2.7s [applied=0, batches=0, state_assertions=0]
+W220119 11:22:07.602678 129 storage/store.go:3503  [n1,s1,r76/1:/Table/58/1/-92233497859706…] handle raft ready: 2.7s [applied=0, batches=0, state_assertions=0]
+W220119 11:22:07.602750 136 storage/store.go:3503  [n1,s1,r103/1:/Table/58/1/-92233497859702…] handle raft ready: 2.7s [applied=0, batches=0, state_assertions=0]
+W220119 11:22:10.812768 136 storage/store.go:3503  [n1,s1,r25/1:/Table/{29-30}] handle raft ready: 3.2s [applied=0, batches=0, state_assertions=0]
+W220119 11:22:11.282461 127 storage/store.go:3503  [n1,s1,r91/1:/Table/58/1/-92233497859704…] handle raft ready: 6.4s [applied=0, batches=0, state_assertions=0]
+I220119 11:22:11.282602 2605 gossip/client.go:128  [n1] started gossip client to ubuntu:23458
+W220119 11:22:11.282735 137 storage/store.go:3503  [n1,s1,r37/1:/Table/57/1/-92233497859743…] handle raft ready: 6.4s [applied=0, batches=0, state_assertions=0]
+W220119 11:22:11.282789 118 storage/store.go:3503  [n1,s1,r70/1:/Table/58/1/-92233497859707…] handle raft ready: 6.4s [applied=0, batches=0, state_assertions=0]
+I220119 11:22:11.282798 184 storage/node_liveness.go:775  [n1,hb] retrying liveness update after storage.errRetryLiveness: result is ambiguous (context done during DistSender.Send: context deadline exceeded)
+W220119 11:22:11.282806 132 storage/store.go:3503  [n1,s1,r18/1:/Table/2{2-3}] handle raft ready: 6.4s [applied=0, batches=0, state_assertions=0]
+W220119 11:22:11.282806 184 storage/node_liveness.go:523  [n1,hb] slow heartbeat took 6.4s
+W220119 11:22:11.282814 184 storage/node_liveness.go:463  [n1,hb] failed node liveness heartbeat: operation "node liveness heartbeat" timed out after 4.5s
+W220119 11:22:11.282862 126 storage/store.go:3503  [n1,s1,r42/1:/Table/58/1/-92233497859711…] handle raft ready: 6.4s [applied=0, batches=0, state_assertions=0]
+W220119 11:22:11.282891 128 storage/store.go:3503  [n1,s1,r73/1:/Table/58/1/-92233497859706…] handle raft ready: 6.4s [applied=0, batches=0, state_assertions=0]
+W220119 11:22:11.282925 134 storage/store.go:3503  [n1,s1,r95/1:/Table/58/1/-92233497859703…] handle raft ready: 6.4s [applied=0, batches=0, state_assertions=0]
+W220119 11:22:11.282951 135 storage/store.go:3503  [n1,s1,r46/1:/Table/58/1/-92233497859710…] handle raft ready: 6.4s [applied=0, batches=0, state_assertions=0]
+W220119 11:22:11.282926 124 storage/store.go:3503  [n1,s1,r36/1:/Table/58/1/-92233497859711…] handle raft ready: 6.4s [applied=0, batches=0, state_assertions=0]
+W220119 11:22:11.282998 123 storage/store.go:3503  [n1,s1,r47/1:/Table/58/1/-92233497859710…] handle raft ready: 6.4s [applied=0, batches=0, state_assertions=0]
+W220119 11:22:11.283039 131 storage/store.go:3503  [n1,s1,r63/1:/Table/58/1/-92233497859708…] handle raft ready: 6.4s [applied=0, batches=0, state_assertions=0]
+W220119 11:22:11.283067 130 storage/store.go:3503  [n1,s1,r86/1:/Table/58/1/-92233497859704…] handle raft ready: 6.4s [applied=0, batches=0, state_assertions=0]
+W220119 11:22:11.283086 141 storage/store.go:3503  [n1,s1,r106/1:/Table/58/1/-9223349785970…] handle raft ready: 3.7s [applied=0, batches=0, state_assertions=0]
+W220119 11:22:11.283202 122 storage/store.go:3503  [n1,s1,r2/1:/System/NodeLiveness{-Max}] handle raft ready: 6.4s [applied=4, batches=2, state_assertions=1]
+W220119 11:22:11.283277 121 storage/store.go:3503  [n1,s1,r45/1:/Table/58/1/-92233497859710…] handle raft ready: 6.4s [applied=0, batches=0, state_assertions=0]
+W220119 11:22:11.283314 139 storage/store.go:3503  [n1,s1,r94/1:/Table/58/1/-92233497859703…] handle raft ready: 6.4s [applied=0, batches=0, state_assertions=0]
+W220119 11:22:11.283333 133 storage/store.go:3503  [n1,s1,r77/1:/Table/58/1/-92233497859706…] handle raft ready: 6.4s [applied=0, batches=0, state_assertions=0]
+W220119 11:22:11.283360 120 storage/store.go:3503  [n1,s1,r62/1:/Table/58/1/-92233497859708…] handle raft ready: 6.4s [applied=0, batches=0, state_assertions=0]
+W220119 11:22:11.284994 125 storage/store.go:3503  [n1,s1,r24/1:/Table/2{8-9}] handle raft ready: 6.4s [applied=0, batches=0, state_assertions=0]
+W220119 11:22:14.432374 79 storage/store.go:3503  [n1,s1,r28/1:/Table/5{1-3}] handle raft ready: 3.1s [applied=0, batches=0, state_assertions=0]
+I220119 11:22:14.673276 2608 internal/client/txn.go:759  [n1] async rollback failed: aborted during DistSender.Send: context deadline exceeded
+I220119 11:22:14.856592 2639 vendor/github.com/znbasedb/circuitbreaker/circuitbreaker.go:322  [n1] circuitbreaker: gossip [::]:23456->ubuntu:23457 tripped: rpc error: code = Canceled desc = grpc: the client connection is closing
+I220119 11:22:14.856619 2639 vendor/github.com/znbasedb/circuitbreaker/circuitbreaker.go:447  [n1] circuitbreaker: gossip [::]:23456->ubuntu:23457 event: BreakerTripped
+W220119 11:22:14.856642 2639 gossip/client.go:122  [n1] failed to start gossip client to ubuntu:23457: rpc error: code = Canceled desc = grpc: the client connection is closing
+W220119 11:22:14.857141 116 storage/store.go:3503  [n1,s1,r24/1:/Table/2{8-9}] handle raft ready: 3.6s [applied=0, batches=0, state_assertions=0]
+I220119 11:22:14.857425 59 gossip/gossip.go:1522  [n1] node has connected to cluster via gossip
+W220119 11:22:14.858202 129 storage/store.go:3503  [n1,s1,r3/1:/System/{NodeLive…-tsd}] handle raft ready: 7.3s [applied=5, batches=5, state_assertions=1]
+W220119 11:22:14.858257 119 storage/store.go:3503  [n1,s1,r105/1:/Table/58/1/-92233497859702…] handle raft ready: 7.3s [applied=0, batches=0, state_assertions=0]
+W220119 11:22:14.858283 138 storage/store.go:3503  [n1,s1,r100/1:/Table/58/1/-92233497859702…] handle raft ready: 7.3s [applied=0, batches=0, state_assertions=0]
+W220119 11:22:14.858504 140 storage/store.go:3503  [n1,s1,r75/1:/Table/58/1/-92233497859706…] handle raft ready: 7.3s [applied=2, batches=2, state_assertions=1]
+W220119 11:22:14.863435 184 storage/node_liveness.go:523  [n1,hb] slow heartbeat took 3.6s
+I220119 11:22:14.863487 184 storage/node_liveness.go:453  [n1,hb] heartbeat failed on epoch increment; retrying
+W220119 11:22:15.076566 127 storage/store.go:3503  [n1,s1,r1/1:/{Min-System/NodeL…}] handle raft ready: 3.8s [applied=4, batches=4, state_assertions=3]
+W220119 11:22:15.083151 122 storage/store.go:3503  [n1,s1,r2/1:/System/NodeLiveness{-Max}] handle raft ready: 3.8s [applied=3, batches=2, state_assertions=1]
+W220119 11:22:15.229048 179 server/node.go:876  [n1,summaries] health alerts detected: {Alerts:[{StoreID:0 Category:METRICS Description:liveness.heartbeatfailures Value:5} {StoreID:0 Category:METRICS Description:round-trip-latency-p90 Value:3.623878655e+09}]}
+W220119 11:22:15.642937 179 server/node.go:876  [n1,summaries] health alerts detected: {Alerts:[{StoreID:0 Category:METRICS Description:round-trip-latency-p90 Value:3.623878655e+09}]}
+I220119 11:22:16.132610 777 security/audit/server/audit_server.go:125  [n1] refresh audit server settings
+W220119 11:22:16.486155 124 storage/engine/rocksdb.go:2234  batch [3009/342486/5] commit took 1.389325345s (>= warning threshold 500ms)
+W220119 11:22:16.486270 124 storage/store.go:3503  [n1,s1,r4/1:/System{/tsd-tse}] handle raft ready: 1.4s [applied=5, batches=1, state_assertions=0]
+W220119 11:22:16.487990 126 storage/store.go:3503  [n1,s1,r3/1:/System/{NodeLive…-tsd}] handle raft ready: 1.3s [applied=0, batches=0, state_assertions=0]
+W220119 11:22:16.488649 136 storage/store.go:3503  [n1,s1,r83/1:/Table/58/1/-92233497859705…] handle raft ready: 0.8s [applied=0, batches=0, state_assertions=0]
+W220119 11:22:16.488661 141 storage/store.go:3503  [n1,s1,r101/1:/Table/58/1/-92233497859702…] handle raft ready: 0.8s [applied=0, batches=0, state_assertions=0]
+W220119 11:22:16.488698 135 storage/store.go:3503  [n1,s1,r58/1:/Table/58/1/-9223349785970…] handle raft ready: 0.8s [applied=0, batches=0, state_assertions=0]
+W220119 11:22:16.488701 134 storage/store.go:3503  [n1,s1,r69/1:/Table/58/1/-92233497859707…] handle raft ready: 1.3s [applied=0, batches=0, state_assertions=0]
+W220119 11:22:16.488727 140 storage/store.go:3503  [n1,s1,r75/1:/Table/58/1/-92233497859706…] handle raft ready: 1.3s [applied=0, batches=0, state_assertions=0]
+W220119 11:22:16.488746 130 storage/store.go:3503  [n1,s1,r57/1:/Table/58/1/-92233497859709…] handle raft ready: 1.3s [applied=0, batches=0, state_assertions=0]
+W220119 11:22:16.488978 131 storage/store.go:3503  [n1,s1,r82/1:/Table/58/1/-92233497859705…] handle raft ready: 0.8s [applied=0, batches=0, state_assertions=0]
+W220119 11:22:16.489010 133 storage/store.go:3503  [n1,s1,r24/1:/Table/2{8-9}] handle raft ready: 1.3s [applied=1, batches=1, state_assertions=1]
+I220119 11:22:17.857337 161 server/status/runtime.go:500  [n1] runtime stats: 254 MiB RSS, 232 goroutines, 143 MiB/50 MiB/221 MiB GO alloc/idle/total, 52 MiB/64 MiB CGO alloc/total, 62.6 CGO/sec, 0.7/0.4 %(u/s)time, 0.0 %gc (0x), 1.2 MiB/1.2 MiB (r/w)net
+W220119 11:22:23.171747 131 storage/store.go:3503  [n1,s1,r79/1:/Table/58/1/-92233497859705…] handle raft ready: 0.7s [applied=0, batches=0, state_assertions=0]
+I220119 11:22:33.295990 777 security/audit/server/audit_server.go:125  [n1] refresh audit server settings
+W220119 11:22:33.296406 2290 storage/raft_transport.go:625  [n1] while processing outgoing Raft queue to node 3: rpc error: code = Unavailable desc = transport is closing:
+W220119 11:22:33.296645 2513 storage/raft_transport.go:625  [n1] while processing outgoing Raft queue to node 2: rpc error: code = Unavailable desc = transport is closing:
+W220119 11:22:33.297105 104 storage/closedts/provider/provider.go:156  [ct-closer] unable to move closed timestamp forward: not live
+I220119 11:22:33.297256 184 storage/node_liveness.go:775  [n1,hb] retrying liveness update after storage.errRetryLiveness: result is ambiguous (context done during DistSender.Send: context deadline exceeded)
+W220119 11:22:33.297268 184 storage/node_liveness.go:523  [n1,hb] slow heartbeat took 12.9s
+W220119 11:22:33.297277 184 storage/node_liveness.go:463  [n1,hb] failed node liveness heartbeat: operation "node liveness heartbeat" timed out after 4.5s
+W220119 11:22:33.297626 2470 storage/raft_transport.go:625  [n1] while processing outgoing Raft queue to node 2: rpc error: code = Unavailable desc = transport is closing:
+W220119 11:22:33.298213 2481 storage/raft_transport.go:625  [n1] while processing outgoing Raft queue to node 3: rpc error: code = Unavailable desc = transport is closing:
+W220119 11:22:33.298398 2524 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23457 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 11:22:33.299374 2519 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23458 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 11:22:33.299688 123 storage/store.go:3503  [n1,s1,r79/1:/Table/58/1/-92233497859705…] handle raft ready: 10.1s [applied=0, batches=0, state_assertions=0]
+I220119 11:22:33.300354 2718 vendor/github.com/znbasedb/circuitbreaker/circuitbreaker.go:322  [n1] circuitbreaker: rpc [::]:23456 [n3] tripped: failed to check for ready connection to n3 at ubuntu:23458: connection not ready: TRANSIENT_FAILURE
+I220119 11:22:33.300362 2718 vendor/github.com/znbasedb/circuitbreaker/circuitbreaker.go:447  [n1] circuitbreaker: rpc [::]:23456 [n3] event: BreakerTripped
+I220119 11:22:33.300837 771 server/server_update.go:64  [n1] failed attempt to upgrade cluster version, error: node 1 not running (UNAVAILABLE), cannot determine version
+I220119 11:22:39.267014 157 gossip/gossip.go:562  [n1] gossip status (stalled, 3 nodes)
+gossip client (1/3 cur/max conns)
+  3: ubuntu:23458 (24s: infos 42/67 sent/received, bytes 48821B/10225B sent/received)
+gossip server (0/3 cur/max conns, infos 524/996 sent/received, bytes 151569B/215522B sent/received)
+gossip connectivity
+W220119 11:22:39.267029 2455 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23458 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 11:22:39.267140 2455 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23458 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 11:22:39.940039 116 storage/store.go:3503  [n1,s1,r79/1:/Table/58/1/-92233497859705…] handle raft ready: 0.7s [applied=0, batches=0, state_assertions=0]
+W220119 11:22:39.942311 2524 vendor/google.golang.org/grpc/clientconn.go:1440  grpc: addrConn.transportMonitor exits due to: context canceled
+W220119 11:22:39.942392 2566 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23457 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 11:22:39.944057 2519 vendor/google.golang.org/grpc/clientconn.go:1440  grpc: addrConn.transportMonitor exits due to: context canceled
+I220119 11:22:39.944145 2841 vendor/github.com/znbasedb/circuitbreaker/circuitbreaker.go:322  [n1] circuitbreaker: rpc [::]:23456 [n3] tripped: failed to check for ready connection to n3 at ubuntu:23458: connection not ready: TRANSIENT_FAILURE
+I220119 11:22:39.944153 2841 vendor/github.com/znbasedb/circuitbreaker/circuitbreaker.go:447  [n1] circuitbreaker: rpc [::]:23456 [n3] event: BreakerTripped
+I220119 11:22:39.944158 2841 rpc/nodedialer/nodedialer.go:149  [n1] unable to connect to n3: failed to check for ready connection to n3 at ubuntu:23458: connection not ready: TRANSIENT_FAILURE
+I220119 11:22:39.944434 2605 gossip/client.go:133  [n1] closing client to n3 (ubuntu:23458): rpc error: code = Internal desc = grpc: compressed flag set with identity or empty encoding
+W220119 11:22:39.944819 2566 vendor/google.golang.org/grpc/clientconn.go:1440  grpc: addrConn.transportMonitor exits due to: context canceled
+I220119 11:22:40.437537 161 server/status/runtime.go:500  [n1] runtime stats: 254 MiB RSS, 197 goroutines, 153 MiB/43 MiB/221 MiB GO alloc/idle/total, 51 MiB/64 MiB CGO alloc/total, 14.1 CGO/sec, 0.2/0.2 %(u/s)time, 0.0 %gc (0x), 1.6 MiB/1.6 MiB (r/w)net
+I220119 11:22:40.439422 2845 vendor/github.com/znbasedb/circuitbreaker/circuitbreaker.go:447  [n1] circuitbreaker: rpc [::]:23456 [n3] event: BreakerReset
+W220119 11:22:40.439801 2455 vendor/google.golang.org/grpc/clientconn.go:1440  grpc: addrConn.transportMonitor exits due to: context canceled
+I220119 11:22:40.440023 2718 internal/client/txn.go:759  [n1] async rollback failed: aborted during DistSender.Send: context deadline exceeded
+W220119 11:22:40.440149 59 gossip/gossip.go:1511  [n1] first range unavailable; resolvers exhausted
+I220119 11:22:40.440739 2894 gossip/client.go:128  [n1] started gossip client to ubuntu:23458
+W220119 11:22:40.443107 184 storage/node_liveness.go:523  [n1,hb] slow heartbeat took 7.1s
+W220119 11:22:40.443116 184 storage/node_liveness.go:463  [n1,hb] failed node liveness heartbeat: aborted during DistSender.Send: context deadline exceeded
+W220119 11:22:40.444105 179 server/node.go:876  [n1,summaries] health alerts detected: {Alerts:[{StoreID:0 Category:METRICS Description:liveness.heartbeatfailures Value:1} {StoreID:0 Category:METRICS Description:round-trip-latency-p90 Value:3.623878655e+09}]}
+I220119 11:22:42.242270 179 vendor/github.com/znbasedb/circuitbreaker/circuitbreaker.go:447  [n1] circuitbreaker: rpc [::]:23456 [n3] event: BreakerReset
+W220119 11:22:42.243250 123 storage/store.go:3503  [n1,s1,r4/1:/System{/tsd-tse}] handle raft ready: 1.8s [applied=1, batches=1, state_assertions=0]
+I220119 11:22:47.327180 184 storage/node_liveness.go:775  [n1,hb] retrying liveness update after storage.errRetryLiveness: result is ambiguous (context done during DistSender.Send: context deadline exceeded)
+W220119 11:22:47.327204 184 storage/node_liveness.go:523  [n1,hb] slow heartbeat took 6.9s
+W220119 11:22:47.327219 184 storage/node_liveness.go:463  [n1,hb] failed node liveness heartbeat: operation "node liveness heartbeat" timed out after 4.5s
+W220119 11:22:48.351474 138 storage/store.go:3503  [n1,s1,r2/1:/System/NodeLiveness{-Max}] handle raft ready: 6.1s [applied=3, batches=2, state_assertions=1]
+W220119 11:22:48.351526 121 storage/store.go:3503  [n1,s1,r11/1:/Table/1{5-6}] handle raft ready: 7.9s [applied=3, batches=3, state_assertions=1]
+W220119 11:22:48.351676 127 storage/store.go:3503  [n1,s1,r3/1:/System/{NodeLive…-tsd}] handle raft ready: 6.1s [applied=7, batches=1, state_assertions=0]
+I220119 11:22:48.352124 2956 vendor/github.com/znbasedb/circuitbreaker/circuitbreaker.go:322  [n1] circuitbreaker: gossip [::]:23456->ubuntu:23457 tripped: rpc error: code = Canceled desc = grpc: the client connection is closing
+I220119 11:22:48.352131 2956 vendor/github.com/znbasedb/circuitbreaker/circuitbreaker.go:447  [n1] circuitbreaker: gossip [::]:23456->ubuntu:23457 event: BreakerTripped
+W220119 11:22:48.352133 154 storage/store_rebalancer.go:226  [n1,s1,store-rebalancer] StorePool missing descriptor for local store
+I220119 11:22:48.353176 777 security/audit/server/audit_server.go:125  [n1] refresh audit server settings
+W220119 11:22:55.611380 2843 storage/raft_transport.go:625  [n1] while processing outgoing Raft queue to node 2: rpc error: code = Unavailable desc = transport is closing:
+I220119 11:22:55.611611 184 storage/node_liveness.go:775  [n1,hb] retrying liveness update after storage.errRetryLiveness: result is ambiguous (context done during DistSender.Send: context deadline exceeded)
+W220119 11:22:55.611623 184 storage/node_liveness.go:523  [n1,hb] slow heartbeat took 7.3s
+W220119 11:22:55.611632 184 storage/node_liveness.go:463  [n1,hb] failed node liveness heartbeat: operation "node liveness heartbeat" timed out after 4.5s
+W220119 11:22:55.611848 2842 storage/raft_transport.go:625  [n1] while processing outgoing Raft queue to node 2: rpc error: code = Unavailable desc = transport is closing:
+W220119 11:22:55.613670 2872 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23457 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 11:22:55.615254 179 server/node.go:876  [n1,summaries] health alerts detected: {Alerts:[{StoreID:0 Category:METRICS Description:round-trip-latency-p90 Value:3.623878655e+09} {StoreID:0 Category:METRICS Description:liveness.heartbeatfailures Value:1}]}
+W220119 11:23:06.984448 2872 vendor/google.golang.org/grpc/clientconn.go:1440  grpc: addrConn.transportMonitor exits due to: grpc: the connection is closing
+W220119 11:23:06.985420 2928 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23458 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 11:23:06.986408 2928 vendor/google.golang.org/grpc/clientconn.go:1440  grpc: addrConn.transportMonitor exits due to: context canceled
+W220119 11:23:11.090099 184 storage/node_liveness.go:523  [n1,hb] slow heartbeat took 15.5s
+W220119 11:23:11.090152 184 storage/node_liveness.go:463  [n1,hb] failed node liveness heartbeat: aborted during DistSender.Send: context deadline exceeded
+I220119 11:23:11.090265 3019 internal/client/txn.go:759  [n1] async rollback failed: aborted during DistSender.Send: context deadline exceeded
+W220119 11:23:11.093563 129 storage/engine/rocksdb.go:2234  batch [2260/256961/4] commit took 7.264065758s (>= warning threshold 500ms)
+W220119 11:23:11.096809 129 storage/store.go:3503  [n1,s1,r4/1:/System{/tsd-tse}] handle raft ready: 28.8s [applied=6, batches=1, state_assertions=0]
+W220119 11:23:15.090218 135 storage/store.go:3503  [n1,s1,r101/1:/Table/58/1/-92233497859702…] handle raft ready: 4.0s [applied=0, batches=0, state_assertions=0]
+I220119 11:23:15.090260 161 server/status/runtime.go:500  [n1] runtime stats: 256 MiB RSS, 204 goroutines, 176 MiB/20 MiB/221 MiB GO alloc/idle/total, 51 MiB/65 MiB CGO alloc/total, 8.8 CGO/sec, 0.2/0.1 %(u/s)time, 0.0 %gc (1x), 2.7 MiB/2.7 MiB (r/w)net
+W220119 11:23:15.090313 123 storage/store.go:3503  [n1,s1,r34/1:/Table/57{-/1/-9223…}] handle raft ready: 4.0s [applied=0, batches=0, state_assertions=0]
+W220119 11:23:23.023072 120 storage/store.go:3503  [n1,s1,r1/1:/{Min-System/NodeL…}] handle raft ready: 42.6s [applied=6, batches=6, state_assertions=4]
+I220119 11:23:23.023248 3055 internal/client/txn.go:759  [n1] async rollback failed: aborted during DistSender.Send: context deadline exceeded
+W220119 11:23:23.023405 141 storage/store.go:3503  [n1,s1,r87/1:/Table/58/1/-92233497859704…] handle raft ready: 11.9s [applied=0, batches=0, state_assertions=0]
+W220119 11:23:23.023359 128 storage/store.go:3503  [n1,s1,r24/1:/Table/2{8-9}] handle raft ready: 27.4s [applied=0, batches=0, state_assertions=0]
+W220119 11:23:23.023384 118 storage/store.go:3503  [n1,s1,r75/1:/Table/58/1/-92233497859706…] handle raft ready: 11.9s [applied=0, batches=0, state_assertions=0]
+W220119 11:23:23.023459 137 storage/store.go:3503  [n1,s1,r83/1:/Table/58/1/-92233497859705…] handle raft ready: 11.9s [applied=0, batches=0, state_assertions=0]
+W220119 11:23:23.023483 134 storage/store.go:3503  [n1,s1,r69/1:/Table/58/1/-92233497859707…] handle raft ready: 11.9s [applied=0, batches=0, state_assertions=0]
+W220119 11:23:23.023495 122 storage/store.go:3503  [n1,s1,r27/1:/Table/{31-51}] handle raft ready: 11.9s [applied=0, batches=0, state_assertions=0]
+W220119 11:23:23.023510 124 storage/store.go:3503  [n1,s1,r58/1:/Table/58/1/-9223349785970…] handle raft ready: 11.9s [applied=0, batches=0, state_assertions=0]
+W220119 11:23:23.638653 2867 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23457 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 11:23:23.638681 2867 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23457 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 11:23:23.638730 2867 vendor/google.golang.org/grpc/clientconn.go:1440  grpc: addrConn.transportMonitor exits due to: context canceled
+I220119 11:23:23.638736 2904 internal/client/txn.go:759  [n1] async rollback failed: aborted during DistSender.Send: context deadline exceeded
+W220119 11:23:23.639025 2852 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23458 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 11:23:23.640349 2845 storage/raft_transport.go:625  [n1] while processing outgoing Raft queue to node 3: EOF:
+W220119 11:23:23.640788 3034 server/server_engine_health.go:76  [n1] disk stall detected: unable to write to <no-attributes>=/home/yangjx/go/src/github.com/znbasedb/znbase/node1 within 10s 
+
+** Compaction Stats [default] **
+Level    Files   Size     Score Read(GB)  Rn(GB) Rnp1(GB) Write(GB) Wnew(GB) Moved(GB) W-Amp Rd(MB/s) Wr(MB/s) Comp(sec) CompMergeCPU(sec) Comp(cnt) Avg(sec) KeyIn KeyDrop
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+  L0      0/0    0.00 KB   0.0      0.0     0.0      0.0       0.0      0.0       0.0   1.0      0.0     19.4      0.14              0.00         1    0.139       0      0
+  L6      3/0   19.97 MB   0.0      0.0     0.0      0.0       0.0      0.0       0.0   1.0     90.2     45.1      0.07              0.06         1    0.068     46K    16K
+ Sum      3/0   19.97 MB   0.0      0.0     0.0      0.0       0.0      0.0       0.0   2.1     29.5     27.8      0.21              0.06         2    0.104     46K    16K
+ Int      0/0    0.00 KB   0.0      0.0     0.0      0.0       0.0      0.0       0.0   0.0      0.0      0.0      0.00              0.00         0    0.000       0      0
+
+** Compaction Stats [default] **
+Priority    Files   Size     Score Read(GB)  Rn(GB) Rnp1(GB) Write(GB) Wnew(GB) Moved(GB) W-Amp Rd(MB/s) Wr(MB/s) Comp(sec) CompMergeCPU(sec) Comp(cnt) Avg(sec) KeyIn KeyDrop
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Low      0/0    0.00 KB   0.0      0.0     0.0      0.0       0.0      0.0       0.0   0.0     90.2     45.1      0.07              0.06         1    0.068     46K    16K
+User      0/0    0.00 KB   0.0      0.0     0.0      0.0       0.0      0.0       0.0   0.0      0.0     19.4      0.14              0.00         1    0.139       0      0
+Uptime(secs): 218.5 total, 188.0 interval
+Flush(GB): cumulative 0.003, interval 0.000
+AddFile(GB): cumulative 0.000, interval 0.000
+AddFile(Total Files): cumulative 0, interval 0
+AddFile(L0 Files): cumulative 0, interval 0
+AddFile(Keys): cumulative 0, interval 0
+Cumulative compaction: 0.01 GB write, 0.03 MB/s write, 0.01 GB read, 0.03 MB/s read, 0.2 seconds
+Interval compaction: 0.00 GB write, 0.00 MB/s write, 0.00 GB read, 0.00 MB/s read, 0.0 seconds
+Stalls(count): 0 level0_slowdown, 0 level0_slowdown_with_compaction, 0 level0_numfiles, 0 level0_numfiles_with_compaction, 0 stop for pending_compaction_bytes, 0 slowdown for pending_compaction_bytes, 0 memtable_compaction, 0 memtable_slowdown, interval 0 total count
+I220119 11:23:23.640808 777 security/audit/server/audit_server.go:125  [n1] refresh audit server settings
+W220119 11:23:24.374428 129 storage/engine/rocksdb.go:2234  batch [753/85689/2] commit took 735.723538ms (>= warning threshold 500ms)
+W220119 11:23:24.374618 129 storage/store.go:3503  [n1,s1,r4/1:/System{/tsd-tse}] handle raft ready: 13.3s [applied=1, batches=1, state_assertions=0]
+W220119 11:23:25.997612 2852 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23458 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 11:23:25.997641 2852 vendor/google.golang.org/grpc/clientconn.go:1440  grpc: addrConn.transportMonitor exits due to: context canceled
+I220119 11:23:25.997683 3085 vendor/github.com/znbasedb/circuitbreaker/circuitbreaker.go:322  [n1] circuitbreaker: gossip [::]:23456->ubuntu:23458 tripped: rpc error: code = Canceled desc = grpc: the client connection is closing
+I220119 11:23:25.997688 3085 vendor/github.com/znbasedb/circuitbreaker/circuitbreaker.go:447  [n1] circuitbreaker: gossip [::]:23456->ubuntu:23458 event: BreakerTripped
+W220119 11:23:25.997700 3085 gossip/client.go:122  [n1] failed to start gossip client to ubuntu:23458: rpc error: code = Canceled desc = grpc: the client connection is closing
+W220119 11:23:26.922575 138 storage/store.go:3503  [n1,s1,r2/1:/System/NodeLiveness{-Max}] handle raft ready: 38.6s [applied=1, batches=1, state_assertions=0]
+I220119 11:23:26.923507 3148 vendor/github.com/znbasedb/circuitbreaker/circuitbreaker.go:322  [n1] circuitbreaker: gossip [::]:23456->ubuntu:23457 tripped: rpc error: code = Canceled desc = grpc: the client connection is closing
+I220119 11:23:26.923555 3148 vendor/github.com/znbasedb/circuitbreaker/circuitbreaker.go:447  [n1] circuitbreaker: gossip [::]:23456->ubuntu:23457 event: BreakerTripped
+W220119 11:23:26.924791 2949 storage/raft_transport.go:625  [n1] while processing outgoing Raft queue to node 3: rpc error: code = Unavailable desc = transport is closing:
+W220119 11:23:26.926290 147 storage/store.go:1580  [n1,s1,r1/1:/{Min-System/NodeL…}] could not gossip first range descriptor: [NotLeaseHolderError] r1: replica (n1,s1):1 not lease holder; lease holder unknown
+W220119 11:23:26.926332 120 storage/store.go:3503  [n1,s1,r1/1:/{Min-System/NodeL…}] handle raft ready: 3.9s [applied=1, batches=1, state_assertions=0]
+I220119 11:23:26.926650 161 server/status/runtime.go:500  [n1] runtime stats: 256 MiB RSS, 226 goroutines, 164 MiB/33 MiB/221 MiB GO alloc/idle/total, 51 MiB/65 MiB CGO alloc/total, 4.1 CGO/sec, 0.1/0.1 %(u/s)time, 0.0 %gc (0x), 442 KiB/426 KiB (r/w)net
+W220119 11:23:26.926757 132 storage/store.go:3503  [n1,s1,r57/1:/Table/58/1/-92233497859709…] handle raft ready: 15.8s [applied=0, batches=0, state_assertions=0]
+W220119 11:23:26.926996 139 storage/store.go:3503  [n1,s1,r82/1:/Table/58/1/-92233497859705…] handle raft ready: 15.8s [applied=0, batches=0, state_assertions=0]
+W220119 11:23:26.927058 119 storage/store.go:3503  [n1,s1,r98/1:/Table/58/1/-92233497859703…] handle raft ready: 15.8s [applied=0, batches=0, state_assertions=0]
+W220119 11:23:26.927336 184 storage/node_liveness.go:463  [n1,hb] failed node liveness heartbeat: operation "node liveness heartbeat" timed out after 4.5s
+I220119 11:23:31.583071 3154 vendor/github.com/znbasedb/circuitbreaker/circuitbreaker.go:322  [n1] circuitbreaker: rpc [::]:23456 [n3] tripped: failed to connect to n3 at ubuntu:23458: initial connection heartbeat failed: rpc error: code = DeadlineExceeded desc = context deadline exceeded
+I220119 11:23:31.583080 3154 vendor/github.com/znbasedb/circuitbreaker/circuitbreaker.go:447  [n1] circuitbreaker: rpc [::]:23456 [n3] event: BreakerTripped
+W220119 11:23:31.585647 130 storage/store.go:3503  [n1,s1,r3/1:/System/{NodeLive…-tsd}] handle raft ready: 36.0s [applied=1, batches=1, state_assertions=0]
+I220119 11:23:31.588304 157 gossip/gossip.go:562  [n1] gossip status (stalled, 3 nodes)
+gossip client (0/3 cur/max conns)
+gossip server (0/3 cur/max conns, infos 535/1046 sent/received, bytes 153634B/221773B sent/received)
+I220119 11:23:31.588690 3300 vendor/github.com/znbasedb/circuitbreaker/circuitbreaker.go:447  [n1] circuitbreaker: gossip [::]:23456->ubuntu:23458 event: BreakerReset
+I220119 11:23:31.588699 3300 gossip/client.go:128  [n1] started gossip client to ubuntu:23458
+W220119 11:23:33.703678 134 storage/store.go:3503  [n1,s1,r1/1:/{Min-System/NodeL…}] handle raft ready: 2.1s [applied=14, batches=14, state_assertions=8]
+W220119 11:23:33.704708 125 storage/store.go:3503  [n1,s1,r104/1:/Table/58/1/-92233497859702…] handle raft ready: 6.8s [applied=2, batches=2, state_assertions=1]
+W220119 11:23:33.704855 129 storage/store.go:3503  [n1,s1,r4/1:/System{/tsd-tse}] handle raft ready: 2.1s [applied=1, batches=1, state_assertions=0]
+W220119 11:23:33.705591 78 storage/store.go:3503  [n1,s1,r4/1:/System{/tsd-tse}] handle raft ready: 2.1s [applied=0, batches=0, state_assertions=0]
+I220119 11:23:33.707394 777 security/audit/server/audit_server.go:125  [n1] refresh audit server settings
+W220119 11:23:34.372498 104 storage/closedts/provider/provider.go:156  [ct-closer] unable to move closed timestamp forward: not live
+W220119 11:23:35.431997 154 storage/store_rebalancer.go:226  [n1,s1,store-rebalancer] StorePool missing descriptor for local store
+W220119 11:23:35.432220 149 storage/replica_range_lease.go:986  [n1,s1,r2/1:/System/NodeLiveness{-Max}] have been waiting 1m0s attempting to acquire lease
+W220119 11:23:35.433696 2747 storage/replica_write.go:191  [n1,s1,r2/1:/System/NodeLiveness{-Max}] have been waiting 60.59s for proposing command RequestLease [/System/NodeLiveness,/Min).
+This range is likely unavailable.
+Please contact us with this message to ZNBaseDB technical support 
+
+along with
+
+	https://yourhost:8080/#/reports/range/2
+
+and the following Raft status: {"id":"1","term":21,"vote":"0","commit":12718,"lead":"3","raftState":"StateFollower","applied":12718,"progress":{},"leadtransferee":"0"}
+W220119 11:23:35.439043 184 storage/node_liveness.go:523  [n1,hb] slow heartbeat took 8.5s
+W220119 11:23:35.439056 184 storage/node_liveness.go:463  [n1,hb] failed node liveness heartbeat: aborted during DistSender.Send: context deadline exceeded
+W220119 11:23:37.230869 138 storage/engine/rocksdb.go:2234  batch [2/28843/0] commit took 1.79086862s (>= warning threshold 500ms)
+I220119 11:23:37.260125 179 vendor/github.com/znbasedb/circuitbreaker/circuitbreaker.go:447  [n1] circuitbreaker: rpc [::]:23456 [n3] event: BreakerReset
+I220119 11:23:37.263492 59 gossip/gossip.go:1522  [n1] node has connected to cluster via gossip
+I220119 11:23:37.950990 161 server/status/runtime.go:500  [n1] runtime stats: 257 MiB RSS, 224 goroutines, 107 MiB/85 MiB/221 MiB GO alloc/idle/total, 51 MiB/65 MiB CGO alloc/total, 36.6 CGO/sec, 0.5/0.2 %(u/s)time, 0.0 %gc (0x), 784 KiB/784 KiB (r/w)net
+W220119 11:23:37.951051 128 storage/engine/rocksdb.go:2234  batch [753/85689/2] commit took 689.312951ms (>= warning threshold 500ms)
+W220119 11:23:37.951156 128 storage/store.go:3503  [n1,s1,r4/1:/System{/tsd-tse}] handle raft ready: 0.7s [applied=1, batches=1, state_assertions=0]
+W220119 11:23:37.951499 138 storage/store.go:3503  [n1,s1,r3/1:/System/{NodeLive…-tsd}] handle raft ready: 2.5s [applied=1, batches=1, state_assertions=0]
+W220119 11:23:37.951760 126 storage/store.go:3503  [n1,s1,r1/1:/{Min-System/NodeL…}] handle raft ready: 0.7s [applied=1, batches=1, state_assertions=1]
+W220119 11:23:37.951792 123 storage/store.go:3503  [n1,s1,r58/1:/Table/58/1/-9223349785970…] handle raft ready: 0.7s [applied=1, batches=1, state_assertions=0]
+W220119 11:23:37.951808 141 storage/store.go:3503  [n1,s1,r83/1:/Table/58/1/-92233497859705…] handle raft ready: 0.7s [applied=1, batches=1, state_assertions=0]
+W220119 11:23:37.954352 184 storage/node_liveness.go:523  [n1,hb] slow heartbeat took 2.5s
+W220119 11:23:38.490740 179 server/node.go:876  [n1,summaries] health alerts detected: {Alerts:[{StoreID:1 Category:METRICS Description:requests.slow.lease Value:1} {StoreID:1 Category:METRICS Description:requests.slow.raft Value:1} {StoreID:0 Category:METRICS Description:round-trip-latency-p90 Value:2.147483647e+09} {StoreID:0 Category:METRICS Description:liveness.heartbeatfailures Value:4}]}
+W220119 11:23:38.545899 141 storage/store.go:3503  [n1,s1,r27/1:/Table/{31-51}] handle raft ready: 0.6s [applied=2, batches=1, state_assertions=0]
+W220119 11:23:38.546019 136 storage/store.go:3503  [n1,s1,r33/1:/Table/58{-/1/-9223…}] handle raft ready: 0.6s [applied=0, batches=0, state_assertions=0]
+W220119 11:23:38.546056 133 storage/store.go:3503  [n1,s1,r50/1:/Table/58/1/-92233497859710…] handle raft ready: 0.6s [applied=0, batches=0, state_assertions=0]
+W220119 11:23:38.546107 130 storage/store.go:3503  [n1,s1,r104/1:/Table/58/1/-92233497859702…] handle raft ready: 0.6s [applied=0, batches=0, state_assertions=0]
+W220119 11:23:38.546339 127 storage/store.go:3503  [n1,s1,r43/1:/Table/58/1/-92233497859711…] handle raft ready: 0.6s [applied=1, batches=1, state_assertions=0]
+W220119 11:23:38.546378 134 storage/store.go:3503  [n1,s1,r55/1:/Table/58/1/-92233497859709…] handle raft ready: 0.6s [applied=0, batches=0, state_assertions=0]
+W220119 11:23:38.546480 139 storage/store.go:3503  [n1,s1,r7/1:/Table/1{1-2}] handle raft ready: 0.6s [applied=0, batches=0, state_assertions=0]
+W220119 11:23:38.546576 125 storage/store.go:3503  [n1,s1,r90/1:/Table/58/1/-92233497859704…] handle raft ready: 0.6s [applied=2, batches=1, state_assertions=0]
+W220119 11:23:38.546621 121 storage/store.go:3503  [n1,s1,r64/1:/Table/58/1/-92233497859708…] handle raft ready: 0.6s [applied=0, batches=0, state_assertions=0]
+W220119 11:23:38.546659 129 storage/store.go:3503  [n1,s1,r108/1:/Table/5{8/1/-922…-9}] handle raft ready: 0.6s [applied=0, batches=0, state_assertions=0]
+W220119 11:23:38.546691 120 storage/store.go:3503  [n1,s1,r12/1:/Table/1{6-7}] handle raft ready: 0.6s [applied=0, batches=0, state_assertions=0]
+W220119 11:23:38.546721 118 storage/store.go:3503  [n1,s1,r96/1:/Table/58/1/-92233497859703…] handle raft ready: 0.6s [applied=0, batches=0, state_assertions=0]
+W220119 11:23:44.443389 129 storage/store.go:3503  [n1,s1,r43/1:/Table/58/1/-92233497859711…] handle raft ready: 0.7s [applied=0, batches=0, state_assertions=0]
+W220119 11:23:44.443981 59 gossip/gossip.go:1511  [n1] first range unavailable; resolvers exhausted
+W220119 11:23:44.446693 131 storage/store.go:3503  [n1,s1,r33/1:/Table/58{-/1/-9223…}] handle raft ready: 0.7s [applied=0, batches=0, state_assertions=0]
+W220119 11:23:44.876099 127 storage/store.go:3503  [n1,s1,r50/1:/Table/58/1/-92233497859710…] handle raft ready: 1.1s [applied=0, batches=0, state_assertions=0]
+W220119 11:23:52.282578 135 storage/engine/rocksdb.go:2234  batch [3/139/0] commit took 7.405681872s (>= warning threshold 500ms)
+W220119 11:23:52.282804 132 storage/store.go:3503  [n1,s1,r96/1:/Table/58/1/-92233497859703…] handle raft ready: 7.8s [applied=1, batches=1, state_assertions=0]
+W220119 11:23:52.283312 119 storage/store.go:3503  [n1,s1,r71/1:/Table/58/1/-9223349785970…] handle raft ready: 7.8s [applied=2, batches=2, state_assertions=1]
+W220119 11:23:52.283585 128 storage/store.go:3503  [n1,s1,r44/1:/Table/58/1/-9223349785971…] handle raft ready: 7.8s [applied=2, batches=2, state_assertions=1]
+W220119 11:23:52.283630 134 storage/store.go:3503  [n1,s1,r69/1:/Table/58/1/-92233497859707…] handle raft ready: 7.8s [applied=1, batches=1, state_assertions=0]
+W220119 11:23:52.283672 122 storage/store.go:3503  [n1,s1,r98/1:/Table/58/1/-92233497859703…] handle raft ready: 7.8s [applied=1, batches=1, state_assertions=0]
+W220119 11:23:52.283710 140 storage/store.go:3503  [n1,s1,r101/1:/Table/58/1/-92233497859702…] handle raft ready: 7.8s [applied=1, batches=1, state_assertions=0]
+W220119 11:23:52.283745 121 storage/store.go:3503  [n1,s1,r57/1:/Table/58/1/-92233497859709…] handle raft ready: 7.8s [applied=1, batches=1, state_assertions=0]
+W220119 11:23:52.283781 141 storage/store.go:3503  [n1,s1,r82/1:/Table/58/1/-92233497859705…] handle raft ready: 7.8s [applied=1, batches=1, state_assertions=0]
+W220119 11:23:52.284308 125 storage/store.go:3503  [n1,s1,r3/1:/System/{NodeLive…-tsd}] handle raft ready: 7.8s [applied=4, batches=1, state_assertions=0]
+I220119 11:24:58.316549 157 gossip/gossip.go:562  [n1] gossip status (stalled, 3 nodes)
+gossip client (2/3 cur/max conns)
+  3: ubuntu:23458 (1m27s: infos 28/53 sent/received, bytes 44585B/7172B sent/received)
+  0: ubuntu:23457 (1m6s: infos 0/0 sent/received, bytes 0B/0B sent/received)
+gossip server (0/3 cur/max conns, infos 563/1099 sent/received, bytes 198219B/228945B sent/received)
+I220119 11:24:58.317341 777 security/audit/server/audit_server.go:125  [n1] refresh audit server settings
+W220119 11:24:58.317389 104 storage/closedts/provider/provider.go:156  [ct-closer] unable to move closed timestamp forward: not live
+W220119 11:24:58.321522 147 storage/replica_range_lease.go:986  [n1,s1,r1/1:/{Min-System/NodeL…}] have been waiting 1m0s attempting to acquire lease
+W220119 11:24:58.321879 154 storage/store_rebalancer.go:226  [n1,s1,store-rebalancer] StorePool missing descriptor for local store
+W220119 11:24:58.322557 3123 storage/raft_transport.go:625  [n1] while processing outgoing Raft queue to node 3: EOF:
+W220119 11:24:58.323226 3150 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23458 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 11:24:58.323271 3150 vendor/google.golang.org/grpc/clientconn.go:1440  grpc: addrConn.transportMonitor exits due to: context canceled
+W220119 11:24:58.323888 3113 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23457 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 11:24:58.323972 3113 vendor/google.golang.org/grpc/clientconn.go:1440  grpc: addrConn.transportMonitor exits due to: context canceled
+W220119 11:24:58.324913 136 storage/store.go:3503  [n1,s1,r2/1:/System/NodeLiveness{-Max}] handle raft ready: 73.4s [applied=60, batches=20, state_assertions=10]
+W220119 11:24:58.325035 123 storage/store.go:3503  [n1,s1,r72/1:/Table/58/1/-92233497859706…] handle raft ready: 73.4s [applied=0, batches=0, state_assertions=0]
+W220119 11:24:58.325069 118 storage/store.go:3503  [n1,s1,r99/1:/Table/58/1/-9223349785970…] handle raft ready: 73.4s [applied=0, batches=0, state_assertions=0]
+W220119 11:24:58.325216 137 storage/store.go:3503  [n1,s1,r7/1:/Table/1{1-2}] handle raft ready: 73.4s [applied=5, batches=1, state_assertions=0]
+W220119 11:24:58.325257 130 storage/store.go:3503  [n1,s1,r66/1:/Table/58/1/-92233497859707…] handle raft ready: 73.4s [applied=2, batches=1, state_assertions=0]
+W220119 11:24:58.325288 135 storage/store.go:3503  [n1,s1,r59/1:/Table/58/1/-92233497859708…] handle raft ready: 73.4s [applied=2, batches=1, state_assertions=0]
+W220119 11:24:58.325399 132 storage/store.go:3503  [n1,s1,r24/1:/Table/2{8-9}] handle raft ready: 66.0s [applied=2, batches=2, state_assertions=1]
+W220119 11:24:58.325726 131 storage/store.go:3503  [n1,s1,r93/1:/Table/58/1/-92233497859703…] handle raft ready: 66.0s [applied=2, batches=2, state_assertions=1]
+W220119 11:24:58.325764 129 storage/store.go:3503  [n1,s1,r87/1:/Table/58/1/-92233497859704…] handle raft ready: 66.0s [applied=1, batches=1, state_assertions=0]
+W220119 11:24:58.325791 138 storage/store.go:3503  [n1,s1,r75/1:/Table/58/1/-92233497859706…] handle raft ready: 66.0s [applied=1, batches=1, state_assertions=0]
+W220119 11:24:58.325826 125 storage/store.go:3503  [n1,s1,r3/1:/System/{NodeLive…-tsd}] handle raft ready: 66.0s [applied=1, batches=1, state_assertions=0]
+W220119 11:24:58.327297 3073 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23458 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 11:24:58.327334 3078 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23457 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+I220119 11:24:58.327746 161 server/status/runtime.go:500  [n1] runtime stats: 263 MiB RSS, 239 goroutines, 154 MiB/40 MiB/221 MiB GO alloc/idle/total, 61 MiB/76 MiB CGO alloc/total, 7.6 CGO/sec, 0.0/0.1 %(u/s)time, 0.0 %gc (0x), 3.5 MiB/3.5 MiB (r/w)net
+W220119 11:24:59.498414 3078 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23457 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 11:25:14.131723 3078 vendor/google.golang.org/grpc/clientconn.go:1440  grpc: addrConn.transportMonitor exits due to: context canceled
+I220119 11:25:14.132305 3482 vendor/github.com/znbasedb/circuitbreaker/circuitbreaker.go:322  [n1] circuitbreaker: gossip [::]:23456->ubuntu:23457 tripped: rpc error: code = Canceled desc = grpc: the client connection is closing
+I220119 11:25:14.132319 3482 vendor/github.com/znbasedb/circuitbreaker/circuitbreaker.go:447  [n1] circuitbreaker: gossip [::]:23456->ubuntu:23457 event: BreakerTripped
+I220119 11:25:14.133339 184 storage/node_liveness.go:775  [n1,hb] retrying liveness update after storage.errRetryLiveness: result is ambiguous (context done during DistSender.Send: context deadline exceeded)
+W220119 11:25:14.133355 184 storage/node_liveness.go:523  [n1,hb] slow heartbeat took 15.8s
+W220119 11:25:14.133364 184 storage/node_liveness.go:463  [n1,hb] failed node liveness heartbeat: operation "node liveness heartbeat" timed out after 4.5s
+W220119 11:25:14.140019 3073 vendor/google.golang.org/grpc/clientconn.go:1440  grpc: addrConn.transportMonitor exits due to: grpc: the connection is closing
+I220119 11:25:14.142250 161 server/status/runtime.go:500  [n1] runtime stats: 263 MiB RSS, 243 goroutines, 154 MiB/40 MiB/221 MiB GO alloc/idle/total, 61 MiB/76 MiB CGO alloc/total, 0.3 CGO/sec, 0.0/0.1 %(u/s)time, 0.0 %gc (0x), 1.1 MiB/1.1 MiB (r/w)net
+W220119 11:25:14.142869 179 server/node.go:876  [n1,summaries] health alerts detected: {Alerts:[{StoreID:1 Category:METRICS Description:requests.slow.lease Value:2} {StoreID:1 Category:METRICS Description:requests.slow.raft Value:1}]}
+I220119 11:25:14.160744 777 security/audit/server/audit_server.go:125  [n1] refresh audit server settings
+W220119 11:25:15.419797 137 storage/store.go:3503  [n1,s1,r44/1:/Table/58/1/-9223349785971…] handle raft ready: 1.3s [applied=0, batches=0, state_assertions=0]
+I220119 11:25:15.420836 3804 gossip/client.go:128  [n1] started gossip client to ubuntu:23458
+I220119 11:25:18.245433 59 gossip/gossip.go:1522  [n1] node has connected to cluster via gossip
+W220119 11:25:18.959595 184 storage/node_liveness.go:523  [n1,hb] slow heartbeat took 4.8s
+W220119 11:25:18.959605 184 storage/node_liveness.go:463  [n1,hb] failed node liveness heartbeat: aborted during DistSender.Send: context deadline exceeded
+I220119 11:25:18.959732 3600 internal/client/txn.go:759  [n1] async rollback failed: aborted during DistSender.Send: context deadline exceeded
+I220119 11:25:25.612362 777 security/audit/server/audit_server.go:125  [n1] refresh audit server settings
+W220119 11:25:25.612656 124 storage/engine/rocksdb.go:2234  batch [9784/1113027/14] commit took 10.196317244s (>= warning threshold 500ms)
+W220119 11:25:25.612766 124 storage/store.go:3503  [n1,s1,r4/1:/System{/tsd-tse}] handle raft ready: 107.7s [applied=17, batches=1, state_assertions=0]
+I220119 11:25:30.048991 161 server/status/runtime.go:500  [n1] runtime stats: 265 MiB RSS, 242 goroutines, 169 MiB/26 MiB/221 MiB GO alloc/idle/total, 60 MiB/76 MiB CGO alloc/total, 11.1 CGO/sec, 0.5/0.2 %(u/s)time, 0.0 %gc (1x), 1.3 MiB/1.3 MiB (r/w)net
+I220119 11:25:30.049480 3846 internal/client/txn.go:759  [n1] async rollback failed: aborted during DistSender.Send: context deadline exceeded
+W220119 11:25:30.050387 123 storage/engine/rocksdb.go:2234  batch [151/277239/0] commit took 4.435676739s (>= warning threshold 500ms)
+I220119 11:25:30.050543 157 gossip/gossip.go:562  [n1] gossip status (stalled, 3 nodes)
+gossip client (1/3 cur/max conns)
+  3: ubuntu:23458 (15s: infos 7/49 sent/received, bytes 1150B/5940B sent/received)
+gossip server (0/3 cur/max conns, infos 573/1148 sent/received, bytes 199881B/234885B sent/received)
+W220119 11:25:30.051113 123 storage/store.go:3503  [n1,s1,r108/1:/Table/5{8/1/-922…-9}] handle raft ready: 14.6s [applied=1, batches=1, state_assertions=0]
+W220119 11:25:30.051197 133 storage/store.go:3503  [n1,s1,r64/1:/Table/58/1/-92233497859708…] handle raft ready: 14.6s [applied=1, batches=1, state_assertions=0]
+W220119 11:25:30.051239 122 storage/store.go:3503  [n1,s1,r104/1:/Table/58/1/-92233497859702…] handle raft ready: 14.6s [applied=1, batches=1, state_assertions=0]
+W220119 11:25:30.051371 130 storage/store.go:3503  [n1,s1,r3/1:/System/{NodeLive…-tsd}] handle raft ready: 11.8s [applied=1, batches=1, state_assertions=0]
+W220119 11:25:45.636269 3882 server/server_engine_health.go:76  [n1] disk stall detected: unable to write to <no-attributes>=/home/yangjx/go/src/github.com/znbasedb/znbase/node1 within 10s 
+
+** Compaction Stats [default] **
+Level    Files   Size     Score Read(GB)  Rn(GB) Rnp1(GB) Write(GB) Wnew(GB) Moved(GB) W-Amp Rd(MB/s) Wr(MB/s) Comp(sec) CompMergeCPU(sec) Comp(cnt) Avg(sec) KeyIn KeyDrop
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+  L0      0/0    0.00 KB   0.0      0.0     0.0      0.0       0.0      0.0       0.0   1.0      0.0     19.4      0.14              0.00         1    0.139       0      0
+  L6      3/0   19.97 MB   0.0      0.0     0.0      0.0       0.0      0.0       0.0   1.0     90.2     45.1      0.07              0.06         1    0.068     46K    16K
+ Sum      3/0   19.97 MB   0.0      0.0     0.0      0.0       0.0      0.0       0.0   2.1     29.5     27.8      0.21              0.06         2    0.104     46K    16K
+ Int      0/0    0.00 KB   0.0      0.0     0.0      0.0       0.0      0.0       0.0   0.0      0.0      0.0      0.00              0.00         0    0.000       0      0
+
+** Compaction Stats [default] **
+Priority    Files   Size     Score Read(GB)  Rn(GB) Rnp1(GB) Write(GB) Wnew(GB) Moved(GB) W-Amp Rd(MB/s) Wr(MB/s) Comp(sec) CompMergeCPU(sec) Comp(cnt) Avg(sec) KeyIn KeyDrop
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Low      0/0    0.00 KB   0.0      0.0     0.0      0.0       0.0      0.0       0.0   0.0     90.2     45.1      0.07              0.06         1    0.068     46K    16K
+User      0/0    0.00 KB   0.0      0.0     0.0      0.0       0.0      0.0       0.0   0.0      0.0     19.4      0.14              0.00         1    0.139       0      0
+Uptime(secs): 377.2 total, 158.7 interval
+Flush(GB): cumulative 0.003, interval 0.000
+AddFile(GB): cumulative 0.000, interval 0.000
+AddFile(Total Files): cumulative 0, interval 0
+AddFile(L0 Files): cumulative 0, interval 0
+AddFile(Keys): cumulative 0, interval 0
+Cumulative compaction: 0.01 GB write, 0.02 MB/s write, 0.01 GB read, 0.02 MB/s read, 0.2 seconds
+Interval compaction: 0.00 GB write, 0.00 MB/s write, 0.00 GB read, 0.00 MB/s read, 0.0 seconds
+Stalls(count): 0 level0_slowdown, 0 level0_slowdown_with_compaction, 0 level0_numfiles, 0 level0_numfiles_with_compaction, 0 stop for pending_compaction_bytes, 0 slowdown for pending_compaction_bytes, 0 memtable_compaction, 0 memtable_slowdown, interval 0 total count
+I220119 11:25:45.638018 161 server/status/runtime.go:500  [n1] runtime stats: 266 MiB RSS, 249 goroutines, 169 MiB/26 MiB/221 MiB GO alloc/idle/total, 59 MiB/76 MiB CGO alloc/total, 0.8 CGO/sec, 0.1/0.0 %(u/s)time, 0.0 %gc (0x), 368 KiB/368 KiB (r/w)net
+W220119 11:25:45.638332 3479 storage/raft_transport.go:625  [n1] while processing outgoing Raft queue to node 2: rpc error: code = Unavailable desc = transport is closing:
+W220119 11:25:45.643316 59 gossip/gossip.go:1511  [n1] first range unavailable; resolvers exhausted
+I220119 11:25:45.643636 3893 vendor/github.com/znbasedb/circuitbreaker/circuitbreaker.go:322  [n1] circuitbreaker: gossip [::]:23456->ubuntu:23457 tripped: rpc error: code = Canceled desc = grpc: the client connection is closing
+I220119 11:25:45.643643 3893 vendor/github.com/znbasedb/circuitbreaker/circuitbreaker.go:447  [n1] circuitbreaker: gossip [::]:23456->ubuntu:23457 event: BreakerTripped
+W220119 11:25:45.644387 184 storage/node_liveness.go:523  [n1,hb] slow heartbeat took 25.7s
+W220119 11:25:45.644398 184 storage/node_liveness.go:463  [n1,hb] failed node liveness heartbeat: aborted during DistSender.Send: context deadline exceeded
+W220119 11:25:45.644595 3750 storage/raft_transport.go:625  [n1] while processing outgoing Raft queue to node 3: EOF:
+W220119 11:25:45.644802 3751 storage/raft_transport.go:625  [n1] while processing outgoing Raft queue to node 2: EOF:
+W220119 11:25:45.644953 3457 storage/raft_transport.go:625  [n1] while processing outgoing Raft queue to node 3: rpc error: code = Unavailable desc = transport is closing:
+W220119 11:25:45.645285 3715 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23458 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 11:25:45.645482 3715 vendor/google.golang.org/grpc/clientconn.go:1440  grpc: addrConn.transportMonitor exits due to: context canceled
+W220119 11:25:45.648363 3939 storage/raft_transport.go:620  [n1] creating batch client for node 3 failed: rpc error: code = Unavailable desc = transport is closing
+W220119 11:25:45.650012 119 storage/store.go:3503  [n1,s1,r19/1:/Table/2{3-4}] handle raft ready: 30.2s [applied=0, batches=0, state_assertions=0]
+W220119 11:25:45.650057 120 storage/store.go:3503  [n1,s1,r92/1:/Table/58/1/-9223349785970…] handle raft ready: 30.2s [applied=0, batches=0, state_assertions=0]
+W220119 11:25:45.650086 140 storage/store.go:3503  [n1,s1,r67/1:/Table/58/1/-92233497859707…] handle raft ready: 30.2s [applied=0, batches=0, state_assertions=0]
+W220119 11:25:45.650142 127 storage/store.go:3503  [n1,s1,r80/1:/Table/58/1/-92233497859705…] handle raft ready: 30.2s [applied=0, batches=0, state_assertions=0]
+W220119 11:25:45.650169 121 storage/store.go:3503  [n1,s1,r6/1:/Table/{SystemCon…-11}] handle raft ready: 30.2s [applied=0, batches=0, state_assertions=0]
+W220119 11:25:45.650375 3944 storage/raft_transport.go:620  [n1] creating batch client for node 2 failed: rpc error: code = Unavailable desc = transport is closing
+W220119 11:25:45.653164 3942 storage/raft_transport.go:620  [n1] creating batch client for node 3 failed: rpc error: code = Unavailable desc = transport is closing
+W220119 11:25:45.653232 3943 storage/raft_transport.go:620  [n1] creating batch client for node 2 failed: rpc error: code = Unavailable desc = transport is closing
+W220119 11:25:45.653457 3948 storage/raft_transport.go:620  [n1] creating batch client for node 3 failed: rpc error: code = Unavailable desc = transport is closing
+W220119 11:25:45.653708 3949 storage/raft_transport.go:620  [n1] creating batch client for node 3 failed: rpc error: code = Unavailable desc = transport is closing
+W220119 11:25:46.445769 3889 storage/raft_transport.go:620  [n1] creating batch client for node 2 failed: rpc error: code = Unavailable desc = transport is closing
+W220119 11:25:46.445837 3694 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23457 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 11:25:46.445869 3725 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23458 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 11:25:46.445927 3720 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23457 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 11:25:46.446398 3694 vendor/google.golang.org/grpc/clientconn.go:1440  grpc: addrConn.transportMonitor exits due to: context canceled
+I220119 11:25:46.448129 3971 vendor/github.com/znbasedb/circuitbreaker/circuitbreaker.go:322  [n1] circuitbreaker: rpc [::]:23456 [n3] tripped: failed to check for ready connection to n3 at ubuntu:23458: connection not ready: TRANSIENT_FAILURE
+I220119 11:25:46.448140 3971 vendor/github.com/znbasedb/circuitbreaker/circuitbreaker.go:447  [n1] circuitbreaker: rpc [::]:23456 [n3] event: BreakerTripped
+I220119 11:25:46.448145 3971 rpc/nodedialer/nodedialer.go:149  [n1] unable to connect to n3: failed to check for ready connection to n3 at ubuntu:23458: connection not ready: TRANSIENT_FAILURE
+W220119 11:25:46.450286 179 server/node.go:876  [n1,summaries] health alerts detected: {Alerts:[{StoreID:0 Category:METRICS Description:liveness.heartbeatfailures Value:3} {StoreID:0 Category:METRICS Description:round-trip-latency-p90 Value:1.342177279e+09} {StoreID:1 Category:METRICS Description:requests.slow.raft Value:1} {StoreID:1 Category:METRICS Description:requests.slow.lease Value:2}]}
+W220119 11:25:46.451023 125 storage/engine/rocksdb.go:2234  batch [4/270/4] commit took 801.914071ms (>= warning threshold 500ms)
+W220119 11:25:46.452505 3725 vendor/google.golang.org/grpc/clientconn.go:1440  grpc: addrConn.transportMonitor exits due to: context canceled
+W220119 11:25:46.453390 3720 vendor/google.golang.org/grpc/clientconn.go:1440  grpc: addrConn.transportMonitor exits due to: context canceled
+W220119 11:25:51.922558 3947 storage/raft_transport.go:620  [n1] creating batch client for node 2 failed: rpc error: code = Canceled desc = grpc: the client connection is closing
+I220119 11:25:51.923873 777 security/audit/server/audit_server.go:125  [n1] refresh audit server settings
+W220119 11:25:51.927760 135 storage/engine/rocksdb.go:2234  batch [2318/831746/0] commit took 5.476373177s (>= warning threshold 500ms)
+W220119 11:25:53.863092 184 storage/node_liveness.go:523  [n1,hb] slow heartbeat took 8.2s
+W220119 11:25:53.863113 184 storage/node_liveness.go:463  [n1,hb] failed node liveness heartbeat: operation "node liveness heartbeat" timed out after 4.5s
+I220119 11:25:53.864136 4001 gossip/client.go:128  [n1] started gossip client to ubuntu:23458
+I220119 11:25:53.864416 3903 internal/client/txn.go:759  [n1] async rollback failed: aborted during DistSender.Send: context deadline exceeded
+I220119 11:26:03.905774 3997 vendor/github.com/znbasedb/circuitbreaker/circuitbreaker.go:322  [n1] circuitbreaker: rpc [::]:23456 [n2] tripped: failed to connect to n2 at ubuntu:23457: initial connection heartbeat failed: rpc error: code = DeadlineExceeded desc = context deadline exceeded
+I220119 11:26:03.905787 3997 vendor/github.com/znbasedb/circuitbreaker/circuitbreaker.go:447  [n1] circuitbreaker: rpc [::]:23456 [n2] event: BreakerTripped
+I220119 11:26:03.905794 3997 rpc/nodedialer/nodedialer.go:149  [n1] unable to connect to n2: failed to connect to n2 at ubuntu:23457: initial connection heartbeat failed: rpc error: code = DeadlineExceeded desc = context deadline exceeded
+W220119 11:26:03.905900 4005 server/server_engine_health.go:76  [n1] disk stall detected: unable to write to <no-attributes>=/home/yangjx/go/src/github.com/znbasedb/znbase/node1 within 10s 
+
+** Compaction Stats [default] **
+Level    Files   Size     Score Read(GB)  Rn(GB) Rnp1(GB) Write(GB) Wnew(GB) Moved(GB) W-Amp Rd(MB/s) Wr(MB/s) Comp(sec) CompMergeCPU(sec) Comp(cnt) Avg(sec) KeyIn KeyDrop
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+  L0      0/0    0.00 KB   0.0      0.0     0.0      0.0       0.0      0.0       0.0   1.0      0.0     19.4      0.14              0.00         1    0.139       0      0
+  L6      3/0   19.97 MB   0.0      0.0     0.0      0.0       0.0      0.0       0.0   1.0     90.2     45.1      0.07              0.06         1    0.068     46K    16K
+ Sum      3/0   19.97 MB   0.0      0.0     0.0      0.0       0.0      0.0       0.0   2.1     29.5     27.8      0.21              0.06         2    0.104     46K    16K
+ Int      0/0    0.00 KB   0.0      0.0     0.0      0.0       0.0      0.0       0.0   0.0      0.0      0.0      0.00              0.00         0    0.000       0      0
+
+** Compaction Stats [default] **
+Priority    Files   Size     Score Read(GB)  Rn(GB) Rnp1(GB) Write(GB) Wnew(GB) Moved(GB) W-Amp Rd(MB/s) Wr(MB/s) Comp(sec) CompMergeCPU(sec) Comp(cnt) Avg(sec) KeyIn KeyDrop
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Low      0/0    0.00 KB   0.0      0.0     0.0      0.0       0.0      0.0       0.0   0.0     90.2     45.1      0.07              0.06         1    0.068     46K    16K
+User      0/0    0.00 KB   0.0      0.0     0.0      0.0       0.0      0.0       0.0   0.0      0.0     19.4      0.14              0.00         1    0.139       0      0
+Uptime(secs): 395.5 total, 18.3 interval
+Flush(GB): cumulative 0.003, interval 0.000
+AddFile(GB): cumulative 0.000, interval 0.000
+AddFile(Total Files): cumulative 0, interval 0
+AddFile(L0 Files): cumulative 0, interval 0
+AddFile(Keys): cumulative 0, interval 0
+Cumulative compaction: 0.01 GB write, 0.01 MB/s write, 0.01 GB read, 0.02 MB/s read, 0.2 seconds
+Interval compaction: 0.00 GB write, 0.00 MB/s write, 0.00 GB read, 0.00 MB/s read, 0.0 seconds
+Stalls(count): 0 level0_slowdown, 0 level0_slowdown_with_compaction, 0 level0_numfiles, 0 level0_numfiles_with_compaction, 0 stop for pending_compaction_bytes, 0 slowdown for pending_compaction_bytes, 0 memtable_compaction, 0 memtable_slowdown, interval 0 total count
+W220119 11:26:03.905948 104 storage/closedts/provider/provider.go:156  [ct-closer] unable to move closed timestamp forward: not live
+W220119 11:26:03.905954 138 storage/store.go:3503  [n1,s1,r11/1:/Table/1{5-6}] handle raft ready: 44.1s [applied=1, batches=1, state_assertions=1]
+W220119 11:26:03.906035 129 storage/store.go:3503  [n1,s1,r7/1:/Table/1{1-2}] handle raft ready: 44.1s [applied=2, batches=1, state_assertions=0]
+W220119 11:26:03.906421 130 storage/store.go:3503  [n1,s1,r3/1:/System/{NodeLive…-tsd}] handle raft ready: 33.9s [applied=29, batches=1, state_assertions=0]
+I220119 11:26:03.906454 777 security/audit/server/audit_server.go:125  [n1] refresh audit server settings
+W220119 11:26:03.906548 24 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23456 0  <nil>}. Err :connection error: desc = "transport: failed to write client preface: io: read/write on closed pipe". Reconnecting...
+I220119 11:26:03.906747 4072 vendor/github.com/znbasedb/circuitbreaker/circuitbreaker.go:322  [n1] circuitbreaker: gossip [::]:23456->ubuntu:23457 tripped: rpc error: code = Canceled desc = grpc: the client connection is closing
+I220119 11:26:03.906756 4072 vendor/github.com/znbasedb/circuitbreaker/circuitbreaker.go:447  [n1] circuitbreaker: gossip [::]:23456->ubuntu:23457 event: BreakerTripped
+W220119 11:26:03.906923 3951 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23458 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 11:26:03.906945 184 storage/node_liveness.go:523  [n1,hb] slow heartbeat took 10.0s
+W220119 11:26:03.906950 3940 storage/raft_transport.go:625  [n1] while processing outgoing Raft queue to node 3: rpc error: code = Unavailable desc = transport is closing:
+W220119 11:26:03.906955 184 storage/node_liveness.go:463  [n1,hb] failed node liveness heartbeat: operation "node liveness heartbeat" timed out after 4.5s
+W220119 11:26:03.907231 3973 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23457 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 11:26:03.907316 3973 vendor/google.golang.org/grpc/clientconn.go:1440  grpc: addrConn.transportMonitor exits due to: context canceled
+W220119 11:26:03.907427 124 storage/store.go:3503  [n1,s1,r4/1:/System{/tsd-tse}] handle raft ready: 38.3s [applied=5, batches=1, state_assertions=0]
+I220119 11:26:03.907554 161 server/status/runtime.go:500  [n1] runtime stats: 268 MiB RSS, 213 goroutines, 128 MiB/66 MiB/221 MiB GO alloc/idle/total, 59 MiB/75 MiB CGO alloc/total, 13.0 CGO/sec, 0.2/0.1 %(u/s)time, 0.0 %gc (0x), 678 KiB/678 KiB (r/w)net
+W220119 11:26:03.907619 3951 vendor/google.golang.org/grpc/clientconn.go:1440  grpc: addrConn.transportMonitor exits due to: context canceled
+W220119 11:26:06.041221 125 storage/engine/rocksdb.go:2234  batch [2/193/2] commit took 2.133447196s (>= warning threshold 500ms)
+E220119 11:26:06.042401 3448 storage/queue.go:977  [n1,replicaGC,s1,r72/1:/Table/58/1/-92233497859706…] aborted during DistSender.Send: context deadline exceeded
+W220119 11:26:06.043952 24 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23456 0  <nil>}. Err :connection error: desc = "transport: failed to write client preface: io: read/write on closed pipe". Reconnecting...
+W220119 11:26:06.043985 125 storage/store.go:3503  [n1,s1,r2/1:/System/NodeLiveness{-Max}] handle raft ready: 50.6s [applied=96, batches=31, state_assertions=15]
+I220119 11:26:06.044169 3106 vendor/github.com/znbasedb/circuitbreaker/circuitbreaker.go:447  [n1] circuitbreaker: rpc [::]:23456 [n3] event: BreakerReset
+W220119 11:26:06.044237 135 storage/store.go:3503  [n1,s1,r1/1:/{Min-System/NodeL…}] handle raft ready: 46.3s [applied=34, batches=34, state_assertions=18]
+I220119 11:26:06.044465 147 storage/replica_range_lease.go:991  [n1,s1,r1/1:/{Min-System/NodeL…}] slow lease acquisition finished after 2m13.75581349s with error [NotLeaseHolderError] r1: replica (n1,s1):1 not lease holder; lease holder unknown after 1 attempts
+W220119 11:26:06.044478 147 storage/store.go:1580  [n1,s1,r1/1:/{Min-System/NodeL…}] could not gossip first range descriptor: [NotLeaseHolderError] r1: replica (n1,s1):1 not lease holder; lease holder unknown
+W220119 11:26:10.175698 24 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23456 0  <nil>}. Err :connection error: desc = "transport: failed to write client preface: io: read/write on closed pipe". Reconnecting...
+W220119 11:26:10.179262 184 storage/node_liveness.go:523  [n1,hb] slow heartbeat took 6.3s
+W220119 11:26:10.179305 184 storage/node_liveness.go:463  [n1,hb] failed node liveness heartbeat: operation "node liveness heartbeat" timed out after 4.5s
+I220119 11:26:43.702702 157 gossip/gossip.go:562  [n1] gossip status (stalled, 3 nodes)
+gossip client (1/3 cur/max conns)
+  0: ubuntu:23458 (38s: infos 0/0 sent/received, bytes 0B/0B sent/received)
+gossip server (0/3 cur/max conns, infos 573/1151 sent/received, bytes 199964B/235198B sent/received)
+I220119 11:27:17.644131 4214 vendor/github.com/znbasedb/circuitbreaker/circuitbreaker.go:322  [n1] circuitbreaker: gossip [::]:23456->ubuntu:23457 tripped: rpc error: code = Canceled desc = grpc: the client connection is closing
+I220119 11:27:17.644146 4214 vendor/github.com/znbasedb/circuitbreaker/circuitbreaker.go:447  [n1] circuitbreaker: gossip [::]:23456->ubuntu:23457 event: BreakerTripped
+W220119 11:27:17.644397 154 storage/store_rebalancer.go:226  [n1,s1,store-rebalancer] StorePool missing descriptor for local store
+I220119 11:27:17.644577 4209 vendor/github.com/znbasedb/circuitbreaker/circuitbreaker.go:322  [n1] circuitbreaker: rpc [::]:23456 [n2] tripped: failed to connect to n2 at ubuntu:23457: initial connection heartbeat failed: rpc error: code = DeadlineExceeded desc = context deadline exceeded
+I220119 11:27:17.644581 4209 vendor/github.com/znbasedb/circuitbreaker/circuitbreaker.go:447  [n1] circuitbreaker: rpc [::]:23456 [n2] event: BreakerTripped
+I220119 11:27:17.644587 4209 rpc/nodedialer/nodedialer.go:149  [n1] unable to connect to n2: failed to connect to n2 at ubuntu:23457: initial connection heartbeat failed: rpc error: code = DeadlineExceeded desc = context deadline exceeded
+W220119 11:27:17.645216 3836 storage/replica_range_lease.go:986  [n1,s1,r2/1:/System/NodeLiveness{-Max}] have been waiting 1m0s attempting to acquire lease
+W220119 11:27:17.645300 4094 storage/replica_write.go:191  [n1,s1,r1/1:/{Min-System/NodeL…}] have been waiting 67.47s for proposing command RequestLease [/Min,/Min).
+This range is likely unavailable.
+Please contact us with this message to ZNBaseDB technical support 
+
+along with
+
+	https://yourhost:8080/#/reports/range/1
+
+and the following Raft status: {"id":"1","term":15,"vote":"0","commit":3783,"lead":"2","raftState":"StateFollower","applied":3771,"progress":{},"leadtransferee":"0"}
+W220119 11:27:17.647547 140 storage/store.go:3503  [n1,s1,r1/1:/{Min-System/NodeL…}] handle raft ready: 67.5s [applied=12, batches=12, state_assertions=7]
+W220119 11:27:17.647636 24 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23456 0  <nil>}. Err :connection error: desc = "transport: failed to write client preface: io: read/write on closed pipe". Reconnecting...
+I220119 11:27:17.649425 777 security/audit/server/audit_server.go:125  [n1] refresh audit server settings
+W220119 11:27:17.649455 3977 storage/replica_range_lease.go:986  [n1,s1,r1/1:/{Min-System/NodeL…}] have been waiting 1m0s attempting to acquire lease
+W220119 11:27:17.649771 184 storage/node_liveness.go:523  [n1,hb] slow heartbeat took 67.5s
+W220119 11:27:17.649784 184 storage/node_liveness.go:463  [n1,hb] failed node liveness heartbeat: operation "node liveness heartbeat" timed out after 4.5s
+W220119 11:27:17.649822 3011 storage/replica_range_lease.go:986  [n1,s1,r11/1:/Table/1{5-6}] have been waiting 1m0s attempting to acquire lease
+W220119 11:27:17.649846 4093 storage/replica_range_lease.go:986  [n1,s1,r1/1:/{Min-System/NodeL…}] have been waiting 1m0s attempting to acquire lease
+W220119 11:27:17.649859 147 storage/replica_range_lease.go:986  [n1,s1,r1/1:/{Min-System/NodeL…}] have been waiting 1m0s attempting to acquire lease
+W220119 11:27:17.649996 104 storage/closedts/provider/provider.go:156  [ct-closer] unable to move closed timestamp forward: not live
+I220119 11:27:17.650067 4152 vendor/github.com/znbasedb/circuitbreaker/circuitbreaker.go:322  [n1] circuitbreaker: gossip [::]:23456->ubuntu:23458 tripped: initial connection heartbeat failed: rpc error: code = Internal desc = grpc: compressed flag set with identity or empty encoding
+I220119 11:27:17.650075 4152 vendor/github.com/znbasedb/circuitbreaker/circuitbreaker.go:447  [n1] circuitbreaker: gossip [::]:23456->ubuntu:23458 event: BreakerTripped
+W220119 11:27:17.650089 4152 gossip/client.go:122  [n1] failed to start gossip client to ubuntu:23458: initial connection heartbeat failed: rpc error: code = Internal desc = grpc: compressed flag set with identity or empty encoding
+W220119 11:27:17.650229 4029 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23458 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 11:27:17.650289 4225 storage/raft_transport.go:625  [n1] while processing outgoing Raft queue to node 3: EOF:
+W220119 11:27:17.650295 4163 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23458 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+I220119 11:27:17.650339 4182 vendor/github.com/znbasedb/circuitbreaker/circuitbreaker.go:322  [n1] circuitbreaker: rpc [::]:23456 [n3] tripped: failed to connect to n3 at ubuntu:23458: initial connection heartbeat failed: rpc error: code = Internal desc = grpc: compressed flag set with identity or empty encoding
+I220119 11:27:17.650344 4182 vendor/github.com/znbasedb/circuitbreaker/circuitbreaker.go:447  [n1] circuitbreaker: rpc [::]:23456 [n3] event: BreakerTripped
+I220119 11:27:17.650349 4182 rpc/nodedialer/nodedialer.go:149  [n1] unable to connect to n3: failed to connect to n3 at ubuntu:23458: initial connection heartbeat failed: rpc error: code = Internal desc = grpc: compressed flag set with identity or empty encoding
+W220119 11:27:17.650458 4029 vendor/google.golang.org/grpc/clientconn.go:1440  grpc: addrConn.transportMonitor exits due to: context canceled
+W220119 11:27:17.650473 4163 vendor/google.golang.org/grpc/clientconn.go:1440  grpc: addrConn.transportMonitor exits due to: context canceled
+W220119 11:27:17.650649 4140 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23457 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 11:27:17.650757 4140 vendor/google.golang.org/grpc/clientconn.go:1440  grpc: addrConn.transportMonitor exits due to: context canceled
+W220119 11:27:17.652113 4050 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23457 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 11:27:17.652313 4050 vendor/google.golang.org/grpc/clientconn.go:1440  grpc: addrConn.transportMonitor exits due to: context canceled
+I220119 11:27:17.652885 161 server/status/runtime.go:500  [n1] runtime stats: 268 MiB RSS, 263 goroutines, 133 MiB/61 MiB/221 MiB GO alloc/idle/total, 59 MiB/75 MiB CGO alloc/total, 13.1 CGO/sec, 0.0/0.0 %(u/s)time, 0.0 %gc (0x), 1.7 MiB/1.7 MiB (r/w)net
+W220119 11:27:24.307424 184 storage/node_liveness.go:523  [n1,hb] slow heartbeat took 6.7s
+W220119 11:27:24.307443 184 storage/node_liveness.go:463  [n1,hb] failed node liveness heartbeat: operation "node liveness heartbeat" timed out after 4.5s
+W220119 11:27:24.312228 24 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23456 0  <nil>}. Err :connection error: desc = "transport: failed to write client preface: io: read/write on closed pipe". Reconnecting...
+I220119 11:27:24.312830 4122 vendor/github.com/znbasedb/circuitbreaker/circuitbreaker.go:447  [n1] circuitbreaker: rpc [::]:23456 [n3] event: BreakerReset
+I220119 11:27:24.313096 4462 vendor/github.com/znbasedb/circuitbreaker/circuitbreaker.go:447  [n1] circuitbreaker: gossip [::]:23456->ubuntu:23458 event: BreakerReset
+I220119 11:27:24.313122 4462 gossip/client.go:128  [n1] started gossip client to ubuntu:23458
+I220119 11:27:24.313499 4457 vendor/github.com/znbasedb/circuitbreaker/circuitbreaker.go:447  [n1] circuitbreaker: rpc [::]:23456 [n2] event: BreakerReset
+I220119 11:27:24.320808 4094 storage/replica_write.go:208  [n1,s1,r1/1:/{Min-System/NodeL…}] slow command RequestLease [/Min,/Min) finished after 74.14s with error cannot replace lease repl=(n2,s2):2 seq=14 start=1642591082.836275010,0 exp=1642591575.045717180,0 pro=1642591566.045757797,0 with repl=(n1,s1):1 seq=15 start=1642591532.849555558,1 exp=1642591575.047769169,0 pro=1642591566.047774358,0: proposed under invalid lease
+I220119 11:27:24.321924 4093 storage/replica_range_lease.go:991  [n1,s1,r1/1:/{Min-System/NodeL…}] slow lease acquisition finished after 1m18.274063715s with error [NotLeaseHolderError] r1: replica (n1,s1):1 not lease holder; lease holder unknown after 1 attempts
+I220119 11:27:24.322050 147 storage/replica_range_lease.go:991  [n1,s1,r1/1:/{Min-System/NodeL…}] slow lease acquisition finished after 1m14.142807438s with error [NotLeaseHolderError] r1: replica (n1,s1):1 not lease holder; lease holder unknown after 1 attempts
+W220119 11:27:24.322067 147 storage/store.go:1580  [n1,s1,r1/1:/{Min-System/NodeL…}] could not gossip first range descriptor: [NotLeaseHolderError] r1: replica (n1,s1):1 not lease holder; lease holder unknown
+I220119 11:27:24.322212 3977 storage/replica_range_lease.go:991  [n1,s1,r1/1:/{Min-System/NodeL…}] slow lease acquisition finished after 1m14.142533197s with error [NotLeaseHolderError] r1: replica (n1,s1):1 not lease holder; lease holder unknown after 1 attempts
+I220119 11:27:24.332468 771 server/server_update.go:64  [n1] failed attempt to upgrade cluster version, error: node 1 not running (UNAVAILABLE), cannot determine version
+W220119 11:27:28.241816 136 storage/engine/rocksdb.go:2234  batch [25/688651/25] commit took 3.899467831s (>= warning threshold 500ms)
+W220119 11:27:28.241864 136 storage/store.go:3503  [n1,s1,r3/1:/System/{NodeLive…-tsd}] handle raft ready: 3.9s [applied=34, batches=1, state_assertions=0]
+W220119 11:27:28.242468 137 storage/store.go:3503  [n1,s1,r52/1:/Table/58/1/-92233497859709…] handle raft ready: 3.9s [applied=1, batches=1, state_assertions=0]
+I220119 11:27:28.242752 4527 vendor/github.com/znbasedb/circuitbreaker/circuitbreaker.go:322  [n1] circuitbreaker: gossip [::]:23456->ubuntu:23457 tripped: rpc error: code = Canceled desc = grpc: the client connection is closing
+I220119 11:27:28.242761 4527 vendor/github.com/znbasedb/circuitbreaker/circuitbreaker.go:447  [n1] circuitbreaker: gossip [::]:23456->ubuntu:23457 event: BreakerTripped
+I220119 11:27:28.243101 59 gossip/gossip.go:1522  [n1] node has connected to cluster via gossip
+W220119 11:27:28.243413 127 storage/store.go:3503  [n1,s1,r97/1:/Table/58/1/-92233497859703…] handle raft ready: 3.9s [applied=1, batches=1, state_assertions=0]
+W220119 11:27:28.243670 118 storage/store.go:3503  [n1,s1,r56/1:/Table/58/1/-92233497859709…] handle raft ready: 3.9s [applied=1, batches=1, state_assertions=0]
+W220119 11:27:28.243716 125 storage/store.go:3503  [n1,s1,r16/1:/Table/2{0-1}] handle raft ready: 3.9s [applied=1, batches=1, state_assertions=0]
+I220119 11:27:28.246843 777 security/audit/server/audit_server.go:125  [n1] refresh audit server settings
+I220119 11:27:28.248612 161 server/status/runtime.go:500  [n1] runtime stats: 271 MiB RSS, 264 goroutines, 127 MiB/65 MiB/221 MiB GO alloc/idle/total, 59 MiB/74 MiB CGO alloc/total, 93.3 CGO/sec, 0.5/0.4 %(u/s)time, 0.0 %gc (1x), 4.5 MiB/4.5 MiB (r/w)net
+W220119 11:27:28.248648 179 server/node.go:876  [n1,summaries] health alerts detected: {Alerts:[{StoreID:1 Category:METRICS Description:requests.slow.lease Value:3} {StoreID:1 Category:METRICS Description:requests.slow.raft Value:1}]}
+I220119 11:27:28.268273 2747 storage/replica_write.go:208  [n1,s1,r2/1:/System/NodeLiveness{-Max}] slow command RequestLease [/System/NodeLiveness,/Min) finished after 293.43s with error cannot replace lease repl=(n3,s3):3 seq=18 start=1642591205.919431058,1 exp=1642591651.217717626,0 pro=1642591642.217726032,0 with repl=(n1,s1):1 seq=19 start=1642591348.353428354,1 exp=1642591362.295680060,0 pro=1642591353.295688787,0: proposed under invalid lease
+I220119 11:27:28.268333 3836 storage/replica_range_lease.go:991  [n1,s1,r2/1:/System/NodeLiveness{-Max}] slow lease acquisition finished after 1m42.623660869s with error [NotLeaseHolderError] r2: replica (n1,s1):1 not lease holder; current lease is repl=(n3,s3):3 seq=18 start=1642591205.919431058,1 exp=1642591651.217717626,0 pro=1642591642.217726032,0 after 1 attempts
+I220119 11:27:28.268506 149 storage/replica_range_lease.go:991  [n1,s1,r2/1:/System/NodeLiveness{-Max}] slow lease acquisition finished after 4m54.972802806s with error [NotLeaseHolderError] r2: replica (n1,s1):1 not lease holder; current lease is repl=(n3,s3):3 seq=18 start=1642591205.919431058,1 exp=1642591651.217717626,0 pro=1642591642.217726032,0 after 1 attempts
+W220119 11:27:28.277235 179 server/node.go:876  [n1,summaries] health alerts detected: {Alerts:[{StoreID:1 Category:METRICS Description:requests.slow.lease Value:1}]}
+W220119 11:27:28.293063 3836 storage/node_liveness.go:523  [n1,s1,r11/1:/Table/1{5-6}] slow heartbeat took 122.7s
+I220119 11:27:28.293153 3011 storage/replica_range_lease.go:991  [n1,s1,r11/1:/Table/1{5-6}] slow lease acquisition finished after 2m2.679511794s with error [NotLeaseHolderError] r11: replica (n1,s1):1 not lease holder; current lease is repl=(n2,s2):2 seq=18 start=1642591446.465745318,0 epo=8 pro=1642591446.465748343,0 after 1 attempts
+W220119 11:27:28.295209 184 storage/node_liveness.go:523  [n1,hb] slow heartbeat took 4.0s
+I220119 11:27:28.295221 184 storage/node_liveness.go:453  [n1,hb] heartbeat failed on epoch increment; retrying
+W220119 11:27:28.295260 4544 storage/node_liveness.go:523  [n1,s1,r36/1:/Table/58/1/-92233497859711…] slow heartbeat took 4.0s
+E220119 11:27:28.295267 4544 storage/replica_range_lease.go:292  [n1,s1,r36/1:/Table/58/1/-92233497859711…] heartbeat failed on epoch increment
+W220119 11:27:28.295540 4545 storage/node_liveness.go:523  [n1,s1,r34/1:/Table/57{-/1/-9223…}] slow heartbeat took 4.0s
+E220119 11:27:28.295549 4545 storage/replica_range_lease.go:292  [n1,s1,r34/1:/Table/57{-/1/-9223…}] heartbeat failed on epoch increment
+I220119 11:27:29.821087 157 gossip/gossip.go:562  [n1] gossip status (ok, 3 nodes)
+gossip client (1/3 cur/max conns)
+  3: ubuntu:23458 (6s: infos 20/45 sent/received, bytes 5751B/9715B sent/received)
+gossip server (0/3 cur/max conns, infos 593/1196 sent/received, bytes 205715B/244913B sent/received)
+gossip connectivity
+  n2 [sentinel];
+  n1 -> n3; n2 -> n3;
+W220119 11:27:29.826419 4620 storage/node_liveness.go:523  [n1,s1,r36/1:/Table/58/1/-92233497859711…] slow heartbeat took 1.5s
+W220119 11:27:29.831392 130 storage/store.go:3503  [n1,s1,r3/1:/System/{NodeLive…-tsd}] handle raft ready: 1.5s [applied=2, batches=1, state_assertions=0]
+W220119 11:27:29.831614 124 storage/store.go:3503  [n1,s1,r7/1:/Table/1{1-2}] handle raft ready: 1.5s [applied=6, batches=1, state_assertions=0]
+W220119 11:27:29.835264 140 storage/store.go:3503  [n1,s1,r2/1:/System/NodeLiveness{-Max}] handle raft ready: 1.5s [applied=0, batches=0, state_assertions=0]
+W220119 11:27:29.836730 4621 storage/node_liveness.go:523  [n1,s1,r34/1:/Table/57{-/1/-9223…}] slow heartbeat took 1.5s
+W220119 11:27:54.755648 59 gossip/gossip.go:1511  [n1] first range unavailable; resolvers exhausted
+W220119 11:27:54.756710 24 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23456 0  <nil>}. Err :connection error: desc = "transport: failed to write client preface: io: read/write on closed pipe". Reconnecting...
+I220119 11:27:54.756944 4669 vendor/github.com/znbasedb/circuitbreaker/circuitbreaker.go:322  [n1] circuitbreaker: gossip [::]:23456->ubuntu:23457 tripped: rpc error: code = Canceled desc = grpc: the client connection is closing
+I220119 11:27:54.756950 4669 vendor/github.com/znbasedb/circuitbreaker/circuitbreaker.go:447  [n1] circuitbreaker: gossip [::]:23456->ubuntu:23457 event: BreakerTripped
+W220119 11:27:54.762298 132 storage/store.go:3503  [n1,s1,r36/1:/Table/58/1/-92233497859711…] handle raft ready: 24.9s [applied=0, batches=0, state_assertions=0]
+W220119 11:27:54.762360 129 storage/store.go:3503  [n1,s1,r87/1:/Table/58/1/-92233497859704…] handle raft ready: 24.9s [applied=0, batches=0, state_assertions=0]
+W220119 11:27:54.762563 4193 storage/raft_transport.go:625  [n1] while processing outgoing Raft queue to node 2: rpc error: code = Unavailable desc = transport is closing:
+W220119 11:27:54.762654 4314 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23457 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 11:27:54.762686 4314 vendor/google.golang.org/grpc/clientconn.go:1440  grpc: addrConn.transportMonitor exits due to: context canceled
+W220119 11:27:54.763623 4318 storage/raft_transport.go:625  [n1] while processing outgoing Raft queue to node 3: rpc error: code = Unavailable desc = transport is closing:
+E220119 11:27:54.765768 4512 sql/distsql/server.go:611  [n1] query execution canceled
+W220119 11:27:54.765841 4322 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23458 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 11:27:54.766005 4489 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23458 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+W220119 11:27:54.774650 140 storage/store.go:3503  [n1,s1,r16/1:/Table/2{0-1}] handle raft ready: 24.9s [applied=0, batches=0, state_assertions=0]
+W220119 11:27:54.774798 128 storage/store.go:3503  [n1,s1,r21/1:/Table/2{5-6}] handle raft ready: 24.9s [applied=0, batches=0, state_assertions=0]
+I220119 11:27:54.782971 161 server/status/runtime.go:500  [n1] runtime stats: 252 MiB RSS, 257 goroutines, 127 MiB/65 MiB/221 MiB GO alloc/idle/total, 59 MiB/74 MiB CGO alloc/total, 29.2 CGO/sec, 0.3/0.3 %(u/s)time, 0.0 %gc (0x), 3.1 MiB/3.1 MiB (r/w)net
+W220119 11:27:54.783408 4122 storage/raft_transport.go:625  [n1] while processing outgoing Raft queue to node 3: rpc error: code = Canceled desc = context canceled:
+W220119 11:27:54.783877 4489 vendor/google.golang.org/grpc/clientconn.go:1440  grpc: addrConn.transportMonitor exits due to: context canceled
+W220119 11:27:54.784656 4494 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23457 0  <nil>}. Err :connection error: desc = "transport: Error while dialing cannot reuse client connection". Reconnecting...
+I220119 11:27:54.785834 4632 vendor/github.com/znbasedb/circuitbreaker/circuitbreaker.go:322  [n1] circuitbreaker: rpc [::]:23456 [n2] tripped: failed to check for ready connection to n2 at ubuntu:23457: connection not ready: TRANSIENT_FAILURE
+I220119 11:27:54.785846 4632 vendor/github.com/znbasedb/circuitbreaker/circuitbreaker.go:447  [n1] circuitbreaker: rpc [::]:23456 [n2] event: BreakerTripped
+W220119 11:27:54.785901 4457 storage/raft_transport.go:625  [n1] while processing outgoing Raft queue to node 2: rpc error: code = Canceled desc = grpc: the client connection is closing:
+W220119 11:27:54.790584 4494 vendor/google.golang.org/grpc/clientconn.go:1440  grpc: addrConn.transportMonitor exits due to: context canceled
+I220119 11:27:54.794732 777 security/audit/server/audit_server.go:125  [n1] refresh audit server settings
+W220119 11:27:54.802914 179 server/node.go:876  [n1,summaries] health alerts detected: {Alerts:[{StoreID:0 Category:METRICS Description:liveness.heartbeatfailures Value:3}]}
+E220119 11:27:54.809261 4549 sql/distsql/server.go:611  [n1] query execution canceled
+E220119 11:27:54.809289 4510 sql/distsql/server.go:611  [n1] query execution canceled
+E220119 11:27:54.809480 4552 sql/distsql/server.go:611  [n1] communication error: rpc error: code = Canceled desc = context canceled
+W220119 11:27:54.809660 4322 vendor/google.golang.org/grpc/clientconn.go:1440  grpc: addrConn.transportMonitor exits due to: context canceled
+W220119 11:27:54.809693 4794 storage/raft_transport.go:620  [n1] creating batch client for node 3 failed: rpc error: code = Canceled desc = grpc: the client connection is closing
+E220119 11:27:54.831616 4541 sql/flowinfra/inbound.go:238  [n1] draining error: rpc error: code = Unavailable desc = transport is closing
+E220119 11:27:54.831617 4564 sql/flowinfra/inbound.go:238  [n1] draining error: rpc error: code = Unavailable desc = transport is closing
+E220119 11:27:54.936986 4853 storage/replica_range_lease.go:336  [n1,s1,r4/1:/System{/tsd-tse}] mismatch incrementing epoch for {NodeID:2 Epoch:8 Expiration:1642591663.852343032,0 Draining:false Decommissioning:false}; actual is {NodeID:2 Epoch:8 Expiration:1642591681.853473016,0 Draining:false Decommissioning:false}
+I220119 11:27:55.757601 4902 gossip/client.go:128  [n1] started gossip client to ubuntu:23458
+I220119 11:27:56.274479 4908 vendor/github.com/znbasedb/circuitbreaker/circuitbreaker.go:447  [n1] circuitbreaker: rpc [::]:23456 [n2] event: BreakerReset
+I220119 11:27:56.295479 771 server/server_update.go:64  [n1] failed attempt to upgrade cluster version, error: node 4 not running (DEAD), cannot determine version
+I220119 11:27:56.488524 59 gossip/gossip.go:1522  [n1] node has connected to cluster via gossip
+I220119 11:27:57.070260 4833 storage/replica_raftstorage.go:817  [n1,s1,r4/1:/System{/tsd-tse}] applying RAFT snapshot at index 6089 (id=bd4effa5, encoded size=18450230, 71 rocksdb batches, 0 log entries)
+I220119 11:27:57.250718 4833 storage/replica_raftstorage.go:823  [n1,s1,r4/1:/System{/tsd-tse}] applied RAFT snapshot in 179ms [clear=3ms batch=90ms entries=0ms commit=86ms]
+W220119 11:28:03.251453 24 vendor/google.golang.org/grpc/clientconn.go:1304  grpc: addrConn.createTransport failed to connect to {ubuntu:23456 0  <nil>}. Err :connection error: desc = "transport: failed to write client preface: io: read/write on closed pipe". Reconnecting...
+I220119 11:28:04.791625 161 server/status/runtime.go:500  [n1] runtime stats: 383 MiB RSS, 213 goroutines, 170 MiB/24 MiB/221 MiB GO alloc/idle/total, 83 MiB/95 MiB CGO alloc/total, 197.6 CGO/sec, 2.8/5.9 %(u/s)time, 0.0 %gc (2x), 3.2 MiB/3.2 MiB (r/w)net
+I220119 11:28:04.795009 777 security/audit/server/audit_server.go:125  [n1] refresh audit server settings
+I220119 11:28:14.793253 161 server/status/runtime.go:500  [n1] runtime stats: 319 MiB RSS, 213 goroutines, 191 MiB/72 MiB/293 MiB GO alloc/idle/total, 83 MiB/95 MiB CGO alloc/total, 43.9 CGO/sec, 1.0/1.5 %(u/s)time, 0.0 %gc (0x), 436 KiB/424 KiB (r/w)net
+I220119 11:28:14.795283 777 security/audit/server/audit_server.go:125  [n1] refresh audit server settings

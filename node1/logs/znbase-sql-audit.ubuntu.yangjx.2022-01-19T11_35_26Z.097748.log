@@ -1,0 +1,8 @@
+I220119 11:35:26.107686 538 util/log/clog.go:1194  [config] file created at: 2022/01/19 11:35:26
+I220119 11:35:26.107686 538 util/log/clog.go:1194  [config] running on machine: ubuntu
+I220119 11:35:26.107686 538 util/log/clog.go:1194  [config] binary: ZNBaseDB OSS a077da02 (x86_64-linux-gnu, built 2022/01/19 11:08:07, go1.14)
+I220119 11:35:26.107686 538 util/log/clog.go:1194  [config] arguments: [./znbase start --insecure --store=./node1 --listen-addr=:23456 --http-addr=:8000 --join=:23456,:23457,:23458]
+I220119 11:35:26.107686 538 util/log/clog.go:1194  line format: [IWEF]yymmdd hh:mm:ss.uuuuuu goid file:line msg utf8=✓
+I220119 11:35:26.107684 538 security/audit/event/audit_event.go:226  [n1] 1 [&{nodeid:1 client: user:}][][2022-01-19T11:35:26+0000][node_restart][1][<nil>][node_restart][][1657794][0][OK]
+I220119 11:35:37.502346 536 security/audit/event/audit_event.go:226  [n1] 2 [&{nodeid:1 client:127.0.0.1:37452 user:root}][$ znbase sql][2022-01-19T11:35:37+0000][user_login][1][<nil>][user_login][map[application_name:$ znbase sql client_encoding:UTF8 database:defaultdb datestyle:ISO, MDY extra_float_digits:2]][14][0][OK]
+I220119 11:35:37.515454 537 security/audit/event/audit_event.go:226  [n1] 3 [&{nodeid:1 client:127.0.0.1:37452 user:root}][$ znbase sql][2022-01-19T11:35:37+0000][set_var][0][{queryid:16cba8d8a35bc3ef0000000000000001 sql:set sql_safe_updates = true}][SET sql_safe_updates = true][{}][1][0][OK]

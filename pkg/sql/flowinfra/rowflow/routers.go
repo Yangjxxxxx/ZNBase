@@ -519,9 +519,6 @@ type mixHashRule struct {
 }
 
 func (mhr *mixHashRule) init() error {
-	if mhr.skewData.Len() == 0 {
-		return errors.Errorf("mix hash rule has not skew data")
-	}
 
 	switch mhr.mixHashType {
 	case distsqlpb.OutputRouterSpec_MixHashRouterRuleSpec_HASH_MIRROR:

@@ -86,7 +86,7 @@ func tableReaderRowCount(tableReader *distsqlpb.TableReaderSpec) int64 {
 func spanKeyCount(startKey, endKey []byte, fixedKey bool) (int64, bool) {
 	const KeyLen = 2
 
-	if fixedKey && (len(startKey) < KeyLen || len(endKey) < KeyLen) {
+	if fixedKey && (len(startKey) <= KeyLen || len(endKey) <= KeyLen) {
 		return 0, false
 	}
 
