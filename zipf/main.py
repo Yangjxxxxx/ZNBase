@@ -44,7 +44,7 @@ def write_data(raw_data, a, num_row, out_dir):
     csv_name = "t{}_{}".format(str(num_row),a).replace('.','_')
     with open (out_dir + csv_name + ".csv", 'w') as f:
         for i, x in enumerate(raw_data):
-            f.write("%s,%s"%(str(i), str(x)))
+            f.write("%s,%s"%(str(x), str(i)))
             f.write('\n')
 
 
@@ -57,9 +57,8 @@ def write_skew(raw_data, a, threshold, write_dir):
         map[x] = map.get(x,0) + 1
 
     for key in map.keys():
-
         if map[key] > threshold_count:
-            res[key] = map[key] / len(raw_data)
+            res[key] = map[key]
 
     with open (write_dir + skew_name + ".skew", 'w') as f:
         for skew_data in res.keys():
@@ -103,8 +102,8 @@ if __name__ == "__main__":
     raw_data_1 = bzg_1.generate()
     raw_data_2 = bzg_2.generate()
 
-    write_skew(raw_data_1,a_1, 0.05,write_dir)
-    write_skew(raw_data_2,a_2, 0.05,write_dir)
+    write_skew(raw_data_1,a_1, 0.001,write_dir)
+    write_skew(raw_data_2,a_2, 0.001,write_dir)
 
     logging.info("writing data_1, num_row = {}...".format(num_row_1))
     write_data(raw_data_1, a_1,num_row_1, write_dir)

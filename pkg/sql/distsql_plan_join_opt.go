@@ -154,6 +154,9 @@ func (djh *distJoinHelper) init() {
 			RouterRowCounts[i] = tableReaderRowCount(tr)
 			allRowCounts += RouterRowCounts[i]
 		}
+		if allRowCounts == 0 {
+			return RouterRowCounts, 0
+		}
 
 		var skewRowCounts int64
 		for _, item := range heavyHitters {
@@ -635,6 +638,7 @@ func MakeDecisionForHashJoin(
 		rightRouters: 		rightRouters,
 		joinNodes: 			joinNodes,
 		gatewayID: 			getewayID,
+		frequencyThreshold: frequencyThreshold,
 	}
 
 	if planBaseHash.Get(&dsp.st.SV) {

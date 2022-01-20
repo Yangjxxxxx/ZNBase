@@ -1,6 +1,0 @@
-I220119 09:12:56.153560 1254 util/log/clog.go:1194  [config] file created at: 2022/01/19 09:12:56
-I220119 09:12:56.153560 1254 util/log/clog.go:1194  [config] running on machine: ubuntu
-I220119 09:12:56.153560 1254 util/log/clog.go:1194  [config] binary: ZNBaseDB OSS 4cd474b8 (x86_64-linux-gnu, built 2022/01/19 09:10:28, go1.14)
-I220119 09:12:56.153560 1254 util/log/clog.go:1194  [config] arguments: [./znbase start --insecure --store=./node2 --listen-addr=:23457 --http-addr=:8001 --join=:23456,:23457,:23458]
-I220119 09:12:56.153560 1254 util/log/clog.go:1194  line format: [IWEF]yymmdd hh:mm:ss.uuuuuu goid file:line msg utf8=✓
-I220119 09:12:56.153558 1254 security/audit/event/audit_event.go:226  [n2] 1 [&{nodeid:2 client: user:}][][2022-01-19T09:12:56+0000][node_restart][2][<nil>][node_restart][][25443902][0][OK]

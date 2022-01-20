@@ -1,0 +1,19 @@
+PRPD:
+netWork1Cost : 12142
+calculateCost : 34742
+netWork2Cost : 12496154
+allCost : 12543038
+
+PnR:
+netWork1Cost : 36572
+calculateCost : 18286
+netWork2Cost : 12496154
+allCost : 12551012
+
+BaseHash:
+netWork1Cost : 5074
+calculateCost : 2655
+netWork2Cost : 18744231
+allCost : 18751960
+
+select methods : PRPD

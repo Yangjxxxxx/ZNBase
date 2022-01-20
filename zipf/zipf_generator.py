@@ -1,4 +1,5 @@
 import numpy as np
+import random
 from main import save_plot
 
 
@@ -23,16 +24,21 @@ class Bounding_zipf_generator:
         self.N = N
 
     def generate(self):
-        res = []
+        data = []
         expect_num = self.N
         cur_count = 0
         while cur_count < expect_num:
             batch = next(batch_generator(self.a))
             temp =  sample_batch(batch, self.lower_bound, self.upper_bound)
-            res.extend(temp)
+            data.extend(temp)
             cur_count += len(temp)
 
-        return np.array(res[0:self.N])
+        res = np.array(data[0:self.N])
+        hashtable = dict()
+        # for i in range (len(res)):
+        #     newkey = hashtable.get(res[i], random.randint(self.lower_bound, self.upper_bound))
+        #     res[i] = newkey
+        return res
 
 
 class bzg_factory:
