@@ -1,1 +1,0 @@
-/home/yangjx/go/src/github.com/znbasedb/znbase/node3/znbase-cursor-temp220798761

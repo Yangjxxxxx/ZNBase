@@ -1,0 +1,9 @@
+I220119 13:05:09.607095 660 util/log/clog.go:1194  [config] file created at: 2022/01/19 13:05:09
+I220119 13:05:09.607095 660 util/log/clog.go:1194  [config] running on machine: ubuntu
+I220119 13:05:09.607095 660 util/log/clog.go:1194  [config] binary: ZNBaseDB OSS 58ced394 (x86_64-linux-gnu, built 2022/01/19 13:03:08, go1.14)
+I220119 13:05:09.607095 660 util/log/clog.go:1194  [config] arguments: [./znbase start --insecure --store=./node3 --listen-addr=:23458 --http-addr=:8002 --join=:23456,:23457,:23458]
+I220119 13:05:09.607095 660 util/log/clog.go:1194  line format: [IWEF]yymmdd hh:mm:ss.uuuuuu goid file:line msg utf8=✓
+I220119 13:05:09.607093 660 security/audit/event/audit_event.go:226  [n3] 1 [&{nodeid:3 client: user:}][][2022-01-19T13:05:09+0000][node_restart][3][<nil>][node_restart][][1884578][0][OK]
+I220119 13:07:14.045777 642 security/audit/event/audit_event.go:226  [n3] 2 [&{nodeid:3 client:127.0.0.1:60072 user:}][][2022-01-19T13:07:14+0000][node_quit][3][<nil>][node_quit][][26][0][OK]
+I220119 13:08:14.046295 659 security/audit/event/audit_event.go:226  [n3] 3 [&{nodeid:3 client:127.0.0.1:60072 user:}][][2022-01-19T13:08:14+0000][node_quit][3][<nil>][node_quit][][39][0][OK]
+I220119 13:08:14.048059 660 security/audit/event/audit_event.go:226  [n3] 4 [&{nodeid:3 client:127.0.0.1:60072 user:}][][2022-01-19T13:07:14+0000][node_quit][3][<nil>][node_quit][][60001148][0][ERROR]
